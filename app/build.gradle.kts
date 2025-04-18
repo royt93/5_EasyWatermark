@@ -17,8 +17,8 @@ android {
         applicationId = "com.mckimquyen.watermark"
         minSdk = 23
         targetSdk = 34
-        versionCode = 20250204
-        versionName = "2025.02.04"
+        versionCode = 20250418
+        versionName = "2025.04.18"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "$applicationId-v$versionName($versionCode)")
     }
@@ -145,7 +145,7 @@ dependencies {
     api(libs.palette.ktx)
     api(libs.profieinstaller)
     api(libs.colorpicker)
-    api("com.applovin:applovin-sdk:13.0.1")
+    api("com.applovin:applovin-sdk:13.2.0")
     api("com.jakewharton:process-phoenix:3.0.0")
     implementation("com.google.android.play:review:2.0.2")
     implementation("com.google.android.play:review-ktx:2.0.2")
