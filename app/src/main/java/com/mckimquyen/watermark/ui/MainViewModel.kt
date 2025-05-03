@@ -14,7 +14,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.*
 import androidx.palette.graphics.Palette
 import com.mckimquyen.watermark.BuildConfig
-import com.mckimquyen.watermark.MyApp
+import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.*
 import com.mckimquyen.watermark.data.model.entity.Template
@@ -374,11 +374,11 @@ class MainViewModel @Inject constructor(
                     )
                 }
                 val outputUri = FileProvider.getUriForFile(
-                    /* context = */ MyApp.instance,
+                    /* context = */ MyApplication.instance,
                     /* authority = */ "${BuildConfig.APPLICATION_ID}.fileprovider",
                     /* file = */ outputFile
                 )
-                MyApp.instance.sendBroadcast(
+                MyApplication.instance.sendBroadcast(
                     Intent(
                         Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
                         Uri.fromFile(outputFile)

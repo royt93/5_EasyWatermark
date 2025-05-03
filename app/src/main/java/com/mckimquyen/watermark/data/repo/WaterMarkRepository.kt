@@ -13,7 +13,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.mckimquyen.watermark.MyApp
+import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.TextPaintStyle
@@ -82,7 +82,7 @@ class WaterMarkRepository @Inject constructor(
         }
         .map {
             WaterMark(
-                text = it[KEY_TEXT] ?: MyApp.instance.getString(R.string.config_default_water_mark_text),
+                text = it[KEY_TEXT] ?: MyApplication.instance.getString(R.string.config_default_water_mark_text),
                 textSize = (it[KEY_TEXT_SIZE] ?: 14f).coerceAtLeast(1f),
                 textColor = it[KEY_TEXT_COLOR] ?: Color.parseColor("#FFB800"),
                 textStyle = TextPaintStyle.obtainSealedClass(it[KEY_TEXT_STYLE] ?: 0),

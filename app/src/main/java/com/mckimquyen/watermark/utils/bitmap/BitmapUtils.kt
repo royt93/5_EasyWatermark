@@ -12,7 +12,7 @@ import android.provider.MediaStore
 import android.util.Log
 import android.widget.ImageView
 import androidx.exifinterface.media.ExifInterface
-import com.mckimquyen.watermark.MyApp
+import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.data.model.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -40,7 +40,7 @@ fun decodeBitmapWithExifSync(
     val inSampleSize = options?.inSampleSize ?: 1
     val bitmapValue = BitmapCache.BitmapValue(bitmap, inSampleSize)
 
-    val rotation = getOrientation(MyApp.instance, uri)
+    val rotation = getOrientation(MyApplication.instance, uri)
     if (rotation == 0f) {
         return Result.success(bitmapValue)
     }
@@ -180,7 +180,7 @@ fun decodeSampledBitmapFromResourceSync(
             BitmapFactory.decodeStream(`is`, null, options)
         }
         // 2. Calculate inSampleSize
-        val (oHeight: Int, oWidth: Int) = if (interChangeSize(MyApp.instance, uri)) {
+        val (oHeight: Int, oWidth: Int) = if (interChangeSize(MyApplication.instance, uri)) {
             options.run { outWidth to outHeight }
         } else {
             options.run { outHeight to outWidth }

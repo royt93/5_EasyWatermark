@@ -38,7 +38,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.BuildConfig
-import com.mckimquyen.watermark.MyApp
+import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.FuncTitleModel
 import com.mckimquyen.watermark.data.model.ImageInfo
@@ -170,7 +170,7 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (MyApp.recoveryMode) {
+        if (MyApplication.recoveryMode) {
             setContentView(R.layout.a_recovery)
             initRecoveryView()
             return
@@ -192,8 +192,8 @@ class MainActivity : BaseActivity() {
 
     private fun initRecoveryView() {
         val tvCrashInfo = findViewById<TextView>(R.id.tvCrashInfo).apply {
-            with(getSharedPreferences(MyApp.SP_NAME, MODE_PRIVATE)) {
-                val crashInfo = getString(MyApp.KEY_STACK_TRACE, "")
+            with(getSharedPreferences(MyApplication.SP_NAME, MODE_PRIVATE)) {
+                val crashInfo = getString(MyApplication.KEY_STACK_TRACE, "")
                 text = crashInfo
             }
         }
@@ -232,7 +232,7 @@ class MainActivity : BaseActivity() {
 
         findViewById<Button>(R.id.btnCloseRecoveryMode).apply {
             setOnClickListener {
-                (MyApp.instance as MyApp).launchSuccess()
+                (MyApplication.instance as MyApplication).launchSuccess()
                 Toast.makeText(this@MainActivity, R.string.recovery_mode_closed, Toast.LENGTH_SHORT)
                     .show()
             }
@@ -241,7 +241,7 @@ class MainActivity : BaseActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (MyApp.recoveryMode) {
+        if (MyApplication.recoveryMode) {
             return
         }
     }
@@ -267,7 +267,7 @@ class MainActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (MyApp.recoveryMode) {
+        if (MyApplication.recoveryMode) {
             return
         }
         lifecycleScope.launch {
@@ -275,7 +275,7 @@ class MainActivity : BaseActivity() {
             if (this@MainActivity.isFinishing) {
                 return@launch
             }
-            (MyApp.instance as? MyApp?)?.launchSuccess()
+            (MyApplication.instance as? MyApplication?)?.launchSuccess()
         }
     }
 
@@ -285,15 +285,15 @@ class MainActivity : BaseActivity() {
     }
 
     private fun checkHadCrash() {
-        with(getSharedPreferences(MyApp.SP_NAME, MODE_PRIVATE)) {
-            val isCrash = getBoolean(MyApp.KEY_IS_CRASH, false)
+        with(getSharedPreferences(MyApplication.SP_NAME, MODE_PRIVATE)) {
+            val isCrash = getBoolean(MyApplication.KEY_IS_CRASH, false)
             if (!isCrash) {
                 return@with
             }
-            val crashInfo = getString(MyApp.KEY_STACK_TRACE, "")
+            val crashInfo = getString(MyApplication.KEY_STACK_TRACE, "")
             edit {
-                putBoolean(MyApp.KEY_IS_CRASH, false)
-                putString(MyApp.KEY_STACK_TRACE, "")
+                putBoolean(MyApplication.KEY_IS_CRASH, false)
+                putString(MyApplication.KEY_STACK_TRACE, "")
             }
             showCrashDialog(crashInfo)
         }
@@ -813,7 +813,7 @@ class MainActivity : BaseActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (MyApp.recoveryMode) {
+        if (MyApplication.recoveryMode) {
             super.onBackPressed()
             return
         }

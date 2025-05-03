@@ -1,7 +1,7 @@
 package com.mckimquyen.watermark.ui.widget
 
 import android.widget.SeekBar
-import com.mckimquyen.watermark.MyApp
+import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.ui.widget.DetectedPerformanceSeekBarListener.Companion.HIGH_PERFORMANCE_MEMORY
@@ -29,7 +29,7 @@ open class DetectedPerformanceSeekBarListener(
 
     private var isHighPerformancePredicate: () -> Boolean = {
         config?.markMode == WaterMarkRepository.MarkMode.Text ||
-                !getAvailableMemory(MyApp.instance).lowMemory
+                !getAvailableMemory(MyApplication.instance).lowMemory
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {

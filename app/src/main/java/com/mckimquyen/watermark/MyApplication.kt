@@ -33,7 +33,7 @@ import kotlin.system.exitProcess
 //ad applovin
 
 @HiltAndroidApp
-class MyApp : Application() {
+class MyApplication : Application() {
 
     @Inject
     lateinit var waterMarkRepo: WaterMarkRepository
@@ -115,7 +115,7 @@ class MyApp : Application() {
             with(Intent(Intent.ACTION_MAIN)) {
                 addCategory(Intent.CATEGORY_HOME)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                this@MyApp.startActivity(this)
+                this@MyApplication.startActivity(this)
             }
             e.printStackTrace()
             exitProcess(0)

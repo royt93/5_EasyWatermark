@@ -1,7 +1,7 @@
 package com.mckimquyen.watermark.data.repo
 
 import androidx.palette.graphics.Palette
-import com.mckimquyen.watermark.MyApp
+import com.mckimquyen.watermark.MyApplication
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +23,7 @@ class MemorySettingRepo @Inject constructor() {
      */
     private val _palette: MutableStateFlow<Palette?> = MutableStateFlow(null)
 
-    val paletteFlow = _palette.stateIn(MyApp.applicationScope, SharingStarted.Eagerly, null)
+    val paletteFlow = _palette.stateIn(MyApplication.applicationScope, SharingStarted.Eagerly, null)
 
     fun updatePalette(palette: Palette?) {
         scope.launch {

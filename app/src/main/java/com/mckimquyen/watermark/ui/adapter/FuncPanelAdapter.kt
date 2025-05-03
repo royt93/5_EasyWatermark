@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.color.MaterialColors
-import com.mckimquyen.watermark.MyApp
+import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.FuncTitleModel
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
@@ -18,7 +18,7 @@ class FuncPanelAdapter(
     val dataSet: ArrayList<FuncTitleModel>,
 ) : RecyclerView.Adapter<FuncPanelAdapter.FuncTitleHolder>() {
 
-    var textColor: Int = MyApp.instance.applicationContext.colorPrimary
+    var textColor: Int = MyApplication.instance.applicationContext.colorPrimary
         private set
 
     var selectedPos = 0
