@@ -25,6 +25,10 @@
         <profileable
             android:shell="true"
             tools:targetApi="29" />
+        <!-- Khai báo AdMob App ID -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3612191981543807~4938564505" /> <!-- Sample AdMob App ID -->
 
         <activity
             android:name=".ui.MainActivity"

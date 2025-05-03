@@ -58,11 +58,19 @@ android {
     }
 
     buildTypes {
-//        val debug by getting {
+        val debug by getting {
 //            applicationIdSuffix = ".debug"
-//        }
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
+            buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
+            buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"ca-app-pub-3940256099942544/9257395921\"")
+        }
 
         val release by getting {
+            //nho check APPLICATION_ID trong manifest
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3612191981543807/3976595378\"")
+            buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3612191981543807/2663513707\"")
+            buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"ca-app-pub-3612191981543807/6718308789\"")
+
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -146,6 +154,7 @@ dependencies {
     api(libs.profieinstaller)
     api(libs.colorpicker)
 //    api("com.applovin:applovin-sdk:13.2.0")
+    implementation("com.google.android.gms:play-services-ads:24.2.0")
     api("com.jakewharton:process-phoenix:3.0.0")
     implementation("com.google.android.play:review:2.0.2")
     implementation("com.google.android.play:review-ktx:2.0.2")
