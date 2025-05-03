@@ -1,31 +1,32 @@
 package com.mckimquyen.watermark.ui.about
 
-import android.content.Context
 import android.content.res.ColorStateList
-import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.LoadAdError
 import com.jakewharton.processphoenix.ProcessPhoenix
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.AAboutBinding
+import com.mckimquyen.watermark.sdkadbmob.AdMobManager
 import com.mckimquyen.watermark.utils.ktx.colorSecondaryContainer
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.openLink
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class AboutActivity : BaseActivity() {
+class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
 
     private val binding by inflate<AAboutBinding>()
 
@@ -33,8 +34,18 @@ class AboutActivity : BaseActivity() {
 
 //    private lateinit var bgDrawable: GradientDrawable
 
-    //TODO roy93~ admob banner
-//    private var adView: MaxAdView? = null
+    //    private var adView: MaxAdView? = null
+    private var adView: AdView? = null
+
+    override fun onResume() {
+        super.onResume()
+        adView?.resume()
+    }
+
+    override fun onPause() {
+        adView?.pause()
+        super.onPause()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +58,8 @@ class AboutActivity : BaseActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window?.navigationBarDividerColor = Color.TRANSPARENT
         }
+        AdMobManager.setCurrentActivity(this)
+        AdMobManager.interstitialListener = this
     }
 
     private fun changeStatusBarStyle() {
@@ -161,14 +174,19 @@ class AboutActivity : BaseActivity() {
 //                }
 //            }
 
-            //TODO roy93~ admob banner
+            adView = AdMobManager.loadBanner(
+                context = this@AboutActivity,
+                adUnitId = BuildConfig.ADMOB_BANNER_ID,
+                container = flAd,
+                adSize = AdSize.LARGE_BANNER,
+            )
 //            adView = this@AboutActivity.createAdBanner(
 //                logTag = AboutActivity::class.simpleName,
 //                viewGroup = flAd,
 //                isAdaptiveBanner = true,
 //            )
-            //TODO roy93~ admob inter
 //            createAdInter()
+            AdMobManager.loadInterstitial(this@AboutActivity, BuildConfig.ADMOB_INTERSTITIAL_ID)
         }
     }
 
@@ -237,16 +255,36 @@ class AboutActivity : BaseActivity() {
 //    }
 
     override fun onDestroy() {
-        //TODO roy93~ admob banner
+        adView?.destroy()
 //        with(binding) {
 //            flAd.destroyAdBanner(adView)
 //        }
         super.onDestroy()
-        //TODO roy93~ admob inter
 //        showAd()
+        AdMobManager.showInterstitial(this)
     }
 
-    //TODO roy93~ admob inter
+    override fun onAdLoaded() {
+    }
+
+    override fun onAdFailedToLoad(error: LoadAdError) {
+    }
+
+    override fun onAdShowed() {
+    }
+
+    override fun onAdDismissed() {
+    }
+
+    override fun onAdClicked() {
+    }
+
+    override fun onAdFailedToShow(error: AdError) {
+    }
+
+    override fun onAdNotAvailable() {
+    }
+
 //    private var interstitialAd: MaxInterstitialAd? = null
 //
 //    private fun createAdInter() {
