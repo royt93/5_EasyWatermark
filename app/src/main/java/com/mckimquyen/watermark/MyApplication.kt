@@ -6,10 +6,17 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.content.edit
-import com.mckimquyen.watermark.data.repo.WaterMarkRepository
-import dagger.hilt.android.HiltAndroidApp
-import kotlinx.coroutines.*
+import com.google.android.gms.ads.MobileAds
 import com.mckimquyen.cmonet.CMonet
+import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.mckimquyen.watermark.sdkadbmob.AdMobManager
+import com.mckimquyen.watermark.sdkadbmob.AppLifecycleListener
+import com.mckimquyen.watermark.ui.SplashActivity
+import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
@@ -38,7 +45,7 @@ class MyApplication : Application() {
     @Inject
     lateinit var waterMarkRepo: WaterMarkRepository
 
-    private val sp by lazy { getSharedPreferences(SP_NAME, Context.MODE_PRIVATE) }
+    private val sp by lazy { getSharedPreferences(SP_NAME, MODE_PRIVATE) }
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
@@ -49,7 +56,7 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 //        this.setupApplovinAd()
-        //TODO roy93~ abmob init
+        setupAdmob()
         if (checkRecoveryMode()) {
             return
         } else {
@@ -58,6 +65,47 @@ class MyApplication : Application() {
             }
             CMonet.init(this, true)
         }
+    }
+
+    private fun setupAdmob() {
+        CoroutineScope(Dispatchers.IO).launch {
+            MobileAds.initialize(this@MyApplication) {}
+            AdMobManager.init(this@MyApplication) { success, gaidCurrent ->
+                Log.d("roy93~", "AdMobManager init success $success, gaidCurrent $gaidCurrent")
+            }
+        }
+        registerActivityLifecycleCallbacks(
+            AppLifecycleListener(
+                { isForeground, activity ->
+                    if (isForeground) {
+                        Log.d("roy93~", "App moved to Foreground")
+                        Log.d("roy93~", "activity.localClassName ${activity.localClassName}")
+                        Log.d(
+                            "roy93~",
+                            "SplashActivity::class.java.simpleName ${SplashActivity::class.java.simpleName}"
+                        )
+                        if (activity.localClassName == SplashActivity::class.java.simpleName) {
+                            //do nothing
+                        } else {
+//                            AdMobManager.showAppOpenAd(activity)
+                        }
+                    } else {
+                        Log.d("roy93~", "App moved to Background")
+                    }
+                }, { activity ->
+                    Log.d("roy93~", "callbackActivityCreated ${activity.localClassName}")
+                    if (activity.localClassName == SplashActivity::class.java.simpleName) {
+                        //do nothing
+                    } else {
+//                        AdMobManager.loadAppOpenAd(
+//                            context = this,
+//                            adUnitId = BuildConfig.ADMOB_APP_OPEN_ID,
+//                            onAdLoaded = {},
+//                        )
+                    }
+                }
+            )
+        )
     }
 
     private fun checkRecoveryMode(): Boolean {
@@ -84,7 +132,7 @@ class MyApplication : Application() {
 
     fun launchSuccess() {
         recoveryMode = false
-        val sp = getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
+        val sp = getSharedPreferences(SP_NAME, MODE_PRIVATE)
         sp.edit {
             putInt(SP_KEY_CRASH_COUNT, 0)
         }
