@@ -17,8 +17,8 @@ android {
         applicationId = "com.mckimquyen.watermark"
         minSdk = 23
         targetSdk = 34
-        versionCode = 20250418
-        versionName = "2025.04.18"
+        versionCode = 20250503
+        versionName = "2025.05.03"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "$applicationId-v$versionName($versionCode)")
     }
@@ -38,22 +38,22 @@ android {
 //            applicationIdSuffix = ".free"
 //            versionNameSuffix = "-free"
 //            resValue("string", "app_name", "Watermark Creator Free")
-            resValue("string", "SDK_KEY", "e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt")
-            resValue("string", "BANNER", "d3455cc529985b25")
-            resValue("string", "INTER", "a48241ebcb20ad5c")
-            resValue("string", "EnableAdInter", "true")
-            resValue("string", "EnableAdBanner", "true")
+//            resValue("string", "SDK_KEY", "e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt")
+//            resValue("string", "BANNER", "d3455cc529985b25")
+//            resValue("string", "INTER", "a48241ebcb20ad5c")
+//            resValue("string", "EnableAdInter", "true")
+//            resValue("string", "EnableAdBanner", "true")
         }
         create("appRelease") {
 //            dimension = "version"
 //            applicationIdSuffix = ".free"
 //            versionNameSuffix = "-free"
 //            resValue("string", "app_name", "Watermark Creator")
-            resValue("string", "SDK_KEY", "e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt")
-            resValue("string", "BANNER", "d3455cc529985b25")
-            resValue("string", "INTER", "a48241ebcb20ad5c")
-            resValue("string", "EnableAdInter", "true")
-            resValue("string", "EnableAdBanner", "true")
+//            resValue("string", "SDK_KEY", "e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt")
+//            resValue("string", "BANNER", "d3455cc529985b25")
+//            resValue("string", "INTER", "a48241ebcb20ad5c")
+//            resValue("string", "EnableAdInter", "true")
+//            resValue("string", "EnableAdBanner", "true")
         }
     }
 
@@ -145,7 +145,7 @@ dependencies {
     api(libs.palette.ktx)
     api(libs.profieinstaller)
     api(libs.colorpicker)
-    api("com.applovin:applovin-sdk:13.2.0")
+//    api("com.applovin:applovin-sdk:13.2.0")
     api("com.jakewharton:process-phoenix:3.0.0")
     implementation("com.google.android.play:review:2.0.2")
     implementation("com.google.android.play:review-ktx:2.0.2")

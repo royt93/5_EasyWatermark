@@ -10,7 +10,6 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.*
 import com.mckimquyen.cmonet.CMonet
-import com.mckimquyen.watermark.utils.setupApplovinAd
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
@@ -49,7 +48,8 @@ class MyApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        this.setupApplovinAd()
+//        this.setupApplovinAd()
+        //TODO roy93~ abmob init
         if (checkRecoveryMode()) {
             return
         } else {
