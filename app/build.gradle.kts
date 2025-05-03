@@ -154,7 +154,7 @@ dependencies {
     api(libs.profieinstaller)
     api(libs.colorpicker)
 //    api("com.applovin:applovin-sdk:13.2.0")
-    implementation("com.google.android.gms:play-services-ads:24.2.0")
+    implementation("com.google.android.gms:play-services-ads:23.4.0")
     api("com.jakewharton:process-phoenix:3.0.0")
     implementation("com.google.android.play:review:2.0.2")
     implementation("com.google.android.play:review-ktx:2.0.2")
