@@ -1,5 +1,10 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowBackground">@drawable/startup</item>
+    </style>
+
     <style name="ShapeAppearance.App.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">45dp</item>
