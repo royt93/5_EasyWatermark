@@ -10,8 +10,6 @@ import com.google.android.gms.ads.MobileAds
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.sdkadbmob.AdMobManager
-import com.mckimquyen.watermark.sdkadbmob.AppLifecycleListener
-import com.mckimquyen.watermark.ui.SplashActivity
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
