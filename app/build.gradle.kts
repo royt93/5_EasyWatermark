@@ -17,8 +17,8 @@ android {
         applicationId = "com.mckimquyen.watermark"
         minSdk = 23
         targetSdk = 34
-        versionCode = 20250509
-        versionName = "2025.05.09"
+        versionCode = 20250527
+        versionName = "2025.05.27"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "$applicationId-v$versionName($versionCode)")
     }
@@ -155,6 +155,7 @@ dependencies {
     api(libs.colorpicker)
 //    api("com.applovin:applovin-sdk:13.2.0")
     implementation("com.google.android.gms:play-services-ads:23.6.0")
+    implementation("com.google.ads.mediation:applovin:13.0.0.0")
     api("com.jakewharton:process-phoenix:3.0.0")
     implementation("com.google.android.play:review:2.0.2")
     implementation("com.google.android.play:review-ktx:2.0.2")
