@@ -9,14 +9,14 @@ plugins {
 }
 
 android {
-    compileSdk = 34
-    buildToolsVersion = "34.0.0"
+    compileSdk = 36
+    buildToolsVersion = "36.0.0"
     namespace = "com.mckimquyen.watermark"
 
     defaultConfig {
         applicationId = "com.mckimquyen.watermark"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 20250809
         versionName = "2025.08.09"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -109,9 +109,15 @@ android {
     }
 
     android.buildFeatures.viewBinding = true
+    android.buildFeatures.buildConfig = true
 
-    kotlinOptions {
-        jvmTarget = "11"
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlin {
+        jvmToolchain(17)
     }
 
     lint {

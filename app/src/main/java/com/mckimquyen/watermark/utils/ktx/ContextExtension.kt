@@ -13,12 +13,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.ui.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import com.mckimquyen.cmonet.CMonet
 
 fun Activity.isStoragePermissionGrated(): Boolean {
     val readGranted = ContextCompat.checkSelfPermission(
@@ -77,11 +77,17 @@ val Context.colorPrimary: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.colorPrimary, defaultColor = R.color.material_dynamic_primary80)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorPrimary,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_primary80
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorPrimary, defaultColor = R.color.material_dynamic_primary40)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorPrimary,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_primary40
+                )
             }
 
             isNight() || !supportNight() -> {
@@ -98,11 +104,17 @@ val Context.colorOnPrimary: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.colorOnPrimary, defaultColor = R.color.material_dynamic_primary20)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorOnPrimary,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_primary20
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorOnPrimary, defaultColor = R.color.material_dynamic_primary100)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorOnPrimary,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_primary100
+                )
             }
 
             isNight() || !supportNight() -> {
@@ -161,11 +173,17 @@ val Context.colorSecondary: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.colorSecondary, defaultColor = R.color.material_dynamic_secondary80)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorSecondary,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_secondary80
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorSecondary, defaultColor = R.color.material_dynamic_secondary40)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorSecondary,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_secondary40
+                )
             }
 
             isNight() || !supportNight() -> {
@@ -203,11 +221,17 @@ val Context.colorSecondaryContainer: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.colorSecondaryContainer, defaultColor = R.color.material_dynamic_secondary30)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorSecondaryContainer,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_secondary30
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorSecondaryContainer, defaultColor = R.color.material_dynamic_secondary90)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorSecondaryContainer,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_secondary90
+                )
             }
 
             isNight() || !supportNight() -> {
@@ -248,11 +272,17 @@ val Context.colorTertiary: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.colorTertiary, defaultColor = R.color.material_dynamic_tertiary80)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorTertiary,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_tertiary80
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorTertiary, defaultColor = R.color.material_dynamic_tertiary40)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorTertiary,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_tertiary40
+                )
             }
 
             isNight() || !supportNight() -> {
@@ -290,11 +320,17 @@ val Context.colorTertiaryContainer: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.colorTertiaryContainer, defaultColor = R.color.material_dynamic_tertiary30)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorTertiaryContainer,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_tertiary30
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorTertiaryContainer, defaultColor = R.color.material_dynamic_tertiary90)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorTertiaryContainer,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_tertiary90
+                )
             }
 
             isNight() || !supportNight() -> {
@@ -311,11 +347,17 @@ val Context.colorOnTertiaryContainer: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.colorOnTertiaryContainer, defaultColor = R.color.material_dynamic_tertiary90)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorOnTertiaryContainer,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_tertiary90
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorOnTertiaryContainer, defaultColor = R.color.material_dynamic_tertiary10)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorOnTertiaryContainer,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_tertiary10
+                )
             }
 
             isNight() || !supportNight() -> {
@@ -332,7 +374,10 @@ val Context.colorError: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorError, defaultColor = R.color.design_default_color_error)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorError,
+                    defaultColor = com.google.android.material.R.color.design_default_color_error
+                )
             }
 
             isNight() -> {
@@ -400,11 +445,17 @@ val Context.colorBackground: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.backgroundColor, defaultColor = R.color.material_dynamic_neutral10)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.backgroundColor,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_neutral10
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.backgroundColor, defaultColor = R.color.material_dynamic_neutral99)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.backgroundColor,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_neutral99
+                )
             }
 
             else -> {
@@ -438,11 +489,17 @@ val Context.colorSurface: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.colorSurface, defaultColor = R.color.material_dynamic_neutral10)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorSurface,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_neutral10
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorSurface, defaultColor = R.color.material_dynamic_neutral99)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorSurface,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_neutral99
+                )
             }
 
             isNight() || !supportNight() -> {
@@ -459,11 +516,17 @@ val Context.colorOnSurface: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.colorOnSurface, defaultColor = R.color.material_dynamic_neutral80)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorOnSurface,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_neutral80
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorOnSurface, defaultColor = R.color.material_dynamic_neutral10)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorOnSurface,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_neutral10
+                )
             }
 
             isNight() || !supportNight() -> {
@@ -480,11 +543,17 @@ val Context.colorSurfaceVariant: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.colorSurfaceVariant, defaultColor = R.color.material_dynamic_neutral30)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorSurfaceVariant,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_neutral30
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorSurfaceVariant, defaultColor = R.color.material_dynamic_neutral90)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorSurfaceVariant,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_neutral90
+                )
             }
 
             isNight() || !supportNight() -> {
@@ -501,11 +570,17 @@ val Context.colorOnSurfaceVariant: Int
     get() {
         return when {
             CMonet.isDynamicColorAvailable() && isNight() -> {
-                getColorFromAttr(R.attr.colorOnSurfaceVariant, defaultColor = R.color.material_dynamic_neutral80)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorOnSurfaceVariant,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_neutral80
+                )
             }
 
             CMonet.isDynamicColorAvailable() -> {
-                getColorFromAttr(R.attr.colorOnSurfaceVariant, defaultColor = R.color.material_dynamic_neutral30)
+                getColorFromAttr(
+                    com.google.android.material.R.attr.colorOnSurfaceVariant,
+                    defaultColor = com.google.android.material.R.color.material_dynamic_neutral30
+                )
             }
 
             isNight() || !supportNight() -> {

@@ -16,7 +16,6 @@ import androidx.core.graphics.withSave
 import androidx.core.view.children
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.utils.ktx.colorPrimary
 import com.mckimquyen.watermark.utils.ktx.dp
 import kotlin.math.abs
@@ -77,7 +76,7 @@ class TouchSensitiveRv : RecyclerView {
 
     private val colorAccent by lazy {
         val typedValue = TypedValue()
-        context.theme.resolveAttribute(R.attr.colorAccent, typedValue, true)
+        context.theme.resolveAttribute(com.google.android.material.R.attr.colorAccent, typedValue, true)
         typedValue.data
     }
 

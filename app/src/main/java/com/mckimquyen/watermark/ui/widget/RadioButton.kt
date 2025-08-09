@@ -47,7 +47,7 @@ class RadioButton : View {
 
     private val strokeColorNormal by lazy {
         MaterialColors.compositeARGBWithAlpha(
-            context.getColorFromAttr(R.attr.colorBackgroundFloating),
+            context.getColorFromAttr(com.google.android.material.R.attr.colorBackgroundFloating),
             125
         )
     }
