@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
@@ -177,7 +178,8 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
             adView = AdMobManager.loadBanner(
                 context = this@AboutActivity,
                 adUnitId = BuildConfig.ADMOB_BANNER_ID,
-                container = flAd,
+                container = binding.layoutAdBanner.bannerContainer,
+                tvLabelAd = binding.layoutAdBanner.tvLabelAd,
                 adSize = AdSize.LARGE_BANNER,
             )
 //            adView = this@AboutActivity.createAdBanner(
@@ -261,7 +263,13 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
 //        }
         super.onDestroy()
 //        showAd()
-        AdMobManager.showInterstitial(this)
+        AdMobManager.showInterstitial(this) { success ->
+            if (success) {
+                Log.d("roy93~", "Ad đã hiển thị và đóng thành công")
+            } else {
+                Log.d("roy93~", "Ad không hiển thị được hoặc có lỗi")
+            }
+        }
     }
 
     override fun onAdLoaded() {
