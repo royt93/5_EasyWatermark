@@ -860,7 +860,7 @@ class MainActivity : BaseActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window?.navigationBarDividerColor = Color.TRANSPARENT
         }
-        setStatusBarColor(Color.BLACK, true)
+//        setStatusBarColor(Color.BLACK, true)
     }
 
     private fun selectTab(index: Int) {

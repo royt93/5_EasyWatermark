@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.MyApp" parent="Theme.BaseTheme">
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+    </style>
+</resources>
