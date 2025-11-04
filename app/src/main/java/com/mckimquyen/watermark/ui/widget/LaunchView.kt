@@ -63,6 +63,48 @@ class LaunchView : CustomViewGroup {
     //endregion
 
     //region 2 children components
+    // Floating circles animation in background
+    private val floatingCircles: List<View> by lazy {
+        listOf(
+            // Large circle 1
+            View(context).apply {
+                layoutParams = MarginLayoutParams(400.dp, 400.dp)
+                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+                alpha = 0.4f
+            },
+            // Large circle 2
+            View(context).apply {
+                layoutParams = MarginLayoutParams(500.dp, 500.dp)
+                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+                alpha = 0.35f
+            },
+            // Medium circle 1
+            View(context).apply {
+                layoutParams = MarginLayoutParams(300.dp, 300.dp)
+                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+                alpha = 0.45f
+            },
+            // Medium circle 2
+            View(context).apply {
+                layoutParams = MarginLayoutParams(360.dp, 360.dp)
+                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+                alpha = 0.4f
+            },
+            // Small circle 1
+            View(context).apply {
+                layoutParams = MarginLayoutParams(240.dp, 240.dp)
+                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+                alpha = 0.5f
+            },
+            // Small circle 2
+            View(context).apply {
+                layoutParams = MarginLayoutParams(280.dp, 280.dp)
+                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+                alpha = 0.45f
+            }
+        )
+    }
+
     // Logo container with glow rings
     private val logoContainer: android.widget.FrameLayout by lazy {
         android.widget.FrameLayout(context).apply {
@@ -356,6 +398,12 @@ class LaunchView : CustomViewGroup {
         )
         background = bgDrawable
 
+        // Add floating circles first (behind everything)
+        floatingCircles.forEach {
+            it.isVisible = true
+            addView(it)
+        }
+
         launchViews.forEach {
             it.isVisible = false
             addView(it)
@@ -366,7 +414,69 @@ class LaunchView : CustomViewGroup {
         }
         post {
             launchModeAppearAnimationList.forEach { it.start() }
+            startFloatingAnimation()
         }
+    }
+
+    private fun startFloatingAnimation() {
+        floatingCircles.forEachIndexed { index, circle ->
+            // Random starting positions
+            val startX = (Math.random() * measuredWidth).toFloat()
+            val startY = (Math.random() * measuredHeight).toFloat()
+            circle.translationX = startX
+            circle.translationY = startY
+
+            // Floating animation - up and down (much slower)
+            val floatAnimation = SpringAnimation(circle, SpringAnimation.TRANSLATION_Y).apply {
+                spring = SpringForce()
+                    .setFinalPosition(startY + ((-100..100).random()).toFloat())
+                    .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
+                    .setStiffness(30f) // Very slow stiffness
+            }
+
+            // Side to side animation (much slower)
+            val sideAnimation = SpringAnimation(circle, SpringAnimation.TRANSLATION_X).apply {
+                spring = SpringForce()
+                    .setFinalPosition(startX + ((-80..80).random()).toFloat())
+                    .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
+                    .setStiffness(30f) // Very slow stiffness
+            }
+
+            // Delay start for each circle
+            postDelayed({
+                floatAnimation.start()
+                sideAnimation.start()
+
+                // Reverse animation after longer time
+                postDelayed({
+                    reverseFloatingAnimation(circle, startX, startY)
+                }, 6000L + index * 1000L)
+            }, index * 500L)
+        }
+    }
+
+    private fun reverseFloatingAnimation(circle: View, originalX: Float, originalY: Float) {
+        val floatBack = SpringAnimation(circle, SpringAnimation.TRANSLATION_Y).apply {
+            spring = SpringForce()
+                .setFinalPosition(originalY)
+                .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
+                .setStiffness(30f) // Very slow stiffness
+        }
+
+        val sideBack = SpringAnimation(circle, SpringAnimation.TRANSLATION_X).apply {
+            spring = SpringForce()
+                .setFinalPosition(originalX)
+                .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
+                .setStiffness(30f) // Very slow stiffness
+        }
+
+        floatBack.start()
+        sideBack.start()
+
+        // Loop animation with longer delay
+        postDelayed({
+            startFloatingAnimation()
+        }, 6000L)
     }
 
     //region 4 override view rendering
@@ -405,6 +515,19 @@ class LaunchView : CustomViewGroup {
     }
 
     private fun layoutLaunch() {
+        // Layout floating circles (scattered around)
+        floatingCircles.forEachIndexed { index, circle ->
+            // Position circles at different locations
+            when (index) {
+                0 -> circle.layout(100, 150) // Top left
+                1 -> circle.layout(measuredWidth - 200, 100) // Top right
+                2 -> circle.layout(50, measuredHeight / 2) // Middle left
+                3 -> circle.layout(measuredWidth - 150, measuredHeight / 2 + 100) // Middle right
+                4 -> circle.layout(120, measuredHeight - 300) // Bottom left
+                5 -> circle.layout(measuredWidth - 120, measuredHeight - 400) // Bottom right
+            }
+        }
+
         logoContainer.layoutCenterHorizontal(appendY = (measuredHeight * 0.2f).toInt())
         ivSelectedPhotoTips.layoutCenterHorizontal(appendY = (measuredHeight * 0.6f).toInt())
         ivGoAboutPage.let {
