@@ -6,8 +6,8 @@
     android:background="@color/black"
     android:gravity="center"
     android:orientation="vertical"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="56dp">
+    android:paddingHorizontal="0dp"
+    android:paddingVertical="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
