@@ -45,6 +45,7 @@ import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.rateAppInApp
+import com.mckimquyen.watermark.sdkadbmob.UIUtils
 import com.mckimquyen.watermark.ui.about.AboutActivity
 import com.mckimquyen.watermark.ui.adapter.FuncPanelAdapter
 import com.mckimquyen.watermark.ui.adapter.PhotoListPreviewAdapter
@@ -170,6 +171,7 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        UIUtils.setupEdgeToEdge1(window)
         if (MyApplication.recoveryMode) {
             setContentView(R.layout.a_recovery)
             initRecoveryView()
