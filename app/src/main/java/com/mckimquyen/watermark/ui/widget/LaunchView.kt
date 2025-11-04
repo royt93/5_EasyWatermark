@@ -137,7 +137,9 @@ class LaunchView : CustomViewGroup {
             layoutParams = MarginLayoutParams(
                 LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT
-            )
+            ).apply {
+                bottomMargin = 16.dp
+            }
             isTabIndicatorFullWidth = false
             tabGravity = TabLayout.GRAVITY_FILL
             tabIndicatorAnimationMode = TabLayout.INDICATOR_ANIMATION_MODE_ELASTIC
