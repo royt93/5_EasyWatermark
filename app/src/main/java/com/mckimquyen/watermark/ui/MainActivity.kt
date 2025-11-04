@@ -179,6 +179,7 @@ class MainActivity : BaseActivity() {
         }
         launchView = LaunchView(this)
         setContentView(launchView)
+        UIUtils.setupEdgeToEdge2(launchView.toolbar)
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
