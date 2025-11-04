@@ -284,6 +284,7 @@ class MainActivity : BaseActivity() {
 
     override fun onDestroy() {
         bgTransformAnimator?.cancel()
+        bgTransformAnimator = null
         super.onDestroy()
     }
 

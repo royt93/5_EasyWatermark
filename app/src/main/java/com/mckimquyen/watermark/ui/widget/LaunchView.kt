@@ -421,6 +421,14 @@ class LaunchView : CustomViewGroup {
     fun setListener(block: LaunchViewListenerBuilder.() -> Unit) {
         launchViewListener = LaunchViewListenerBuilder().also(block)
     }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        // Cancel animations to prevent memory leak
+        dragYAnimation.cancel()
+        dragXAnimation.cancel()
+        launchViewListener = null
+    }
     //endregion
 
     /**

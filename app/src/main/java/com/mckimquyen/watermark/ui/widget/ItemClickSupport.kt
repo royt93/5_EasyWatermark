@@ -52,11 +52,11 @@ class ItemClickSupport private constructor(private val recyclerView: RecyclerVie
             return support
         }
 
-//        fun removeFrom(view: RecyclerView): ItemClickSupport? {
-//            val support = view.getTag(R.id.item_click_support) as? ItemClickSupport
-//            support?.detach(view)
-//            return support
-//        }
+        fun removeFrom(view: RecyclerView): ItemClickSupport? {
+            val support = view.getTag(R.id.item_click_support) as? ItemClickSupport
+            support?.detach(view)
+            return support
+        }
     }
 
     private val onClickListener = View.OnClickListener { v ->
@@ -77,20 +77,22 @@ class ItemClickSupport private constructor(private val recyclerView: RecyclerVie
         )
     }
 
-//    private fun detach(view: RecyclerView) {
-//        view.removeOnChildAttachStateChangeListener(attachListener)
-//        view.setTag(R.id.item_click_support, null)
-//    }
+    private fun detach(view: RecyclerView) {
+        view.removeOnChildAttachStateChangeListener(attachListener)
+        view.setTag(R.id.item_click_support, null)
+        onItemClickListener = null
+        onItemLongClickListener = null
+    }
 
     fun onItemClick(listener: OnRecyclerViewItemClickListener?): ItemClickSupport {
         onItemClickListener = listener
         return this
     }
 
-//    fun onItemLongClick(listener: OnRecyclerViewItemLongClickListener?): ItemClickSupport {
-//        onItemLongClickListener = listener
-//        return this
-//    }
+    fun onItemLongClick(listener: OnRecyclerViewItemLongClickListener?): ItemClickSupport {
+        onItemLongClickListener = listener
+        return this
+    }
 }
 
 /** Give click-ability and long-click-ability control to the ViewHolder */
@@ -105,12 +107,12 @@ fun RecyclerView.addItemClickSupport(configuration: ItemClickSupport.() -> Unit 
         this
     ).apply(configuration)
 
-//fun RecyclerView.removeItemClickSupport() = ItemClickSupport.removeFrom(this)
+fun RecyclerView.removeItemClickSupport() = ItemClickSupport.removeFrom(this)
 
 fun RecyclerView.onItemClick(onClick: OnRecyclerViewItemClickListener) {
     addItemClickSupport { onItemClick(onClick) }
 }
 
-//fun RecyclerView.onItemLongClick(onLongClick: OnRecyclerViewItemLongClickListener) {
-//    addItemClickSupport { onItemLongClick(onLongClick) }
-//}
+fun RecyclerView.onItemLongClick(onLongClick: OnRecyclerViewItemLongClickListener) {
+    addItemClickSupport { onItemLongClick(onLongClick) }
+}

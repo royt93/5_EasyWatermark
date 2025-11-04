@@ -223,4 +223,11 @@ class MultiSelectRv : RecyclerView {
         }
 
     }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        // Clean up handlers to prevent memory leak
+        onSelect = null
+        onUnSelect = null
+    }
 }
