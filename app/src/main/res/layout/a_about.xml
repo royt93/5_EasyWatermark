@@ -5,27 +5,41 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="@color/black">
+    android:background="@drawable/bg_glass_gradient">
 
-    <ImageView
-        android:id="@+id/ivBack"
+    <!-- Glass Back Button Container -->
+    <FrameLayout
+        android:id="@+id/flBackButton"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="45dp"
-        android:src="@drawable/baseline_cancel_24"
+        android:background="@drawable/bg_glass_card"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="?attr/colorPrimary"
-        tools:ignore="ContentDescription" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <ImageView
-        android:id="@+id/ivLogo"
+        <ImageView
+            android:id="@+id/ivBack"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:src="@drawable/baseline_cancel_24"
+            app:tint="@color/glass_text_primary"
+            tools:ignore="ContentDescription" />
+    </FrameLayout>
+
+    <!-- Title: Settings -->
+    <TextView
+        android:id="@+id/tvHeaderTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="45dp"
-        android:contentDescription="@string/app_name"
-        android:src="@drawable/ic_settings"
+        android:layout_marginTop="50dp"
+        android:fontFamily="sans-serif-light"
+        android:letterSpacing="0.05"
+        android:text="@string/about_title_info"
+        android:textColor="@color/glass_text_primary"
+        android:textSize="28sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -35,9 +49,10 @@
         layout="@layout/layout_ad_banner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivLogo" />
+        app:layout_constraintTop_toBottomOf="@+id/tvHeaderTitle" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="0dp"
@@ -62,6 +77,8 @@
                 android:paddingTop="16dp"
                 android:paddingEnd="28dp"
                 android:text="@string/about_title_info"
+                android:textColor="@color/glass_text_primary"
+                android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -125,6 +142,8 @@
                 android:paddingTop="16dp"
                 android:paddingEnd="28dp"
                 android:text="@string/about_title_about"
+                android:textColor="@color/glass_text_primary"
+                android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvMoreApp" />
 
