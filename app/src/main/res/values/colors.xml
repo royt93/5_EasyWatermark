@@ -58,4 +58,19 @@
     <color name="design_default_color_on_error" tools:ignore="PrivateResource">#fff</color>
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
+
+    <!-- Glass Theme Gradient Colors -->
+    <color name="glass_gradient_start">#00D4FF</color>
+    <color name="glass_gradient_center">#667EEA</color>
+    <color name="glass_gradient_end">#764BA2</color>
+
+    <!-- Glass Effect Colors -->
+    <color name="glass_surface">#25FFFFFF</color>
+    <color name="glass_border">#50FFFFFF</color>
+    <color name="glass_overlay_light">#30FFFFFF</color>
+    <color name="glass_overlay_medium">#40FFFFFF</color>
+    <color name="glass_overlay_strong">#60FFFFFF</color>
+    <color name="glass_text_primary">#FFFFFF</color>
+    <color name="glass_text_secondary">#E0FFFFFF</color>
+    <color name="glass_shimmer">#20FFFFFF</color>
 </resources>

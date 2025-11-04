@@ -1,19 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- Gradient Background -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/black" />
-
+            <gradient
+                android:angle="135"
+                android:centerColor="@color/glass_gradient_center"
+                android:endColor="@color/glass_gradient_end"
+                android:startColor="@color/glass_gradient_start"
+                android:type="linear" />
             <size
                 android:width="900dp"
                 android:height="1900dp" />
         </shape>
     </item>
 
+    <!-- Logo with Glass Circle Background -->
     <item
         android:width="220sp"
         android:height="220sp"
+        android:gravity="center">
+        <shape android:shape="oval">
+            <solid android:color="@color/glass_surface" />
+            <stroke
+                android:width="2dp"
+                android:color="@color/glass_border" />
+        </shape>
+    </item>
+
+    <!-- Logo Icon -->
+    <item
+        android:width="180sp"
+        android:height="180sp"
         android:drawable="@drawable/ic_launcher_960"
         android:gravity="center"
         tools:ignore="UnusedAttribute" />
