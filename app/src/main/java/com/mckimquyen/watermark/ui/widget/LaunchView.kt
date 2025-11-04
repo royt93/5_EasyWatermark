@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
+import android.view.View
 import android.widget.ImageView
 import androidx.constraintlayout.utils.widget.ImageFilterView
 import androidx.core.content.ContextCompat
@@ -62,49 +63,143 @@ class LaunchView : CustomViewGroup {
     //endregion
 
     //region 2 children components
-//    val logoView: ColoredImageVIew by lazy {
-//        ColoredImageVIew(context).apply {
-//            layoutParams = MarginLayoutParams(180.dp, 180.dp)
-//            setImageResource(R.drawable.ic_log_transparent)
-//        }
-//    }
-    private val logoView: ImageView by lazy {
-        ImageFilterView(context).apply {
+    // Logo container with glow rings
+    private val logoContainer: android.widget.FrameLayout by lazy {
+        android.widget.FrameLayout(context).apply {
             layoutParams = MarginLayoutParams(
-                250.dp,
-                250.dp
+                300.dp,
+                300.dp
             ).also {
                 it.setMargins(0, 0, 0, 16.dp)
             }
-            roundPercent = 1.0f
-            setImageResource(R.drawable.ic_launcher)
+
+            // Outer glow ring
+            addView(View(context).apply {
+                layoutParams = android.widget.FrameLayout.LayoutParams(300.dp, 300.dp).apply {
+                    gravity = Gravity.CENTER
+                }
+                background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
+                alpha = 0.15f
+            })
+
+            // Middle glow ring
+            addView(View(context).apply {
+                layoutParams = android.widget.FrameLayout.LayoutParams(270.dp, 270.dp).apply {
+                    gravity = Gravity.CENTER
+                }
+                background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
+                alpha = 0.25f
+            })
+
+            // Inner glow ring
+            addView(View(context).apply {
+                layoutParams = android.widget.FrameLayout.LayoutParams(240.dp, 240.dp).apply {
+                    gravity = Gravity.CENTER
+                }
+                background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
+                alpha = 0.35f
+            })
+
+            // Logo
+            addView(ImageFilterView(context).apply {
+                layoutParams = android.widget.FrameLayout.LayoutParams(210.dp, 210.dp).apply {
+                    gravity = Gravity.CENTER
+                }
+                roundPercent = 1.0f
+                setImageResource(R.drawable.ic_launcher)
+            })
         }
     }
+
+    private val logoView: ImageView
+        get() = logoContainer.children.last() as ImageView
 
     val ivSelectedPhotoTips: MaterialButton by lazy {
         MaterialButton(context).apply {
-            minHeight = 56.dp
-            minWidth = 120.dp
-            cornerRadius = 56.dp / 3
+            layoutParams = MarginLayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                64.dp
+            ).also {
+                it.setMargins(0, 0, 0, 24.dp)
+            }
+
+            // Glass button style
+            minHeight = 64.dp
+            minWidth = 240.dp
             textAlignment = TEXT_ALIGNMENT_CENTER
             gravity = Gravity.CENTER
+
+            // Glass colors
+            setBackgroundColor(ContextCompat.getColor(context, R.color.glass_surface))
+            setTextColor(ContextCompat.getColor(context, R.color.glass_text_primary))
+
+            // Text
             text = context.getString(R.string.tips_pick_image)
-            textSize = 25f
-            shapeAppearanceModel = ShapeAppearanceModel.Builder().also {
-                it.setAllCornerSizes(90f)
-            }.build()
+            textSize = 18f
+            letterSpacing = 0.05f
+
+            // Rounded corners
+            shapeAppearanceModel = ShapeAppearanceModel.Builder()
+                .setAllCornerSizes(32f)
+                .build()
+
+            // Stroke for glass effect
+            strokeWidth = 2.dp
+            strokeColor = ContextCompat.getColorStateList(context, R.color.glass_border)
+
+            // Elevation
+            elevation = 8f
+
+            // Padding horizontal for text
+            setPadding(48.dp, paddingTop, 48.dp, paddingBottom)
         }
     }
 
-    val ivGoAboutPage: ImageView by lazy {
-        ImageView(context, null, 0, android.R.style.Widget_ActionButton).apply {
+    val ivGoAboutPage: MaterialButton by lazy {
+        MaterialButton(context).apply {
             layoutParams = MarginLayoutParams(
-                250.dp,
-                120.dp
+                LayoutParams.WRAP_CONTENT,
+                64.dp
             ).also {
-                it.setMargins(0, 0, 0, 16.dp)
+                it.setMargins(0, 0, 0, 48.dp)
             }
-            setImageResource(R.drawable.ic_settings)
+
+            // Glass button style - same as Choose Images
+            minHeight = 64.dp
+            minWidth = 240.dp
+            textAlignment = TEXT_ALIGNMENT_CENTER
+            gravity = Gravity.CENTER
+
+            // Glass colors
+            setBackgroundColor(ContextCompat.getColor(context, R.color.glass_surface))
+            setTextColor(ContextCompat.getColor(context, R.color.glass_text_primary))
+
+            // Text with icon
+            text = context.getString(R.string.about_title_info)
+            textSize = 18f
+            letterSpacing = 0.05f
+
+            // Add settings icon to the left of text
+            icon = ContextCompat.getDrawable(context, R.drawable.ic_settings_glass)
+            iconTint = ContextCompat.getColorStateList(context, R.color.glass_text_primary)
+            iconGravity = MaterialButton.ICON_GRAVITY_START
+            iconPadding = 12.dp
+            iconSize = 24.dp
+
+            // Rounded corners
+            shapeAppearanceModel = ShapeAppearanceModel.Builder()
+                .setAllCornerSizes(32f)
+                .build()
+
+            // Stroke for glass effect
+            strokeWidth = 2.dp
+            strokeColor = ContextCompat.getColorStateList(context, R.color.glass_border)
+
+            // Elevation
+            elevation = 8f
+
+            // Padding horizontal for text
+            setPadding(32.dp, paddingTop, 32.dp, paddingBottom)
         }
     }
 
@@ -201,7 +296,7 @@ class LaunchView : CustomViewGroup {
 
     //region 3 private field
     private val launchViews by lazy {
-        listOf(logoView, ivSelectedPhotoTips, ivGoAboutPage)
+        listOf(logoContainer, ivSelectedPhotoTips, ivGoAboutPage)
     }
 
     private val editorViews by lazy {
@@ -310,7 +405,7 @@ class LaunchView : CustomViewGroup {
     }
 
     private fun layoutLaunch() {
-        logoView.layoutCenterHorizontal(appendY = (measuredHeight * 0.2f).toInt())
+        logoContainer.layoutCenterHorizontal(appendY = (measuredHeight * 0.2f).toInt())
         ivSelectedPhotoTips.layoutCenterHorizontal(appendY = (measuredHeight * 0.6f).toInt())
         ivGoAboutPage.let {
             it.layoutCenterHorizontal(appendY = (measuredHeight - it.measuredHeightWithMargins))
