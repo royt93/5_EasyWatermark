@@ -254,12 +254,12 @@ class LaunchView : CustomViewGroup {
         clipToPadding = false
 //        setBackgroundColor(ContextCompat.getColor(context, R.color.md_theme_dark_background))
 
-//        val bgDrawable = ContextCompat.getDrawable(
-//            /* context = */ context,
-//            /* id = */ R.drawable.bg_gradient_about_page
-//        ) as GradientDrawable
-//        setBackgroundDrawable(bgDrawable)
-        setBackgroundColor(Color.BLACK)
+        // Apply glass gradient background
+        val bgDrawable = ContextCompat.getDrawable(
+            /* context = */ context,
+            /* id = */ R.drawable.bg_glass_gradient
+        )
+        background = bgDrawable
 
         launchViews.forEach {
             it.isVisible = false
