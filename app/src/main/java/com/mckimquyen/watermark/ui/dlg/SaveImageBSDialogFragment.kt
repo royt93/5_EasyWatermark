@@ -68,12 +68,14 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             }
 
             atvFormat.also {
-                it.setAdapter(
-                    ArrayAdapter(
-                        /* context = */ requireContext(),
-                        /* resource = */ R.layout.simple_dropdown_item_1line,
-                        /* objects = */ popArray
-                    )
+                val adapter = ArrayAdapter(
+                    /* context = */ requireContext(),
+                    /* resource = */ R.layout.simple_dropdown_item_1line,
+                    /* objects = */ popArray
+                )
+                it.setAdapter(adapter)
+                it.setDropDownBackgroundDrawable(
+                    requireContext().getDrawable(R.drawable.bg_dropdown_popup)
                 )
                 it.setText(
                     if (shareViewModel.outputFormat == Bitmap.CompressFormat.JPEG) "JPEG" else "PNG",

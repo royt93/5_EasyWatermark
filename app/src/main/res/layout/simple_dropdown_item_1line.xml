@@ -4,9 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:ellipsize="marquee"
+    android:fontFamily="sans-serif-medium"
     android:gravity="start|center"
     android:paddingStart="20dp"
     android:paddingEnd="20dp"
     android:singleLine="true"
     android:textAlignment="textStart"
-    android:textColor="#fff" />
+    android:textColor="#1C1B1F"
+    android:textSize="16sp" />

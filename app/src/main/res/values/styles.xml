@@ -67,13 +67,15 @@
     </style>
 
     <style name="SaveDialogExposedDropdownMenu" parent="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
-        <item name="boxBackgroundColor">@color/md_theme_dark_surface</item>
-        <item name="boxStrokeColor">@color/md_theme_dark_outline</item>
+        <item name="boxBackgroundColor">@android:color/transparent</item>
+        <item name="boxStrokeColor">@android:color/transparent</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">0dp</item>
         <item name="shapeAppearance">@style/ShapeAppearance.App.SmallComponent</item>
-        <item name="hintTextColor">@color/md_theme_dark_onSurface</item>
-        <item name="endIconTint">@color/md_theme_dark_onSurface</item>
-        <item name="android:textColor">@color/md_theme_dark_onSurface</item>
-        <item name="android:textColorHint">@color/md_theme_dark_onSurface</item>
+        <item name="hintTextColor">@color/glass_text_secondary</item>
+        <item name="endIconTint">@color/glass_text_primary</item>
+        <item name="android:textColor">@color/glass_text_primary</item>
+        <item name="android:textColorHint">@color/glass_text_secondary</item>
     </style>
 
     <style name="SaveDialogAutoCompleteTextView">
