@@ -73,4 +73,5 @@
     <color name="glass_text_primary">#FFFFFF</color>
     <color name="glass_text_secondary">#E0FFFFFF</color>
     <color name="glass_shimmer">#20FFFFFF</color>
+    <color name="glass_ripple">#40FFFFFF</color>
 </resources>

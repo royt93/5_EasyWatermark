@@ -6,5 +6,6 @@
         android:id="@+id/ivSysImage"
         android:icon="@drawable/sharp_content_paste_search_24"
         android:title="@string/pick_via_system"
+        app:iconTint="@color/glass_text_primary"
         app:showAsAction="always" />
 </menu>
