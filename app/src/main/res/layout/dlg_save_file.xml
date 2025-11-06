@@ -43,6 +43,8 @@
             android:gravity="center"
             android:hint="@string/dialog_save_config_format"
             app:boxBackgroundColor="@android:color/transparent"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp"
             app:hintTextColor="@color/glass_text_secondary">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -123,7 +125,9 @@
             android:layout_marginTop="23dp"
             app:cardBackgroundColor="@color/glass_surface"
             app:cardCornerRadius="16dp"
-            app:cardElevation="8dp">
+            app:cardElevation="0dp"
+            app:strokeColor="@color/glass_border"
+            app:strokeWidth="1dp">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvResult"
@@ -138,16 +142,18 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_marginTop="43dp"
-            android:backgroundTint="@color/glass_overlay_strong"
-            android:elevation="8dp"
+            android:backgroundTint="#B3FFFFFF"
+            android:elevation="12dp"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
             android:text="@string/dialog_export_to_gallery"
             android:textAlignment="center"
-            android:textColor="@color/glass_text_primary"
+            android:textColor="#1C1B1F"
+            android:textSize="16sp"
             app:cornerRadius="16dp"
-            app:strokeColor="@color/glass_border"
+            app:strokeColor="#FFFFFF"
             app:strokeWidth="2dp" />
 
         <com.google.android.material.button.MaterialButton
