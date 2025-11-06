@@ -42,8 +42,7 @@ class RadioButton : View {
 //    private val icTint = ContextCompat.getColor(context, R.color.selector_gallery_icon_tint)
 
     private val bgColorNormal = Color.TRANSPARENT
-    private val bgColorSelected
-        get() = context.colorTertiaryContainer
+    private val bgColorSelected = Color.TRANSPARENT
 
     private val strokeColorNormal by lazy {
         MaterialColors.compositeARGBWithAlpha(
@@ -51,25 +50,18 @@ class RadioButton : View {
             125
         )
     }
-    private val strokeColorSelected
-        get() = context.colorSurfaceVariant
+    private val strokeColorSelected = Color.TRANSPARENT
     private val strokeWidth = 2.dp
 
     private val iconRes: Int = R.drawable.ic_gallery_radio_button
 
-    private var icon: Drawable? = null
+    private val icon: Drawable by lazy {
+        ContextCompat.getDrawable(context, iconRes) ?: ColorDrawable(context.colorOnSurface)
+    }
 
     private val paint = Paint().apply {
         isDither = true
-    }
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        icon = generateIcon(w, h)
-    }
-
-    private fun generateIcon(w: Int, h: Int): Drawable {
-        return ContextCompat.getDrawable(context, iconRes) ?: ColorDrawable(context.colorOnSurface)
+        isAntiAlias = true
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -94,10 +86,9 @@ class RadioButton : View {
             /* paint = */ paint
         )
         // icon
-        if (canvas != null && isChecked) {
-            icon?.setBounds(0, 0, (measuredWidth), (measuredHeight))
-            icon?.setTint(context.colorOnTertiaryContainer)
-            icon?.draw(canvas)
+        if (isChecked) {
+            icon.setBounds(0, 0, measuredWidth, measuredHeight)
+            icon.draw(canvas)
         }
     }
 

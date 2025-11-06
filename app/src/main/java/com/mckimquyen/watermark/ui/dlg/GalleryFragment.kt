@@ -93,17 +93,6 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                 dismissAllowingStateLoss()
             }
         }
-
-        // Start ripple animations
-        rootView.fabRipple1?.let { ripple1 ->
-            val anim1 = android.view.animation.AnimationUtils.loadAnimation(requireContext(), R.anim.fab_pulse)
-            ripple1.startAnimation(anim1)
-        }
-        rootView.fabRipple2?.let { ripple2 ->
-            val anim2 = android.view.animation.AnimationUtils.loadAnimation(requireContext(), R.anim.fab_pulse)
-            anim2.startOffset = 750 // Offset for second ripple
-            ripple2.startAnimation(anim2)
-        }
         rootView.rvContent.apply {
             layoutManager = UniformScrollGridLayoutManager(requireContext(), 4).also {
                 it.scrollBarView = rootView.ivSlider
@@ -129,7 +118,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 //                        TAG,
 //                        "onScrolled verticalScrollRange = $verticalScrollRange, computeVerticalScrollOffset = ${recyclerView.computeVerticalScrollOffset()}, computeVerticalScrollExtent = ${recyclerView.computeVerticalScrollExtent()}"
 //                    )
-                    rootView.ivSlider.translationY =
+                    rootView.sliderCard.translationY =
                         ((computeVerticalScrollOffset.toFloat() / verticalScrollRange) * (recyclerView.bottom - recyclerView.paddingBottom)).coerceAtLeast(
                             0f
                         )
@@ -148,7 +137,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
             return@setOnMenuItemClickListener false
         }
 
-        rootView.ivSlider.apply {
+        rootView.sliderCard.apply {
             post {
                 translationX += this.measuredWidth / 5 * 1
             }

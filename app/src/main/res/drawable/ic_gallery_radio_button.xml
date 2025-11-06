@@ -1,19 +1,19 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+    android:width="22dp"
+    android:height="22dp"
+    android:viewportWidth="22"
+    android:viewportHeight="22">
 
-    <!-- iOS style filled circle with checkmark -->
-    <path
-        android:fillColor="#007AFF"
-        android:pathData="M12,2C6.48,2 2,6.48 2,12c0,5.52 4.48,10 10,10s10,-4.48 10,-10C22,6.48 17.52,2 12,2z" />
-
-    <!-- White checkmark -->
+    <!-- White circle background -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M9.5,16.5L5,12l1.41,-1.41L9.5,13.67l8.09,-8.09L19,7L9.5,16.5z"
-        android:strokeWidth="0.5"
-        android:strokeColor="#FFFFFF" />
+        android:pathData="M11,11m-10,0a10,10 0,1,1 20,0a10,10 0,1,1 -20,0" />
+
+    <!-- Green checkmark -->
+    <path
+        android:fillColor="#34C759"
+        android:pathData="M9,15L5,11l1.5,-1.5L9,12l6.5,-6.5L17,7z"
+        android:strokeWidth="1"
+        android:strokeColor="#34C759" />
 
 </vector>
