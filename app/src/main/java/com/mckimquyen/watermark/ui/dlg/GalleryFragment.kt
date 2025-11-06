@@ -99,6 +99,9 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
             }
             adapter = galleryAdapter
             setHasFixedSize(true)
+            setItemViewCacheSize(20) // Increase cache
+            setDrawingCacheEnabled(true)
+            setDrawingCacheQuality(android.view.View.DRAWING_CACHE_QUALITY_LOW)
             setOnSelect { rv, end ->
                 galleryAdapter.select(rv, end)
             }

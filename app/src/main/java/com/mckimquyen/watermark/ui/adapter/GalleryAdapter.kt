@@ -130,7 +130,7 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
                     }
                 }
                 holder.ivImage.post {
-                    holder.ivImage.loadSmall(uri, R.drawable.ic_trans)
+                    holder.ivImage.loadSmall(uri, android.R.color.transparent)
                 }
             }
         }
@@ -143,30 +143,25 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
         animate: Boolean = true,
         post: () -> Unit = {},
     ) {
-        val d = 200L
-        val round = .4f
-        val scale = 0.8f
+        val d = 150L // Reduced from 200L
+        val round = .3f // Reduced from .4f
+        val scale = 0.85f // Less dramatic, from 0.8f
+
         when {
             isChecked && imageFilterView.scaleX == scale -> return
             !isChecked && imageFilterView.scaleX == 1f -> return
             animate -> {
-                val xAnimator =
-                    ObjectAnimator.ofFloat(imageFilterView, "scaleX", if (isChecked) scale else 1f)
-                val yAnimator =
-                    ObjectAnimator.ofFloat(imageFilterView, "scaleY", if (isChecked) scale else 1f)
-                val roundAnimator = ObjectAnimator.ofFloat(
-                    imageFilterView,
-                    "roundPercent",
-                    if (isChecked) round else 0f
-                )
-                AnimatorSet().apply {
+                // Use PropertyValuesHolder for better performance
+                val pvhScaleX = android.animation.PropertyValuesHolder.ofFloat("scaleX", if (isChecked) scale else 1f)
+                val pvhScaleY = android.animation.PropertyValuesHolder.ofFloat("scaleY", if (isChecked) scale else 1f)
+                val pvhRound = android.animation.PropertyValuesHolder.ofFloat("roundPercent", if (isChecked) round else 0f)
+
+                ObjectAnimator.ofPropertyValuesHolder(imageFilterView, pvhScaleX, pvhScaleY, pvhRound).apply {
                     duration = d
                     interpolator = FastOutSlowInInterpolator()
-                    doOnEnd {
-                        post.invoke()
-                    }
-                    playTogether(xAnimator, yAnimator, roundAnimator)
-                }.start()
+                    doOnEnd { post.invoke() }
+                    start()
+                }
             }
 
             else -> {
