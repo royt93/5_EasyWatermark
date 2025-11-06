@@ -88,53 +88,48 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
     }
 
     override fun onBindViewHolder(holder: GalleryItemHolder, position: Int) {
-        if (position < 0 || position >= differ.currentList.size || getItem(position) == null) {
+        if (position < 0 || position >= differ.currentList.size) {
             return
         }
-        holder.bindWhenInflated {
-            val pos = holder.absoluteAdapterPosition
-            val item = getItem(pos) ?: return@bindWhenInflated
-            with(item) {
-                holder.itemView.apply {
-                    setOnLongClickListener {
-                        holder.cbImage.toggle()
-                        latestSelectedItem = holder.absoluteAdapterPosition
-                        return@setOnLongClickListener true
-                    }
-                    setOnClickListener {
-                        holder.cbImage.toggle()
-                    }
-                }
-                holder.cbImage.apply {
-                    setOnCheckedChangeListener {}
-                    isChecked = this@with.check
-                    applyCheckStyle(holder.ivImage, this@with.check, false)
-                    setOnCheckedChangeListener { isChecked ->
-                        applyCheckStyle(holder.ivImage, isChecked)
-                        val data = getItem(holder.absoluteAdapterPosition)
-                            ?: return@setOnCheckedChangeListener
-                        if (data.check && isChecked) {
-                            return@setOnCheckedChangeListener
-                        }
-                        if (!data.check && !isChecked) {
-                            return@setOnCheckedChangeListener
-                        }
-                        selectedCount.value =
-                            if (isChecked) selectedCount.value!! + 1 else selectedCount.value!! - 1
-                        if (isChecked) {
-                            selectedPosSet.add(holder.absoluteAdapterPosition)
-                        } else {
-                            selectedPosSet.remove(holder.absoluteAdapterPosition)
-                        }
-                        data.check = isChecked
-                    }
-                }
-                holder.ivImage.post {
-                    holder.ivImage.loadSmall(uri, android.R.color.transparent)
-                }
-            }
+        val item = getItem(position) ?: return
+
+        // Set click listeners immediately
+        holder.itemView.setOnLongClickListener {
+            holder.cbImage.toggle()
+            latestSelectedItem = holder.absoluteAdapterPosition
+            true
+        }
+        holder.itemView.setOnClickListener {
+            holder.cbImage.toggle()
         }
 
+        holder.bindWhenInflated {
+            val pos = holder.absoluteAdapterPosition
+            if (pos < 0 || pos >= differ.currentList.size) return@bindWhenInflated
+            val currentItem = getItem(pos) ?: return@bindWhenInflated
+
+            // Setup checkbox
+            holder.cbImage.setOnCheckedChangeListener {}
+            holder.cbImage.isChecked = currentItem.check
+            applyCheckStyle(holder.ivImage, currentItem.check, false)
+            holder.cbImage.setOnCheckedChangeListener { isChecked ->
+                val dataItem = getItem(holder.absoluteAdapterPosition) ?: return@setOnCheckedChangeListener
+                if (dataItem.check == isChecked) return@setOnCheckedChangeListener
+
+                applyCheckStyle(holder.ivImage, isChecked)
+                selectedCount.value = (selectedCount.value ?: 0) + if (isChecked) 1 else -1
+
+                if (isChecked) {
+                    selectedPosSet.add(holder.absoluteAdapterPosition)
+                } else {
+                    selectedPosSet.remove(holder.absoluteAdapterPosition)
+                }
+                dataItem.check = isChecked
+            }
+
+            // Load image asynchronously
+            holder.ivImage.loadSmall(currentItem.uri, android.R.color.transparent)
+        }
     }
 
     private fun applyCheckStyle(

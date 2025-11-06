@@ -96,12 +96,13 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         rootView.rvContent.apply {
             layoutManager = UniformScrollGridLayoutManager(requireContext(), 4).also {
                 it.scrollBarView = rootView.ivSlider
+                it.isItemPrefetchEnabled = true // Re-enable with limits
+                it.initialPrefetchItemCount = 4 // Only prefetch 4 items per row
             }
             adapter = galleryAdapter
             setHasFixedSize(true)
-            setItemViewCacheSize(20) // Increase cache
-            setDrawingCacheEnabled(true)
-            setDrawingCacheQuality(android.view.View.DRAWING_CACHE_QUALITY_LOW)
+            setItemViewCacheSize(12) // Moderate cache
+            recycledViewPool.setMaxRecycledViews(0, 16) // Limit recycled views
             setOnSelect { rv, end ->
                 galleryAdapter.select(rv, end)
             }
@@ -109,18 +110,20 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                 galleryAdapter.unSelect(rv, end)
             }
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                private var frameCount = 0
 
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
                     if (isScrollSliderManually) {
                         return
                     }
+
+                    // Throttle: Only update slider every 3 frames for performance
+                    if (++frameCount % 3 != 0) return
+
                     val verticalScrollRange = recyclerView.computeVerticalScrollRange()
                     val computeVerticalScrollOffset = recyclerView.computeVerticalScrollOffset()
-//                    Log.i(
-//                        TAG,
-//                        "onScrolled verticalScrollRange = $verticalScrollRange, computeVerticalScrollOffset = ${recyclerView.computeVerticalScrollOffset()}, computeVerticalScrollExtent = ${recyclerView.computeVerticalScrollExtent()}"
-//                    )
+
                     rootView.sliderCard.translationY =
                         ((computeVerticalScrollOffset.toFloat() / verticalScrollRange) * (recyclerView.bottom - recyclerView.paddingBottom)).coerceAtLeast(
                             0f
