@@ -52,6 +52,7 @@
                 style="@style/SaveDialogAutoCompleteTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/ic_trans"
                 android:hint="@string/dialog_save_config_format"
                 android:inputType="none"
                 android:labelFor="@id/menuFormat"
