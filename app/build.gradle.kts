@@ -25,10 +25,13 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = "loi"
-            keyPassword = "04021993"
-            storeFile = file("keystore.jks")
-            storePassword = "04021993"
+            keyAlias = findProperty("KEY_ALIAS") as String?
+            keyPassword = findProperty("KEY_PASSWORD") as String?
+            val storeFileName = findProperty("STORE_FILE") as String?
+            if (storeFileName != null) {
+                storeFile = file(storeFileName)
+            }
+            storePassword = findProperty("STORE_PASSWORD") as String?
         }
     }
     flavorDimensions.add("default")
