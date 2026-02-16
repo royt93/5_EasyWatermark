@@ -35,6 +35,8 @@ import com.mckimquyen.watermark.ui.widget.utils.WaterMarkShader
 import com.mckimquyen.watermark.utils.bitmap.decodeSampledBitmapFromResource
 import com.mckimquyen.watermark.utils.ktx.applyConfig
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
@@ -94,11 +96,15 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
      * Using single thread to making all building bitmap working serially. Avoiding concurrency problem about [Bitmap.recycle].
      * 使用额外的单线程上下文来避免 [buildIconBitmapShader] 方法因并发导致的问题。因为 Bitmap 需要适时回收。
      */
-    private val generateBitmapCoroutineCtx by lazy {
-        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    }
+    private val generateBitmapCoroutineCtx = Dispatchers.Default
+    private val generateBitmapMutex = Mutex()
 
     private var generateBitmapJob: Job? = null
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        generateBitmapJob?.cancel()
+    }
 
     fun updateUri(init: Boolean, imageInfo: ImageInfo) {
         config?.let {
@@ -202,12 +208,14 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
             textPaint.applyConfig(curImageInfo, newConfig)
             layoutShader = when (newConfig.markMode) {
                 WaterMarkRepository.MarkMode.Text -> {
-                    buildTextBitmapShader(
-                        imageInfo = curImageInfo,
-                        config = newConfig,
-                        textPaint = textPaint,
-                        coroutineContext = generateBitmapCoroutineCtx
-                    )
+                    generateBitmapMutex.withLock {
+                        buildTextBitmapShader(
+                            imageInfo = curImageInfo,
+                            config = newConfig,
+                            textPaint = textPaint,
+                            coroutineContext = generateBitmapCoroutineCtx
+                        )
+                    }
                 }
 
                 WaterMarkRepository.MarkMode.Image -> {
@@ -231,14 +239,16 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                     }
                     localIconUri = newConfig.iconUri
                     layoutPaint.shader = null
-                    buildIconBitmapShader(
-                        imageInfo = curImageInfo,
-                        srcBitmap = iconBitmap!!,
-                        config = newConfig,
-                        textPaint = textPaint,
-                        scale = false,
-                        coroutineContext = generateBitmapCoroutineCtx
-                    )
+                    generateBitmapMutex.withLock {
+                        buildIconBitmapShader(
+                            imageInfo = curImageInfo,
+                            srcBitmap = iconBitmap!!,
+                            config = newConfig,
+                            textPaint = textPaint,
+                            scale = false,
+                            coroutineContext = generateBitmapCoroutineCtx
+                        )
+                    }
                 }
             }
             postInvalidate()

@@ -53,7 +53,6 @@ class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-//        this.setupApplovinAd()
         setupAdmob()
         if (checkRecoveryMode()) {
             return

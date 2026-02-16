@@ -37,26 +37,8 @@ android {
     flavorDimensions.add("default")
     productFlavors {
         create("appTest") {
-//            dimension = "version"
-//            applicationIdSuffix = ".free"
-//            versionNameSuffix = "-free"
-//            resValue("string", "app_name", "Watermark Creator Free")
-//            resValue("string", "SDK_KEY", "e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt")
-//            resValue("string", "BANNER", "d3455cc529985b25")
-//            resValue("string", "INTER", "a48241ebcb20ad5c")
-//            resValue("string", "EnableAdInter", "true")
-//            resValue("string", "EnableAdBanner", "true")
         }
         create("appRelease") {
-//            dimension = "version"
-//            applicationIdSuffix = ".free"
-//            versionNameSuffix = "-free"
-//            resValue("string", "app_name", "Watermark Creator")
-//            resValue("string", "SDK_KEY", "e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt")
-//            resValue("string", "BANNER", "d3455cc529985b25")
-//            resValue("string", "INTER", "a48241ebcb20ad5c")
-//            resValue("string", "EnableAdInter", "true")
-//            resValue("string", "EnableAdBanner", "true")
         }
     }
 
@@ -83,15 +65,7 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
 
-//        create("benchmark") {
-//            initWith(release)
-//            signingConfig = signingConfigs.getByName("debug")
-//            // [START_EXCLUDE silent]
-//            // Selects release buildType if the benchmark buildType not available in other modules.
-//            matchingFallbacks.add("release")
-//            // [END_EXCLUDE]
-//            proguardFiles("benchmark-rules.pro")
-//        }
+
     }
 
     compileOptions {
@@ -162,7 +136,7 @@ dependencies {
     api(libs.palette.ktx)
     api(libs.profieinstaller)
     api(libs.colorpicker)
-//    api("com.applovin:applovin-sdk:13.2.0")
+
     implementation("com.google.android.gms:play-services-ads:23.6.0")
     implementation("com.google.ads.mediation:applovin:13.0.0.0")
     api("com.jakewharton:process-phoenix:3.0.0")
