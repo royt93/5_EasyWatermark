@@ -41,6 +41,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import java.lang.ref.WeakReference
 
 //version 20250803
@@ -152,9 +155,10 @@ object AdMobManager {
     }
 
     fun getGAID(context: Context, callback: (String) -> Unit) {
+        val appContext = context.applicationContext
         Thread {
             try {
-                val info = AdvertisingIdClient.getAdvertisingIdInfo(context)
+                val info = AdvertisingIdClient.getAdvertisingIdInfo(appContext)
                 val id = info.id ?: ""
                 callback(id)
             } catch (e: Exception) {
@@ -494,6 +498,7 @@ object AdMobManager {
         Log.d(TAG, "deleteVIPMember listGaidDevice $listGaidDevice => isVIPMember $isVIPMember")
     }
 
+    private var splashJob: Job? = null
     var countInitSplashScreen = 0
 
     fun initSplashScreen(activity: Activity, onAdLoaded: () -> Unit) {
@@ -502,27 +507,28 @@ object AdMobManager {
         if (countInitSplashScreen > 1) {
             onAdLoaded.invoke()
         } else {
-            CoroutineScope(Dispatchers.Default).launch {
-                Log.d(TAG, "~~~initSplashScreen launch")
-                EventBus.eventFlow.collectLatest { value ->
-                    Log.d(TAG, "initSplashScreen collectLatest: $value")
-                    CoroutineScope(Dispatchers.Main).launch {
+            val owner = activity as? LifecycleOwner
+            if (owner != null) {
+                splashJob?.cancel()
+                splashJob = owner.lifecycleScope.launch {
+                    EventBus.eventFlow.collectLatest { value ->
+                        Log.d(TAG, "initSplashScreen collectLatest: $value")
                         loadAppOpenAd(
-                            context = activity,
+                            context = activity.applicationContext,
                             adUnitId = BuildConfig.ADMOB_APP_OPEN_ID,
                             onAdLoaded = { result ->
                                 Log.d(TAG, "onAdLoaded result $result")
-                                if (result) {
-                                    showAppOpenAd(activity) {
-                                        onAdLoaded.invoke()
-                                    }
+                                if (result && !activity.isDestroyed && !activity.isFinishing) {
+                                    showAppOpenAd(activity) { onAdLoaded.invoke() }
                                 } else {
                                     onAdLoaded.invoke()
                                 }
-                            },
+                            }
                         )
                     }
                 }
+            } else {
+                onAdLoaded.invoke()
             }
         }
     }

@@ -562,24 +562,25 @@ class MainViewModel @Inject constructor(
     }
 
     fun compressImg(activity: Activity) {
+        val appContext = activity.applicationContext
         compressedJob = viewModelScope.launch(Dispatchers.IO) {
             waterMark.value?.let {
                 compressedResult.postValue(Result.success(null, code = TYPE_COMPRESSING))
                 val tmpFile = File.createTempFile("easy_water_mark_", "_compressed")
-                activity.contentResolver.openInputStream(waterMarkRepo.imageInfoList.first().uri)
+                appContext.contentResolver.openInputStream(waterMarkRepo.imageInfoList.first().uri)
                     .use { input ->
                         tmpFile.outputStream().use { output ->
                             input?.copyTo(output)
                         }
                     }
-                val compressedFile = Compressor.compress(activity, tmpFile)
+                val compressedFile = Compressor.compress(appContext, tmpFile)
                 // clear tmp files
                 if (tmpFile.exists()) {
                     tmpFile.delete()
                 }
                 try {
                     val compressedFileUri = FileProvider.getUriForFile(
-                        activity,
+                        appContext,
                         "${BuildConfig.APPLICATION_ID}.fileprovider",
                         compressedFile
                     )

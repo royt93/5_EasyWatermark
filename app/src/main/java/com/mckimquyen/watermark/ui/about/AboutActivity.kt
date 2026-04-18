@@ -256,6 +256,24 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
 //            }
 //    }
 
+    private var isFinishingInternal = false
+    
+    override fun finish() {
+        if (isFinishingInternal) {
+            super.finish()
+            return
+        }
+        isFinishingInternal = true
+        AdMobManager.showInterstitial(this) { success ->
+            if (success) {
+                Log.d("roy93~", "Ad đã hiển thị và đóng thành công")
+            } else {
+                Log.d("roy93~", "Ad không hiển thị được hoặc có lỗi")
+            }
+            finish()
+        }
+    }
+
     override fun onDestroy() {
         adView?.destroy()
 //        with(binding) {
@@ -263,13 +281,6 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
 //        }
         super.onDestroy()
 //        showAd()
-        AdMobManager.showInterstitial(this) { success ->
-            if (success) {
-                Log.d("roy93~", "Ad đã hiển thị và đóng thành công")
-            } else {
-                Log.d("roy93~", "Ad không hiển thị được hoặc có lỗi")
-            }
-        }
     }
 
     override fun onAdLoaded() {

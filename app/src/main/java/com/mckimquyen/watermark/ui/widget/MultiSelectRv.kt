@@ -45,6 +45,8 @@ class MultiSelectRv : RecyclerView {
         this.onUnSelect = onUnSelect
     }
 
+    private var autoScroll: Runnable? = null
+    private val handle = Handler(Looper.getMainLooper())
 
     init {
         if (!isInEditMode) {
@@ -67,8 +69,6 @@ class MultiSelectRv : RecyclerView {
                 private var isInAutoScrollArea = false
                 private var isLongPress = false
                 private var isAutoScrolling = false
-                private var autoScroll: Runnable? = null
-                private val handle = Handler(Looper.getMainLooper())
                 private var startPressPos = 0
 
                 val gestureDetector = GestureDetectorCompat(
@@ -227,6 +227,8 @@ class MultiSelectRv : RecyclerView {
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         // Clean up handlers to prevent memory leak
+        autoScroll?.let { handle.removeCallbacks(it) }
+        autoScroll = null
         onSelect = null
         onUnSelect = null
     }
