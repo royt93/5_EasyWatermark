@@ -8,35 +8,35 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             // plugins
-            val kotlinVersion = "1.9.24"
+            val kotlinVersion = "1.9.25"
             library("dagger-hilt-plugin", "com.google.dagger:hilt-android-gradle-plugin:2.51.1")
-            library("tools-gradle", "com.android.tools.build:gradle:8.6.0")
+            library("tools-gradle", "com.android.tools.build:gradle:8.7.2")
             library("kotlin-plugin", "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
             library("ktlint-gradle", "org.jlleitschuh.gradle:ktlint-gradle:11.3.1")
 
             // kotlin libs
             library("kotlin-stdlib", "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}")
-            library("kotlin-coroutine-android", "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-            library("kotlin-coroutine-core", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+            library("kotlin-coroutine-android", "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+            library("kotlin-coroutine-core", "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
             // android platforms libs
-            library("fragment-ktx", "androidx.fragment:fragment-ktx:1.5.5")
-            library("activity-ktx", "androidx.activity:activity-ktx:1.6.1")
-            library("lifecycle-runtime-ktx", "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
-            library("lifecycle-livedata-ktx", "androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")
-            library("lifecycle-viewModel-ktx", "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
-            library("core-ktx", "androidx.core:core-ktx:1.7.20")
-            library("appcompat", "androidx.appcompat:appcompat:1.6.0")
-            library("material", "com.google.android.material:material:1.8.0-rc01")
+            library("fragment-ktx", "androidx.fragment:fragment-ktx:1.8.6")
+            library("activity-ktx", "androidx.activity:activity-ktx:1.9.3")
+            library("lifecycle-runtime-ktx", "androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+            library("lifecycle-livedata-ktx", "androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")
+            library("lifecycle-viewModel-ktx", "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+            library("core-ktx", "androidx.core:core-ktx:1.15.0")
+            library("appcompat", "androidx.appcompat:appcompat:1.7.0")
+            library("material", "com.google.android.material:material:1.12.0")
             val roomVersion = "2.6.1"
             library("room-runtime", "androidx.room:room-runtime:${roomVersion}")
             library("room-ktx", "androidx.room:room-ktx:${roomVersion}")
             library("room-compiler", "androidx.room:room-compiler:$roomVersion")
-            library("datastore-preference", "androidx.datastore:datastore-preferences:1.0.0")
+            library("datastore-preference", "androidx.datastore:datastore-preferences:1.1.1")
             library("asyncLayoutInflater", "androidx.asynclayoutinflater:asynclayoutinflater:1.0.0")
-            library("viewpager2", "androidx.viewpager2:viewpager2:1.0.0")
-            library("recyclerview", "androidx.recyclerview:recyclerview:1.2.1")
-            library("constraintLayout", "androidx.constraintlayout:constraintlayout:2.1.4")
+            library("viewpager2", "androidx.viewpager2:viewpager2:1.1.0")
+            library("recyclerview", "androidx.recyclerview:recyclerview:1.3.2")
+            library("constraintLayout", "androidx.constraintlayout:constraintlayout:2.2.0")
             library("exifInterface", "androidx.exifinterface:exifinterface:1.3.5")
             library("palette-ktx", "androidx.palette:palette-ktx:1.0.0")
             library("blurview", "com.github.Dimezis:BlurView:version-2.0.3")
@@ -46,7 +46,7 @@ dependencyResolutionManagement {
             library("dagger-hilt-android", "com.google.dagger:hilt-android:${daggerVersion}")
             library("dagger-hilt-compiler", "com.google.dagger:hilt-compiler:${daggerVersion}")
 
-            val glideVersion = "4.14.2"
+            val glideVersion = "4.16.0"
             library("glide-glide", "com.github.bumptech.glide:glide:${glideVersion}")
             library("glide-compiler", "com.github.bumptech.glide:compiler:${glideVersion}")
 

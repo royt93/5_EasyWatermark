@@ -33,9 +33,9 @@ android {
             force("com.google.android.gms:play-services-ads:23.6.0")
             force("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
             force("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-            force("androidx.core:core-ktx:1.12.0")
-            force("androidx.core:core:1.12.0")
-            force("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
+            force("androidx.core:core-ktx:1.15.0")
+            force("androidx.core:core:1.15.0")
+            force("org.jetbrains.kotlin:kotlin-stdlib:1.9.25")
         }
     }
 
@@ -156,7 +156,7 @@ dependencies {
     api(libs.colorpicker)
     api(libs.blurview)
 
-    implementation("com.github.royt93:AdmobWrapper:1.1.1")
+    implementation("com.github.royt93:AdmobWrapper:1.1.2")
     api("com.jakewharton:process-phoenix:3.0.0")
     implementation("com.google.android.play:review:2.0.2")
     implementation("com.google.android.play:review-ktx:2.0.2")
