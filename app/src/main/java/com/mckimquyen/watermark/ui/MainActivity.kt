@@ -194,6 +194,11 @@ class MainActivity : BaseActivity() {
         launchView = LaunchView(this)
         setContentView(launchView)
         // Apply status-bar top padding and navigation bar bottom padding to the complete root view
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(launchView) { view, insets ->
+            val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            view.setPadding(0, systemBars.top, 0, systemBars.bottom)
+            insets
+        }
 
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
@@ -433,6 +438,11 @@ class MainActivity : BaseActivity() {
                 viewModel.resetJobStatus()
             } else {
                 toast(it.message)
+                if (it.code == MainViewModel.TYPE_JOB_FINISH) {
+                    launchView.postDelayed({
+                        com.roy.sdkadbmob.AdManager.showInterstitial(this@MainActivity) {}
+                    }, 800)
+                }
             }
         }
 
