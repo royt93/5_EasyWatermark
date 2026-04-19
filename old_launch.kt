@@ -72,42 +72,36 @@ class LaunchView : CustomViewGroup {
             View(context).apply {
                 layoutParams = MarginLayoutParams(400.dp, 400.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
                 alpha = 0.4f
             },
             // Large circle 2
             View(context).apply {
                 layoutParams = MarginLayoutParams(500.dp, 500.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
                 alpha = 0.35f
             },
             // Medium circle 1
             View(context).apply {
                 layoutParams = MarginLayoutParams(300.dp, 300.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
                 alpha = 0.45f
             },
             // Medium circle 2
             View(context).apply {
                 layoutParams = MarginLayoutParams(360.dp, 360.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
                 alpha = 0.4f
             },
             // Small circle 1
             View(context).apply {
                 layoutParams = MarginLayoutParams(240.dp, 240.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
                 alpha = 0.5f
             },
             // Small circle 2
             View(context).apply {
                 layoutParams = MarginLayoutParams(280.dp, 280.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
                 alpha = 0.45f
             }
         )
@@ -129,7 +123,6 @@ class LaunchView : CustomViewGroup {
                     gravity = Gravity.CENTER
                 }
                 background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
-            clipToOutline = true
                 alpha = 0.15f
             })
 
@@ -139,7 +132,6 @@ class LaunchView : CustomViewGroup {
                     gravity = Gravity.CENTER
                 }
                 background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
-            clipToOutline = true
                 alpha = 0.25f
             })
 
@@ -149,7 +141,6 @@ class LaunchView : CustomViewGroup {
                     gravity = Gravity.CENTER
                 }
                 background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
-            clipToOutline = true
                 alpha = 0.35f
             })
 
@@ -333,7 +324,6 @@ class LaunchView : CustomViewGroup {
             }
             setPadding(8.dp, 0, 8.dp, 0)
             background = ContextCompat.getDrawable(context, R.drawable.bg_floating_pill)
-            clipToOutline = true
             clipChildren = false
             clipToPadding = false
             edgeEffectFactory = BounceEdgeEffectFactory(context, this)
@@ -438,59 +428,66 @@ class LaunchView : CustomViewGroup {
             startFloatingAnimation()
         }
     }
-    //endregion
-
-    // List to keep track of active background animators for proper cleanup
-    private val activeAnimators = mutableListOf<android.animation.Animator>()
-    private val floatingRunnables = mutableListOf<Runnable>()
 
     private fun startFloatingAnimation() {
         floatingCircles.forEachIndexed { index, circle ->
-            val runnable = Runnable { wanderCircle(circle) }
-            floatingRunnables.add(runnable)
-            postDelayed(runnable, index * 500L)
+            // Random starting positions
+            val startX = (Math.random() * measuredWidth).toFloat()
+            val startY = (Math.random() * measuredHeight).toFloat()
+            circle.translationX = startX
+            circle.translationY = startY
+
+            // Floating animation - up and down (much slower)
+            val floatAnimation = SpringAnimation(circle, SpringAnimation.TRANSLATION_Y).apply {
+                spring = SpringForce()
+                    .setFinalPosition(startY + ((-100..100).random()).toFloat())
+                    .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
+                    .setStiffness(30f) // Very slow stiffness
+            }
+
+            // Side to side animation (much slower)
+            val sideAnimation = SpringAnimation(circle, SpringAnimation.TRANSLATION_X).apply {
+                spring = SpringForce()
+                    .setFinalPosition(startX + ((-80..80).random()).toFloat())
+                    .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
+                    .setStiffness(30f) // Very slow stiffness
+            }
+
+            // Delay start for each circle
+            postDelayed({
+                floatAnimation.start()
+                sideAnimation.start()
+
+                // Reverse animation after longer time
+                postDelayed({
+                    reverseFloatingAnimation(circle, startX, startY)
+                }, 6000L + index * 1000L)
+            }, index * 500L)
         }
     }
 
-    private fun wanderCircle(circle: View) {
-        if (!circle.isAttachedToWindow) return
+    private fun reverseFloatingAnimation(circle: View, originalX: Float, originalY: Float) {
+        val floatBack = SpringAnimation(circle, SpringAnimation.TRANSLATION_Y).apply {
+            spring = SpringForce()
+                .setFinalPosition(originalY)
+                .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
+                .setStiffness(30f) // Very slow stiffness
+        }
 
-        val currentX = circle.translationX
-        val currentY = circle.translationY
+        val sideBack = SpringAnimation(circle, SpringAnimation.TRANSLATION_X).apply {
+            spring = SpringForce()
+                .setFinalPosition(originalX)
+                .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
+                .setStiffness(30f) // Very slow stiffness
+        }
 
-        // We want the circles to drift gently within a bounded radius from their original layout positions.
-        // translation is offset from the layout.
-        val targetX = ((-300..300).random()).toFloat()
-        val targetY = ((-300..300).random()).toFloat()
+        floatBack.start()
+        sideBack.start()
 
-        val animX = android.animation.ObjectAnimator.ofFloat(circle, "translationX", currentX, targetX)
-        val animY = android.animation.ObjectAnimator.ofFloat(circle, "translationY", currentY, targetY)
-
-        // Random organic speed
-        val duration = (8000L..12000L).random()
-        animX.duration = duration
-        animY.duration = duration
-
-        animX.interpolator = android.view.animation.AccelerateDecelerateInterpolator()
-        animY.interpolator = android.view.animation.AccelerateDecelerateInterpolator()
-
-        animX.addListener(object : android.animation.AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: android.animation.Animator) {
-                activeAnimators.remove(animX)
-                activeAnimators.remove(animY)
-                if (circle.isAttachedToWindow) {
-                    // Recursively call for continuous random wandering! (1-to-1 ratio, NO RAM exponential growth)
-                    wanderCircle(circle)
-                }
-            }
-        })
-
-        // Track active animations for cleanup
-        activeAnimators.add(animX)
-        activeAnimators.add(animY)
-
-        animX.start()
-        animY.start()
+        // Loop animation with longer delay
+        postDelayed({
+            startFloatingAnimation()
+        }, 6000L)
     }
 
     //region 4 override view rendering
@@ -666,15 +663,6 @@ class LaunchView : CustomViewGroup {
         // Cancel animations to prevent memory leak
         dragYAnimation.cancel()
         dragXAnimation.cancel()
-        
-        // Remove all pending Runnables
-        floatingRunnables.forEach { removeCallbacks(it) }
-        floatingRunnables.clear()
-        
-        // Cancel all currently running background animators
-        activeAnimators.toList().forEach { it.cancel() }
-        activeAnimators.clear()
-
         launchViewListener = null
     }
     //endregion
