@@ -225,18 +225,28 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         val intent = Intent().apply {
             type = "image/*"
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
+        
         if (list.size == 1) {
             val outputUri = list.first().shareUri
             intent.apply {
                 action = Intent.ACTION_SEND
                 putExtra(Intent.EXTRA_STREAM, outputUri)
+                clipData = android.content.ClipData.newUri(requireContext().contentResolver, "Image", outputUri)
             }
         } else {
-            val uriList = ArrayList(list.map { it.shareUri })
-            intent.apply {
-                action = Intent.ACTION_SEND_MULTIPLE
-                putParcelableArrayListExtra(Intent.EXTRA_STREAM, uriList)
+            val uriList = ArrayList(list.mapNotNull { it.shareUri })
+            if (uriList.isNotEmpty()) {
+                intent.apply {
+                    action = Intent.ACTION_SEND_MULTIPLE
+                    putParcelableArrayListExtra(Intent.EXTRA_STREAM, uriList)
+                    val clipData = android.content.ClipData("Images", arrayOf("image/*"), android.content.ClipData.Item(uriList[0]))
+                    for (i in 1 until uriList.size) {
+                        clipData.addItem(android.content.ClipData.Item(uriList[i]))
+                    }
+                    this.clipData = clipData
+                }
             }
         }
         try {
