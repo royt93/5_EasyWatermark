@@ -1,104 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- iOS Liquid Glass: a_recovery — crash recovery screen -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootRecovery"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_glass_gradient">
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tvTitle"
-        style="@style/TextAppearance.Material3.TitleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/recovery_title"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tvInfoTitle"
-        style="@style/TextAppearance.Material3.TitleMedium"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:text="@string/recovery_mode_tips"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
-
-    <ScrollView
-        android:id="@+id/svInfo"
+    <!-- Inner container to maintain 16dp horizontal margin safely without being overridden by WindowInsets padding -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="16dp"
-        android:background="@drawable/bg_recovery_mode_info"
-        app:layout_constraintBottom_toTopOf="@id/btnCopy"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvInfoTitle">
+        android:layout_height="match_parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp">
 
+        <!-- Title -->
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tvCrashInfo"
+            android:id="@+id/tvTitle"
+            style="@style/TextAppearance.Material3.TitleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:text="@string/recovery_title"
+            android:textColor="@color/glass_text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Info subtitle -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvInfoTitle"
+            style="@style/TextAppearance.Material3.TitleMedium"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/recovery_mode_tips"
+            android:textColor="@color/glass_text_secondary"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+
+        <!-- Crash log card (Dark frosted glass) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardCrashInfo"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="#B2000000"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toTopOf="@id/btnCopy"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvInfoTitle"
+            app:strokeColor="@color/glass_border"
+            app:strokeWidth="0.5dp">
+
+            <ScrollView
+                android:id="@+id/svInfo"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="none">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvCrashInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:padding="16dp"
+                    android:textColor="#E0FFFFFF"
+                    android:textIsSelectable="true"
+                    android:textSize="12sp"
+                    tools:text="java.lang.NullPointerException: Attempt to invoke..." />
+            </ScrollView>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Copy Actions -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCopy"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#33FFFFFF"
+            android:text="@string/copy"
+            android:textColor="@color/glass_text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="16dp"
+            app:elevation="0dp"
+            app:layout_constraintBottom_toTopOf="@id/llShareButtons"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:strokeColor="@color/glass_border"
+            app:strokeWidth="0.5dp" />
+
+        <!-- Share button row (Ghost buttons, without Telegram) -->
+        <LinearLayout
+            android:id="@+id/llShareButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:textColor="?attr/colorOnErrorContainer"
-            android:textIsSelectable="true" />
-    </ScrollView>
+            android:layout_marginBottom="24dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@+id/btnCloseRecoveryMode"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCopy"
-        style="@style/ThemeOverlay.Material3.Button.ElevatedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/copy"
-        app:layout_constraintBottom_toTopOf="@id/btnEmail"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEmail"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/send_email"
+                android:textColor="@color/glass_text_secondary" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnEmail"
-        style="@style/Widget.Material3.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/send_email"
-        app:layout_constraintBottom_toBottomOf="@+id/btnTelegram"
-        app:layout_constraintEnd_toStartOf="@id/btnTelegram"
-        app:layout_constraintStart_toStartOf="parent" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStore"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/jump_to_store"
+                android:textColor="@color/glass_text_secondary" />
+        </LinearLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnTelegram"
-        style="@style/Widget.Material3.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/send_telegram"
-        app:layout_constraintBottom_toBottomOf="@+id/btnStore"
-        app:layout_constraintEnd_toStartOf="@id/btnStore"
-        app:layout_constraintStart_toEndOf="@+id/btnEmail" />
+        <!-- Close recovery CTA (iOS Vivid Red for destructive/stop action) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCloseRecoveryMode"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="32dp"
+            android:backgroundTint="#FF3B30"
+            android:text="@string/turn_off_recovery_mode"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:cornerRadius="45dp"
+            app:elevation="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:strokeWidth="0dp" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnStore"
-        style="@style/Widget.Material3.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/jump_to_store"
-        app:layout_constraintBottom_toTopOf="@+id/btnCloseRecoveryMode"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/btnTelegram" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCloseRecoveryMode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="48dp"
-        android:text="@string/turn_off_recovery_mode"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- iOS Liquid Glass: item_divider — subtle frosted vertical separator -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="36dp"
-    android:layout_height="56dp">
+    android:layout_width="1dp"
+    android:layout_height="56dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
 
     <View
-        android:layout_width="0.5dp"
-        android:layout_height="16dp"
-        android:layout_gravity="center"
-        android:gravity="center" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.3"
+        android:background="@color/glass_border" />
 
 </FrameLayout>

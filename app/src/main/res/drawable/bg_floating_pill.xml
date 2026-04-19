@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    bg_floating_pill — dark frosted pill for toolbar / FAB strip
+    Smaller radius for side elements
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="45dp" />
+    <solid android:color="#CC000000" />
+    <stroke
+        android:width="0.5dp"
+        android:color="#40FFFFFF" />
+</shape>

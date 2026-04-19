@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    bg_glassmorphism_panel — dark frosted glass panel
+    iOS-authentic: dark translucent + white rim-light stroke
+    Text on top: glass_text_primary (#FFFFFF) — fully readable
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="20dp" />
+    <solid android:color="#B2000000" />
+    <stroke
+        android:width="0.5dp"
+        android:color="#33FFFFFF" />
+</shape>

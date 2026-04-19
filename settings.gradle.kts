@@ -39,6 +39,7 @@ dependencyResolutionManagement {
             library("constraintLayout", "androidx.constraintlayout:constraintlayout:2.1.4")
             library("exifInterface", "androidx.exifinterface:exifinterface:1.3.5")
             library("palette-ktx", "androidx.palette:palette-ktx:1.0.0")
+            library("blurview", "com.github.Dimezis:BlurView:version-2.0.3")
 
             // third party libs
             val daggerVersion = "2.44.2"

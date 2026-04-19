@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    f_base_pb — Slider panel (size/opacity controls)
+    Dark frosted pill, white slider & value text
+-->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="56dp">
+    android:layout_height="52dp"
+    android:background="@drawable/bg_floating_pill"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
 
     <com.google.android.material.slider.Slider
         android:id="@+id/slideContentSize"
         style="@style/MySeekBarStyle"
         android:layout_width="0dp"
         android:layout_height="20dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:focusable="false"
         android:stepSize="1"
         android:valueFrom="1"
@@ -21,23 +28,24 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:value="340" />
+        tools:value="50" />
 
     <TextView
         android:id="@+id/tvProgressVertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:padding="3dp"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:textAlignment="center"
-        android:textSize="14sp"
+        android:textColor="@color/glass_text_primary"
+        android:textSize="11sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/slideContentSize"
-        tools:text="5"
+        tools:text="50"
         tools:visibility="visible" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

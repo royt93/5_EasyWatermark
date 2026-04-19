@@ -3,11 +3,13 @@ package com.mckimquyen.watermark
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Color
 import android.os.Build
 import android.util.Log
 import android.view.Display
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import com.google.android.play.core.review.ReviewException
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManagerFactory
@@ -25,6 +27,37 @@ open class BaseActivity : AppCompatActivity() {
         super.attachBaseContext(context)
     }
 
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+        super.onCreate(savedInstanceState)
+        applyEdgeToEdge()
+    }
+
+    /**
+     * Edge-to-edge: unified for all SDK versions.
+     * - WindowCompat.setDecorFitsSystemWindows(false) → content draws behind system bars
+     * - Status bar: transparent (blends with bg_glass_gradient)
+     * - Navigation bar: transparent
+     * - Icon tint: LIGHT icons on dark glass background
+     */
+    protected fun applyEdgeToEdge() {
+        Log.d("roy93~", "BaseActivity applyEdgeToEdge")
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.navigationBarDividerColor = Color.TRANSPARENT
+        }
+
+        // Light-on-dark: white icons in status bar (dark purple bg)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+
+        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+        insetsController.isAppearanceLightStatusBars = false // ensures white icons
+    }
+
     override fun onResume() {
         super.onResume()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -35,10 +68,10 @@ open class BaseActivity : AppCompatActivity() {
     private fun enableAdaptiveRefreshRate() {
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
         val display: Display? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            display // Sử dụng API mới
+            display
         } else {
             @Suppress("DEPRECATION")
-            wm.defaultDisplay // Fallback cho API thấp hơn
+            wm.defaultDisplay
         }
 
         if (display != null) {
@@ -49,28 +82,18 @@ open class BaseActivity : AppCompatActivity() {
                     window.attributes = window.attributes.apply {
                         preferredDisplayModeId = highestRefreshRateMode.modeId
                     }
-                    println("Adaptive refresh rate applied: ${highestRefreshRateMode.refreshRate} Hz")
                 }
             }
         }
     }
 }
 
-//rateAppInApp(BuildConfig.DEBUG)
 fun Activity.rateAppInApp(forceRateInApp: Boolean = false) {
-    //import gradle app
-//    implementation("com.google.android.play:review:2.0.2")
-//    implementation("com.google.android.play:review-ktx:2.0.2")
-
     val sharedPreferences = getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
     val lastReviewTime = sharedPreferences.getLong("last_review_time", 0L)
-//    Log.d("roy93~", "requestReview lastReviewTime $lastReviewTime")
     val currentTime = Calendar.getInstance().timeInMillis
     val daysSinceLastReview = (currentTime - lastReviewTime) / (1000 * 60 * 60 * 24)
-//    Log.d("roy93~", "requestReview forceRateInApp $forceRateInApp")
-//    Log.d("roy93~", "requestReview daysSinceLastReview $daysSinceLastReview")
     if (daysSinceLastReview >= 7 || forceRateInApp) {
-//    if (daysSinceLastReview >= 7) {
         val reviewManager = ReviewManagerFactory.create(this)
         val request = reviewManager.requestReviewFlow()
         request.addOnCompleteListener { task ->
@@ -78,13 +101,6 @@ fun Activity.rateAppInApp(forceRateInApp: Boolean = false) {
                 val reviewInfo: ReviewInfo = task.result
                 reviewManager.launchReviewFlow(this, reviewInfo)
                 sharedPreferences.edit().putLong("last_review_time", currentTime).apply()
-//                Log.d("roy93~", "requestReview result ${task.result}")
-//                Log.d("roy93~", "requestReview isSuccessful ${task.isSuccessful}")
-//                Log.d("roy93~", "requestReview isCanceled ${task.isCanceled}")
-//                Log.d("roy93~", "requestReview isComplete ${task.isComplete}")
-//                Log.d("roy93~", "requestReview exception ${task.exception}")
-            } else {
-//                Log.d("roy93~", "requestReview exception ${task.exception}")
             }
         }
     }

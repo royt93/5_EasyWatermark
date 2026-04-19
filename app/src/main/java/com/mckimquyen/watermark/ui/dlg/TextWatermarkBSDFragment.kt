@@ -176,6 +176,9 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
             )
             window?.clearFlags(FLAG_DIM_BEHIND)
+            window?.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE or WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+            )
             behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
                     this@TextWatermarkBSDFragment.bottomSheet = bottomSheet

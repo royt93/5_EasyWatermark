@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    f_gallery — Full-screen photo picker
+    iOS Liquid Glass v2: dark frosted pill toolbar, e2e grid
+    FAB: vivid iOS Blue (#007AFF) to match selection indicator → unmissable
+    Selection hint: floating white pill count badge above FAB
+-->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,12 +13,16 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_glass_gradient">
 
+    <!-- ── Dark frosted floating toolbar pill ── -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/abl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        android:padding="4dp"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
         app:elevation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,9 +31,9 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@drawable/bg_glass_card"
-            android:elevation="4dp"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_floating_pill"
+            android:elevation="0dp"
             app:menu="@menu/top_app_bar"
             app:navigationIcon="@drawable/baseline_cancel_24"
             app:navigationIconTint="@color/glass_text_primary"
@@ -33,69 +43,97 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- ── Edge-to-edge photo grid ── -->
     <com.mckimquyen.watermark.ui.widget.MultiSelectRv
         android:id="@+id/rvContent"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingBottom="126dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="112dp"
         android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/abl" />
 
+    <!-- ── Scroll progress indicator (dark frosted circle) ── -->
     <androidx.cardview.widget.CardView
         android:id="@+id/sliderCard"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:elevation="12dp"
-        app:cardBackgroundColor="#A0FFFFFF"
-        app:cardCornerRadius="30dp"
-        app:cardElevation="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:elevation="16dp"
+        app:cardBackgroundColor="#CC000000"
+        app:cardCornerRadius="22dp"
+        app:cardElevation="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/abl"
         app:layout_constraintVertical_bias="0"
-        app:strokeColor="#FFFFFF"
-        app:strokeWidth="2dp">
+        app:strokeColor="#33FFFFFF"
+        app:strokeWidth="0.5dp">
 
         <ImageView
             android:id="@+id/ivSlider"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="16dp"
+            android:padding="11dp"
             android:src="@drawable/ic_gallery_scroll_bar_anchor"
             app:tint="@color/glass_text_primary"
-            tools:ignore="ContentDescription,ImageContrastCheck"
-            tools:value="340" />
+            tools:ignore="ContentDescription,ImageContrastCheck" />
 
     </androidx.cardview.widget.CardView>
 
+    <!-- ── Selection count hint pill (animated) ── -->
+    <TextView
+        android:id="@+id/tvSelectionHint"
+        android:layout_width="wrap_content"
+        android:layout_height="28dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_floating_pill"
+        android:gravity="center"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text=""
+        android:textColor="@color/glass_text_secondary"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/fab"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="3 selected"
+        tools:visibility="visible" />
+
+    <!--
+        ── Primary Confirm FAB: iOS Blue (#007AFF) ──
+        Matches the selection dot color → unmissable, consistent design language.
+        "Select N photos" label tells user exactly what will happen on tap.
+    -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="56dp"
-        android:backgroundTint="#90FFFFFF"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#FF007AFF"
         android:text="@string/tips_ok"
-        android:textColor="@color/glass_text_primary"
-        android:textSize="45sp"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
         android:textStyle="bold"
-        app:borderWidth="3dp"
-        app:elevation="16dp"
+        app:borderWidth="0dp"
+        app:cornerRadius="16dp"
+        app:elevation="24dp"
         app:icon="@drawable/baseline_check_circle_outline_24"
-        app:iconSize="45sp"
-        app:iconTint="@color/glass_text_primary"
+        app:iconSize="24dp"
+        app:iconTint="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:rippleColor="@color/glass_ripple"
-        app:shapeAppearance="@style/Widget.App.FloatingActionButton"
-        app:strokeColor="#FFFFFF"
-        app:strokeWidth="3dp" />
+        app:rippleColor="#33FFFFFF"
+        app:strokeColor="@android:color/transparent"
+        app:strokeWidth="0dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

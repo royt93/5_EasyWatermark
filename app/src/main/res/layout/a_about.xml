@@ -1,257 +1,471 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    a_about — Rich About / Info screen
+    iOS Liquid Glass v2: deep purple gradient, dark frosted cards,
+    white text on dark = perfectly readable
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
     android:background="@drawable/bg_glass_gradient">
 
-    <!-- Glass Back Button Container -->
-    <FrameLayout
-        android:id="@+id/flBackButton"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="45dp"
-        android:background="@drawable/bg_glass_card"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/ivBack"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_gravity="center"
-            android:src="@drawable/baseline_cancel_24"
-            app:tint="@color/glass_text_primary"
-            tools:ignore="ContentDescription" />
-    </FrameLayout>
-
-    <!-- Title: Settings -->
-    <TextView
-        android:id="@+id/tvHeaderTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:fontFamily="sans-serif-light"
-        android:letterSpacing="0.05"
-        android:text="@string/about_title_info"
-        android:textColor="@color/glass_text_primary"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <include
-        android:id="@+id/layoutAdBanner"
-        layout="@layout/layout_ad_banner"
+    <!-- ─── Collapsing hero header ─── -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvHeaderTitle" />
+        android:layout_height="220dp"
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
 
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsingToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:collapsedTitleTextColor="@color/glass_text_primary"
+            app:contentScrim="@android:color/transparent"
+            app:expandedTitleGravity="bottom|center_horizontal"
+            app:expandedTitleMarginBottom="16dp"
+            app:expandedTitleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:titleCollapseMode="scale">
+
+            <!-- Hero: glow + app icon -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_collapseMode="parallax">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingBottom="48dp">
+
+                    <!-- Glow aura outer -->
+                    <View
+                        android:layout_width="128dp"
+                        android:layout_height="128dp"
+                        android:alpha="0.2"
+                        android:background="@drawable/bg_glass_shimmer"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <!-- Glow aura inner -->
+                    <View
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:alpha="0.3"
+                        android:background="@drawable/bg_glass_shimmer"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <!-- App icon -->
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:elevation="4dp"
+                        android:src="@drawable/ic_launcher"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:shapeAppearanceOverlay="@style/CircleImageView"
+                        tools:ignore="ContentDescription" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </FrameLayout>
+
+            <!-- Pinned toolbar -->
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/topAppBar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@android:color/transparent"
+                app:layout_collapseMode="pin"
+                app:navigationIcon="@drawable/baseline_cancel_24"
+                app:navigationIconTint="@color/glass_text_primary"
+                app:title="@string/about_title_info"
+                app:titleCentered="true"
+                app:titleTextColor="@color/glass_text_primary" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- ─── Scrollable content ─── -->
     <androidx.core.widget.NestedScrollView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layoutAdBanner">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="32dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clContainer"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="8dp">
+            android:orientation="vertical">
 
-            <com.google.android.material.textview.MaterialTextView
+            <!-- Ad banner -->
+            <include
+                android:id="@+id/layoutAdBanner"
+                layout="@layout/layout_ad_banner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" />
+
+            <!-- ─── Identity card: app name + version + action pills ─── -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                app:cardBackgroundColor="#B2000000"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/glass_border"
+                app:strokeWidth="0.5dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingStart="16dp"
+                    android:paddingTop="20dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_name"
+                        android:textColor="@color/glass_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvVersionValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/glass_text_secondary"
+                        android:textSize="13sp"
+                        tools:text="v2.6.0" />
+
+                    <!-- Action pills row -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:orientation="horizontal">
+
+                        <!-- Rate: white pill dark text -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/tvRating"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginEnd="8dp"
+                            android:backgroundTint="@color/glass_cta_bg"
+                            android:text="⭐  Rate Us"
+                            android:textColor="@color/glass_cta_text"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="45dp"
+                            app:strokeWidth="0dp" />
+
+                        <!-- More apps: dark frosted pill white text -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/tvMoreApp"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:backgroundTint="@color/glass_overlay_medium"
+                            android:text="🛍  More Apps"
+                            android:textColor="@color/glass_text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="45dp"
+                            app:strokeColor="@color/glass_border"
+                            app:strokeWidth="0.5dp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- ─── Section label ─── -->
+            <TextView
                 android:id="@+id/tvTitleAbout"
-                style="@style/TextAppearance.Material3.LabelLarge"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="28dp"
-                android:paddingTop="16dp"
-                android:paddingEnd="28dp"
-                android:text="@string/about_title_info"
-                android:textColor="@color/glass_text_primary"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="6dp"
+                android:letterSpacing="0.12"
+                android:text="APP INFO"
+                android:textAllCaps="true"
+                android:textColor="@color/glass_text_secondary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvVersion"
-                style="@style/AboutPageTextViewStyle"
+            <!-- ─── Info rows: dark frosted grouped card ─── -->
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:drawablePadding="24dp"
-                android:gravity="center|start"
-                android:text="@string/about_title_version"
-                app:drawableStartCompat="@drawable/baseline_error_24"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvTitleAbout" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvVersionValue"
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="28dp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@id/tvVersion"
-                app:layout_constraintEnd_toEndOf="@id/tvVersion"
-                app:layout_constraintTop_toTopOf="@id/tvVersion"
-                tools:text="@string/app_name" />
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                app:cardBackgroundColor="#B2000000"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/glass_border"
+                app:strokeWidth="0.5dp">
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvRating"
-                style="@style/AboutPageTextViewStyle"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:drawablePadding="24dp"
-                android:gravity="center|start"
-                android:text="@string/about_title_rating"
-                app:drawableStartCompat="@drawable/baseline_grade_24"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvVersion" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvMoreApp"
-                style="@style/AboutPageTextViewStyle"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:drawablePadding="24dp"
-                android:gravity="center|start"
-                android:text="@string/more_apps"
-                app:drawableStartCompat="@drawable/baseline_favorite_border_24"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvRating" />
+                    <!-- Version row -->
+                    <LinearLayout
+                        android:id="@+id/tvVersion"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp">
 
-            <com.google.android.material.textview.MaterialTextView
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.8"
+                            android:src="@drawable/baseline_error_24"
+                            app:tint="@color/glass_text_primary"
+                            tools:ignore="ContentDescription" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:text="@string/about_title_version"
+                            android:textColor="@color/glass_text_primary"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/tvVersion2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/glass_text_secondary"
+                            android:textSize="13sp"
+                            tools:text="2.6.0" />
+
+                    </LinearLayout>
+
+                    <!-- Separator -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginStart="48dp"
+                        android:background="@color/glass_border" />
+
+                    <!-- Privacy row -->
+                    <LinearLayout
+                        android:id="@+id/tvPrivacyEng"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.8"
+                            android:src="@drawable/baseline_gpp_good_24"
+                            app:tint="@color/glass_text_primary"
+                            tools:ignore="ContentDescription" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:text="@string/about_title_privacy_statement"
+                            android:textColor="@color/glass_text_primary"
+                            android:textSize="15sp" />
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:alpha="0.5"
+                            android:rotation="45"
+                            android:src="@drawable/baseline_cancel_24"
+                            app:tint="@color/glass_text_secondary"
+                            tools:ignore="ContentDescription" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- ─── Section label: Debug (hidden) ─── -->
+            <TextView
                 android:id="@+id/tvTitleInfo"
-                style="@style/TextAppearance.Material3.LabelLarge"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32sp"
-                android:paddingStart="28dp"
-                android:paddingTop="16dp"
-                android:paddingEnd="28dp"
-                android:text="@string/about_title_about"
-                android:textColor="@color/glass_text_primary"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="6dp"
+                android:letterSpacing="0.12"
+                android:text="DEBUG"
+                android:textAllCaps="true"
+                android:textColor="@color/glass_text_secondary"
+                android:textSize="11sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvMoreApp" />
+                android:visibility="gone"
+                tools:visibility="visible" />
 
+            <!-- ─── Debug toggles (hidden) ─── -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="#B2000000"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/glass_border"
+                app:strokeWidth="0.5dp"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchDynamicColor"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="@string/force_open_dynamic_color_support"
+                        android:textColor="@color/glass_text_primary"
+                        android:textSize="14sp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginStart="16dp"
+                        android:background="@color/glass_border"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchDebug"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="@string/show_bounds"
+                        android:textColor="@color/glass_text_primary"
+                        android:textSize="14sp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- ─── Hidden compat views for binding ─── -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvChangeLog"
-                style="@style/AboutPageTextViewStyle"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:drawablePadding="24dp"
-                android:gravity="center|start"
-                android:text="@string/about_title_update_log"
-                android:visibility="gone"
-                app:drawableStartCompat="@drawable/ic_update_log"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvTitleInfo" />
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvOpenSource"
-                style="@style/AboutPageTextViewStyle"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:drawablePadding="24dp"
-                android:gravity="center|start"
-                android:text="@string/about_title_open_source"
-                android:visibility="gone"
-                app:drawableStartCompat="@drawable/ic_open_source"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvChangeLog" />
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvPrivacyCn"
-                style="@style/AboutPageTextViewStyle"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:drawablePadding="24dp"
-                android:gravity="center|start"
-                android:text="@string/about_title_privacy_statement_zh"
-                android:visibility="gone"
-                app:drawableStartCompat="@drawable/baseline_gpp_good_24"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvOpenSource" />
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvPrivacyEng"
-                style="@style/AboutPageTextViewStyle"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:drawablePadding="24dp"
-                android:gravity="center|start"
-                android:text="@string/about_title_privacy_statement"
-                app:drawableStartCompat="@drawable/baseline_gpp_good_24"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvPrivacyCn" />
-
+            <!-- ─── Dev cards (hidden) ─── -->
             <HorizontalScrollView
                 android:id="@+id/hsv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="68dp"
-                android:fadeScrollbars="true"
-                android:paddingBottom="53dp"
-                android:scrollbarStyle="outsideInset"
-                android:scrollbars="horizontal"
+                android:layout_marginTop="16dp"
+                android:paddingBottom="8dp"
+                android:scrollbars="none"
                 android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvPrivacyEng"
                 tools:visibility="visible">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/clDevContainer"
-                        android:layout_width="300dp"
-                        android:layout_height="226dp"
-                        android:layout_marginStart="28dp"
-                        android:background="@drawable/bg_card_person_info">
+                        android:layout_width="260dp"
+                        android:layout_height="180dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/bg_glass_card">
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvTitle"
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="32dp"
-                            android:layout_marginTop="28dp"
-                            android:layout_marginEnd="32dp"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginEnd="20dp"
                             android:ellipsize="end"
                             android:singleLine="true"
                             android:text="@string/developed_with_by_rosu"
+                            android:textColor="@color/glass_text_primary"
+                            android:textStyle="bold"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvSubTitle"
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="0dp"
-                            android:layout_marginStart="32dp"
-                            android:layout_marginTop="15dp"
-                            android:layout_marginEnd="32dp"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginEnd="20dp"
                             android:ellipsize="end"
                             android:text="@string/dev_comment"
+                            android:textColor="@color/glass_text_secondary"
+                            android:textSize="12sp"
                             app:layout_constraintBottom_toTopOf="@id/civAvatar"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -259,9 +473,9 @@
 
                         <com.mckimquyen.watermark.ui.widget.CircleImageView
                             android:id="@+id/civAvatar"
-                            android:layout_width="60dp"
-                            android:layout_height="60dp"
-                            android:layout_marginBottom="5dp"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginBottom="16dp"
                             android:src="@drawable/ic_launcher"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -271,35 +485,36 @@
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/clDesignerContainer"
-                        android:layout_width="300dp"
-                        android:layout_height="226dp"
-                        android:layout_marginStart="14dp"
-                        android:layout_marginEnd="14dp"
-                        android:background="@drawable/bg_card_person_info">
+                        android:layout_width="260dp"
+                        android:layout_height="180dp"
+                        android:background="@drawable/bg_glass_card">
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvTitleDesigner"
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="32dp"
-                            android:layout_marginTop="28dp"
-                            android:layout_marginEnd="32dp"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginEnd="20dp"
                             android:ellipsize="end"
                             android:singleLine="true"
                             android:text="Designed with ♥ by tovi"
+                            android:textColor="@color/glass_text_primary"
+                            android:textStyle="bold"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tvSubTitleDesigner"
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="0dp"
-                            android:layout_marginStart="32dp"
-                            android:layout_marginTop="15dp"
-                            android:layout_marginEnd="32dp"
-                            android:ellipsize="end"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginEnd="20dp"
                             android:text="A Designer."
+                            android:textColor="@color/glass_text_secondary"
+                            android:textSize="12sp"
                             app:layout_constraintBottom_toTopOf="@id/civAvatarDesigner"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -308,9 +523,9 @@
 
                         <com.mckimquyen.watermark.ui.widget.CircleImageView
                             android:id="@+id/civAvatarDesigner"
-                            android:layout_width="60dp"
-                            android:layout_height="60dp"
-                            android:layout_marginBottom="5dp"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginBottom="16dp"
                             android:src="@drawable/ic_launcher"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -319,30 +534,30 @@
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                 </LinearLayout>
+
             </HorizontalScrollView>
 
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switchDynamicColor"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16sp"
-                android:padding="28dp"
-                android:text="@string/force_open_dynamic_color_support"
-                android:textSize="22sp"
-                android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@id/hsv"
-                tools:visibility="visible" />
+            <!-- Binding compat stubs -->
+            <View
+                android:id="@+id/ivBack"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switchDebug"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="28dp"
-                android:text="@string/show_bounds"
-                android:textSize="22sp"
-                android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@id/switchDynamicColor"
-                tools:visibility="visible" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            <FrameLayout
+                android:id="@+id/flBackButton"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/tvHeaderTitle"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
     </androidx.core.widget.NestedScrollView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

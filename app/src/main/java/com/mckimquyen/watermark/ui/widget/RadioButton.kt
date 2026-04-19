@@ -9,15 +9,20 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
-import com.google.android.material.color.MaterialColors
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.utils.ktx.colorOnSurface
-import com.mckimquyen.watermark.utils.ktx.colorOnTertiaryContainer
-import com.mckimquyen.watermark.utils.ktx.colorSurfaceVariant
-import com.mckimquyen.watermark.utils.ktx.colorTertiaryContainer
 import com.mckimquyen.watermark.utils.ktx.dp
-import com.mckimquyen.watermark.utils.ktx.getColorFromAttr
 
+/**
+ * Enhanced RadioButton check indicator for gallery grid.
+ *
+ * Unselected: white circle with dark drop-shadow backdrop → always visible on any photo.
+ * Selected: vivid iOS Blue (#007AFF) filled circle + white checkmark icon.
+ *
+ * Visual contrast rules (WCAG AA+):
+ * - Unselected: semi-transparent black backdrop (#80000000) + white stroke ring
+ * - Selected: solid iOS Blue + white icon
+ */
 class RadioButton : View {
 
     constructor(context: Context?) : super(context)
@@ -28,30 +33,16 @@ class RadioButton : View {
         defStyleAttr
     )
 
-//    constructor(
-//        context: Context?,
-//        attrs: AttributeSet?,
-//        defStyleAttr: Int,
-//        defStyleRes: Int,
-//    ) : super(context, attrs, defStyleAttr, defStyleRes)
+    // ── Unselected state ──────────────────────────────────────────────────────
+    // Dark backdrop pill so the white ring is always visible on bright photos
+    private val bgColorNormal = Color.parseColor("#80000000")         // black 50%
+    private val strokeColorNormal = Color.parseColor("#E0FFFFFF")     // white 88%
+    private val strokeWidthNormal = 1.5f.dp.toFloat()
 
-//    companion object {
-//        private const val TAG = "RadioButton"
-//    }
-
-//    private val icTint = ContextCompat.getColor(context, R.color.selector_gallery_icon_tint)
-
-    private val bgColorNormal = Color.TRANSPARENT
-    private val bgColorSelected = Color.TRANSPARENT
-
-    private val strokeColorNormal by lazy {
-        MaterialColors.compositeARGBWithAlpha(
-            context.getColorFromAttr(com.google.android.material.R.attr.colorBackgroundFloating),
-            125
-        )
-    }
-    private val strokeColorSelected = Color.TRANSPARENT
-    private val strokeWidth = 2.dp
+    // ── Selected state ────────────────────────────────────────────────────────
+    // iOS vivid blue fill — unmissable selection indicator
+    private val bgColorSelected = Color.parseColor("#FF007AFF")       // iOS Blue
+    private val strokeWidthSelected = 0f
 
     private val iconRes: Int = R.drawable.ic_gallery_radio_button
 
@@ -65,30 +56,32 @@ class RadioButton : View {
     }
 
     override fun onDraw(canvas: Canvas) {
-        // draw background
-        paint.style = Paint.Style.FILL
-        paint.color = if (isChecked) bgColorSelected else bgColorNormal
-        paint.strokeWidth = 0f
-        canvas?.drawCircle(
-            /* cx = */ measuredWidth / 2f,
-            /* cy = */ measuredHeight / 2f,
-            /* radius = */ (measuredWidth - strokeWidth) / 2f,
-            /* paint = */ paint
-        )
-        // draw stroke
-        paint.style = Paint.Style.STROKE
-        paint.color = if (isChecked) strokeColorSelected else strokeColorNormal
-        paint.strokeWidth = strokeWidth.toFloat()
-        canvas?.drawCircle(
-            /* cx = */ measuredWidth / 2f,
-            /* cy = */ measuredHeight / 2f,
-            /* radius = */ (measuredWidth - strokeWidth) / 2f,
-            /* paint = */ paint
-        )
-        // icon
+        val cx = measuredWidth / 2f
+        val cy = measuredHeight / 2f
+        val r = measuredWidth / 2f - strokeWidthNormal / 2f
+
         if (isChecked) {
-            icon.setBounds(0, 0, measuredWidth, measuredHeight)
+            // Solid blue fill
+            paint.style = Paint.Style.FILL
+            paint.color = bgColorSelected
+            paint.strokeWidth = 0f
+            canvas.drawCircle(cx, cy, r, paint)
+
+            // Icon (white checkmark from drawable)
+            icon.setBounds(2, 2, measuredWidth - 2, measuredHeight - 2)
             icon.draw(canvas)
+        } else {
+            // Dark backdrop fill — ensures white ring reads on any photo
+            paint.style = Paint.Style.FILL
+            paint.color = bgColorNormal
+            paint.strokeWidth = 0f
+            canvas.drawCircle(cx, cy, r, paint)
+
+            // White stroke ring
+            paint.style = Paint.Style.STROKE
+            paint.color = strokeColorNormal
+            paint.strokeWidth = strokeWidthNormal
+            canvas.drawCircle(cx, cy, r, paint)
         }
     }
 

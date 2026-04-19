@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    dlg_compress_img — Compression dialog
+    Dark frosted glass card, white text, white pill CTA
+-->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="280dp"
     android:layout_height="wrap_content"
+    android:background="@drawable/bg_glassmorphism_panel"
     android:minWidth="280dp"
-    android:paddingBottom="8dp">
+    android:paddingStart="16dp"
+    android:paddingTop="20dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="16dp">
 
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:layout_marginStart="24dp"
-        android:gravity="bottom"
+        android:layout_height="wrap_content"
         android:text="@string/tips_tip_title"
-        android:textSize="16sp"
+        android:textColor="@color/glass_text_primary"
+        android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -24,7 +31,7 @@
         style="@style/ProgressBarStyle"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="16dp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -33,39 +40,46 @@
 
     <TextView
         android:id="@+id/tvCompressTips"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="12dp"
         android:gravity="center"
+        android:lineSpacingExtra="4dp"
         android:text="@string/tips_need_compress_img"
         android:textAlignment="center"
+        android:textColor="@color/glass_text_secondary"
+        android:textSize="13sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cpbCompress" />
 
+    <!-- Primary CTA -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCompress"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/glass_cta_bg"
+        android:text="@string/tips_compress_images"
+        android:textColor="@color/glass_cta_text"
+        android:textStyle="bold"
+        app:cornerRadius="45dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvCompressTips"
+        app:strokeWidth="0dp" />
+
+    <!-- Cancel -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCancel"
         style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginTop="4dp"
         android:text="@string/tips_cancel_output"
-        android:textStyle="normal"
-        app:layout_constraintBottom_toBottomOf="@+id/btnCompress"
-        app:layout_constraintEnd_toStartOf="@id/btnCompress"
-        app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintTop_toTopOf="@+id/btnCompress" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCompress"
-        style="@style/Widget.Material3.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
-        android:layout_marginEnd="8dp"
-        android:text="@string/tips_compress_images"
-        android:textStyle="normal"
+        android:textColor="@color/glass_text_secondary"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvCompressTips" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnCompress" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -74,14 +74,6 @@ class TextContentTemplateListFragment : BaseBindFragment<DlgEditTextTemplateList
         binding?.rvTemplate?.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = listAdapter
-            if (this.itemDecorationCount <= 0) {
-                addItemDecoration(
-                    DividerItemDecoration(
-                        requireContext(),
-                        DividerItemDecoration.VERTICAL
-                    )
-                )
-            }
         }
         binding?.btnAdd?.setOnClickListener {
             EditTemplateContentFragment.safetyShow(childFragmentManager)

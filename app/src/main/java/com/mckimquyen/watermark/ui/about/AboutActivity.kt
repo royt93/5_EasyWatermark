@@ -10,6 +10,8 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -40,54 +42,57 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
 
     override fun onResume() {
         super.onResume()
+        Log.d("roy93~", "AboutActivity onResume")
         adView?.resume()
     }
 
     override fun onPause() {
+        Log.d("roy93~", "AboutActivity onPause")
         adView?.pause()
         super.onPause()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("roy93~", "AboutActivity onCreate")
         initView()
-        changeStatusBarStyle()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(false)
+        // Edge-to-edge is handled globally by BaseActivity.applyEdgeToEdge()
+        // Add inset listener so AppBarLayout starts BELOW the status bar, and root handles bottom nav bar
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { root, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            root.setPadding(0, 0, 0, systemBars.bottom)
+            insets
         }
-        window?.navigationBarColor = Color.TRANSPARENT
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            window?.navigationBarDividerColor = Color.TRANSPARENT
+        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { view, insets ->
+            val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            view.setPadding(0, statusBarHeight, 0, 0)
+            insets
         }
         AdMobManager.setCurrentActivity(this)
         AdMobManager.interstitialListener = this
-    }
-
-    private fun changeStatusBarStyle() {
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        window.statusBarColor = Color.TRANSPARENT
-        window.findViewById<View>(android.R.id.content)?.foreground = null
+        Log.d("roy93~", "AboutActivity onCreate complete — adManager set")
     }
 
     private fun initView() {
         with(binding) {
+            Log.d("roy93~", "AboutActivity initView — versionName=${BuildConfig.VERSION_NAME}")
 
-//            bgDrawable = ContextCompat.getDrawable(
-//                this@AboutActivity,
-//                R.drawable.bg_gradient_about_page
-//            ) as GradientDrawable
-//            this.root.background = bgDrawable
+            // Version display
+            tvVersionValue.text = "v${BuildConfig.VERSION_NAME}"
+            tvVersion2.text = BuildConfig.VERSION_NAME
 
-//            tvVersion.setOnClickListener {
-//                openLink("https://github.com/rosuH/EasyWatermark/releases/")
-//            }
-            tvVersionValue.text = BuildConfig.VERSION_NAME
+            // Back navigation via CollapsingToolbar's nav icon
+            topAppBar.setNavigationOnClickListener {
+                Log.d("roy93~", "AboutActivity back button clicked via topAppBar")
+                finish()
+            }
+
             tvRating.setOnClickListener {
-//                openLink(Uri.parse("https://play.google.com/store/apps/details?id=com.mckimquyen.kqxs"))
+                Log.d("roy93~", "AboutActivity tvRating clicked — opening Play Store")
                 openLink(Uri.parse("https://play.google.com/store/apps/details?id=${it.context.packageName}"))
             }
             tvMoreApp.setOnClickListener {
+                Log.d("roy93~", "AboutActivity tvMoreApp clicked — opening developer page")
                 openLink("https://play.google.com/store/apps/developer?id=SAIGON PHANTOM LABS")
             }
 //            tvChangeLog.setOnClickListener {
@@ -107,25 +112,20 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
 //                openLink(Uri.parse("https://github.com/rosuH/EasyWatermark/blob/master/PrivacyPolicy_zh-CN.md"))
 //            }
             tvPrivacyEng.setOnClickListener {
+                Log.d("roy93~", "AboutActivity tvPrivacyEng clicked — opening privacy policy")
                 openLink(Uri.parse("https://loitp.notion.site/loitp/Privacy-Policy-319b1cd8783942fa8923d2a3c9bce60f"))
-            }
-//            civAvatar.setOnClickListener {
-//                openLink("https://github.com/rosuH")
-//            }
-//            civAvatarDesigner.setOnClickListener {
-//                openLink("https://tovi.fun/")
-//            }
-            ivBack.setOnClickListener {
-                finish()
             }
 
             switchDebug.setOnCheckedChangeListener { _, isChecked ->
+                Log.d("roy93~", "AboutActivity switchDebug changed -> isChecked=$isChecked")
                 viewModel.toggleBounds(isChecked)
             }
 
             switchDynamicColor.isChecked = CMonet.isDynamicColorAvailable()
+            Log.d("roy93~", "AboutActivity dynamicColor available=${CMonet.isDynamicColorAvailable()}")
 
             switchDynamicColor.setOnCheckedChangeListener { _, isChecked ->
+                Log.d("roy93~", "AboutActivity switchDynamicColor changed -> isChecked=$isChecked — triggering rebirth")
                 viewModel.toggleSupportDynamicColor(isChecked)
                 Toast.makeText(
                     /* context = */ this@AboutActivity,
@@ -135,13 +135,10 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
                 ProcessPhoenix.triggerRebirth(this@AboutActivity)
             }
 
-            binding.clDevContainer.backgroundTintList =
-                ColorStateList.valueOf(this@AboutActivity.colorSecondaryContainer)
-            binding.clDesignerContainer.backgroundTintList =
-                ColorStateList.valueOf(this@AboutActivity.colorSecondaryContainer)
-
             viewModel.waterMark.observe(this@AboutActivity) {
-                switchDebug.isChecked = viewModel.waterMark.value?.enableBounds ?: false
+                val boundsEnabled = viewModel.waterMark.value?.enableBounds ?: false
+                Log.d("roy93~", "AboutActivity waterMark observed — enableBounds=$boundsEnabled")
+                switchDebug.isChecked = boundsEnabled
             }
 
 //            viewModel.palette.observe(this@AboutActivity) {
@@ -284,24 +281,31 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
     }
 
     override fun onAdLoaded() {
+        Log.d("roy93~", "AboutActivity onAdLoaded")
     }
 
     override fun onAdFailedToLoad(error: LoadAdError) {
+        Log.d("roy93~", "AboutActivity onAdFailedToLoad — code=${error.code} msg=${error.message}")
     }
 
     override fun onAdShowed() {
+        Log.d("roy93~", "AboutActivity onAdShowed — interstitial displayed")
     }
 
     override fun onAdDismissed() {
+        Log.d("roy93~", "AboutActivity onAdDismissed — interstitial closed")
     }
 
     override fun onAdClicked() {
+        Log.d("roy93~", "AboutActivity onAdClicked")
     }
 
     override fun onAdFailedToShow(error: AdError) {
+        Log.d("roy93~", "AboutActivity onAdFailedToShow — ${error.message}")
     }
 
     override fun onAdNotAvailable() {
+        Log.d("roy93~", "AboutActivity onAdNotAvailable — no cached interstitial")
     }
 
 //    private var interstitialAd: MaxInterstitialAd? = null

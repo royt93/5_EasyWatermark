@@ -25,6 +25,14 @@ class EditTemplateContentFragment : BaseBindBSDFragment<DlgEditTemplateBinding>(
         return DlgEditTemplateBinding.inflate(layoutInflater, container, false)
     }
 
+    override fun onCreateDialog(savedInstanceState: Bundle?): android.app.Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.window?.setSoftInputMode(
+            android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE or android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+        )
+        return dialog
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         template = arguments?.getParcelable("template") as? Template
@@ -33,19 +41,21 @@ class EditTemplateContentFragment : BaseBindBSDFragment<DlgEditTemplateBinding>(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.tvTitle.text = if (isEdit) "编辑模板" else "添加模板"
+        binding.tvTitle.text = if (isEdit) getString(R.string.dialog_title_template_edit) else getString(R.string.dialog_button_add_template)
         binding.etWaterText.apply {
             setText(template?.content)
             post {
                 setSelection(text?.length ?: 0)
                 requestFocus()
+                val imm = context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+                imm?.showSoftInput(this, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
             }
         }
         binding.btnConfirm.apply {
             setOnClickListener {
                 val msg = binding.etWaterText.text.toString().trim()
                 if (msg.isBlank()) {
-                    Toast.makeText(requireContext(), "不能为空", Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(), R.string.tips_input_text_can_not_be_empty, Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
                 if (isEdit) {

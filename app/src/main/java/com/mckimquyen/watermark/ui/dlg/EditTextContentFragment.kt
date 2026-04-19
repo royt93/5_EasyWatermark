@@ -55,6 +55,8 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
             post {
                 setSelection(text?.length ?: 0)
                 requestFocus()
+                val imm = context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+                imm?.showSoftInput(this, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
             }
         }
         binding?.btnConfirm?.apply {

@@ -171,7 +171,7 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        UIUtils.setupEdgeToEdge1(window)
+        // applyEdgeToEdge() is invoked by BaseActivity.onCreate() — no duplicate window setup needed
         if (MyApplication.recoveryMode) {
             setContentView(R.layout.a_recovery)
             initRecoveryView()
@@ -179,7 +179,8 @@ class MainActivity : BaseActivity() {
         }
         launchView = LaunchView(this)
         setContentView(launchView)
-        UIUtils.setupEdgeToEdge2(launchView.toolbar)
+        // Apply status-bar top padding and navigation bar bottom padding to the complete root view
+        UIUtils.setupEdgeToEdge2(launchView)
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
@@ -189,11 +190,12 @@ class MainActivity : BaseActivity() {
         initObserver()
         registerResultCallback()
         checkHadCrash()
-        // Activity was recycled but dialog still showing in some case?
         SaveImageBSDialogFragment.safetyHide(this@MainActivity.supportFragmentManager)
     }
 
     private fun initRecoveryView() {
+        UIUtils.setupEdgeToEdge2(findViewById(R.id.rootRecovery))
+
         val tvCrashInfo = findViewById<TextView>(R.id.tvCrashInfo).apply {
             with(getSharedPreferences(MyApplication.SP_NAME, MODE_PRIVATE)) {
                 val crashInfo = getString(MyApplication.KEY_STACK_TRACE, "")
@@ -217,11 +219,6 @@ class MainActivity : BaseActivity() {
         val btnSendEmail = findViewById<Button>(R.id.btnEmail).apply {
             setOnClickListener {
                 viewModel.extraCrashInfo(this@MainActivity, tvCrashInfo.text.toString())
-            }
-        }
-        val btnTelegram = findViewById<Button>(R.id.btnTelegram).apply {
-            setOnClickListener {
-                openLink("https://t.me/rosuh")
             }
         }
         val btnStore = findViewById<Button>(R.id.btnStore).apply {

@@ -1,33 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- iOS Liquid Glass: a_open_source — open source library list -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_glass_gradient">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
 
+        <!-- Toolbar -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/myToolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:elevation="4dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            android:background="@drawable/bg_glass_card"
+            android:elevation="0dp"
             app:navigationIcon="@drawable/baseline_cancel_24"
-            app:navigationIconTint="@color/white"
-            app:title="@string/about_title_open_source" />
+            app:navigationIconTint="@color/glass_text_primary"
+            app:title="@string/about_title_open_source"
+            app:titleTextColor="@color/glass_text_primary" />
 
-        <com.google.android.material.card.MaterialCardView
+        <!-- ColorPickerView card -->
+        <androidx.cardview.widget.CardView
             android:id="@+id/cardColorPicker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp">
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            app:cardBackgroundColor="@color/glass_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/glass_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -39,24 +48,34 @@
                     style="@style/Theme.MyApp.TitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/glass_text_primary"
                     android:text="@string/colorpickerview" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:textColor="@color/glass_text_secondary"
+                    android:lineSpacingExtra="4dp"
                     android:text="@string/open_source_desc_color_picker" />
 
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.card.MaterialCardView
+        </androidx.cardview.widget.CardView>
+
+        <!-- Glide card -->
+        <androidx.cardview.widget.CardView
             android:id="@+id/cardGlideLibrary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp">
+            android:layout_marginEnd="16dp"
+            app:cardBackgroundColor="@color/glass_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/glass_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -68,24 +87,34 @@
                     style="@style/Theme.MyApp.TitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/glass_text_primary"
                     android:text="@string/glide" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:textColor="@color/glass_text_secondary"
+                    android:lineSpacingExtra="4dp"
                     android:text="@string/open_source_desc_about_lib" />
 
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.card.MaterialCardView
+        </androidx.cardview.widget.CardView>
+
+        <!-- Material Components card -->
+        <androidx.cardview.widget.CardView
             android:id="@+id/cardMaterialComponents"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp">
+            android:layout_marginEnd="16dp"
+            app:cardBackgroundColor="@color/glass_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/glass_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -97,24 +126,34 @@
                     style="@style/Theme.MyApp.TitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/glass_text_primary"
                     android:text="@string/material_components_for_android" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:textColor="@color/glass_text_secondary"
+                    android:lineSpacingExtra="4dp"
                     android:text="@string/open_source_desc_material_components" />
 
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.card.MaterialCardView
+        </androidx.cardview.widget.CardView>
+
+        <!-- Compressor card -->
+        <androidx.cardview.widget.CardView
             android:id="@+id/cardMaterialCompressor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp">
+            android:layout_marginEnd="16dp"
+            app:cardBackgroundColor="@color/glass_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/glass_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -126,16 +165,20 @@
                     style="@style/Theme.MyApp.TitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/glass_text_primary"
                     android:text="@string/compressor" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:textColor="@color/glass_text_secondary"
+                    android:lineSpacingExtra="4dp"
                     android:text="@string/open_source_desc_compressor" />
 
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+
+        </androidx.cardview.widget.CardView>
 
     </LinearLayout>
 

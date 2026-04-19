@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    bg_glass_gradient — full-screen vivid purple→indigo background
+    Rich deep purple gradient, looks stunning behind dark frosted panels
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <gradient
-        android:angle="135"
-        android:centerColor="@color/glass_gradient_center"
-        android:endColor="@color/glass_gradient_end"
-        android:startColor="@color/glass_gradient_start"
+        android:angle="160"
+        android:startColor="#4A148C"
+        android:centerColor="#512DA8"
+        android:endColor="#1A237E"
         android:type="linear" />
 </shape>

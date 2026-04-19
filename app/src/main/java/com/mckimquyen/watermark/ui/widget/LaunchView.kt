@@ -16,6 +16,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
+import androidx.core.view.marginStart
+import androidx.core.view.marginBottom
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.fragment.app.FragmentContainerView
@@ -303,18 +305,25 @@ class LaunchView : CustomViewGroup {
             layoutParams = MarginLayoutParams(
                 LayoutParams.MATCH_PARENT,
                 56.dp
-            )
+            ).also {
+                it.setMargins(16.dp, 0, 16.dp, 0)
+            }
             setBackgroundColor(Color.TRANSPARENT)
+            clipChildren = false
+            clipToPadding = false
         }
     }
 
     val rvPanel: TouchSensitiveRv by lazy {
         TouchSensitiveRv(context).apply {
             layoutParams = MarginLayoutParams(
-                LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT,
                 LayoutParams.WRAP_CONTENT
-            )
-            setBackgroundColor(Color.TRANSPARENT)
+            ).apply {
+                setMargins(16.dp, 0, 16.dp, 0)
+            }
+            setPadding(8.dp, 0, 8.dp, 0)
+            background = ContextCompat.getDrawable(context, R.drawable.bg_floating_pill)
             clipChildren = false
             clipToPadding = false
             edgeEffectFactory = BounceEdgeEffectFactory(context, this)
@@ -326,7 +335,9 @@ class LaunchView : CustomViewGroup {
             layoutParams = MarginLayoutParams(
                 LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT
-            )
+            ).also {
+                it.setMargins(16.dp, 0, 16.dp, 0)
+            }
             this.minimumHeight = 144
             setBackgroundColor(Color.TRANSPARENT)
             clipChildren = false
@@ -481,9 +492,6 @@ class LaunchView : CustomViewGroup {
 
     //region 4 override view rendering
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        rvPanel.let {
-            it.setPadding(it.measuredWidth / 2, 0, it.measuredWidth / 2, 0)
-        }
         // measure children
         children.forEach {
             if (it != ivPhoto) {
@@ -531,26 +539,36 @@ class LaunchView : CustomViewGroup {
         logoContainer.layoutCenterHorizontal(appendY = (measuredHeight * 0.2f).toInt())
         ivSelectedPhotoTips.layoutCenterHorizontal(appendY = (measuredHeight * 0.6f).toInt())
         ivGoAboutPage.let {
-            it.layoutCenterHorizontal(appendY = (measuredHeight - it.measuredHeightWithMargins))
+            val yOffset = (measuredHeight * 0.6f).toInt() + ivSelectedPhotoTips.measuredHeightWithMargins + 16.dp
+            it.layoutCenterHorizontal(appendY = yOffset)
         }
     }
 
     private fun layoutEditor() {
         // top
-        toolbar.layout(0, 0)
+        toolbar.layout(0, paddingTop)
         ivPhoto.layout(0, toolbar.bottom)
         // bottom
         tabLayout.let {
-            it.layout(0, measuredHeight - it.measuredHeightWithMargins)
+            // Place tabLayout at the bottom, above the navigation bar padding
+            val yOffset = measuredHeight - paddingBottom - it.measuredHeight - 16.dp
+            it.layout(it.marginStart, yOffset)
         }
         rvPanel.let {
-            it.layout(0, tabLayout.top - it.measuredHeightWithMargins)
+            // 8dp gap above tabLayout
+            val yOffset = tabLayout.top - 8.dp - it.measuredHeight
+            val xOffset = (measuredWidth - it.measuredWidth) / 2
+            it.layout(xOffset, yOffset)
         }
         fcFunctionDetail.let {
-            it.layout(0, rvPanel.top - it.measuredHeightWithMargins)
+            // 8dp gap above rvPanel
+            val yOffset = rvPanel.top - 8.dp - it.measuredHeight
+            it.layout(it.marginStart, yOffset)
         }
         rvPhotoList.let {
-            it.layout(0, fcFunctionDetail.top - it.measuredHeightWithMargins)
+            // 16dp gap above fcFunctionDetail for thumbnails
+            val yOffset = fcFunctionDetail.top - 16.dp - it.measuredHeight
+            it.layout(it.marginStart, yOffset)
         }
     }
     //endregion
