@@ -332,7 +332,7 @@ class MainActivity : BaseActivity() {
             if (it == null) {
                 return@observe
             }
-            Log.i("initObserver", "$it")
+             // Log.i("initObserver", "$it")
             launchView.post {
                 launchView.ivPhoto.config = it
             }

@@ -72,36 +72,42 @@ class LaunchView : CustomViewGroup {
             View(context).apply {
                 layoutParams = MarginLayoutParams(400.dp, 400.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+            clipToOutline = true
                 alpha = 0.4f
             },
             // Large circle 2
             View(context).apply {
                 layoutParams = MarginLayoutParams(500.dp, 500.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+            clipToOutline = true
                 alpha = 0.35f
             },
             // Medium circle 1
             View(context).apply {
                 layoutParams = MarginLayoutParams(300.dp, 300.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+            clipToOutline = true
                 alpha = 0.45f
             },
             // Medium circle 2
             View(context).apply {
                 layoutParams = MarginLayoutParams(360.dp, 360.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+            clipToOutline = true
                 alpha = 0.4f
             },
             // Small circle 1
             View(context).apply {
                 layoutParams = MarginLayoutParams(240.dp, 240.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+            clipToOutline = true
                 alpha = 0.5f
             },
             // Small circle 2
             View(context).apply {
                 layoutParams = MarginLayoutParams(280.dp, 280.dp)
                 background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
+            clipToOutline = true
                 alpha = 0.45f
             }
         )
@@ -123,6 +129,7 @@ class LaunchView : CustomViewGroup {
                     gravity = Gravity.CENTER
                 }
                 background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
+            clipToOutline = true
                 alpha = 0.15f
             })
 
@@ -132,6 +139,7 @@ class LaunchView : CustomViewGroup {
                     gravity = Gravity.CENTER
                 }
                 background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
+            clipToOutline = true
                 alpha = 0.25f
             })
 
@@ -141,6 +149,7 @@ class LaunchView : CustomViewGroup {
                     gravity = Gravity.CENTER
                 }
                 background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
+            clipToOutline = true
                 alpha = 0.35f
             })
 
@@ -324,6 +333,7 @@ class LaunchView : CustomViewGroup {
             }
             setPadding(8.dp, 0, 8.dp, 0)
             background = ContextCompat.getDrawable(context, R.drawable.bg_floating_pill)
+            clipToOutline = true
             clipChildren = false
             clipToPadding = false
             edgeEffectFactory = BounceEdgeEffectFactory(context, this)
