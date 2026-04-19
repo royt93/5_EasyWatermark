@@ -1,4 +1,6 @@
 package com.mckimquyen.watermark.ui
+import com.mckimquyen.watermark.utils.ktx.toast
+
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
@@ -14,6 +16,7 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -85,6 +88,7 @@ import kotlinx.coroutines.launch
 class MainActivity : BaseActivity() {
 
     private lateinit var pickIconLauncher: ActivityResultLauncher<String>
+    private lateinit var signatureLauncher: ActivityResultLauncher<Intent>
     private val viewModel: MainViewModel by viewModels()
 
     private val currentBgColor: Int
@@ -101,6 +105,16 @@ class MainActivity : BaseActivity() {
                 type = FuncTitleModel.FuncType.Icon,
                 title = getString(R.string.water_mark_mode_image),
                 iconRes = R.drawable.ic_func_sticker
+            ),
+            FuncTitleModel(
+                type = FuncTitleModel.FuncType.Signature,
+                title = "Signature",
+                iconRes = R.drawable.ic_func_text
+            ),
+            FuncTitleModel(
+                type = FuncTitleModel.FuncType.ExifBorder,
+                title = "Leica EXIF",
+                iconRes = R.drawable.ic_func_layout_vertical
             )
         )
     }
@@ -250,6 +264,36 @@ class MainActivity : BaseActivity() {
         pickIconLauncher = registerForActivityResult(PickImageContract()) { uri: Uri? ->
             handleActivityResult(REQ_PICK_ICON, listOf(uri))
         }
+
+        signatureLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
+            Log.d("roy93~", "[MAIN] signatureLauncher callback: resultCode=${result.resultCode}")
+            if (result.resultCode == android.app.Activity.RESULT_OK) {
+                val uriStr = result.data?.getStringExtra("signature_uri")
+                Log.d("roy93~", "[MAIN] signature_uri string from intent: $uriStr")
+                if (uriStr != null) {
+                    val signatureUri = android.net.Uri.parse(uriStr)
+                    Log.d("roy93~", "[MAIN] parsed Uri: $signatureUri  scheme=${signatureUri.scheme}")
+                    // Grant read permission so ContentResolver can open this FileProvider URI
+                    try {
+                        contentResolver.takePersistableUriPermission(
+                            signatureUri,
+                            android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                        Log.d("roy93~", "[MAIN] takePersistableUriPermission OK")
+                    } catch (se: SecurityException) {
+                        // FileProvider URIs don't support persistable grants – that's fine,
+                        // the URI is already readable within this process lifetime.
+                        Log.d("roy93~", "[MAIN] takePersistableUriPermission SKIPPED (expected for FileProvider): ${se.message}")
+                    }
+                    Log.d("roy93~", "[MAIN] calling viewModel.updateIcon(uri)")
+                    viewModel.updateIcon(signatureUri)
+                } else {
+                    Log.d("roy93~", "[MAIN] uriStr is NULL → nothing to update")
+                }
+            } else {
+                Log.d("roy93~", "[MAIN] resultCode is NOT RESULT_OK → ignored")
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -330,13 +374,16 @@ class MainActivity : BaseActivity() {
         }
         viewModel.waterMark.observe(this) {
             if (it == null) {
+                Log.d("roy93~", "[MAIN] waterMark observer: value is NULL, skip")
                 return@observe
             }
-             // Log.i("initObserver", "$it")
+            Log.d("roy93~", "[MAIN] waterMark observer: markMode=${it.markMode}, iconUri=${it.iconUri}, text='${it.text}'")
             launchView.post {
+                Log.d("roy93~", "[MAIN] launchView.post → setting ivPhoto.config")
                 launchView.ivPhoto.config = it
             }
             if (it.markMode == WaterMarkRepository.MarkMode.Image && launchView.tabLayout.selectedTabPosition == 0) {
+                Log.d("roy93~", "[MAIN] markMode=Image → hideDetailPanel()")
                 hideDetailPanel()
             }
             viewModel.resetJobStatus()
@@ -416,10 +463,7 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    private fun Context.toast(msg: String?) {
-        if (msg.isNullOrBlank()) return
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-    }
+
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initView() {
@@ -615,6 +659,17 @@ class MainActivity : BaseActivity() {
 
             FuncTitleModel.FuncType.Color -> {
                 ColorFragment.replaceShow(this, launchView.fcFunctionDetail.id)
+            }
+
+            FuncTitleModel.FuncType.Signature -> {
+                hideDetailPanel()
+                val intent = android.content.Intent(this@MainActivity, SignatureActivity::class.java)
+                signatureLauncher.launch(intent)
+            }
+
+            FuncTitleModel.FuncType.ExifBorder -> {
+                hideDetailPanel()
+                com.mckimquyen.watermark.ui.dlg.ExifPbFragment.safetyShow(supportFragmentManager)
             }
 
             FuncTitleModel.FuncType.Alpha -> {

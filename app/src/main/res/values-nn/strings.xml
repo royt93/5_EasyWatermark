@@ -83,4 +83,14 @@
     <string name="tips_list_empty">Ser tolleg tomt ut</string>
     <string name="tips_use_this_template">Nytt denne malen\?</string>
     <string name="tips_delete_template">Slett oppføringa\?</string>
+
+    <string name="signature_studio">Signaturstudio</string>
+    <string name="draw_here">Teikn her…</string>
+    <string name="size">Storleik</string>
+    <string name="neon_glow">Neonglød</string>
+    <string name="apply_signature">Bruk Signatur</string>
+    <string name="save_failed">Lagring feila!</string>
+    <string name="leica_exif_border">Leica EXIF-kant</string>
+    <string name="leica_exif_border_desc">Legg automatisk til ein profesjonell EXIF-metadatakant nedst på eksporterte bilete. Merk: Kanten blir ikkje vist i førehandsvisninga for å optimalisere ytinga.</string>
+
 </resources>

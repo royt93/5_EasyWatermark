@@ -87,4 +87,14 @@
     <string name="dialog_title_edit_watermark">\"Editar Marca D\'água\"</string>
     <string name="dialog_title_template_title">Lista de Modelos</string>
     <string name="dialog_button_add_template">Adicionar</string>
+
+    <string name="signature_studio">Estúdio de Assinaturas</string>
+    <string name="draw_here">Desenhe aqui…</string>
+    <string name="size">Tamanho</string>
+    <string name="neon_glow">Brilho Neon</string>
+    <string name="apply_signature">Aplicar Assinatura</string>
+    <string name="save_failed">Falha ao guardar!</string>
+    <string name="leica_exif_border">Bordo Leica EXIF</string>
+    <string name="leica_exif_border_desc">Adiciona automaticamente um bordo profissional com metadados EXIF no fundo das imagens exportadas. Nota: O bordo não é exibido na janela de visualização para otimizar o desempenho.</string>
+
 </resources>

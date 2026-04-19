@@ -6,4 +6,7 @@
     <external-path
         name="my_external_dir"
         path="Pictures/EasyWaterMark/" />
+    <files-path
+        name="signature_images"
+        path="signatures/" />
 </paths>

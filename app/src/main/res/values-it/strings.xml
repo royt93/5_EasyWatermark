@@ -88,4 +88,14 @@
     <string name="title_tile_mode">Modalità piastrella</string>
     <string name="tile_mode_title_repeat">Ripeti</string>
     <string name="tile_mode_title_decal">Singolo</string>
+
+    <string name="signature_studio">Studio Firme</string>
+    <string name="draw_here">Disegna qui…</string>
+    <string name="size">Dimensione</string>
+    <string name="neon_glow">Bagliore Neon</string>
+    <string name="apply_signature">Applica Firma</string>
+    <string name="save_failed">Salvataggio fallito!</string>
+    <string name="leica_exif_border">Bordo Leica EXIF</string>
+    <string name="leica_exif_border_desc">Aggiunge automaticamente un bordo professionale con i metadati EXIF in fondo alle immagini esportate. Nota: Il bordo non viene mostrato nell\'anteprima per ottimizzare le prestazioni.</string>
+
 </resources>

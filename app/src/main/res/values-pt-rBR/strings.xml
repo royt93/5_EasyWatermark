@@ -88,4 +88,14 @@
     <string name="tile_mode_title_repeat">Repetir</string>
     <string name="tile_mode_title_decal">Único</string>
 
+
+    <string name="signature_studio">Estúdio de Assinaturas</string>
+    <string name="draw_here">Desenhe aqui…</string>
+    <string name="size">Tamanho</string>
+    <string name="neon_glow">Brilho Neon</string>
+    <string name="apply_signature">Aplicar Assinatura</string>
+    <string name="save_failed">Falha ao salvar!</string>
+    <string name="leica_exif_border">Borda Leica EXIF</string>
+    <string name="leica_exif_border_desc">Adiciona automaticamente uma borda profissional com metadados EXIF na parte inferior das imagens exportadas. Nota: A borda não é exibida na janela de visualização para otimizar o desempenho.</string>
+
 </resources>

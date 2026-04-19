@@ -6,4 +6,14 @@
     <string name="about_title_version">Версия</string>
     <string name="back">Назад</string>
     <string name="dialog_save_config_quality">Качество</string>
+
+    <string name="signature_studio">Студия подписей</string>
+    <string name="draw_here">Рисуйте здесь…</string>
+    <string name="size">Размер</string>
+    <string name="neon_glow">Неоновое свечение</string>
+    <string name="apply_signature">Применить подпись</string>
+    <string name="save_failed">Ошибка сохранения!</string>
+    <string name="leica_exif_border">Рамка Leica EXIF</string>
+    <string name="leica_exif_border_desc">Автоматически добавляет профессиональную рамку с метаданными EXIF внизу экспортируемых изображений. Примечание: Рамка не отображается в окне предварительного просмотра.</string>
+
 </resources>

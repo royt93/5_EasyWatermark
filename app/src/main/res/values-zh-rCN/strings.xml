@@ -91,4 +91,14 @@
     <string name="tile_mode_title_repeat">重复</string>
     <string name="tile_mode_title_decal">单个</string>
 
+
+    <string name="signature_studio">签名工作室</string>
+    <string name="draw_here">在此绘制…</string>
+    <string name="size">大小</string>
+    <string name="neon_glow">霓虹发光</string>
+    <string name="apply_signature">应用签名</string>
+    <string name="save_failed">保存失败！</string>
+    <string name="leica_exif_border">Leica EXIF 边框</string>
+    <string name="leica_exif_border_desc">自动在导出图片底部加入专业的 EXIF 元数据边框。注意：为提升性能，预览窗口中不显示该边框。</string>
+
 </resources>

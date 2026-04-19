@@ -63,6 +63,7 @@ class WaterMarkRepository @Inject constructor(
         //        val KEY_URI = stringPreferencesKey(SP_KEY_URI)
         val KEY_MODE = intPreferencesKey(SP_KEY_WATERMARK_MODE)
         val KEY_ENABLE_BOUNDS = booleanPreferencesKey(SP_KEY_ENABLE_BOUNDS)
+        val KEY_ENABLE_EXIF = booleanPreferencesKey(SP_KEY_ENABLE_EXIF)
 //        val KEY_TILE_MODE = intPreferencesKey(SP_KEY_TILE_MODEL)
 //        val KEY_OFFSET_X = floatPreferencesKey(SP_KEY_OFFSET_X)
 //        val KEY_OFFSET_Y = floatPreferencesKey(SP_KEY_OFFSET_Y)
@@ -92,8 +93,9 @@ class WaterMarkRepository @Inject constructor(
                 hGap = it[KEY_HORIZON_GAP] ?: 0,
                 vGap = it[KEY_VERTICAL_GAP] ?: 0,
                 iconUri = Uri.parse(it[KEY_ICON_URI] ?: ""),
-                markMode = if (it[KEY_MODE] == MarkMode.Image.value) MarkMode.Image else MarkMode.Text,
-                enableBounds = it[KEY_ENABLE_BOUNDS] ?: false
+                markMode = if (it[PreferenceKeys.KEY_MODE] == MarkMode.Image.value) MarkMode.Image else MarkMode.Text,
+                enableBounds = it[PreferenceKeys.KEY_ENABLE_BOUNDS] ?: false,
+                enableExif = it[PreferenceKeys.KEY_ENABLE_EXIF] ?: false
             )
         }
 
@@ -157,6 +159,12 @@ class WaterMarkRepository @Inject constructor(
         dataStore.edit {
             it[KEY_MODE] = MarkMode.Image.value
             it[KEY_ICON_URI] = iconUri.toString()
+        }
+    }
+
+    suspend fun updateEnableExif(enable: Boolean) {
+        dataStore.edit {
+            it[PreferenceKeys.KEY_ENABLE_EXIF] = enable
         }
     }
 
@@ -230,6 +238,7 @@ class WaterMarkRepository @Inject constructor(
         const val SP_KEY_DEGREE = "${SP_NAME}_key_degree"
         const val SP_KEY_CHANGE_LOG = "${SP_NAME}_key_change_log"
         const val SP_KEY_ENABLE_BOUNDS = "${SP_NAME}_key_enable_bounds"
+        const val SP_KEY_ENABLE_EXIF = "${SP_NAME}_key_enable_exif"
         const val SP_KEY_ICON_URI = "${SP_NAME}_key_icon_uri"
 //        const val SP_KEY_URI = "${SP_NAME}_key_uri"
         const val SP_KEY_WATERMARK_MODE = "${SP_NAME}_key_watermark_mode"

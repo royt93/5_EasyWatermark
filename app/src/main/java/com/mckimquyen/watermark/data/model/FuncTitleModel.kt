@@ -21,6 +21,8 @@ data class FuncTitleModel(
         object TextStyle : FuncType()
         object Vertical : FuncType()
         object Horizon : FuncType()
+        object Signature : FuncType()
+        object ExifBorder : FuncType()
         object TextSize : FuncType() {
             const val tag = "TextSize"
         }

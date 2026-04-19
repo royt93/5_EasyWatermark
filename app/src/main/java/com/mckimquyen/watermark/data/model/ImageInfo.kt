@@ -20,6 +20,7 @@ data class ImageInfo(
     val tileMode: Int = Shader.TileMode.REPEAT.ordinal,
     @FloatRange(from = 0.0, to = 1.0) val offsetX: Float = 0.5f,
     @FloatRange(from = 0.0, to = 1.0) val offsetY: Float = 0.5f,
+    var exifModel: ExifModel? = null,
 ) {
     val shareUri: Uri?
         get() = result?.data as? Uri?
@@ -58,7 +59,8 @@ data class ImageInfo(
                 isInDelModel = false,
                 tileMode = Shader.TileMode.REPEAT.ordinal,
                 offsetX = 0.5f,
-                offsetY = 0.5f
+                offsetY = 0.5f,
+                exifModel = null
             )
         }
     }

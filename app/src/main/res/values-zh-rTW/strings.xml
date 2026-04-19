@@ -87,4 +87,14 @@
     <string name="title_tile_mode">平鋪模式</string>
     <string name="tile_mode_title_repeat">重複</string>
     <string name="tile_mode_title_decal">單一</string>
+
+    <string name="signature_studio">簽名工作室</string>
+    <string name="draw_here">在此繪製…</string>
+    <string name="size">大小</string>
+    <string name="neon_glow">霓虹發光</string>
+    <string name="apply_signature">套用簽名</string>
+    <string name="save_failed">儲存失敗！</string>
+    <string name="leica_exif_border">Leica EXIF 邊框</string>
+    <string name="leica_exif_border_desc">自動在匯出圖片底部加入專業的 EXIF 中繼資料邊框。注意：為提升效能，預覽視窗中不顯示該邊框。</string>
+
 </resources>

@@ -38,9 +38,9 @@ fun decodeBitmapWithExifSync(
     val bitmap = BitmapFactory.decodeStream(inputStream, null, options)
         ?: return Result.failure(null, "-1", "Generate Bitmap failed.")
     val inSampleSize = options?.inSampleSize ?: 1
-    val bitmapValue = BitmapCache.BitmapValue(bitmap, inSampleSize)
-
     val rotation = getOrientation(MyApplication.instance, uri)
+    val exifModel = getExifData(MyApplication.instance, uri)
+    val bitmapValue = BitmapCache.BitmapValue(bitmap, inSampleSize, exifModel)
     if (rotation == 0f) {
         return Result.success(bitmapValue)
     }
@@ -60,8 +60,45 @@ fun decodeBitmapWithExifSync(
     if (rotatedBitmap != bitmap && !bitmap.isRecycled) {
         bitmap.recycle()
     }
-    val rotateBitmapValue = BitmapCache.BitmapValue(rotatedBitmap, inSampleSize)
+    val rotateBitmapValue = BitmapCache.BitmapValue(rotatedBitmap, inSampleSize, exifModel)
     return Result.success(rotateBitmapValue)
+}
+
+private fun getExifData(context: Context, uri: Uri): com.mckimquyen.watermark.data.model.ExifModel {
+    var exifModel = com.mckimquyen.watermark.data.model.ExifModel()
+    try {
+        context.contentResolver.openInputStream(uri)?.use {
+            if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.N) {
+                val exif = ExifInterface(it)
+                val make = exif.getAttribute(ExifInterface.TAG_MAKE) ?: ""
+                val model = exif.getAttribute(ExifInterface.TAG_MODEL) ?: ""
+                val dateTime = exif.getAttribute(ExifInterface.TAG_DATETIME) ?: ""
+                val fNumber = exif.getAttribute(ExifInterface.TAG_F_NUMBER) ?: ""
+                val exposureTime = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME) ?: ""
+                val focalLength = exif.getAttribute(ExifInterface.TAG_FOCAL_LENGTH) ?: ""
+                val iso = exif.getAttribute(ExifInterface.TAG_ISO_SPEED_RATINGS) ?: ""
+                
+                exifModel = com.mckimquyen.watermark.data.model.ExifModel(
+                    make = make,
+                    model = model,
+                    dateTime = dateTime,
+                    fNumber = if (fNumber.isNotEmpty()) "f/$fNumber" else "",
+                    exposureTime = if (exposureTime.isNotEmpty()) {
+                        val d = exposureTime.toDoubleOrNull()
+                        if (d != null && d < 1) "1/${(1/d).toInt()}s" else "${exposureTime}s"
+                    } else "",
+                    iso = iso,
+                    focalLength = if (focalLength.isNotEmpty()) {
+                        val parts = focalLength.split("/")
+                        if (parts.size == 2) "${parts[0].toDouble() / parts[1].toDouble()}mm" else "${focalLength}mm"
+                    } else ""
+                )
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return exifModel
 }
 
 /**

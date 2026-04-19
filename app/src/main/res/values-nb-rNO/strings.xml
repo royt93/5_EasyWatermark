@@ -87,4 +87,14 @@
     <string name="config_default_water_mark_text">👋 IKKE DEL</string>
     <string name="tips_not_app_can_open_images">Ingen filbehandler oppdaget.</string>
     <string name="error_save_oom">Utilstrekkelig minne. Frigjør minne og prøv igjen.</string>
+
+    <string name="signature_studio">Signaturstudio</string>
+    <string name="draw_here">Tegn her…</string>
+    <string name="size">Størrelse</string>
+    <string name="neon_glow">Neonglød</string>
+    <string name="apply_signature">Bruk Signatur</string>
+    <string name="save_failed">Lagring feilet!</string>
+    <string name="leica_exif_border">Leica EXIF-kant</string>
+    <string name="leica_exif_border_desc">Legger automatisk til en profesjonell EXIF-metadatakant nederst på eksporterte bilder. Merk: Kanten vises ikke i forhåndsvisningen for å optimalisere ytelsen.</string>
+
 </resources>

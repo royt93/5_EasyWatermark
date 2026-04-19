@@ -40,7 +40,8 @@ object BitmapCache {
     )
 
     data class BitmapValue(
-        val bitmap: Bitmap,
-        val inSample: Int,
+        val bitmap: Bitmap?,
+        val inSampleSize: Int,
+        var exifModel: com.mckimquyen.watermark.data.model.ExifModel? = null
     )
 }

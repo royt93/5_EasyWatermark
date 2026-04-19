@@ -87,4 +87,14 @@
     <string name="title_tile_mode">Modo de baldosas</string>
     <string name="tile_mode_title_repeat">Repetir</string>
     <string name="tile_mode_title_decal">Único</string>
+
+    <string name="signature_studio">Estudio de Firmas</string>
+    <string name="draw_here">Dibuja aquí…</string>
+    <string name="size">Tamaño</string>
+    <string name="neon_glow">Brillo Neón</string>
+    <string name="apply_signature">Aplicar Firma</string>
+    <string name="save_failed">¡Error al guardar!</string>
+    <string name="leica_exif_border">Borde Leica EXIF</string>
+    <string name="leica_exif_border_desc">Añade automáticamente un borde profesional con metadatos EXIF en la parte inferior de las imágenes exportadas. Nota: El borde no se muestra en la ventana de previsualización para optimizar el rendimiento.</string>
+
 </resources>

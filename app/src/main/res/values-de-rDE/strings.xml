@@ -87,4 +87,14 @@
     <string name="title_tile_mode">Kachel-Modus</string>
     <string name="tile_mode_title_repeat">Wiederholen</string>
     <string name="tile_mode_title_decal">Einzeln</string>
+
+    <string name="signature_studio">Signatur-Studio</string>
+    <string name="draw_here">Hier zeichnen…</string>
+    <string name="size">Größe</string>
+    <string name="neon_glow">Neon-Leuchten</string>
+    <string name="apply_signature">Signatur anwenden</string>
+    <string name="save_failed">Speichern fehlgeschlagen!</string>
+    <string name="leica_exif_border">Leica EXIF Rand</string>
+    <string name="leica_exif_border_desc">Fügt den exportierten Bildern unten automatisch einen professionellen EXIF-Metadatenrand hinzu. Hinweis: Der Rand wird im Vorschaufenster aus Leistungsgründen nicht angezeigt.</string>
+
 </resources>

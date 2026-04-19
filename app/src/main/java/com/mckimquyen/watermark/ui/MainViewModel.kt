@@ -222,6 +222,7 @@ class MainViewModel @Inject constructor(
             )
             imageInfo.width = mutableBitmap.width
             imageInfo.height = mutableBitmap.height
+            imageInfo.exifModel = rect.data?.exifModel
             val tmpConfig = waterMark.value ?: return@withContext Result.failure(
                 data = null,
                 code = "-1",
@@ -280,7 +281,7 @@ class MainViewModel @Inject constructor(
                             message = "decodeSampledBitmapFromResource == null"
                         )
                     }
-                    val iconBitmap = iconBitmapRect.data!!.bitmap
+                    val iconBitmap = iconBitmapRect.data!!.bitmap!!
                     WaterMarkImageView.buildIconBitmapShader(
                         imageInfo = imageInfo,
                         srcBitmap = iconBitmap,
@@ -322,6 +323,39 @@ class MainViewModel @Inject constructor(
                 )
             }
 
+            val finalExportBitmap = if (tmpConfig.enableExif && imageInfo.exifModel != null && !imageInfo.exifModel!!.isEmpty()) {
+                val eModel = imageInfo.exifModel!!
+                val borderHeight = (mutableBitmap.height * 0.12f).toInt()
+                val expandedBitmap = Bitmap.createBitmap(mutableBitmap.width, mutableBitmap.height + borderHeight, Bitmap.Config.ARGB_8888)
+                val exCanvas = Canvas(expandedBitmap)
+                exCanvas.drawColor(Color.WHITE)
+                exCanvas.drawBitmap(mutableBitmap, 0f, 0f, null)
+                val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    color = Color.BLACK
+                    textSize = borderHeight * 0.35f
+                    textAlign = Paint.Align.LEFT
+                    typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+                }
+                
+                // Draw Camera Model
+                exCanvas.drawText(eModel.getCameraName(), mutableBitmap.width * 0.05f, mutableBitmap.height + borderHeight * 0.5f, textPaint)
+                
+                // Draw Exif Details
+                textPaint.textSize = borderHeight * 0.22f
+                textPaint.textAlign = Paint.Align.RIGHT
+                textPaint.typeface = android.graphics.Typeface.DEFAULT
+                exCanvas.drawText(eModel.getFormattedExif(), mutableBitmap.width * 0.95f, mutableBitmap.height + borderHeight * 0.45f, textPaint)
+                
+                // Draw Date
+                textPaint.textSize = borderHeight * 0.18f
+                textPaint.color = Color.DKGRAY
+                exCanvas.drawText(eModel.dateTime, mutableBitmap.width * 0.95f, mutableBitmap.height + borderHeight * 0.75f, textPaint)
+                
+                expandedBitmap
+            } else {
+                mutableBitmap
+            }
+
             return@withContext if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val imageCollection =
                     MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
@@ -337,7 +371,7 @@ class MainViewModel @Inject constructor(
 
                 val imageContentUri = contentResolver.insert(imageCollection, imageDetail)
                 contentResolver.openFileDescriptor(imageContentUri!!, "w", null).use { pfd ->
-                    mutableBitmap.compress(
+                    finalExportBitmap.compress(
                         /* format = */ outputFormat,
                         /* quality = */ compressLevel,
                         /* stream = */ FileOutputStream(pfd!!.fileDescriptor)
@@ -367,7 +401,7 @@ class MainViewModel @Inject constructor(
                 }
                 val outputFile = File(mediaDir, generateOutputName())
                 outputFile.outputStream().use { fileOutputStream ->
-                    mutableBitmap.compress(
+                    finalExportBitmap.compress(
                         /* format = */ outputFormat,
                         /* quality = */ compressLevel,
                         /* stream = */ fileOutputStream
@@ -488,10 +522,22 @@ class MainViewModel @Inject constructor(
     }
 
     fun updateIcon(iconUri: Uri) {
+        Log.d("roy93~", "[VM] updateIcon called: uri=$iconUri  empty=${iconUri.toString().isEmpty()}")
         launch {
             if (iconUri.toString().isNotEmpty()) {
+                Log.d("roy93~", "[VM] waterMarkRepo.updateIcon() \u2192 uri=$iconUri")
                 waterMarkRepo.updateIcon(iconUri)
+                Log.d("roy93~", "[VM] waterMarkRepo.updateIcon() done")
+            } else {
+                Log.d("roy93~", "[VM] updateIcon: uri is EMPTY, skip")
             }
+        }
+    }
+
+    fun toggleExifBorder() {
+        launch {
+            val currentValue = waterMark.value?.enableExif ?: false
+            waterMarkRepo.updateEnableExif(!currentValue)
         }
     }
 

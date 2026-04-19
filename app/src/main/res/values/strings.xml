@@ -108,4 +108,12 @@
     <string name="show_bounds">Show Bounds</string>
     <string name="more_apps">More apps</string>
     <string name="you_ll_need_to_close_and_restart_the_app_to_switch_themes">You\'ll need to close and restart the app to switch themes</string>
+    <string name="signature_studio">Signature Studio</string>
+    <string name="draw_here">Draw here…</string>
+    <string name="size">Size</string>
+    <string name="neon_glow">Neon Glow</string>
+    <string name="apply_signature">Apply Signature</string>
+    <string name="save_failed">Save failed!</string>
+    <string name="leica_exif_border">Leica EXIF Border</string>
+    <string name="leica_exif_border_desc">Automatically appends a professional EXIF metadata border at the bottom of exported images. Note: The border is not shown in the preview window to optimize performance.</string>
 </resources>

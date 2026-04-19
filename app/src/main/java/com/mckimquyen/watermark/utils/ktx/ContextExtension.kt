@@ -645,3 +645,8 @@ fun Context.getColorFromAttr(
         ContextCompat.getColor(this, defaultColor)
     }
 }
+
+fun Context.toast(msg: String?) {
+    if (msg.isNullOrBlank()) return
+    android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
+}

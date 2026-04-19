@@ -18,4 +18,5 @@ data class WaterMark(
     val iconUri: Uri,
     val markMode: WaterMarkRepository.MarkMode,
     val enableBounds: Boolean,
+    val enableExif: Boolean = false,
 )
