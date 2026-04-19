@@ -69,3 +69,22 @@ Sau khi phân tích toàn bộ source code của dự án, tôi đã phát hiệ
 
 ## Tóm Lược
 Toàn bộ Memory Leaks và rủi ro OOM lớn nhất chặn đứng độ ổn định của ứng dụng (trong package `AdMobManager`, `MultiSelectRv`, `MainViewModel`, `AboutActivity`) đã được refactor và khắc phục hoàn toàn. Các thay đổi không làm ảnh hưởng tính năng và tương thích đầy đủ với hệ sinh thái Component Architecture của app.
+
+---
+
+## Báo Cáo Audit Bổ Sung (Final Check - 5 Round Spec)
+
+**1. Vòng đời Ad Banner (`AboutActivity.kt`)**
+- **Trạng thái:** ✅ **ĐÃ FIX**. 
+- **Vấn đề đã phát hiện:** Container load ad lúc khởi tạo nhưng thiếu hai phương thức vòng đời quan trọng là `bannerResume(adView)` và `bannerPause(adView)` trong `onResume()` và `onPause()`. Điều này khiến tiến trình refresh banner của AppLovin/AdMob chọc ngoáy liên tục kể cả khi app bị đẩy xuống nền, bào mòn RAM và Pin.
+- **Xử lý:** Đã attach đầy đủ `AdManager.bannerResume` tại `onResume` và `AdManager.bannerPause` tại `onPause` của `AboutActivity`.
+
+**2. App Open Ad từ Background (`MyApplication.kt`)**
+- **Trạng thái:** ✅ **ĐÃ FIX**.
+- **Vấn đề đã phát hiện:** Thiếu hoàn toàn logic đăng ký `ProcessLifecycleOwner` cho App Open Ad. App mở từ Background sẽ không show Splash Ad.
+- **Xử lý:** Đã tiêm hàm `AdManager.registerAppOpenAdLifecycle(this)` chạy ở Main Thread (Handler) ngay lập tức khi callback SDK AppLovin/AdMob khởi tạo (`init()`) thành công.
+
+**3. Memory Leak & Context Catching**
+- **Trạng thái:** ✅ **SẠCH SẼ**.
+- Toàn bộ tham chiếu Context truyền vào `AdSdkConfig` và `AppLovinSdk` đều sử dụng Application Level Context ẩn bên trong wrapper an toàn. 
+- Component chặn màn hình `SplashActivity` sử dụng safe-delay thuộc về Frame buffer của decorView (`window.decorView.postDelayed`). Khi Window Manager dỡ decorView xuống, các pending message sẽ tự động rụng (detach) theo nên không gây rò rỉ Activity Context ở Splash. Đạt tiêu chuẩn.

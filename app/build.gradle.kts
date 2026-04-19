@@ -15,12 +15,28 @@ android {
 
     defaultConfig {
         applicationId = "com.mckimquyen.watermark"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 36
         versionCode = 20260418
         versionName = "2026.04.18"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "$applicationId-v$versionName($versionCode)")
+
+        buildConfigField("String", "APPLOVIN_SDK_KEY", "\"e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt\"")
+        buildConfigField("String", "APPLOVIN_BANNER_ID", "\"d3455cc529985b25\"")
+        buildConfigField("String", "APPLOVIN_INTERSTITIAL_ID", "\"a48241ebcb20ad5c\"")
+        buildConfigField("String", "APPLOVIN_APP_OPEN_ID", "\"8239a7fd6896cf1f\"")
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            force("com.google.android.gms:play-services-ads:23.6.0")
+            force("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+            force("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+            force("androidx.core:core-ktx:1.12.0")
+            force("androidx.core:core:1.12.0")
+            force("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
+        }
     }
 
     signingConfigs {
@@ -45,6 +61,7 @@ android {
     buildTypes {
         val debug by getting {
 //            applicationIdSuffix = ".debug"
+            buildConfigField("Boolean", "IS_ENABLE_ADMOB", "false")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
             buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"ca-app-pub-3940256099942544/9257395921\"")
@@ -52,6 +69,7 @@ android {
 
         val release by getting {
             //nho check APPLICATION_ID trong manifest
+            buildConfigField("Boolean", "IS_ENABLE_ADMOB", "false")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3612191981543807/3976595378\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3612191981543807/2663513707\"")
             buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"ca-app-pub-3612191981543807/6718308789\"")
@@ -138,8 +156,7 @@ dependencies {
     api(libs.colorpicker)
     api(libs.blurview)
 
-    implementation("com.google.android.gms:play-services-ads:23.6.0")
-    implementation("com.google.ads.mediation:applovin:13.0.0.0")
+    implementation("com.github.royt93:AdmobWrapper:1.1.1")
     api("com.jakewharton:process-phoenix:3.0.0")
     implementation("com.google.android.play:review:2.0.2")
     implementation("com.google.android.play:review-ktx:2.0.2")

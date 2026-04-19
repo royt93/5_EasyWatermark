@@ -30,6 +30,11 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3612191981543807~4938564505" /> <!-- Sample AdMob App ID -->
+            
+        <!-- AppLovin SDK Key -->
+        <meta-data
+            android:name="applovin.sdk.key"
+            android:value="e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt" />
         <activity
             android:name=".ui.SplashActivity"
             android:exported="true"

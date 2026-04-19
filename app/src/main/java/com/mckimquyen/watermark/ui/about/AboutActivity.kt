@@ -12,24 +12,20 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.LoadAdError
 import com.jakewharton.processphoenix.ProcessPhoenix
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.AAboutBinding
-import com.mckimquyen.watermark.sdkadbmob.AdMobManager
+import com.roy.sdkadbmob.AdManager
 import com.mckimquyen.watermark.utils.ktx.colorSecondaryContainer
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.openLink
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
+class AboutActivity : BaseActivity() {
 
     private val binding by inflate<AAboutBinding>()
 
@@ -38,17 +34,17 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
 //    private lateinit var bgDrawable: GradientDrawable
 
     //    private var adView: MaxAdView? = null
-    private var adView: AdView? = null
+    private var adView: View? = null
 
     override fun onResume() {
         super.onResume()
         Log.d("roy93~", "AboutActivity onResume")
-        adView?.resume()
+        AdManager.bannerResume(adView)
     }
 
     override fun onPause() {
         Log.d("roy93~", "AboutActivity onPause")
-        adView?.pause()
+        AdManager.bannerPause(adView)
         super.onPause()
     }
 
@@ -68,8 +64,6 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
             view.setPadding(0, statusBarHeight, 0, 0)
             insets
         }
-        AdMobManager.setCurrentActivity(this)
-        AdMobManager.interstitialListener = this
         Log.d("roy93~", "AboutActivity onCreate complete — adManager set")
     }
 
@@ -172,12 +166,10 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
 //                }
 //            }
 
-            adView = AdMobManager.loadBanner(
+            adView = AdManager.loadBanner(
                 context = this@AboutActivity,
-                adUnitId = BuildConfig.ADMOB_BANNER_ID,
                 container = binding.layoutAdBanner.bannerContainer,
                 tvLabelAd = binding.layoutAdBanner.tvLabelAd,
-                adSize = AdSize.LARGE_BANNER,
             )
 //            adView = this@AboutActivity.createAdBanner(
 //                logTag = AboutActivity::class.simpleName,
@@ -185,7 +177,7 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
 //                isAdaptiveBanner = true,
 //            )
 //            createAdInter()
-            AdMobManager.loadInterstitial(this@AboutActivity, BuildConfig.ADMOB_INTERSTITIAL_ID)
+            AdManager.loadInterstitial(this@AboutActivity)
         }
     }
 
@@ -261,7 +253,7 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
             return
         }
         isFinishingInternal = true
-        AdMobManager.showInterstitial(this) { success ->
+        AdManager.showInterstitial(this) { success ->
             if (success) {
                 Log.d("roy93~", "Ad đã hiển thị và đóng thành công")
             } else {
@@ -272,40 +264,12 @@ class AboutActivity : BaseActivity(), AdMobManager.InterstitialAdListener {
     }
 
     override fun onDestroy() {
-        adView?.destroy()
+        AdManager.bannerDestroy(adView)
 //        with(binding) {
 //            flAd.destroyAdBanner(adView)
 //        }
         super.onDestroy()
 //        showAd()
-    }
-
-    override fun onAdLoaded() {
-        Log.d("roy93~", "AboutActivity onAdLoaded")
-    }
-
-    override fun onAdFailedToLoad(error: LoadAdError) {
-        Log.d("roy93~", "AboutActivity onAdFailedToLoad — code=${error.code} msg=${error.message}")
-    }
-
-    override fun onAdShowed() {
-        Log.d("roy93~", "AboutActivity onAdShowed — interstitial displayed")
-    }
-
-    override fun onAdDismissed() {
-        Log.d("roy93~", "AboutActivity onAdDismissed — interstitial closed")
-    }
-
-    override fun onAdClicked() {
-        Log.d("roy93~", "AboutActivity onAdClicked")
-    }
-
-    override fun onAdFailedToShow(error: AdError) {
-        Log.d("roy93~", "AboutActivity onAdFailedToShow — ${error.message}")
-    }
-
-    override fun onAdNotAvailable() {
-        Log.d("roy93~", "AboutActivity onAdNotAvailable — no cached interstitial")
     }
 
 //    private var interstitialAd: MaxInterstitialAd? = null

@@ -118,7 +118,7 @@ fun generateDisappearAnimationList(
                         .alpha(0f)
                         .setDuration(200L)
                         .withEndAction {
-                            view.isVisible = false
+                            view.visibility = android.view.View.GONE
                         }
                         .start()
                 }

@@ -6,8 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.mckimquyen.watermark.databinding.ActivitySplashBinding
-import com.mckimquyen.watermark.sdkadbmob.AdMobManager
-import com.mckimquyen.watermark.sdkadbmob.UIUtils
+import com.roy.sdkadbmob.AdManager
+
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : AppCompatActivity() {
@@ -18,12 +18,10 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Log.d("roy93~", "onCreate")
         binding = ActivitySplashBinding.inflate(layoutInflater)
-        UIUtils.setupEdgeToEdge1(window)
         setContentView(binding.root)
-        UIUtils.setupEdgeToEdge2(binding.rootLayout)
-        AdMobManager.initSplashScreen(this, {
+        AdManager.initSplashScreen(this) {
             goToMain()
-        })
+        }
     }
 
     private fun goToMain() {

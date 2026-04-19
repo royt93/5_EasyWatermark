@@ -9,7 +9,9 @@ import androidx.core.content.edit
 import com.google.android.gms.ads.MobileAds
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
-import com.mckimquyen.watermark.sdkadbmob.AdMobManager
+import com.roy.sdkadbmob.AdManager
+import com.roy.sdkadbmob.AdSdkConfig
+import com.applovin.sdk.AppLovinSdk
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,44 +67,47 @@ class MyApplication : Application() {
     }
 
     private fun setupAdmob() {
-        CoroutineScope(Dispatchers.IO).launch {
-            MobileAds.initialize(this@MyApplication) {}
-            AdMobManager.init(this@MyApplication) { success, gaidCurrent ->
-                Log.d("roy93~", "AdMobManager init success $success, gaidCurrent $gaidCurrent")
+        val adConfig = AdSdkConfig(
+            isEnableAdmob = BuildConfig.IS_ENABLE_ADMOB,
+            isDebug = BuildConfig.DEBUG,
+            admobBannerId = BuildConfig.ADMOB_BANNER_ID,
+            admobInterstitialId = BuildConfig.ADMOB_INTERSTITIAL_ID,
+            admobAppOpenId = BuildConfig.ADMOB_APP_OPEN_ID,
+            applovinBannerId = BuildConfig.APPLOVIN_BANNER_ID,
+            applovinInterstitialId = BuildConfig.APPLOVIN_INTERSTITIAL_ID,
+            applovinAppOpenId = BuildConfig.APPLOVIN_APP_OPEN_ID
+        )
+
+        AdManager.setConfig(adConfig)
+        AdManager.earlyInit(this)
+
+        if (BuildConfig.IS_ENABLE_ADMOB) {
+            Log.d("MyApplication", "AdMob mode, initializing MobileAds")
+            MobileAds.initialize(this) { _ ->
+                AdManager.init(this, adConfig) { success, gaid ->
+                    Log.d("MyApplication", "AdManager init success=$success, gaid=$gaid")
+                    if (success) {
+                        android.os.Handler(android.os.Looper.getMainLooper()).post {
+                            AdManager.registerAppOpenAdLifecycle(this)
+                        }
+                    }
+                }
+            }
+        } else {
+            Log.d("MyApplication", "AppLovin mode, initializing AppLovinSdk")
+            val sdk = AppLovinSdk.getInstance(this)
+            sdk.mediationProvider = "max"
+            sdk.initializeSdk {
+                AdManager.init(this, adConfig) { success, gaid ->
+                    Log.d("MyApplication", "AdManager init success=$success, gaid=$gaid")
+                    if (success) {
+                        android.os.Handler(android.os.Looper.getMainLooper()).post {
+                            AdManager.registerAppOpenAdLifecycle(this)
+                        }
+                    }
+                }
             }
         }
-//        registerActivityLifecycleCallbacks(
-//            AppLifecycleListener(
-//                { isForeground, activity ->
-//                    if (isForeground) {
-//                        Log.d("roy93~", "App moved to Foreground")
-//                        Log.d("roy93~", "activity.localClassName ${activity.localClassName}")
-//                        Log.d(
-//                            "roy93~",
-//                            "SplashActivity::class.java.simpleName ${SplashActivity::class.java.simpleName}"
-//                        )
-//                        if (activity.localClassName == SplashActivity::class.java.simpleName) {
-//                            //do nothing
-//                        } else {
-////                            AdMobManager.showAppOpenAd(activity)
-//                        }
-//                    } else {
-//                        Log.d("roy93~", "App moved to Background")
-//                    }
-//                }, { activity ->
-//                    Log.d("roy93~", "callbackActivityCreated ${activity.localClassName}")
-//                    if (activity.localClassName == SplashActivity::class.java.simpleName) {
-//                        //do nothing
-//                    } else {
-////                        AdMobManager.loadAppOpenAd(
-////                            context = this,
-////                            adUnitId = BuildConfig.ADMOB_APP_OPEN_ID,
-////                            onAdLoaded = {},
-////                        )
-//                    }
-//                }
-//            )
-//        )
     }
 
     private fun checkRecoveryMode(): Boolean {

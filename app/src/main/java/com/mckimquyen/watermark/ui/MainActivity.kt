@@ -48,7 +48,7 @@ import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.rateAppInApp
-import com.mckimquyen.watermark.sdkadbmob.UIUtils
+
 import com.mckimquyen.watermark.ui.about.AboutActivity
 import com.mckimquyen.watermark.ui.adapter.FuncPanelAdapter
 import com.mckimquyen.watermark.ui.adapter.PhotoListPreviewAdapter
@@ -194,7 +194,7 @@ class MainActivity : BaseActivity() {
         launchView = LaunchView(this)
         setContentView(launchView)
         // Apply status-bar top padding and navigation bar bottom padding to the complete root view
-        UIUtils.setupEdgeToEdge2(launchView)
+
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
@@ -208,7 +208,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun initRecoveryView() {
-        UIUtils.setupEdgeToEdge2(findViewById(R.id.rootRecovery))
+
 
         val tvCrashInfo = findViewById<TextView>(R.id.tvCrashInfo).apply {
             with(getSharedPreferences(MyApplication.SP_NAME, MODE_PRIVATE)) {
