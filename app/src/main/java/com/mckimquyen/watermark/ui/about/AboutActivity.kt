@@ -2,10 +2,12 @@ package com.mckimquyen.watermark.ui.about
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import com.jakewharton.processphoenix.ProcessPhoenix
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.BaseActivity
@@ -118,13 +120,29 @@ class AboutActivity : BaseActivity() {
                 switchDebug.isChecked = boundsEnabled
             }
 
-            AdManager.loadBanner(
+            bannerAdView = AdManager.loadBanner(
                 context = this@AboutActivity,
                 container = binding.layoutAdBanner.bannerContainer,
                 tvLabelAd = binding.layoutAdBanner.tvLabelAd,
                 adSize = AdManager.getAdaptiveBannerSize(this@AboutActivity),
             )
             AdManager.loadInterstitial(this@AboutActivity)
+        }
+    }
+
+    /** Reference banner view trả về từ loadBanner — giữ để gỡ thủ công khi VIP active. */
+    private var bannerAdView: View? = null
+
+    override fun onResume() {
+        super.onResume()
+        // Người dùng có thể vừa kích hoạt VIP ở VipManagementActivity rồi quay lại đây.
+        // Activity này chỉ resume (không recreate) nên banner đã load từ trước vẫn còn hiển thị
+        // → gỡ ngay để tôn trọng trạng thái VIP.
+        if (AdManager.isVipByKeyActive()) {
+            AdManager.bannerDestroy(bannerAdView)
+            bannerAdView = null
+            binding.layoutAdBanner.bannerContainer.isVisible = false
+            binding.layoutAdBanner.tvLabelAd.isVisible = false
         }
     }
 

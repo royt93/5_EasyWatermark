@@ -79,7 +79,10 @@ class MyApplication : Application() {
             applovinRewardedId = BuildConfig.APPLOVIN_REWARDED_ID,
             applovinSdkKey = BuildConfig.APPLOVIN_SDK_KEY,
             vipKeySecret = String(Base64.decode(VIP_SECRET_30_DAYS_B64, Base64.NO_WRAP)),
-            safety = if (BuildConfig.DEBUG) AdSafetyLimits.TEST else AdSafetyLimits(),
+            // DEBUG: limits gần như tắt để test thoải mái. RELEASE: preset CONTENT (balanced)
+            // — 60s gap, 6/session, 3/hour, 10/day — an toàn policy mà vẫn giữ doanh thu.
+            // (CONTENT == AdSafetyLimits() default; ghi rõ tên cho khỏi nhầm.)
+            safety = if (BuildConfig.DEBUG) AdSafetyLimits.TEST else AdSafetyLimits.CONTENT,
         )
 
         AdManager.setConfig(adConfig)
