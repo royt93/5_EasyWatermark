@@ -173,11 +173,11 @@ class MainViewModel @Inject constructor(
             if (infoList.isNullOrEmpty()) {
                 return@withContext Result.failure(null, TYPE_ERROR_NOT_IMG)
             }
-            infoList.forEach { info ->
+            infoList.forEachIndexed { index, info ->
                 try {
                     info.jobState = JobState.Ing
                     launch(Dispatchers.Main) { saveProcess.value = info }
-                    info.result = generateImage(contentResolver, viewInfo, info)
+                    info.result = generateImage(contentResolver, viewInfo, info, index)
                     info.jobState = JobState.Success(info.result!!)
                     launch(Dispatchers.Main) { saveProcess.value = info }
                 } catch (fne: FileNotFoundException) {
@@ -201,6 +201,7 @@ class MainViewModel @Inject constructor(
         contentResolver: ContentResolver,
         viewInfo: ViewInfo,
         imageInfo: ImageInfo,
+        index: Int,
     ): Result<Uri> =
         withContext(Dispatchers.IO) {
             val rect = decodeBitmapFromUri(contentResolver, imageInfo.uri)
@@ -259,9 +260,11 @@ class MainViewModel @Inject constructor(
             val layoutPaint = Paint()
             val shader = when (waterMark.value?.markMode) {
                 WaterMarkRepository.MarkMode.Text -> {
+                    // Resolve dynamic text tokens (e.g. {date}, {filename}, {iso}) per image at export time.
+                    val resolvedText = resolveTextTokens(tmpConfig.text, imageInfo, contentResolver, index)
                     WaterMarkImageView.buildTextBitmapShader(
                         imageInfo = imageInfo,
-                        config = waterMark.value!!,
+                        config = tmpConfig.copy(text = resolvedText),
                         textPaint = bitmapPaint,
                         coroutineContext = Dispatchers.IO
                     )
@@ -421,6 +424,51 @@ class MainViewModel @Inject constructor(
                 Result.success(outputUri)
             }
         }
+
+    /**
+     * Resolve dynamic text tokens in the watermark text for a given image, per-image at export time
+     * so batch jobs get per-photo values. No-op when the text has no '{' token.
+     * Supported: {filename} {seq} {date} {model} {make} {iso} {fnumber} {exposure} {focal} {exif}
+     */
+    private fun resolveTextTokens(
+        text: String,
+        imageInfo: ImageInfo,
+        contentResolver: ContentResolver,
+        index: Int,
+    ): String {
+        if (!text.contains('{')) return text
+        val exif = imageInfo.exifModel
+        val date = exif?.dateTime?.takeIf { it.isNotBlank() }
+            ?: System.currentTimeMillis().formatDate("yyyy-MM-dd")
+        return text
+            .replace("{filename}", queryDisplayName(contentResolver, imageInfo.uri))
+            .replace("{seq}", (index + 1).toString())
+            .replace("{date}", date)
+            .replace("{model}", exif?.getCameraName().orEmpty())
+            .replace("{make}", exif?.make.orEmpty())
+            .replace("{iso}", exif?.iso.orEmpty())
+            .replace("{fnumber}", exif?.fNumber.orEmpty())
+            .replace("{exposure}", exif?.exposureTime.orEmpty())
+            .replace("{focal}", exif?.focalLength.orEmpty())
+            .replace("{exif}", exif?.getFormattedExif().orEmpty())
+    }
+
+    private fun queryDisplayName(contentResolver: ContentResolver, uri: Uri): String {
+        return try {
+            contentResolver.query(
+                uri,
+                arrayOf(android.provider.OpenableColumns.DISPLAY_NAME),
+                null, null, null
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    (if (nameIndex >= 0) cursor.getString(nameIndex) else null)?.substringBeforeLast('.')
+                } else null
+            } ?: uri.lastPathSegment?.substringBeforeLast('.').orEmpty()
+        } catch (e: Exception) {
+            uri.lastPathSegment?.substringBeforeLast('.').orEmpty()
+        }
+    }
 
     private fun generateOutputName(): String {
         return "ewm_${System.currentTimeMillis()}.${trapOutputExtension()}"

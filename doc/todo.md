@@ -19,7 +19,7 @@
 - [x] ~~**WaterMarkImageView** — scope/executor leak~~ — ĐÃ XONG:
   - `onDetachedFromWindow()` đã override và gọi `generateBitmapJob?.cancel()`.
   - Không còn `Executors.newSingleThreadExecutor()`; dùng `Dispatchers.Default` cho `generateBitmapCoroutineCtx`. (Import rác `Executors` đã được xóa.)
-- [ ] **MyApplication** — static `instance: Context` (`@SuppressLint("StaticFieldLeak")`) vẫn còn. Cân nhắc dùng Hilt `@ApplicationContext` thay cho truy cập static. (Mức độ thấp, Application context không leak nghiêm trọng.)
+- [ ] **MyApplication** — static `instance: Context` (`@SuppressLint("StaticFieldLeak")`) vẫn còn. **Khuyến nghị HOÃN:** chỉ giữ Application context (không leak Activity), nhưng `instance` được dùng ở ~11 nơi gồm cả top-level functions (`BitmapUtils`: `decodeBitmapFromUri`/`getOrientation`/`interChangeSize`), adapter (`SaveImageListAdapter`, `PhotoListPreviewAdapter`, `FuncPanelAdapter`) và repo. Gỡ hẳn cần thread `Context` qua API của các hàm util (cascading, rủi ro hồi quy cao) trong khi lợi ích thực tế thấp. Nếu làm: inject `@ApplicationContext` vào `MainViewModel` + `WaterMarkRepository` (Hilt), `itemView.context` cho adapter, và thêm tham số `Context` cho hàm trong `BitmapUtils`.
 
 ## Tham khảo
 - Chi tiết các leak đã fix: xem `doc/memory_leak.md`.

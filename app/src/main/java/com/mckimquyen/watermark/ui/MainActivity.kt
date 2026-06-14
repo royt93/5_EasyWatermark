@@ -199,6 +199,7 @@ class MainActivity : BaseActivity() {
             view.setPadding(0, systemBars.top, 0, systemBars.bottom)
             insets
         }
+        androidx.core.view.ViewCompat.requestApplyInsets(launchView)
 
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
@@ -494,10 +495,17 @@ class MainActivity : BaseActivity() {
         }
         // setting tool bar
         launchView.toolbar.apply {
-            navigationIcon = ContextCompat.getDrawable(this@MainActivity, R.drawable.ic_watermark)
             title = null
             setSupportActionBar(this)
             supportActionBar?.title = null
+            // Back arrow (left) — same exit-editor flow as the system back button.
+            navigationIcon = ContextCompat.getDrawable(this@MainActivity, R.drawable.ic_arrow_back)
+            setNavigationOnClickListener {
+                @Suppress("DEPRECATION")
+                onBackPressed()
+            }
+            // Small WATERMARK branding logo next to the back arrow (the raw drawable is too wide).
+            logo = buildSmallWatermarkLogo()
         }
         // go about page
         launchView.ivGoAboutPage.setOnClickListener {
@@ -737,6 +745,19 @@ class MainActivity : BaseActivity() {
         window.findViewById<View>(android.R.id.content)?.foreground = null
     }
 
+
+    /** Scale the (very wide) WATERMARK logo down to a small toolbar logo (~28dp tall). */
+    private fun buildSmallWatermarkLogo(): android.graphics.drawable.Drawable? {
+        val src = ContextCompat.getDrawable(this, R.drawable.ic_watermark)
+        val targetH = (28 * resources.displayMetrics.density).toInt()
+        if (src is android.graphics.drawable.BitmapDrawable && src.intrinsicHeight > 0) {
+            val ratio = src.intrinsicWidth.toFloat() / src.intrinsicHeight
+            val targetW = (targetH * ratio).toInt().coerceAtLeast(1)
+            val scaled = android.graphics.Bitmap.createScaledBitmap(src.bitmap, targetW, targetH, true)
+            return android.graphics.drawable.BitmapDrawable(resources, scaled)
+        }
+        return src
+    }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu, menu)

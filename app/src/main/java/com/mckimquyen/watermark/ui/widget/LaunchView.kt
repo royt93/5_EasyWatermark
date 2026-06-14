@@ -264,6 +264,10 @@ class LaunchView : CustomViewGroup {
                     LayoutParams.WRAP_CONTENT
                 )
                     .also { it.setMargins(0, 20.dp, 0, 0) }
+            // Edge-to-edge: small right padding so the last action icon (settings) clears the
+            // screen edge / rounded corner (Toolbar contentInsetEnd is 0 here).
+            setPadding(0, 0, 12.dp, 0)
+            clipToPadding = false
 //            setBackgroundColor(context.colorSurface)
         }
     }
@@ -434,7 +438,12 @@ class LaunchView : CustomViewGroup {
             addView(it)
         }
         post {
-            launchModeAppearAnimationList.forEach { it.start() }
+            // Only play the launch-mode appear animation if we're still in launch mode.
+            // Share-image entry (ACTION_SEND) can switch to Editor before this runs; without the
+            // guard the appear animation re-shows the launch views (logo/tips/about) over the editor.
+            if (mode == ViewMode.LaunchMode) {
+                launchModeAppearAnimationList.forEach { it.start() }
+            }
             startFloatingAnimation()
         }
     }
@@ -548,7 +557,9 @@ class LaunchView : CustomViewGroup {
     }
 
     private fun layoutEditor() {
-        // top
+        // top — sit directly below the status-bar inset (paddingTop). The 64dp toolbar's own
+        // centered content already provides the gap; the legacy 20dp top margin is redundant
+        // under edge-to-edge and only added a large empty band above the icons.
         toolbar.layout(0, paddingTop)
         ivPhoto.layout(0, toolbar.bottom)
         // bottom
@@ -586,6 +597,8 @@ class LaunchView : CustomViewGroup {
         when (toMode) {
             ViewMode.Editor -> {
                 launchViews.forEach {
+                    // Cancel any in-flight appear animation so it can't re-show the view after we hide it.
+                    it.animate().cancel()
                     it.alpha = 0f
                     it.isVisible = false
                 }

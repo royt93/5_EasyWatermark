@@ -19,21 +19,27 @@ Vẽ chữ ký tay, xuất bitmap rồi tái dùng pipeline Image watermark.
 - Color picker (`FuncTitleModel.Color` → `ColorFragment`).
 - Dynamic color / Material You qua module `:cmonet`.
 
+### 4. Text token động (Dynamic Text Placeholders) — export-time
+Token trong nội dung text watermark được thay theo từng ảnh khi xuất (batch).
+- `MainViewModel.resolveTextTokens()` resolve trước `buildTextBitmapShader` trong `generateImage`, có guard `!text.contains('{')` nên text thường không đổi.
+- Token hỗ trợ: `{filename}` `{seq}` `{date}` `{model}` `{make}` `{iso}` `{fnumber}` `{exposure}` `{focal}` `{exif}` (lấy từ `ImageInfo.exifModel` + `OpenableColumns.DISPLAY_NAME`).
+- **Còn lại (chưa làm):** preview trong editor hiện hiển thị token nguyên văn (chỉ resolve khi save); và UI nút chèn token nhanh trong dialog sửa text.
+
+### 5. Export options (định dạng + chất lượng) — đã có sẵn từ trước
+- `SaveImageBSDialogFragment` có dropdown format (JPEG/PNG) + slider quality; `MainViewModel.saveOutput()` lưu vào `UserPreferences` (`outputFormat`/`compressLevel`).
+- **Còn lại (chưa làm):** thêm WEBP, resize cạnh dài khi lưu, giữ/xóa EXIF gốc hoặc nhúng `TAG_COPYRIGHT`.
+
 ---
 
 ## 💭 Đề xuất tính năng mới (chưa làm)
-
-### A. Text token động (Dynamic Text Placeholders)
-**Mô tả:** Cho phép nhập biến trong nội dung text watermark, ví dụ `© {filename} - {date}` hoặc `Shot on {model} • ISO {iso}`. Khi batch, mỗi ảnh tự thay token bằng giá trị riêng (tên file, ngày, số thứ tự, EXIF).
-**Triển khai:** Thêm bước resolve token trong `MainViewModel.generateImage` trước khi gọi `buildTextBitmapShader`; tận dụng EXIF đã đọc ở tính năng đã có. Giá trị cao cho batch hàng loạt, gần như không đụng pipeline vẽ.
 
 ### B. QR Code Watermark
 **Mô tả:** Sinh QR (link bản quyền / liên hệ / portfolio) overlay như một loại Image watermark.
 **Triển khai:** Thêm generator QR (zxing hoặc tự vẽ) xuất Bitmap → đẩy vào đúng luồng Image mode giống Signature (`iconUri` nội bộ). Tận dụng lại toàn bộ rotation/alpha/tile sẵn có.
 
-### C. Tùy chọn xuất ảnh (Export Options)
-**Mô tả:** Cho chọn định dạng (JPEG/PNG/WEBP) + chất lượng nén, resize cạnh dài khi lưu, và giữ/xóa EXIF gốc (hoặc nhúng `TAG_COPYRIGHT`).
-**Triển khai:** Mở rộng `SaveImageBSDialogFragment` + nhánh lưu trong `MainViewModel` (hiện nén qua `Compressor`). Thêm copyright dùng `ExifInterface.setAttribute`.
+### C. Mở rộng Export options (WEBP + resize + EXIF copyright)
+**Mô tả:** Bổ sung cho mục "Export options" đã có: thêm WEBP, resize cạnh dài khi lưu, giữ/xóa EXIF gốc (hoặc nhúng `TAG_COPYRIGHT`).
+**Triển khai:** Thêm WEBP vào `popArray` + `trapOutputExtension`/`UserPreferences` serialize; resize bitmap trước `compress`; copyright dùng `ExifInterface.setAttribute` sau khi ghi file.
 
 ### D. Position Anchor 9-grid
 **Mô tả:** Ngoài kéo thả tự do (CLAMP), thêm preset neo theo lưới 3x3 + margin (góc/cạnh/giữa) cho watermark đơn.
