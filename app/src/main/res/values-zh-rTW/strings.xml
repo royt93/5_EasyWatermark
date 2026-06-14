@@ -97,4 +97,42 @@
     <string name="leica_exif_border">Leica EXIF 邊框</string>
     <string name="leica_exif_border_desc">自動在匯出圖片底部加入專業的 EXIF 中繼資料邊框。注意：為提升效能，預覽視窗中不顯示該邊框。</string>
 
+    <string name="vip_title">VIP</string>
+    <string name="vip_status_active">VIP 已啟用</string>
+    <string name="vip_status_free">免費模式</string>
+    <string name="vip_entry_first_install">🎁 首次安裝禮包</string>
+    <string name="vip_entry_manual">VIP 通行證</string>
+    <string name="vip_entry_none">尚無啟用中的 VIP 通行證</string>
+    <string name="vip_expiry">%1$s 到期</string>
+    <string name="vip_expiry_none">尚無到期日</string>
+    <string name="vip_redeem_title">兌換 VIP 金鑰</string>
+    <string name="vip_key_hint">請輸入 VIP 金鑰</string>
+    <string name="vip_redeem_button">啟用 VIP</string>
+    <string name="vip_key_invalid">VIP 金鑰無效</string>
+    <string name="vip_key_activated">已啟用 VIP %1$d 天</string>
+    <string name="vip_reward_title">取得 3 天 VIP</string>
+    <string name="vip_reward_desc">觀看一則獎勵廣告即可啟用 3 天 VIP 通行證。</string>
+    <string name="vip_watch_rewarded">觀看廣告換 3 天 VIP</string>
+    <string name="vip_reward_activated">已啟用 VIP %1$d 天</string>
+    <string name="vip_reward_unavailable">獎勵廣告尚未準備就緒</string>
+    <string name="vip_privacy_footer">隱私權政策</string>
+    <string name="vip_activated_at">啟用時間：%1$s</string>
+    <string name="vip_time_left">剩餘時間</string>
+    <string name="vip_remaining">%1$d 天 %2$02d 時 %3$02d 分 %4$02d 秒</string>
+    <string name="vip_active_card_title">啟用中的 VIP 通行證</string>
+    <string name="vip_revoke_button">撤銷 VIP</string>
+    <string name="vip_revoke_confirm_title">確認撤銷</string>
+    <string name="vip_revoke_confirm_message">您確定要撤銷 VIP 並回到免費方案嗎？</string>
+    <string name="vip_revoked">已撤銷 VIP</string>
+    <string name="vip_buy_title">購買 VIP</string>
+    <string name="vip_buy_30d_locked">購買 30 天 VIP — 即將推出</string>
+    <string name="vip_buy_90d_locked">購買 90 天 VIP — 即將推出</string>
+    <string name="vip_buy_1y_locked">購買 1 年 VIP — 即將推出</string>
+    <string name="vip_buy_lifetime_locked">購買終身 VIP — 即將推出</string>
+    <string name="vip_restore_locked">還原購買 — 即將推出</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">確認</string>
+    <string name="vip_success_title">成功</string>
+    <string name="vip_failed_title">失敗</string>
+
 </resources>

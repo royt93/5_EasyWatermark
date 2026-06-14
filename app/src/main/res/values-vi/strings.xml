@@ -37,4 +37,6 @@
     <string name="vip_restore_locked">Khôi phục mua hàng — sắp ra mắt</string>
     <string name="cancel">Huỷ</string>
     <string name="confirm">Xác nhận</string>
+    <string name="vip_success_title">Thành công</string>
+    <string name="vip_failed_title">Thất bại</string>
 </resources>

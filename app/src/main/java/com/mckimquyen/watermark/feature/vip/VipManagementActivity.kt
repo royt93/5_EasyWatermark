@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.R
@@ -61,6 +62,10 @@ class VipManagementActivity : BaseActivity() {
         binding.btnRedeemKey.setOnClickListener { redeemKey() }
         binding.btnWatchRewarded.setOnClickListener { watchRewarded() }
         binding.btnRevoke.setOnClickListener { confirmRevoke() }
+        // Nút "Kích hoạt VIP" chỉ bật khi đã nhập mã.
+        binding.edtVipKey.doAfterTextChanged { text ->
+            binding.btnRedeemKey.isEnabled = !text.isNullOrBlank()
+        }
         binding.tvPrivacy.setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AdKeys.PRIVACY_POLICY_URL)))
         }
@@ -73,18 +78,18 @@ class VipManagementActivity : BaseActivity() {
     private fun redeemKey() {
         val days = VipKeys.durationDaysFor(binding.edtVipKey.text?.toString().orEmpty())
         if (days == null) {
-            Toast.makeText(this, R.string.vip_key_invalid, Toast.LENGTH_SHORT).show()
+            showResultDialog(R.string.vip_failed_title, getString(R.string.vip_key_invalid))
             return
         }
         val activated = AdManager.activateVipByKey(this, AdKeys.VIP_SECRET_30_DAYS, days)
         if (activated) {
             vipPrefs.markUserActivatedVip()
             binding.edtVipKey.text?.clear()
-            Toast.makeText(this, getString(R.string.vip_key_activated, days), Toast.LENGTH_SHORT).show()
             celebrate()
             refreshVipState()
+            showResultDialog(R.string.vip_success_title, getString(R.string.vip_key_activated, days))
         } else {
-            Toast.makeText(this, R.string.vip_key_invalid, Toast.LENGTH_SHORT).show()
+            showResultDialog(R.string.vip_failed_title, getString(R.string.vip_key_invalid))
         }
     }
 
@@ -101,7 +106,7 @@ class VipManagementActivity : BaseActivity() {
                     if (shown) {
                         grantRewardedVip()
                     } else {
-                        Toast.makeText(this, R.string.vip_reward_unavailable, Toast.LENGTH_SHORT).show()
+                        showResultDialog(R.string.vip_failed_title, getString(R.string.vip_reward_unavailable))
                     }
                     finishRewardFlow()
                 }
@@ -113,13 +118,17 @@ class VipManagementActivity : BaseActivity() {
         val activated = AdManager.activateVipByKey(this, AdKeys.VIP_SECRET_30_DAYS, REWARDED_VIP_DAYS)
         if (activated) {
             vipPrefs.markUserActivatedVip()
-            Toast.makeText(
-                this,
-                getString(R.string.vip_reward_activated, REWARDED_VIP_DAYS),
-                Toast.LENGTH_SHORT
-            ).show()
             celebrate()
+            showResultDialog(R.string.vip_success_title, getString(R.string.vip_reward_activated, REWARDED_VIP_DAYS))
         }
+    }
+
+    private fun showResultDialog(titleRes: Int, message: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(titleRes)
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun finishRewardFlow() {
@@ -282,8 +291,8 @@ class VipManagementActivity : BaseActivity() {
         pulseAnimator?.cancel()
         pulseAnimator = ObjectAnimator.ofPropertyValuesHolder(
             binding.btnWatchRewarded,
-            android.animation.PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.05f),
-            android.animation.PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.05f)
+            android.animation.PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.03f),
+            android.animation.PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.03f)
         ).apply {
             duration = 1600L
             repeatMode = ObjectAnimator.REVERSE
@@ -337,11 +346,13 @@ class VipManagementActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         binding.shimmerCrown.startShimmer()
+        binding.shimmerWatch.startShimmer()
         startPulse()
     }
 
     override fun onPause() {
         binding.shimmerCrown.stopShimmer()
+        binding.shimmerWatch.stopShimmer()
         stopPulse()
         countUpAnimator?.cancel()
         countUpAnimator = null

@@ -17,6 +17,8 @@
             android:id="@+id/contentContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
@@ -190,10 +192,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
                     android:layout_marginTop="14dp"
+                    android:enabled="false"
                     android:text="@string/vip_redeem_button"
+                    android:textColor="@color/vip_redeem_btn_fg"
+                    app:backgroundTint="@color/vip_redeem_btn_bg"
+                    app:cornerRadius="14dp"
                     app:icon="@drawable/ic_workspace_premium"
                     app:iconGravity="textStart"
-                    app:iconTint="@color/glass_text_primary" />
+                    app:iconTint="@color/vip_redeem_btn_fg" />
             </LinearLayout>
 
             <!-- #7 watch rewarded -->
@@ -203,6 +209,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/bg_vip_card"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="vertical"
                 android:padding="16dp">
 
@@ -222,15 +230,32 @@
                     android:textColor="@color/glass_text_secondary"
                     android:textSize="14sp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnWatchRewarded"
-                    style="@style/Widget.Material3.Button.TonalButton"
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:id="@+id/shimmerWatch"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    android:text="@string/vip_watch_rewarded"
-                    app:icon="@drawable/ic_play_circle"
-                    app:iconGravity="textStart" />
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    app:shimmer_auto_start="true"
+                    app:shimmer_base_alpha="0.9"
+                    app:shimmer_duration="1400"
+                    app:shimmer_highlight_alpha="1.0">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnWatchRewarded"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:text="@string/vip_watch_rewarded"
+                        android:textColor="@color/vip_on_gold"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/vip_gold"
+                        app:cornerRadius="16dp"
+                        app:icon="@drawable/ic_play_circle"
+                        app:iconGravity="textStart"
+                        app:iconTint="@color/vip_on_gold"
+                        app:rippleColor="@color/vip_on_gold" />
+                </com.facebook.shimmer.ShimmerFrameLayout>
             </LinearLayout>
 
             <!-- #12 Active VIP card (single-entry) + revoke -->

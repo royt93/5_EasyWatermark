@@ -161,4 +161,6 @@
     <string name="vip_restore_locked">Restore purchase — coming soon</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
+    <string name="vip_success_title">Success</string>
+    <string name="vip_failed_title">Failed</string>
 </resources>

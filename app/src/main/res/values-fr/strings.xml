@@ -97,4 +97,42 @@
     <string name="leica_exif_border">Bordure Leica EXIF</string>
     <string name="leica_exif_border_desc">Ajoute automatiquement une bordure de métadonnées EXIF professionnelle au bas des images exportées. Remarque : La bordure n\'est pas affichée dans la fenêtre d\'aperçu pour optimiser les performances.</string>
 
+    <string name="vip_title">VIP</string>
+    <string name="vip_status_active">VIP actif</string>
+    <string name="vip_status_free">Mode gratuit</string>
+    <string name="vip_entry_first_install">🎁 Cadeau de première installation</string>
+    <string name="vip_entry_manual">Pass VIP</string>
+    <string name="vip_entry_none">Aucun pass VIP actif</string>
+    <string name="vip_expiry">Expire le %1$s</string>
+    <string name="vip_expiry_none">Pas encore d\'expiration</string>
+    <string name="vip_redeem_title">Utiliser une clé VIP</string>
+    <string name="vip_key_hint">Saisissez votre clé VIP</string>
+    <string name="vip_redeem_button">Activer le VIP</string>
+    <string name="vip_key_invalid">Clé VIP invalide</string>
+    <string name="vip_key_activated">VIP activé pour %1$d jours</string>
+    <string name="vip_reward_title">Obtenez 3 jours de VIP</string>
+    <string name="vip_reward_desc">Regardez une pub récompensée pour activer un pass VIP de 3 jours.</string>
+    <string name="vip_watch_rewarded">Regarder une pub pour 3 jours de VIP</string>
+    <string name="vip_reward_activated">VIP activé pour %1$d jours</string>
+    <string name="vip_reward_unavailable">La pub récompensée n\'est pas encore disponible</string>
+    <string name="vip_privacy_footer">Politique de confidentialité</string>
+    <string name="vip_activated_at">Activé le : %1$s</string>
+    <string name="vip_time_left">Temps restant</string>
+    <string name="vip_remaining">%1$dj %2$02dh %3$02dm %4$02ds</string>
+    <string name="vip_active_card_title">Pass VIP actif</string>
+    <string name="vip_revoke_button">Révoquer le VIP</string>
+    <string name="vip_revoke_confirm_title">Confirmer la révocation</string>
+    <string name="vip_revoke_confirm_message">Voulez-vous vraiment révoquer le VIP et revenir au forfait gratuit \?</string>
+    <string name="vip_revoked">Le VIP a été révoqué</string>
+    <string name="vip_buy_title">Acheter le VIP</string>
+    <string name="vip_buy_30d_locked">Acheter VIP 30 jours — bientôt disponible</string>
+    <string name="vip_buy_90d_locked">Acheter VIP 90 jours — bientôt disponible</string>
+    <string name="vip_buy_1y_locked">Acheter VIP 1 an — bientôt disponible</string>
+    <string name="vip_buy_lifetime_locked">Acheter VIP à vie — bientôt disponible</string>
+    <string name="vip_restore_locked">Restaurer l\'achat — bientôt disponible</string>
+    <string name="cancel">Annuler</string>
+    <string name="confirm">Confirmer</string>
+    <string name="vip_success_title">Succès</string>
+    <string name="vip_failed_title">Échec</string>
+
 </resources>

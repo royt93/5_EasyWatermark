@@ -111,5 +111,6 @@
     <!-- VIP -->
     <color name="vip_gold">#FFFFD60A</color>
     <color name="vip_gold_dark">#FFB8860B</color>
+    <color name="vip_on_gold">#1A1300</color>
 
 </resources>

@@ -98,4 +98,42 @@
     <string name="leica_exif_border">Leica EXIF ボーダー</string>
     <string name="leica_exif_border_desc">エクスポートされた画像の下部にプロフェッショナルな EXIF メタデータボーダーを自動的に追加します。注：パフォーマンスを最適化するため、プレビューウィンドウにボーダーは表示されません。</string>
 
+    <string name="vip_title">VIP</string>
+    <string name="vip_status_active">VIP 有効</string>
+    <string name="vip_status_free">無料モード</string>
+    <string name="vip_entry_first_install">🎁 初回インストール特典</string>
+    <string name="vip_entry_manual">VIP パス</string>
+    <string name="vip_entry_none">有効な VIP パスはありません</string>
+    <string name="vip_expiry">%1$s に期限切れ</string>
+    <string name="vip_expiry_none">有効期限はまだありません</string>
+    <string name="vip_redeem_title">VIP キーを引き換える</string>
+    <string name="vip_key_hint">VIP キーを入力</string>
+    <string name="vip_redeem_button">VIP を有効化</string>
+    <string name="vip_key_invalid">無効な VIP キーです</string>
+    <string name="vip_key_activated">VIP を %1$d 日間有効にしました</string>
+    <string name="vip_reward_title">3 日間の VIP を獲得</string>
+    <string name="vip_reward_desc">リワード広告を 1 回視聴すると、3 日間の VIP パスが有効になります。</string>
+    <string name="vip_watch_rewarded">広告を視聴して 3 日間 VIP</string>
+    <string name="vip_reward_activated">VIP を %1$d 日間有効にしました</string>
+    <string name="vip_reward_unavailable">リワード広告はまだ利用できません</string>
+    <string name="vip_privacy_footer">プライバシーポリシー</string>
+    <string name="vip_activated_at">有効化日時：%1$s</string>
+    <string name="vip_time_left">残り時間</string>
+    <string name="vip_remaining">%1$d日 %2$02d時間 %3$02d分 %4$02d秒</string>
+    <string name="vip_active_card_title">有効な VIP パス</string>
+    <string name="vip_revoke_button">VIP を取り消す</string>
+    <string name="vip_revoke_confirm_title">取り消しの確認</string>
+    <string name="vip_revoke_confirm_message">VIP を取り消して無料プランに戻してもよろしいですか？</string>
+    <string name="vip_revoked">VIP を取り消しました</string>
+    <string name="vip_buy_title">VIP を購入</string>
+    <string name="vip_buy_30d_locked">VIP 30 日間を購入 — 近日公開</string>
+    <string name="vip_buy_90d_locked">VIP 90 日間を購入 — 近日公開</string>
+    <string name="vip_buy_1y_locked">VIP 1 年間を購入 — 近日公開</string>
+    <string name="vip_buy_lifetime_locked">VIP 永久版を購入 — 近日公開</string>
+    <string name="vip_restore_locked">購入を復元 — 近日公開</string>
+    <string name="cancel">キャンセル</string>
+    <string name="confirm">確認</string>
+    <string name="vip_success_title">成功</string>
+    <string name="vip_failed_title">失敗</string>
+
 </resources>

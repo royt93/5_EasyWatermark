@@ -2,6 +2,17 @@
 
 Updated: 2026-06-14
 
+## VIP UX revamp + đa ngôn ngữ (2026-06-14, lần 3)
+
+Theo feedback người dùng, đã verify trên Pixel 7 Pro:
+
+1. **Nút "Kích hoạt VIP" revamp**: nền tím `glass_accent`, bo góc 14dp; icon trùng màu label (cùng `@color/vip_redeem_btn_fg`). Chỉ **enable khi field có mã** (`doAfterTextChanged`), disable + làm mờ khi trống — dùng ColorStateList `vip_redeem_btn_bg`/`vip_redeem_btn_fg` để trạng thái disabled hiển thị mờ đúng (backgroundTint màu đơn không tự mờ).
+2. **Kết quả kích hoạt dùng Material You dialog** (`MaterialAlertDialogBuilder`, tiêu đề `vip_success_title`/`vip_failed_title`) thay cho Toast — áp cho cả redeem key, rewarded grant, và rewarded fail.
+3. **Nút "Xem quảng cáo → 3 ngày VIP" nổi bật**: nền gold `vip_gold` + chữ/icon đậm `vip_on_gold`, bo 16dp, bọc `ShimmerFrameLayout` (shine sweep) + pulse. **Fix lỗi "animation cut UI"**: pulse scale làm nút (match_parent) tràn ra ngoài và bị `clipChildren` mặc định cắt mép → bật `clipChildren=false`/`clipToPadding=false` cho `shimmerWatch` + `cardReward` + `contentContainer`, giảm pulse 1.05→1.03.
+4. **Đa ngôn ngữ native-speaker đầy đủ**: bổ sung khối ~37 string VIP cho cả 13 locale app hỗ trợ (de-rDE, es, fr, it, ja, nb-rNO, nn, pt-rBR, pt, ru, zh-rCN, zh-rTW) + vi/en. Mỗi locale 35 vip + cancel/confirm, escape XML đúng (\\' cho fr/it), giữ placeholder `%1$s`/`%1$d`/`%1$dd %2$02dh...`.
+
+Ghi chú: `activateVipByKey` khi VIP đang còn hạn thì **cộng dồn (stacking)** lên hạn cũ — đó là lý do nhập key 3 ngày lúc đang active 30 ngày ra ~30 ngày; nhập từ trạng thái Free thì ra đúng 3 ngày. Hành vi wrapper, không phải lỗi app. Build `:app:assembleAppTestDebug` + `:app:assembleAppReleaseRelease` đều PASS.
+
 ## VIP screen full-spec upgrade (2026-06-14, lần 2)
 
 Nâng `VipManagementActivity` lên đúng spec template Step 10 (giữ kiểu Activity, không đổi Fragment):
