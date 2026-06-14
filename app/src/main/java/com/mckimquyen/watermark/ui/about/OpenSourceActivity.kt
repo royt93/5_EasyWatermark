@@ -1,13 +1,10 @@
 package com.mckimquyen.watermark.ui.about
-
-import android.content.Context
-import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.mckimquyen.watermark.BaseActivity
+import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.databinding.AOpenSourceBinding
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.openLink
@@ -18,7 +15,7 @@ class OpenSourceActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("roy93~", "OpenSourceActivity onCreate")
+        Log.d(LOG_TAG, "OpenSourceActivity onCreate")
         setContentView(binding.root)
         // Insets: push toolbar down below the status bar, and add bottom padding for nav bar
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { root, insets ->
@@ -28,7 +25,7 @@ class OpenSourceActivity : BaseActivity() {
         }
         ViewCompat.setOnApplyWindowInsetsListener(binding.myToolbar) { view, insets ->
             val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            Log.d("roy93~", "OpenSourceActivity insets — statusBarTop=$top")
+            Log.d(LOG_TAG, "OpenSourceActivity insets — statusBarTop=$top")
             view.setPadding(0, top, 0, 0)
             view.layoutParams.height = resources.getDimensionPixelSize(
                 com.google.android.material.R.dimen.m3_appbar_size_compact
@@ -59,5 +56,4 @@ class OpenSourceActivity : BaseActivity() {
             openLink("https://github.com/zetbaitsu/Compressor/")
         }
     }
-
 }

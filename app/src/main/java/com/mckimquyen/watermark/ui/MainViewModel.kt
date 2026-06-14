@@ -1,5 +1,4 @@
 package com.mckimquyen.watermark.ui
-
 import android.app.Activity
 import android.content.*
 import android.graphics.*
@@ -14,6 +13,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.*
 import androidx.palette.graphics.Palette
 import com.mckimquyen.watermark.BuildConfig
+import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.*
@@ -48,7 +48,7 @@ class MainViewModel @Inject constructor(
     private val userRepo: UserConfigRepository,
     private val waterMarkRepo: WaterMarkRepository,
     private val memorySettingRepo: MemorySettingRepo,
-    private val templateRepo: TemplateRepository,
+    private val templateRepo: TemplateRepository
 ) : ViewModel() {
 
     var nextSelectedPos: Int = 0
@@ -89,6 +89,12 @@ class MainViewModel @Inject constructor(
 
     val compressLevel: Int
         get() = userPreferences.value.compressLevel
+
+    val maxOutputLongEdge: Int
+        get() = userPreferences.value.maxOutputLongEdge
+
+    val copyright: String
+        get() = userPreferences.value.copyright
 
     val colorPalette: MutableLiveData<Palette> = MutableLiveData()
 
@@ -145,7 +151,7 @@ class MainViewModel @Inject constructor(
     fun saveImage(
         contentResolver: ContentResolver,
         viewInfo: ViewInfo,
-        imageList: List<ImageInfo>,
+        imageList: List<ImageInfo>
     ) {
         viewModelScope.launch {
             if (this@MainViewModel.imageList.value?.first.isNullOrEmpty()) {
@@ -167,7 +173,7 @@ class MainViewModel @Inject constructor(
     private suspend fun generateList(
         contentResolver: ContentResolver,
         viewInfo: ViewInfo,
-        infoList: List<ImageInfo>?,
+        infoList: List<ImageInfo>?
     ): Result<List<ImageInfo>> =
         withContext(Dispatchers.Default) {
             if (infoList.isNullOrEmpty()) {
@@ -201,7 +207,7 @@ class MainViewModel @Inject constructor(
         contentResolver: ContentResolver,
         viewInfo: ViewInfo,
         imageInfo: ImageInfo,
-        index: Int,
+        index: Int
     ): Result<Uri> =
         withContext(Dispatchers.IO) {
             val rect = decodeBitmapFromUri(contentResolver, imageInfo.uri)
@@ -219,7 +225,7 @@ class MainViewModel @Inject constructor(
                 width = mutableBitmap.width,
                 height = mutableBitmap.height,
                 reqWidth = WaterMarkImageView.calculateDrawLimitWidth(viewInfo.width, viewInfo.paddingLeft),
-                reqHeight = WaterMarkImageView.calculateDrawLimitHeight(viewInfo.height, viewInfo.paddingRight),
+                reqHeight = WaterMarkImageView.calculateDrawLimitHeight(viewInfo.height, viewInfo.paddingRight)
             )
             imageInfo.width = mutableBitmap.width
             imageInfo.height = mutableBitmap.height
@@ -339,25 +345,31 @@ class MainViewModel @Inject constructor(
                     textAlign = Paint.Align.LEFT
                     typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
                 }
-                
+
                 // Draw Camera Model
                 exCanvas.drawText(eModel.getCameraName(), mutableBitmap.width * 0.05f, mutableBitmap.height + borderHeight * 0.5f, textPaint)
-                
+
                 // Draw Exif Details
                 textPaint.textSize = borderHeight * 0.22f
                 textPaint.textAlign = Paint.Align.RIGHT
                 textPaint.typeface = android.graphics.Typeface.DEFAULT
                 exCanvas.drawText(eModel.getFormattedExif(), mutableBitmap.width * 0.95f, mutableBitmap.height + borderHeight * 0.45f, textPaint)
-                
+
                 // Draw Date
                 textPaint.textSize = borderHeight * 0.18f
                 textPaint.color = Color.DKGRAY
                 exCanvas.drawText(eModel.dateTime, mutableBitmap.width * 0.95f, mutableBitmap.height + borderHeight * 0.75f, textPaint)
-                
+
                 expandedBitmap
             } else {
                 mutableBitmap
             }
+
+            // Resize cạnh dài khi lưu (0 = giữ nguyên kích thước gốc).
+            val exportBitmap = com.mckimquyen.watermark.utils.bitmap.OutputImageUtils.resizeIfNeeded(
+                finalExportBitmap,
+                maxOutputLongEdge
+            )
 
             return@withContext if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val imageCollection =
@@ -374,7 +386,7 @@ class MainViewModel @Inject constructor(
 
                 val imageContentUri = contentResolver.insert(imageCollection, imageDetail)
                 contentResolver.openFileDescriptor(imageContentUri!!, "w", null).use { pfd ->
-                    finalExportBitmap.compress(
+                    exportBitmap.compress(
                         /* format = */ outputFormat,
                         /* quality = */ compressLevel,
                         /* stream = */ FileOutputStream(pfd!!.fileDescriptor)
@@ -383,6 +395,7 @@ class MainViewModel @Inject constructor(
                 imageDetail.clear()
                 imageDetail.put(MediaStore.Images.Media.IS_PENDING, 0)
                 contentResolver.update(imageContentUri, imageDetail, null, null)
+                applyCopyrightExif(contentResolver, imageContentUri)
                 Result.success(imageContentUri)
             } else {
                 // need request write_storage permission
@@ -404,12 +417,13 @@ class MainViewModel @Inject constructor(
                 }
                 val outputFile = File(mediaDir, generateOutputName())
                 outputFile.outputStream().use { fileOutputStream ->
-                    finalExportBitmap.compress(
+                    exportBitmap.compress(
                         /* format = */ outputFormat,
                         /* quality = */ compressLevel,
                         /* stream = */ fileOutputStream
                     )
                 }
+                applyCopyrightExif(outputFile.absolutePath)
                 val outputUri = FileProvider.getUriForFile(
                     /* context = */ MyApplication.instance,
                     /* authority = */ "${BuildConfig.APPLICATION_ID}.fileprovider",
@@ -434,23 +448,25 @@ class MainViewModel @Inject constructor(
         text: String,
         imageInfo: ImageInfo,
         contentResolver: ContentResolver,
-        index: Int,
+        index: Int
     ): String {
         if (!text.contains('{')) return text
         val exif = imageInfo.exifModel
         val date = exif?.dateTime?.takeIf { it.isNotBlank() }
             ?: System.currentTimeMillis().formatDate("yyyy-MM-dd")
-        return text
-            .replace("{filename}", queryDisplayName(contentResolver, imageInfo.uri))
-            .replace("{seq}", (index + 1).toString())
-            .replace("{date}", date)
-            .replace("{model}", exif?.getCameraName().orEmpty())
-            .replace("{make}", exif?.make.orEmpty())
-            .replace("{iso}", exif?.iso.orEmpty())
-            .replace("{fnumber}", exif?.fNumber.orEmpty())
-            .replace("{exposure}", exif?.exposureTime.orEmpty())
-            .replace("{focal}", exif?.focalLength.orEmpty())
-            .replace("{exif}", exif?.getFormattedExif().orEmpty())
+        val tokens = mapOf(
+            "filename" to queryDisplayName(contentResolver, imageInfo.uri),
+            "seq" to (index + 1).toString(),
+            "date" to date,
+            "model" to exif?.getCameraName().orEmpty(),
+            "make" to exif?.make.orEmpty(),
+            "iso" to exif?.iso.orEmpty(),
+            "fnumber" to exif?.fNumber.orEmpty(),
+            "exposure" to exif?.exposureTime.orEmpty(),
+            "focal" to exif?.focalLength.orEmpty(),
+            "exif" to exif?.getFormattedExif().orEmpty()
+        )
+        return com.mckimquyen.watermark.utils.TextTokenResolver.resolve(text, tokens)
     }
 
     private fun queryDisplayName(contentResolver: ContentResolver, uri: Uri): String {
@@ -458,12 +474,16 @@ class MainViewModel @Inject constructor(
             contentResolver.query(
                 uri,
                 arrayOf(android.provider.OpenableColumns.DISPLAY_NAME),
-                null, null, null
+                null,
+                null,
+                null
             )?.use { cursor ->
                 if (cursor.moveToFirst()) {
                     val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
                     (if (nameIndex >= 0) cursor.getString(nameIndex) else null)?.substringBeforeLast('.')
-                } else null
+                } else {
+                    null
+                }
             } ?: uri.lastPathSegment?.substringBeforeLast('.').orEmpty()
         } catch (e: Exception) {
             uri.lastPathSegment?.substringBeforeLast('.').orEmpty()
@@ -475,7 +495,40 @@ class MainViewModel @Inject constructor(
     }
 
     private fun trapOutputExtension(): String {
-        return if (outputFormat == Bitmap.CompressFormat.PNG) "png" else "jpg"
+        return com.mckimquyen.watermark.utils.bitmap.OutputImageUtils.extensionFor(outputFormat)
+    }
+
+    /** Định dạng có hỗ trợ ghi EXIF (androidx ExifInterface): JPEG / WEBP / PNG. */
+    private fun supportsExifWrite(): Boolean = outputFormat != Bitmap.CompressFormat.PNG
+
+    /** Nhúng copyright vào EXIF cho ảnh đã lưu qua MediaStore (Android Q+). */
+    private fun applyCopyrightExif(contentResolver: ContentResolver, uri: Uri) {
+        val text = copyright.trim()
+        if (text.isEmpty() || !supportsExifWrite()) return
+        try {
+            contentResolver.openFileDescriptor(uri, "rw")?.use { pfd ->
+                val exif = androidx.exifinterface.media.ExifInterface(pfd.fileDescriptor)
+                exif.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_COPYRIGHT, text)
+                exif.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_ARTIST, text)
+                exif.saveAttributes()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /** Nhúng copyright vào EXIF cho ảnh lưu theo đường dẫn file (Android < Q). */
+    private fun applyCopyrightExif(filePath: String) {
+        val text = copyright.trim()
+        if (text.isEmpty() || !supportsExifWrite()) return
+        try {
+            val exif = androidx.exifinterface.media.ExifInterface(filePath)
+            exif.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_COPYRIGHT, text)
+            exif.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_ARTIST, text)
+            exif.saveAttributes()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun selectImage(uri: Uri) {
@@ -570,14 +623,14 @@ class MainViewModel @Inject constructor(
     }
 
     fun updateIcon(iconUri: Uri) {
-        Log.d("roy93~", "[VM] updateIcon called: uri=$iconUri  empty=${iconUri.toString().isEmpty()}")
+        Log.d(LOG_TAG, "[VM] updateIcon called: uri=$iconUri  empty=${iconUri.toString().isEmpty()}")
         launch {
             if (iconUri.toString().isNotEmpty()) {
-                Log.d("roy93~", "[VM] waterMarkRepo.updateIcon() \u2192 uri=$iconUri")
+                Log.d(LOG_TAG, "[VM] waterMarkRepo.updateIcon() \u2192 uri=$iconUri")
                 waterMarkRepo.updateIcon(iconUri)
-                Log.d("roy93~", "[VM] waterMarkRepo.updateIcon() done")
+                Log.d(LOG_TAG, "[VM] waterMarkRepo.updateIcon() done")
             } else {
-                Log.d("roy93~", "[VM] updateIcon: uri is EMPTY, skip")
+                Log.d(LOG_TAG, "[VM] updateIcon: uri is EMPTY, skip")
             }
         }
     }
@@ -611,16 +664,31 @@ class MainViewModel @Inject constructor(
         resetJobStatus()
     }
 
+    fun saveMaxLongEdge(maxLongEdge: Int) {
+        viewModelScope.launch {
+            userRepo.updateMaxLongEdge(maxLongEdge)
+        }
+        resetJobStatus()
+    }
+
+    fun saveCopyright(copyright: String) {
+        viewModelScope.launch {
+            userRepo.updateCopyright(copyright)
+        }
+    }
+
     fun removeImage(
         imageInfo: ImageInfo?,
-        curSelectedPos: Int,
+        curSelectedPos: Int
     ) {
         val list = imageList.value?.first?.toMutableList() ?: return
         val removePos = list.indexOf(imageInfo)
         list.removeAt(removePos)
         val selectedPos =
-            if (removePos < curSelectedPos || removePos >= (imageList.value?.first?.size
-                    ?: 0) - 1
+            if (removePos < curSelectedPos || removePos >= (
+                imageList.value?.first?.size
+                    ?: 0
+                ) - 1
             ) {
                 (curSelectedPos - 1).coerceAtLeast(0)
             } else {
@@ -724,7 +792,7 @@ Devices:
 ${Build.VERSION.RELEASE}, ${Build.VERSION.SDK_INT}, ${Build.DEVICE}, ${Build.MODEL}, ${Build.PRODUCT}, ${Build.MANUFACTURER}
 
 ${System.currentTimeMillis().formatDate("yyy-MM-dd")}
-""".trimIndent()
+        """.trimIndent()
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "message/rfc822"
             putExtra(Intent.EXTRA_EMAIL, arrayOf("roy.mobile.dev@gmail.com"))
@@ -765,7 +833,7 @@ ${System.currentTimeMillis().formatDate("yyy-MM-dd")}
 
     private suspend fun queryInternal(
         contentResolver: ContentResolver,
-        force: Boolean = galleryPickedImageList.value == null,
+        force: Boolean = galleryPickedImageList.value == null
     ) = withContext(Dispatchers.IO) {
         if (!force) {
             return@withContext

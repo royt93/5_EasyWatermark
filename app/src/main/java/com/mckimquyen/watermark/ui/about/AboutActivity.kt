@@ -1,13 +1,8 @@
 package com.mckimquyen.watermark.ui.about
-
-import android.content.res.ColorStateList
-import android.graphics.Color
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.view.ViewCompat
@@ -16,12 +11,12 @@ import com.jakewharton.processphoenix.ProcessPhoenix
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.BuildConfig
+import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.AAboutBinding
-import com.roy.sdkadbmob.AdManager
-import com.mckimquyen.watermark.utils.ktx.colorSecondaryContainer
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.openLink
+import com.roy.sdkadbmob.AdManager
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -38,19 +33,19 @@ class AboutActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        Log.d("roy93~", "AboutActivity onResume")
+        Log.d(LOG_TAG, "AboutActivity onResume")
         AdManager.bannerResume(adView)
     }
 
     override fun onPause() {
-        Log.d("roy93~", "AboutActivity onPause")
+        Log.d(LOG_TAG, "AboutActivity onPause")
         AdManager.bannerPause(adView)
         super.onPause()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("roy93~", "AboutActivity onCreate")
+        Log.d(LOG_TAG, "AboutActivity onCreate")
         initView()
         // Edge-to-edge is handled globally by BaseActivity.applyEdgeToEdge()
         // Add inset listener so AppBarLayout starts BELOW the status bar, and root handles bottom nav bar
@@ -64,12 +59,12 @@ class AboutActivity : BaseActivity() {
             view.setPadding(0, statusBarHeight, 0, 0)
             insets
         }
-        Log.d("roy93~", "AboutActivity onCreate complete — adManager set")
+        Log.d(LOG_TAG, "AboutActivity onCreate complete — adManager set")
     }
 
     private fun initView() {
         with(binding) {
-            Log.d("roy93~", "AboutActivity initView — versionName=${BuildConfig.VERSION_NAME}")
+            Log.d(LOG_TAG, "AboutActivity initView — versionName=${BuildConfig.VERSION_NAME}")
 
             // Version display
             tvVersionValue.text = "v${BuildConfig.VERSION_NAME}"
@@ -77,16 +72,16 @@ class AboutActivity : BaseActivity() {
 
             // Back navigation via CollapsingToolbar's nav icon
             topAppBar.setNavigationOnClickListener {
-                Log.d("roy93~", "AboutActivity back button clicked via topAppBar")
+                Log.d(LOG_TAG, "AboutActivity back button clicked via topAppBar")
                 finish()
             }
 
             tvRating.setOnClickListener {
-                Log.d("roy93~", "AboutActivity tvRating clicked — opening Play Store")
+                Log.d(LOG_TAG, "AboutActivity tvRating clicked — opening Play Store")
                 openLink(Uri.parse("https://play.google.com/store/apps/details?id=${it.context.packageName}"))
             }
             tvMoreApp.setOnClickListener {
-                Log.d("roy93~", "AboutActivity tvMoreApp clicked — opening developer page")
+                Log.d(LOG_TAG, "AboutActivity tvMoreApp clicked — opening developer page")
                 openLink("https://play.google.com/store/apps/developer?id=SAIGON PHANTOM LABS")
             }
 //            tvChangeLog.setOnClickListener {
@@ -106,20 +101,20 @@ class AboutActivity : BaseActivity() {
 //                openLink(Uri.parse("https://github.com/rosuH/EasyWatermark/blob/master/PrivacyPolicy_zh-CN.md"))
 //            }
             tvPrivacyEng.setOnClickListener {
-                Log.d("roy93~", "AboutActivity tvPrivacyEng clicked — opening privacy policy")
+                Log.d(LOG_TAG, "AboutActivity tvPrivacyEng clicked — opening privacy policy")
                 openLink(Uri.parse("https://loitp.notion.site/loitp/Privacy-Policy-319b1cd8783942fa8923d2a3c9bce60f"))
             }
 
             switchDebug.setOnCheckedChangeListener { _, isChecked ->
-                Log.d("roy93~", "AboutActivity switchDebug changed -> isChecked=$isChecked")
+                Log.d(LOG_TAG, "AboutActivity switchDebug changed -> isChecked=$isChecked")
                 viewModel.toggleBounds(isChecked)
             }
 
             switchDynamicColor.isChecked = CMonet.isDynamicColorAvailable()
-            Log.d("roy93~", "AboutActivity dynamicColor available=${CMonet.isDynamicColorAvailable()}")
+            Log.d(LOG_TAG, "AboutActivity dynamicColor available=${CMonet.isDynamicColorAvailable()}")
 
             switchDynamicColor.setOnCheckedChangeListener { _, isChecked ->
-                Log.d("roy93~", "AboutActivity switchDynamicColor changed -> isChecked=$isChecked — triggering rebirth")
+                Log.d(LOG_TAG, "AboutActivity switchDynamicColor changed -> isChecked=$isChecked — triggering rebirth")
                 viewModel.toggleSupportDynamicColor(isChecked)
                 Toast.makeText(
                     /* context = */ this@AboutActivity,
@@ -131,22 +126,21 @@ class AboutActivity : BaseActivity() {
 
             viewModel.waterMark.observe(this@AboutActivity) {
                 val boundsEnabled = viewModel.waterMark.value?.enableBounds ?: false
-                Log.d("roy93~", "AboutActivity waterMark observed — enableBounds=$boundsEnabled")
+                Log.d(LOG_TAG, "AboutActivity waterMark observed — enableBounds=$boundsEnabled")
                 switchDebug.isChecked = boundsEnabled
             }
-
 
             adView = AdManager.loadBanner(
                 context = this@AboutActivity,
                 container = binding.layoutAdBanner.bannerContainer,
-                tvLabelAd = binding.layoutAdBanner.tvLabelAd,
+                tvLabelAd = binding.layoutAdBanner.tvLabelAd
             )
             AdManager.loadInterstitial(this@AboutActivity)
         }
     }
 
     private var isFinishingInternal = false
-    
+
     override fun finish() {
         if (isFinishingInternal) {
             super.finish()
@@ -155,9 +149,9 @@ class AboutActivity : BaseActivity() {
         isFinishingInternal = true
         AdManager.showInterstitial(this) { success ->
             if (success) {
-                Log.d("roy93~", "Ad đã hiển thị và đóng thành công")
+                Log.d(LOG_TAG, "Ad đã hiển thị và đóng thành công")
             } else {
-                Log.d("roy93~", "Ad không hiển thị được hoặc có lỗi")
+                Log.d(LOG_TAG, "Ad không hiển thị được hoặc có lỗi")
             }
             finish()
         }
@@ -167,5 +161,4 @@ class AboutActivity : BaseActivity() {
         AdManager.bannerDestroy(adView)
         super.onDestroy()
     }
-
 }

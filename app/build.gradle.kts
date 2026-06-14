@@ -68,7 +68,7 @@ android {
         }
 
         val release by getting {
-            //nho check APPLICATION_ID trong manifest
+            // nho check APPLICATION_ID trong manifest
             buildConfigField("Boolean", "IS_ENABLE_ADMOB", "false")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3612191981543807/3976595378\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3612191981543807/2663513707\"")
@@ -78,12 +78,11 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "coroutines.pro", "proguard-rules.pro"
+                "coroutines.pro",
+                "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
         }
-
-
     }
 
     compileOptions {
@@ -117,6 +116,13 @@ android {
 
     lint {
         baseline = file("lint-baseline.xml")
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
     }
 }
 
@@ -155,10 +161,30 @@ dependencies {
     api(libs.profieinstaller)
     api(libs.colorpicker)
     api(libs.blurview)
+    api(libs.zxing.core)
 
     implementation("com.github.royt93:AdmobWrapper:1.1.2")
     api("com.jakewharton:process-phoenix:3.0.0")
     implementation("com.google.android.play:review:2.0.2")
     implementation("com.google.android.play:review-ktx:2.0.2")
 //    debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
+
+    // unit test (JVM + Robolectric)
+    testImplementation(libs.test.junit)
+    testImplementation(libs.test.truth)
+    testImplementation(libs.test.coroutines)
+    testImplementation(libs.test.robolectric)
+    testImplementation(libs.test.arch.core)
+    testImplementation(libs.test.mockk)
+    testImplementation(libs.test.core)
+
+    // instrumentation test (androidTest)
+    androidTestImplementation(libs.test.core)
+    androidTestImplementation(libs.test.rules)
+    androidTestImplementation(libs.test.runner)
+    androidTestImplementation(libs.test.ext.junit)
+    androidTestImplementation(libs.test.espresso.core)
+    androidTestImplementation(libs.test.truth)
+    androidTestImplementation(libs.test.coroutines)
+    androidTestImplementation(libs.test.room)
 }

@@ -7,7 +7,7 @@ import androidx.annotation.Keep
 data class FuncTitleModel(
     var type: FuncType,
     var title: String,
-    @DrawableRes var iconRes: Int,
+    @DrawableRes var iconRes: Int
 ) {
     sealed class FuncType {
         object Text : FuncType()
@@ -22,6 +22,7 @@ data class FuncTitleModel(
         object Vertical : FuncType()
         object Horizon : FuncType()
         object Signature : FuncType()
+        object QRCode : FuncType()
         object ExifBorder : FuncType()
         object TextSize : FuncType() {
             const val tag = "TextSize"

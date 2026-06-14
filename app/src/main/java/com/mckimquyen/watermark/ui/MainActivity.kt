@@ -1,7 +1,4 @@
 package com.mckimquyen.watermark.ui
-import com.mckimquyen.watermark.utils.ktx.toast
-
-
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.ClipData
@@ -16,7 +13,6 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -41,6 +37,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.BuildConfig
+import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.FuncTitleModel
@@ -48,7 +45,6 @@ import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.rateAppInApp
-
 import com.mckimquyen.watermark.ui.about.AboutActivity
 import com.mckimquyen.watermark.ui.adapter.FuncPanelAdapter
 import com.mckimquyen.watermark.ui.adapter.PhotoListPreviewAdapter
@@ -80,6 +76,7 @@ import com.mckimquyen.watermark.utils.ktx.openLink
 import com.mckimquyen.watermark.utils.ktx.preCheckStoragePermission
 import com.mckimquyen.watermark.utils.ktx.titleTextColor
 import com.mckimquyen.watermark.utils.ktx.toColor
+import com.mckimquyen.watermark.utils.ktx.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -110,6 +107,11 @@ class MainActivity : BaseActivity() {
                 type = FuncTitleModel.FuncType.Signature,
                 title = "Signature",
                 iconRes = R.drawable.ic_func_text
+            ),
+            FuncTitleModel(
+                type = FuncTitleModel.FuncType.QRCode,
+                title = getString(R.string.qr_code),
+                iconRes = R.drawable.ic_func_qr_code
             ),
             FuncTitleModel(
                 type = FuncTitleModel.FuncType.ExifBorder,
@@ -214,8 +216,6 @@ class MainActivity : BaseActivity() {
     }
 
     private fun initRecoveryView() {
-
-
         val tvCrashInfo = findViewById<TextView>(R.id.tvCrashInfo).apply {
             with(getSharedPreferences(MyApplication.SP_NAME, MODE_PRIVATE)) {
                 val crashInfo = getString(MyApplication.KEY_STACK_TRACE, "")
@@ -272,32 +272,32 @@ class MainActivity : BaseActivity() {
         }
 
         signatureLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
-            Log.d("roy93~", "[MAIN] signatureLauncher callback: resultCode=${result.resultCode}")
+            Log.d(LOG_TAG, "[MAIN] signatureLauncher callback: resultCode=${result.resultCode}")
             if (result.resultCode == android.app.Activity.RESULT_OK) {
                 val uriStr = result.data?.getStringExtra("signature_uri")
-                Log.d("roy93~", "[MAIN] signature_uri string from intent: $uriStr")
+                Log.d(LOG_TAG, "[MAIN] signature_uri string from intent: $uriStr")
                 if (uriStr != null) {
                     val signatureUri = android.net.Uri.parse(uriStr)
-                    Log.d("roy93~", "[MAIN] parsed Uri: $signatureUri  scheme=${signatureUri.scheme}")
+                    Log.d(LOG_TAG, "[MAIN] parsed Uri: $signatureUri  scheme=${signatureUri.scheme}")
                     // Grant read permission so ContentResolver can open this FileProvider URI
                     try {
                         contentResolver.takePersistableUriPermission(
                             signatureUri,
                             android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
                         )
-                        Log.d("roy93~", "[MAIN] takePersistableUriPermission OK")
+                        Log.d(LOG_TAG, "[MAIN] takePersistableUriPermission OK")
                     } catch (se: SecurityException) {
                         // FileProvider URIs don't support persistable grants – that's fine,
                         // the URI is already readable within this process lifetime.
-                        Log.d("roy93~", "[MAIN] takePersistableUriPermission SKIPPED (expected for FileProvider): ${se.message}")
+                        Log.d(LOG_TAG, "[MAIN] takePersistableUriPermission SKIPPED (expected for FileProvider): ${se.message}")
                     }
-                    Log.d("roy93~", "[MAIN] calling viewModel.updateIcon(uri)")
+                    Log.d(LOG_TAG, "[MAIN] calling viewModel.updateIcon(uri)")
                     viewModel.updateIcon(signatureUri)
                 } else {
-                    Log.d("roy93~", "[MAIN] uriStr is NULL → nothing to update")
+                    Log.d(LOG_TAG, "[MAIN] uriStr is NULL → nothing to update")
                 }
             } else {
-                Log.d("roy93~", "[MAIN] resultCode is NOT RESULT_OK → ignored")
+                Log.d(LOG_TAG, "[MAIN] resultCode is NOT RESULT_OK → ignored")
             }
         }
     }
@@ -380,16 +380,16 @@ class MainActivity : BaseActivity() {
         }
         viewModel.waterMark.observe(this) {
             if (it == null) {
-                Log.d("roy93~", "[MAIN] waterMark observer: value is NULL, skip")
+                Log.d(LOG_TAG, "[MAIN] waterMark observer: value is NULL, skip")
                 return@observe
             }
-            Log.d("roy93~", "[MAIN] waterMark observer: markMode=${it.markMode}, iconUri=${it.iconUri}, text='${it.text}'")
+            Log.d(LOG_TAG, "[MAIN] waterMark observer: markMode=${it.markMode}, iconUri=${it.iconUri}, text='${it.text}'")
             launchView.post {
-                Log.d("roy93~", "[MAIN] launchView.post → setting ivPhoto.config")
+                Log.d(LOG_TAG, "[MAIN] launchView.post → setting ivPhoto.config")
                 launchView.ivPhoto.config = it
             }
             if (it.markMode == WaterMarkRepository.MarkMode.Image && launchView.tabLayout.selectedTabPosition == 0) {
-                Log.d("roy93~", "[MAIN] markMode=Image → hideDetailPanel()")
+                Log.d(LOG_TAG, "[MAIN] markMode=Image → hideDetailPanel()")
                 hideDetailPanel()
             }
             viewModel.resetJobStatus()
@@ -473,8 +473,6 @@ class MainActivity : BaseActivity() {
             }
         }
     }
-
-
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initView() {
@@ -685,6 +683,11 @@ class MainActivity : BaseActivity() {
                 signatureLauncher.launch(intent)
             }
 
+            FuncTitleModel.FuncType.QRCode -> {
+                hideDetailPanel()
+                com.mckimquyen.watermark.ui.dlg.QrCodeBottomSheetFragment.safetyShow(supportFragmentManager)
+            }
+
             FuncTitleModel.FuncType.ExifBorder -> {
                 hideDetailPanel()
                 com.mckimquyen.watermark.ui.dlg.ExifPbFragment.safetyShow(supportFragmentManager)
@@ -744,7 +747,6 @@ class MainActivity : BaseActivity() {
         window.statusBarColor = color
         window.findViewById<View>(android.R.id.content)?.foreground = null
     }
-
 
     /** Scale the (very wide) WATERMARK logo down to a small toolbar logo (~28dp tall). */
     private fun buildSmallWatermarkLogo(): android.graphics.drawable.Drawable? {
@@ -824,12 +826,12 @@ class MainActivity : BaseActivity() {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray,
+        grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        Log.d("roy93~", "onRequestPermissionsResult requestCode $requestCode")
-        Log.d("roy93~", "onRequestPermissionsResult permissions $permissions")
-        Log.d("roy93~", "onRequestPermissionsResult grantResults $grantResults")
+        Log.d(LOG_TAG, "onRequestPermissionsResult requestCode $requestCode")
+        Log.d(LOG_TAG, "onRequestPermissionsResult permissions $permissions")
+        Log.d(LOG_TAG, "onRequestPermissionsResult grantResults $grantResults")
         when (requestCode) {
             REQ_CODE_REQ_WRITE_PERMISSION -> {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
@@ -839,13 +841,13 @@ class MainActivity : BaseActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
-                    Log.d("roy93~", "onRequestPermissionsResult REQ_CODE_REQ_WRITE_PERMISSION")
+                    Log.d(LOG_TAG, "onRequestPermissionsResult REQ_CODE_REQ_WRITE_PERMISSION")
                     launchView.ivSelectedPhotoTips.performClick()
                 }
             }
 
             REQ_CODE_PICK_IMAGE -> {
-                Log.d("roy93~", "onRequestPermissionsResult REQ_CODE_PICK_IMAGE")
+                Log.d(LOG_TAG, "onRequestPermissionsResult REQ_CODE_PICK_IMAGE")
             }
         }
     }
@@ -879,13 +881,13 @@ class MainActivity : BaseActivity() {
         }
         when (requestCode) {
             REQ_CODE_PICK_IMAGE -> {
-                Log.d("roy93~", "requestCode REQ_CODE_PICK_IMAGE")
-                Log.d("roy93~", finalList.toTypedArray().contentToString())
+                Log.d(LOG_TAG, "requestCode REQ_CODE_PICK_IMAGE")
+                Log.d(LOG_TAG, finalList.toTypedArray().contentToString())
                 dealWithImage(finalList)
             }
 
             REQ_PICK_ICON -> {
-                Log.d("roy93~", "requestCode REQ_CODE_PICK_IMAGE")
+                Log.d(LOG_TAG, "requestCode REQ_CODE_PICK_IMAGE")
                 viewModel.updateIcon(finalList.first())
             }
         }
@@ -940,7 +942,7 @@ class MainActivity : BaseActivity() {
         color: Int = ContextCompat.getColor(
             this,
             R.color.md_theme_dark_background
-        ),
+        )
     ) {
         (launchView.parent as? View?)?.setBackgroundColor(color)
         window?.navigationBarColor = Color.BLACK

@@ -10,10 +10,8 @@ import android.view.Display
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
-import com.google.android.play.core.review.ReviewException
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManagerFactory
-import com.google.android.play.core.review.model.ReviewErrorCode
 import java.util.Calendar
 import kotlin.apply
 import kotlin.collections.maxByOrNull
@@ -40,7 +38,7 @@ open class BaseActivity : AppCompatActivity() {
      * - Icon tint: LIGHT icons on dark glass background
      */
     protected fun applyEdgeToEdge() {
-        Log.d("roy93~", "BaseActivity applyEdgeToEdge")
+        Log.d(LOG_TAG, "BaseActivity applyEdgeToEdge")
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         window.statusBarColor = Color.TRANSPARENT

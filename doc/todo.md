@@ -7,12 +7,21 @@
 - [ ] Tích hợp Firebase (vẫn còn `//TODO firebase` trong `MyApplication.kt`)
 - [x] ~~Thêm tính năng chọn màu (Color)~~ — ĐÃ XONG (`FuncTitleModel.Color` → `ColorFragment`)
 - [ ] Thêm tính năng chia sẻ ứng dụng (Share App) — `ACTION_SEND` hiện chỉ để NHẬN ảnh, chưa có "share app"
+- [x] ~~QR Code watermark~~ — ĐÃ XONG (`QrCodeGenerator` + `QrCodeBottomSheetFragment`, reuse luồng Image watermark).
 
 ## Cải thiện mã nguồn
 
 - [x] ~~Dọn code comment trong `MyApplication.kt` & `build.gradle.kts`~~ — ĐÃ XONG (cả khối dead-code MaxAd/applyPalette trong `AboutActivity.kt` cũng đã xóa).
-- [ ] **Hardcoded log tag `roy93~`**: còn ~90 chỗ trên nhiều file (`WaterMarkImageView`, `MainActivity`, `GalleryFragment`, `AboutActivity`, `SignatureActivity`...). Nên gom về 1 hằng số chung hoặc dùng wrapper Log; phần lớn là debug log [WMIV]/[WM] có thể lược bớt. (Tách riêng vì là thay đổi rộng, cần làm có chủ đích.)
-- [ ] **Magic numbers**: ví dụ `MyApplication.catchException` (`1024 * 1024 / 2 / 10`) — đưa thành hằng số đặt tên rõ.
+- [x] ~~Dọn 7 file nháp ở gốc repo~~ — ĐÃ XONG (`git rm` build_log.txt, fix_anim.kt, old_launch.kt, sim.kt, sim.py, test_anim.kt, translate.py).
+- [x] ~~**Hardcoded log tag `roy93~`**~~ — ĐÃ XONG: gom 92 chỗ về hằng số chung `LOG_TAG` trong `AppConst.kt` (top-level, package gốc).
+- [x] ~~**Magic numbers**: `MyApplication.catchException` (`1024 * 1024 / 2 / 10`)~~ — ĐÃ XONG: tách hằng `MAX_CRASH_STACK_TRACE_LENGTH` có doc.
+
+## Kiểm thử (Test)
+
+- [x] Đã bật lại test deps trong `settings.gradle.kts` + `app/build.gradle.kts`; thêm `testOptions` cho Robolectric.
+- [x] **31 unit test** (JVM + Robolectric): `ExifModelTest`, `DateConverterTest`, `TextTokenResolverTest`, `OutputImageUtilsTest`, `ImageFormatRoboTest`, `QrCodeGeneratorTest`, `QrPreviewWidgetTest` — PASS.
+- [x] **4 integration test** Room `TemplateDaoIntegrationTest` (androidTest) — PASS trên 2 thiết bị thật (Android 16).
+- Lệnh: `./gradlew :app:testAppReleaseDebugUnitTest` và `./gradlew :app:connectedAppReleaseDebugAndroidTest`.
 
 ## Sửa lỗi rò rỉ bộ nhớ (Memory Leak Fixes)
 

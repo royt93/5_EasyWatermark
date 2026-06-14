@@ -1,5 +1,4 @@
 package com.mckimquyen.watermark.ui.dlg
-
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
@@ -12,11 +11,10 @@ import android.view.*
 import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.FGalleryBinding
 import com.mckimquyen.watermark.ui.adapter.GalleryAdapter
@@ -47,18 +45,18 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("roy93~", "GalleryFragment onCreate")
+        Log.d(LOG_TAG, "GalleryFragment onCreate")
         pickImageLauncher =
             registerForActivityResult(MultiPickContract()) { uri: List<Uri?>? ->
                 handleActivityResult(uri)
             }
         shareViewModel.query(requireContext().contentResolver)
-        Log.d("roy93~", "GalleryFragment querying media store...")
+        Log.d(LOG_TAG, "GalleryFragment querying media store...")
 
         val displayManager: DisplayManager =
             requireContext().applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         refreshRate = displayManager.displays?.getOrNull(0)?.refreshRate ?: 60F
-        Log.d("roy93~", "GalleryFragment refreshRate=$refreshRate")
+        Log.d(LOG_TAG, "GalleryFragment refreshRate=$refreshRate")
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -80,7 +78,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
     override fun onStart() {
         super.onStart()
-        Log.d("roy93~", "GalleryFragment onStart — expanding to match_parent")
+        Log.d(LOG_TAG, "GalleryFragment onStart — expanding to match_parent")
         val sheetContainer = requireView().parent as? ViewGroup ?: return
         sheetContainer.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
     }
@@ -88,13 +86,13 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
     @SuppressLint("ClickableViewAccessibility")
     override fun bindView(
         layoutInflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup?
     ): FGalleryBinding {
         val rootView = FGalleryBinding.inflate(layoutInflater, container, false)
 
         // ── Navigation ───────────────────────────────────────────────────────
         rootView.topAppBar.setNavigationOnClickListener {
-            Log.d("roy93~", "GalleryFragment navigation icon clicked — dismissing")
+            Log.d(LOG_TAG, "GalleryFragment navigation icon clicked — dismissing")
             dismissAllowingStateLoss()
         }
 
@@ -104,7 +102,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         // ── FAB click: spring-out → confirm selection ────────────────────────
         rootView.fab.setOnClickListener {
             val selected = galleryAdapter.getSelectedList()
-            Log.d("roy93~", "GalleryFragment FAB clicked — selectedCount=${selected.size}")
+            Log.d(LOG_TAG, "GalleryFragment FAB clicked — selectedCount=${selected.size}")
             // Pop-Out animation before dismiss
             rootView.fab.animate()
                 .scaleX(1.15f).scaleY(1.15f)
@@ -144,11 +142,13 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
                     val verticalScrollRange = recyclerView.computeVerticalScrollRange()
                     val offset = recyclerView.computeVerticalScrollOffset()
-                    Log.d("roy93~", "GalleryFragment scroll — offset=$offset range=$verticalScrollRange")
+                    Log.d(LOG_TAG, "GalleryFragment scroll — offset=$offset range=$verticalScrollRange")
 
                     rootView.sliderCard.translationY =
-                        ((offset.toFloat() / verticalScrollRange) *
-                                (recyclerView.bottom - recyclerView.paddingBottom)).coerceAtLeast(0f)
+                        (
+                            (offset.toFloat() / verticalScrollRange) *
+                                (recyclerView.bottom - recyclerView.paddingBottom)
+                            ).coerceAtLeast(0f)
                 }
             })
         }
@@ -204,13 +204,13 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
         // ── Observe image list ───────────────────────────────────────────────
         shareViewModel.galleryPickedImageList.observe(this) {
-            Log.d("roy93~", "GalleryFragment galleryPickedImageList updated — count=${it?.size ?: 0}")
+            Log.d(LOG_TAG, "GalleryFragment galleryPickedImageList updated — count=${it?.size ?: 0}")
             galleryAdapter.submitList(it)
         }
 
         // ── Observe selection count → animate FAB + hint pill ────────────────
         galleryAdapter.selectedCount.observe(this) { count ->
-            Log.d("roy93~", "GalleryFragment selectedCount changed -> $count")
+            Log.d(LOG_TAG, "GalleryFragment selectedCount changed -> $count")
             if (count > 0) {
                 val label = if (count == 1) "Select 1 photo" else "Select $count photos"
                 rootView.fab.text = label
@@ -249,38 +249,38 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
      * This prevents Glide from holding references to destroyed ViewHolders.
      */
     override fun onDestroyView() {
-        Log.d("roy93~", "GalleryFragment onDestroyView — clearing adapter to prevent leak")
+        Log.d(LOG_TAG, "GalleryFragment onDestroyView — clearing adapter to prevent leak")
         try {
             binding.rvContent.adapter = null
         } catch (e: Exception) {
-            Log.w("roy93~", "GalleryFragment onDestroyView adapter clear error: ${e.message}")
+            Log.w(LOG_TAG, "GalleryFragment onDestroyView adapter clear error: ${e.message}")
         }
         super.onDestroyView()
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        Log.d("roy93~", "GalleryFragment onDismiss — resetting gallery data")
+        Log.d(LOG_TAG, "GalleryFragment onDismiss — resetting gallery data")
         doOnDismiss.invoke()
         shareViewModel.resetGalleryData()
     }
 
     private fun handleActivityResult(list: List<Uri?>?) {
-        Log.d("roy93~", "GalleryFragment handleActivityResult — rawCount=${list?.size ?: 0}")
+        Log.d(LOG_TAG, "GalleryFragment handleActivityResult — rawCount=${list?.size ?: 0}")
         val finalList = list?.filterNotNull()?.filter {
             FileUtils.isImage(requireContext().contentResolver, it)
         } ?: emptyList()
-        Log.d("roy93~", "GalleryFragment handleActivityResult — validImageCount=${finalList.size}")
+        Log.d(LOG_TAG, "GalleryFragment handleActivityResult — validImageCount=${finalList.size}")
         if (finalList.isEmpty()) {
             Toast.makeText(requireContext(), getString(R.string.tips_do_not_choose_image), Toast.LENGTH_SHORT).show()
             return
         }
         if (FileUtils.isImage(requireContext().contentResolver, finalList.first())) {
-            Log.d("roy93~", "GalleryFragment handleActivityResult — updating image list from file picker")
+            Log.d(LOG_TAG, "GalleryFragment handleActivityResult — updating image list from file picker")
             shareViewModel.updateImageList(finalList)
             dismissAllowingStateLoss()
         } else {
-            Log.d("roy93~", "GalleryFragment handleActivityResult — unsupported file type chosen")
+            Log.d(LOG_TAG, "GalleryFragment handleActivityResult — unsupported file type chosen")
             Toast.makeText(requireContext(), getString(R.string.tips_choose_other_file_type), Toast.LENGTH_SHORT).show()
         }
     }

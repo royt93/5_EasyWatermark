@@ -25,21 +25,21 @@ Token trong nội dung text watermark được thay theo từng ảnh khi xuất
 - Token hỗ trợ: `{filename}` `{seq}` `{date}` `{model}` `{make}` `{iso}` `{fnumber}` `{exposure}` `{focal}` `{exif}` (lấy từ `ImageInfo.exifModel` + `OpenableColumns.DISPLAY_NAME`).
 - **Còn lại (chưa làm):** preview trong editor hiện hiển thị token nguyên văn (chỉ resolve khi save); và UI nút chèn token nhanh trong dialog sửa text.
 
-### 5. Export options (định dạng + chất lượng) — đã có sẵn từ trước
-- `SaveImageBSDialogFragment` có dropdown format (JPEG/PNG) + slider quality; `MainViewModel.saveOutput()` lưu vào `UserPreferences` (`outputFormat`/`compressLevel`).
-- **Còn lại (chưa làm):** thêm WEBP, resize cạnh dài khi lưu, giữ/xóa EXIF gốc hoặc nhúng `TAG_COPYRIGHT`.
+### 5. Export options (định dạng + chất lượng + WEBP + resize + copyright)
+- `SaveImageBSDialogFragment` có dropdown format (JPEG/PNG/**WEBP**) + slider quality; `MainViewModel.saveOutput()` lưu vào `UserPreferences`.
+- **WEBP:** thêm vào `popArray` + `formatByIndex`; `OutputImageUtils.extensionFor()` xử lý đuôi/mime; serialize qua ordinal trong `UserConfigRepository`.
+- **Resize cạnh dài:** dropdown Original/1080/2048/4096 → `maxOutputLongEdge`; `OutputImageUtils.resizeIfNeeded()` áp trước `compress` trong `generateImage`.
+- **EXIF copyright:** ô nhập copyright → `UserPreferences.copyright`; `MainViewModel.applyCopyrightExif()` nhúng `TAG_COPYRIGHT`/`TAG_ARTIST` sau khi ghi file (cả MediaStore Q+ lẫn file < Q; bỏ qua PNG).
+
+### 6. QR Code Watermark
+**Đã làm:** Sinh QR (link bản quyền / liên hệ / portfolio) overlay như một loại Image watermark.
+- `utils/QrCodeGenerator.kt` (zxing core 3.5.3) encode text → Bitmap (nền trong suốt).
+- `ui/dlg/QrCodeBottomSheetFragment.kt` nhập text → preview live → `updateIcon(uri)` reuse toàn bộ pipeline Image (rotation/alpha/tile).
+- `FuncTitleModel.FuncType.QRCode` + entry trong `contentFunList` (icon `ic_func_qr_code`) + route trong `MainActivity.handleFuncItem`.
 
 ---
 
 ## 💭 Đề xuất tính năng mới (chưa làm)
-
-### B. QR Code Watermark
-**Mô tả:** Sinh QR (link bản quyền / liên hệ / portfolio) overlay như một loại Image watermark.
-**Triển khai:** Thêm generator QR (zxing hoặc tự vẽ) xuất Bitmap → đẩy vào đúng luồng Image mode giống Signature (`iconUri` nội bộ). Tận dụng lại toàn bộ rotation/alpha/tile sẵn có.
-
-### C. Mở rộng Export options (WEBP + resize + EXIF copyright)
-**Mô tả:** Bổ sung cho mục "Export options" đã có: thêm WEBP, resize cạnh dài khi lưu, giữ/xóa EXIF gốc (hoặc nhúng `TAG_COPYRIGHT`).
-**Triển khai:** Thêm WEBP vào `popArray` + `trapOutputExtension`/`UserPreferences` serialize; resize bitmap trước `compress`; copyright dùng `ExifInterface.setAttribute` sau khi ghi file.
 
 ### D. Position Anchor 9-grid
 **Mô tả:** Ngoài kéo thả tự do (CLAMP), thêm preset neo theo lưới 3x3 + margin (góc/cạnh/giữa) cho watermark đơn.

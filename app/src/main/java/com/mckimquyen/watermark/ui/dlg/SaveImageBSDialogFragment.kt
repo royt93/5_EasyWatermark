@@ -32,11 +32,29 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     private val imageList: List<ImageInfo>
         get() = (requireContext() as MainActivity).getImageList()
 
-    private val popArray = arrayOf("JPEG", "PNG")
+    private val popArray = arrayOf("JPEG", "PNG", "WEBP")
+
+    @Suppress("DEPRECATION")
+    private val formatByIndex = arrayOf(
+        Bitmap.CompressFormat.JPEG,
+        Bitmap.CompressFormat.PNG,
+        Bitmap.CompressFormat.WEBP
+    )
+
+    // Resize cạnh dài: nhãn ↔ giá trị px (0 = giữ nguyên).
+    private val resizeArray = arrayOf("Original", "1080", "2048", "4096")
+    private val resizeValues = intArrayOf(0, 1080, 2048, 4096)
+
+    /** PNG là lossless nên ẩn slider chất lượng; JPEG/WEBP có dùng. */
+    private fun supportsQuality(format: Bitmap.CompressFormat): Boolean =
+        format != Bitmap.CompressFormat.PNG
+
+    private fun labelOf(format: Bitmap.CompressFormat): String =
+        popArray[formatByIndex.indexOf(format).coerceAtLeast(0)]
 
     override fun bindView(
         layoutInflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup?
     ): DlgSaveFileBinding {
         val root = DlgSaveFileBinding.inflate(layoutInflater, container, false)
         val isSaving = shareViewModel.saveResult.value?.code == MainViewModel.TYPE_SAVING
@@ -49,6 +67,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                         openShare()
                     } else {
                         // saving jobs
+                        shareViewModel.saveCopyright(etCopyright.text?.toString().orEmpty().trim())
                         requireActivity().preCheckStoragePermission {
                             shareViewModel.saveImage(
                                 requireActivity().contentResolver,
@@ -77,21 +96,39 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 it.setDropDownBackgroundDrawable(
                     requireContext().getDrawable(R.drawable.bg_dropdown_popup)
                 )
-                it.setText(
-                    if (shareViewModel.outputFormat == Bitmap.CompressFormat.JPEG) "JPEG" else "PNG",
-                    false
-                )
+                it.setText(labelOf(shareViewModel.outputFormat), false)
                 it.setOnItemClickListener { _, _, index, _ ->
-                    val targetFormat =
-                        if (index == 0) Bitmap.CompressFormat.JPEG else Bitmap.CompressFormat.PNG
+                    val targetFormat = formatByIndex.getOrElse(index) { Bitmap.CompressFormat.JPEG }
                     shareViewModel.saveOutput(targetFormat, slideQuality.value.toInt())
-                    flQuality.isVisible = targetFormat == Bitmap.CompressFormat.JPEG
-                    slideQuality.isVisible = targetFormat == Bitmap.CompressFormat.JPEG
+                    flQuality.isVisible = supportsQuality(targetFormat)
+                    slideQuality.isVisible = supportsQuality(targetFormat)
                 }
             }
 
-            flQuality.isVisible = shareViewModel.outputFormat == Bitmap.CompressFormat.JPEG
-            slideQuality.isVisible = shareViewModel.outputFormat == Bitmap.CompressFormat.JPEG
+            atvResize.also {
+                val adapter = ArrayAdapter(
+                    requireContext(),
+                    R.layout.simple_dropdown_item_1line,
+                    resizeArray
+                )
+                it.setAdapter(adapter)
+                it.setDropDownBackgroundDrawable(requireContext().getDrawable(R.drawable.bg_dropdown_popup))
+                val curIdx = resizeValues.indexOf(shareViewModel.maxOutputLongEdge).coerceAtLeast(0)
+                it.setText(resizeArray[curIdx], false)
+                it.setOnItemClickListener { _, _, index, _ ->
+                    shareViewModel.saveMaxLongEdge(resizeValues.getOrElse(index) { 0 })
+                }
+            }
+
+            etCopyright.setText(shareViewModel.copyright)
+            etCopyright.setOnFocusChangeListener { _, hasFocus ->
+                if (!hasFocus) {
+                    shareViewModel.saveCopyright(etCopyright.text?.toString().orEmpty().trim())
+                }
+            }
+
+            flQuality.isVisible = supportsQuality(shareViewModel.outputFormat)
+            slideQuality.isVisible = supportsQuality(shareViewModel.outputFormat)
 
             rvResult.apply {
                 adapter = SaveImageListAdapter(requireContext()).also {
@@ -142,7 +179,6 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             }
 
             shareViewModel.colorPalette.observe(viewLifecycleOwner) {
-
             }
         }
         return root
@@ -154,7 +190,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     }
 
     private fun setUpLoadingView(
-        saveResult: Result<*>?,
+        saveResult: Result<*>?
     ) {
         when (saveResult?.code) {
             MainViewModel.TYPE_SAVING -> {
@@ -227,7 +263,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        
+
         if (list.size == 1) {
             val outputUri = list.first().shareUri
             intent.apply {

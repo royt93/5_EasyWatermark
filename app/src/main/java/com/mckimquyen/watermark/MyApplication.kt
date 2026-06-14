@@ -6,12 +6,12 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.content.edit
+import com.applovin.sdk.AppLovinSdk
 import com.google.android.gms.ads.MobileAds
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.roy.sdkadbmob.AdManager
 import com.roy.sdkadbmob.AdSdkConfig
-import com.applovin.sdk.AppLovinSdk
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,23 +20,23 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
-//TODO firebase
-//TODO share app
+// TODO firebase
+// TODO share app
 
-//done
-//review in app bingo
-//font scale
-//120hz
-//pkg name
-//proguard
-//ic launcher
-//ad id, internet permission in manifest
-//leak canary
-//rate app
-//more app
-//policy
-//keystore
-//ad applovin
+// done
+// review in app bingo
+// font scale
+// 120hz
+// pkg name
+// proguard
+// ic launcher
+// ad id, internet permission in manifest
+// leak canary
+// rate app
+// more app
+// policy
+// keystore
+// ad applovin
 
 @HiltAndroidApp
 class MyApplication : Application() {
@@ -141,9 +141,8 @@ class MyApplication : Application() {
 
     private fun catchException() {
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
-            // Because intent limit data to 1mb, so that we should limit the stack track by magic number below
-//            Log.e("MyApp", "uncaughtException")
-            val maxStringLength = 1024 * 1024 / 2 / 10 // the 10 is a magic number ;)
+            // Intent chỉ chứa tối đa ~1MB dữ liệu, nên giới hạn độ dài stack trace trước khi nhét vào Intent.
+            val maxStringLength = MAX_CRASH_STACK_TRACE_LENGTH
             var fullStackTrace = Log.getStackTraceString(e)
             if (fullStackTrace.length > maxStringLength) {
                 fullStackTrace = fullStackTrace.substring(IntRange(0, maxStringLength))
@@ -183,6 +182,12 @@ class MyApplication : Application() {
             private set
 
         private const val CRASH_COUNT = 2
+
+        /**
+         * Giới hạn độ dài stack trace lưu vào Intent khi crash.
+         * Intent chỉ chứa được ~1MB; lấy 1/2 cho an toàn rồi chia 10 để chừa chỗ cho dữ liệu khác.
+         */
+        private const val MAX_CRASH_STACK_TRACE_LENGTH = 1024 * 1024 / 2 / 10
 
         const val SP_NAME = "sp_water_mark_crash_info"
 

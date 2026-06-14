@@ -1,13 +1,12 @@
 package com.mckimquyen.watermark.ui
-
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.databinding.ActivitySplashBinding
 import com.roy.sdkadbmob.AdManager
-
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : AppCompatActivity() {
@@ -16,7 +15,7 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("roy93~", "onCreate")
+        Log.d(LOG_TAG, "onCreate")
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
         AdManager.initSplashScreen(this) {
