@@ -22,14 +22,15 @@ object QrCodeGenerator {
      * @param content nội dung cần mã hoá; nếu rỗng/blank thì trả về null.
      * @param size cạnh bitmap (px), bị ép tối thiểu 1.
      * @param foreground màu các ô đen của QR.
-     * @param background màu nền (mặc định trong suốt để watermark hoà vào ảnh).
+     * @param background màu nền — mặc định TRẮNG ĐẶC để QR hiện rõ và máy quét đọc được
+     *        (QR nền trong suốt / tương phản kém thường không quét được).
      * @return [Bitmap] QR hoặc null nếu nội dung rỗng / encode thất bại.
      */
     fun generate(
         content: String,
         size: Int = DEFAULT_SIZE,
         foreground: Int = Color.BLACK,
-        background: Int = Color.TRANSPARENT
+        background: Int = Color.WHITE
     ): Bitmap? {
         if (content.isBlank()) return null
         val side = size.coerceAtLeast(1)

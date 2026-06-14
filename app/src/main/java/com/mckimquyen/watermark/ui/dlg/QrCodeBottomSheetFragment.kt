@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.FQrCodeBottomSheetBinding
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
@@ -50,13 +52,17 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
         binding.btnUseQrCode.setOnClickListener {
             val content = binding.etContent.text?.toString().orEmpty().trim()
             val bitmap = previewBitmap
+            Log.d(LOG_TAG, "[QR] btnUse clicked: content='$content' previewBitmap=${bitmap != null}")
             if (content.isEmpty() || bitmap == null) {
+                Log.w(LOG_TAG, "[QR] abort: content empty or bitmap null")
                 Toast.makeText(requireContext(), R.string.qr_code_empty, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             val uri = saveBitmapToCache(bitmap)
+            Log.d(LOG_TAG, "[QR] saveBitmapToCache -> uri=$uri")
             if (uri != null) {
                 shareViewModel.updateIcon(uri)
+                Log.d(LOG_TAG, "[QR] updateIcon called, dismissing")
                 dismissAllowingStateLoss()
             } else {
                 Toast.makeText(requireContext(), R.string.save_failed, Toast.LENGTH_SHORT).show()
@@ -68,6 +74,7 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
         val bitmap = QrCodeGenerator.generate(content, size = QrCodeGenerator.DEFAULT_SIZE)
         previewBitmap = bitmap
         binding.ivPreview.setImageBitmap(bitmap)
+        Log.d(LOG_TAG, "[QR] refreshPreview: content.len=${content.length} bitmap=${bitmap != null}")
     }
 
     private fun saveBitmapToCache(bitmap: Bitmap): Uri? {
