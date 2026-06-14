@@ -1,26 +1,48 @@
-# Đề Xuất Các Tính Năng Mới Cho EasyWatermark
+# Tính Năng EasyWatermark
 
-Dựa trên cấu trúc source code hiện tại của sự kiện `EasyWatermark` (đã hoàn thiện giao diện Liquid Glass, hỗ trợ các chế độ chèn Watermark bằng Text/Image, tùy chỉnh góc bo, alpha, kiểu chữ và có cơ chế Batch Processing lưu nhiều hình), em xin đề xuất 2 tính năng mạnh mẽ tiếp theo bắt đúng trend giúp tăng giá trị sản phẩm.
+> Cập nhật: 2026-06-14. File theo dõi trạng thái tính năng (✅ đã làm / 💭 đề xuất).
 
-## 1. Dynamic EXIF & Device Info Watermark (Khung Chụp Chuyên Nghiệp Dạng Leica / Xiaomi)
+## ✅ Đã triển khai
 
-**Mô tả:**  
-Hiện nay, trend đóng dấu watermark bao gồm viền ảnh, thông số kỹ thuật (Aperture, Shutter Speed, ISO, Focal Length) và tên thiết bị chụp ở ngay dưới bức ảnh (như phong cách filigran của Xiaomi, Leica style) đang cực kỳ được ưa chuộng trên mạng xã hội.
+### 1. Dynamic EXIF & Device Info Watermark (Khung kiểu Leica / Xiaomi)
+Khung viền ảnh in thông số máy (Model, ngày chụp, F-number, ISO...) đọc từ EXIF.
+- `FuncTitleModel.ExifBorder` → `MainActivity` mở `ui/dlg/ExifPbFragment.kt`.
+- Đọc EXIF tại `utils/bitmap/BitmapUtils.kt` (`TAG_MODEL`, `TAG_DATETIME`, `TAG_F_NUMBER`, `TAG_ISO_SPEED_RATINGS`).
 
-**Cách triển khai vào Codebase:**  
-- **Data Layer:** Sử dụng thư viện `androidx.exifinterface.media.ExifInterface` (thực tế dự án đã có sẵn hàm `getOrientation` dùng Exif trong `BitmapUtils.kt`). Ta sẽ lấy thêm mã thẻ: `TAG_MODEL`, `TAG_DATETIME`, `TAG_F_NUMBER`, `TAG_ISO_SPEED_RATINGS`.
-- **Logic Vẽ Ảnh (`MainViewModel.generateImage`):** Thay vì vẽ đè (overlay) trực tiếp watermark lên trung tâm ảnh, ta cung cấp một tuỳ chọn tạo Canvas mới với chiều cao lớn hơn (expand padding bottom). Sau đó vẽ Bitmap gốc lên trước, rồi in các dòng text EXIF kèm logo camera (iPhone, Canon, Sony) vào phần background viền mới sinh ra.
-- **Giá trị cốt lõi:** Người dùng không cần quan tâm thông số máy ảnh là gì, ứng dụng tự quét siêu dữ liệu (metadata) của ảnh và nhúng vào cực kỳ chuyên nghiệp. Tạo độ viral cao khi người dùng đem đi khoe trên MXH.
+### 2. Custom Handwritten Signature (Chữ ký tay)
+Vẽ chữ ký tay, xuất bitmap rồi tái dùng pipeline Image watermark.
+- `ui/SignatureActivity.kt`, `ui/dlg/SignatureBottomSheetFragment.kt`, `ui/widget/SignatureView.kt`, `data/repo/SignatureRepository.kt`.
+- Chữ ký lưu dạng `*.webp` chứa "signature" → `WaterMarkImageView.buildIconBitmapShader` áp `PorterDuffColorFilter` để tint màu.
+
+### 3. Khác đã có sẵn
+- Watermark Text & Image, Template lưu/tái dùng, Batch processing nhiều ảnh.
+- Color picker (`FuncTitleModel.Color` → `ColorFragment`).
+- Dynamic color / Material You qua module `:cmonet`.
 
 ---
 
-## 2. Dịch vụ Custom Handwritten Signature (Vẽ Chữ Ký Tay Cá Nhân)
+## 💭 Đề xuất tính năng mới (chưa làm)
 
-**Mô tả:**  
-Rất nhiều nhiếp ảnh gia hay người buôn bán muốn "đóng dấu" ảnh bằng chính nét chữ ký tay thật sự của họ để tăng tính chân thật và bản quyền sở hữu, thay vì sử dụng các phông chữ có sẵn thô cứng.
+### A. Text token động (Dynamic Text Placeholders)
+**Mô tả:** Cho phép nhập biến trong nội dung text watermark, ví dụ `© {filename} - {date}` hoặc `Shot on {model} • ISO {iso}`. Khi batch, mỗi ảnh tự thay token bằng giá trị riêng (tên file, ngày, số thứ tự, EXIF).
+**Triển khai:** Thêm bước resolve token trong `MainViewModel.generateImage` trước khi gọi `buildTextBitmapShader`; tận dụng EXIF đã đọc ở tính năng đã có. Giá trị cao cho batch hàng loạt, gần như không đụng pipeline vẽ.
 
-**Cách triển khai vào Codebase:**  
-- **UI Interaction:** Tạo thêm một `SignatureBottomSheetFragment` sử dụng một view `Canvas` cơ bản (bắt sự kiện `ACTION_DOWN`, `ACTION_MOVE` vuốt ngón tay với paint draw path có hiệu ứng bo góc mượt mà).
-- **Core Transform:** Sau khi người dùng vẽ xong chữ ký, sử dụng lệnh `canvas.drawColor(TRANSPARENT)` làm nền và lưu Canvas View đó lại thành một `Bitmap` in memory.
-- **Tích hợp Flow sẵn có:** Đẩy bitmap này trực tiếp vào luồng xử lý `UiState.UseImage` (Chế độ Image Watermark) mà Sếp đã viết. Hệ thống Repo hiện tại tự động tiếp nhận nó như là một iconUri lưu vào thư mục nội bộ và thực hiện Overlay lên ảnh. Mọi thuộc tính như Color Tinting, Rotation, TileMode (Repeat) hiện tại sẽ kết nối khớp ngay lập tức với chữ ký này mà không cần code lại logic Watermark.
-- **Giá trị cốt lõi:** Tận dụng lại tới 90% bộ máy sinh ảnh Image Watermark sẵn có, tiết kiệm nguồn lực trong khi mang lại một USP (Unique Selling Proposition) cực kỳ mạnh để thuyết phục người dùng trả phí mua Premium.
+### B. QR Code Watermark
+**Mô tả:** Sinh QR (link bản quyền / liên hệ / portfolio) overlay như một loại Image watermark.
+**Triển khai:** Thêm generator QR (zxing hoặc tự vẽ) xuất Bitmap → đẩy vào đúng luồng Image mode giống Signature (`iconUri` nội bộ). Tận dụng lại toàn bộ rotation/alpha/tile sẵn có.
+
+### C. Tùy chọn xuất ảnh (Export Options)
+**Mô tả:** Cho chọn định dạng (JPEG/PNG/WEBP) + chất lượng nén, resize cạnh dài khi lưu, và giữ/xóa EXIF gốc (hoặc nhúng `TAG_COPYRIGHT`).
+**Triển khai:** Mở rộng `SaveImageBSDialogFragment` + nhánh lưu trong `MainViewModel` (hiện nén qua `Compressor`). Thêm copyright dùng `ExifInterface.setAttribute`.
+
+### D. Position Anchor 9-grid
+**Mô tả:** Ngoài kéo thả tự do (CLAMP), thêm preset neo theo lưới 3x3 + margin (góc/cạnh/giữa) cho watermark đơn.
+**Triển khai:** Map anchor → `offsetX/offsetY` trong `ImageInfo` (`WaterMarkImageView` đã dùng offset chuẩn hóa 0..1), không cần đổi cơ chế vẽ.
+
+### E. Frame presets cho EXIF border
+**Mô tả:** Thêm các kiểu khung (Polaroid, film strip, logo hãng máy Canon/Sony/Apple/Leica) cho tính năng EXIF border đã có.
+**Triển khai:** Bộ asset logo + chọn template khung trong `ExifPbFragment`.
+
+### F. Backup/Restore Template & Signature
+**Mô tả:** Xuất/nhập template (Room) và chữ ký để chuyển máy.
+**Triển khai:** Serialize `Template` (Room) + thư mục signature → zip; cân nhắc tích hợp Firebase (đang là TODO trong `todo.md`).

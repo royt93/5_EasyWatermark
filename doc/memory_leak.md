@@ -1,5 +1,7 @@
 # Báo Cáo Audit Source Code: Memory Leaks & Bugs
 
+> **Lưu ý lịch sử (cập nhật 2026-06-14):** Các mục liên quan `AdMobManager.kt` (1.1, 2.2, 2.3) là LỊCH SỬ — class `AdMobManager.kt` tự viết đã bị xóa và thay bằng SDK wrapper `com.roy.sdkadbmob.AdManager` (xem `doc/AD.MD`). Logic delay/lifecycle giờ nằm trong wrapper. Các mục còn lại (`MultiSelectRv`, `MainViewModel`, `AboutActivity`, `WaterMarkImageView`) đã được xác nhận FIX trên code hiện tại.
+
 Sau khi phân tích toàn bộ source code của dự án, tôi đã phát hiện một số bug và memory leak nghiêm trọng ảnh hưởng đến hiệu năng và tính ổn định của ứng dụng. Dưới đây là ghi chép chi tiết về các lỗi, cách khắc phục và trạng thái (Status) hiện tại:
 
 ## 1. Lỗi Thực Thi & Memory Leak Nghiêm Trọng

@@ -1,5 +1,12 @@
 # 📊 KẾ HOẠCH MIGRATE AD SYSTEM SANG ADMOB WRAPPER SDK
 
+> **✅ ĐÃ HOÀN TẤT MIGRATION (cập nhật 2026-06-14).** File dưới là kế hoạch gốc, giữ lại để tham khảo. Trạng thái thực tế trên code:
+> - SDK: `com.github.royt93:AdmobWrapper` (`com.roy.sdkadbmob.AdManager`); `AdMobManager.kt` cũ đã xóa.
+> - Khởi tạo: `MyApplication.setupAdmob()` (`setConfig` → `earlyInit` → `init`), switch provider bằng `BuildConfig.IS_ENABLE_ADMOB`; ID/Key lấy từ `BuildConfig` (đã có đủ AdMob + AppLovin).
+> - App Open: `SplashActivity` (`AdManager.initSplashScreen`) + `registerAppOpenAdLifecycle` trong `MyApplication`.
+> - Banner + Interstitial: `AboutActivity` (`loadBanner`/`bannerResume`/`bannerPause`/`bannerDestroy`; `loadInterstitial` + `showInterstitial` trong override `finish()`).
+> - Giữ đúng 3 touchpoint, KHÔNG có Reward Ad.
+
 ## 1. TÌNH TRẠNG HIỆN TẠI (BEFORE MIGRATION)
 Dự án EasyWatermark đang tự triển khai manual integration của AdMob thông qua class local `AdMobManager.kt`.
 Các Touchpoints hiện có trong dự án:

@@ -21,7 +21,6 @@ import javax.inject.Inject
 import kotlin.system.exitProcess
 
 //TODO firebase
-//TODO color
 //TODO share app
 
 //done

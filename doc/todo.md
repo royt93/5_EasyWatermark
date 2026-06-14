@@ -1,21 +1,26 @@
 # Danh sách việc cần làm & Cải tiến
 
-## Tính năng cần triển khai (từ comment trong MyApplication)
+> Cập nhật: 2026-06-14 sau khi audit lại toàn bộ với code hiện tại.
 
-- [ ] Tích hợp Firebase
-- [ ] Thêm tính năng chọn màu (Color)
-- [ ] Thêm tính năng chia sẻ ứng dụng (Share App)
+## Tính năng cần triển khai
+
+- [ ] Tích hợp Firebase (vẫn còn `//TODO firebase` trong `MyApplication.kt`)
+- [x] ~~Thêm tính năng chọn màu (Color)~~ — ĐÃ XONG (`FuncTitleModel.Color` → `ColorFragment`)
+- [ ] Thêm tính năng chia sẻ ứng dụng (Share App) — `ACTION_SEND` hiện chỉ để NHẬN ảnh, chưa có "share app"
 
 ## Cải thiện mã nguồn
 
-- [ ] **Dọn dẹp code bị comment**: Xóa các khối code lớn bị comment (callback AdMob/AppLovin) trong `MyApplication.kt` và `build.gradle.kts` để code sạch và dễ đọc hơn.
-- [ ] **Chuỗi cứng (Hardcoded Strings)**: Loại bỏ các log tag cứng như `roy93~` và thay thế các số magic bằng hằng số định nghĩa rõ ràng.
+- [x] ~~Dọn code comment trong `MyApplication.kt` & `build.gradle.kts`~~ — ĐÃ XONG (cả khối dead-code MaxAd/applyPalette trong `AboutActivity.kt` cũng đã xóa).
+- [ ] **Hardcoded log tag `roy93~`**: còn ~90 chỗ trên nhiều file (`WaterMarkImageView`, `MainActivity`, `GalleryFragment`, `AboutActivity`, `SignatureActivity`...). Nên gom về 1 hằng số chung hoặc dùng wrapper Log; phần lớn là debug log [WMIV]/[WM] có thể lược bớt. (Tách riêng vì là thay đổi rộng, cần làm có chủ đích.)
+- [ ] **Magic numbers**: ví dụ `MyApplication.catchException` (`1024 * 1024 / 2 / 10`) — đưa thành hằng số đặt tên rõ.
 
 ## Sửa lỗi rò rỉ bộ nhớ (Memory Leak Fixes)
 
-- [ ] **WaterMarkImageView**:
-  - **Vấn đề**: Hàm `cancel()` cho `generateBitmapJob` được gọi, nhưng view implement `CoroutineScope` mà không override `onDetachedFromWindow` để hủy scope. Điều này có thể dẫn đến rò rỉ nếu các tác vụ (như tạo bitmap) vẫn chạy sau khi view bị hủy.
-  - **Vấn đề nghiêm trọng**: `Executors.newSingleThreadExecutor()` được dùng cho `generateBitmapCoroutineCtx` nhưng không bao giờ được shutdown. Mỗi lần View được tạo (ví dụ trong RecyclerView), một thread mới sẽ được tạo và không bao giờ giải phóng.
-  - **Đề xuất**: Sử dụng một `Dispatcher` chung (như `Dispatchers.Default` hoặc `Dispatchers.IO`) hoặc đảm bảo `onDetachedFromWindow` shutdown executor này.
-- [ ] **MyApplication**:
-  - **Vấn đề**: Biến `instance` trong `companion object` giữ tham chiếu tĩnh tới `Context` (Application). Mặc dù ít nghiêm trọng hơn leak Activity context, nhưng nên hạn chế truy cập static kiểu này. Sử dụng Dependency Injection (Hilt) đã có sẵn để inject context an toàn hơn.
+- [x] ~~**WaterMarkImageView** — scope/executor leak~~ — ĐÃ XONG:
+  - `onDetachedFromWindow()` đã override và gọi `generateBitmapJob?.cancel()`.
+  - Không còn `Executors.newSingleThreadExecutor()`; dùng `Dispatchers.Default` cho `generateBitmapCoroutineCtx`. (Import rác `Executors` đã được xóa.)
+- [ ] **MyApplication** — static `instance: Context` (`@SuppressLint("StaticFieldLeak")`) vẫn còn. Cân nhắc dùng Hilt `@ApplicationContext` thay cho truy cập static. (Mức độ thấp, Application context không leak nghiêm trọng.)
+
+## Tham khảo
+- Chi tiết các leak đã fix: xem `doc/memory_leak.md`.
+- Trạng thái migrate quảng cáo: xem `doc/AD.MD`.
