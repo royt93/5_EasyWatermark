@@ -4,13 +4,13 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.util.Base64
 import android.util.Log
 import androidx.core.content.edit
-import com.applovin.sdk.AppLovinSdk
-import com.google.android.gms.ads.MobileAds
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.roy.sdkadbmob.AdManager
+import com.roy.sdkadbmob.AdSafetyLimits
 import com.roy.sdkadbmob.AdSdkConfig
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -72,41 +72,19 @@ class MyApplication : Application() {
             admobBannerId = BuildConfig.ADMOB_BANNER_ID,
             admobInterstitialId = BuildConfig.ADMOB_INTERSTITIAL_ID,
             admobAppOpenId = BuildConfig.ADMOB_APP_OPEN_ID,
+            admobRewardedId = BuildConfig.ADMOB_REWARDED_ID,
             applovinBannerId = BuildConfig.APPLOVIN_BANNER_ID,
             applovinInterstitialId = BuildConfig.APPLOVIN_INTERSTITIAL_ID,
-            applovinAppOpenId = BuildConfig.APPLOVIN_APP_OPEN_ID
+            applovinAppOpenId = BuildConfig.APPLOVIN_APP_OPEN_ID,
+            applovinRewardedId = BuildConfig.APPLOVIN_REWARDED_ID,
+            applovinSdkKey = BuildConfig.APPLOVIN_SDK_KEY,
+            vipKeySecret = String(Base64.decode(VIP_SECRET_30_DAYS_B64, Base64.NO_WRAP)),
+            safety = if (BuildConfig.DEBUG) AdSafetyLimits.TEST else AdSafetyLimits(),
         )
 
         AdManager.setConfig(adConfig)
         AdManager.earlyInit(this)
-
-        if (BuildConfig.IS_ENABLE_ADMOB) {
-            Log.d("MyApplication", "AdMob mode, initializing MobileAds")
-            MobileAds.initialize(this) { _ ->
-                AdManager.init(this, adConfig) { success, gaid ->
-                    Log.d("MyApplication", "AdManager init success=$success, gaid=$gaid")
-                    if (success) {
-                        android.os.Handler(android.os.Looper.getMainLooper()).post {
-                            AdManager.registerAppOpenAdLifecycle(this)
-                        }
-                    }
-                }
-            }
-        } else {
-            Log.d("MyApplication", "AppLovin mode, initializing AppLovinSdk")
-            val sdk = AppLovinSdk.getInstance(this)
-            sdk.mediationProvider = "max"
-            sdk.initializeSdk {
-                AdManager.init(this, adConfig) { success, gaid ->
-                    Log.d("MyApplication", "AdManager init success=$success, gaid=$gaid")
-                    if (success) {
-                        android.os.Handler(android.os.Looper.getMainLooper()).post {
-                            AdManager.registerAppOpenAdLifecycle(this)
-                        }
-                    }
-                }
-            }
-        }
+        Log.d("MyApplication", "AdManager config ready; provider init waits for splash consent")
     }
 
     private fun checkRecoveryMode(): Boolean {
@@ -195,5 +173,7 @@ class MyApplication : Application() {
         const val KEY_STACK_TRACE = SP_NAME + "_key_stack_trace"
         const val SP_KEY_CRASH_COUNT = SP_NAME + "_key_crash_count"
         const val SP_KEY_RECOVERY_VERSION = SP_NAME + "_key_recovery_version"
+
+        private const val VIP_SECRET_30_DAYS_B64 = "OWZBMHE3ZU4hMjdjTHgwNEAyMTk5M1kydTBJNyNRMA=="
     }
 }

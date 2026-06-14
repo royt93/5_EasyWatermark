@@ -8,8 +8,8 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             // plugins
-            val kotlinVersion = "1.9.25"
-            library("dagger-hilt-plugin", "com.google.dagger:hilt-android-gradle-plugin:2.51.1")
+            val kotlinVersion = "2.1.0"
+            library("dagger-hilt-plugin", "com.google.dagger:hilt-android-gradle-plugin:2.57.2")
             library("tools-gradle", "com.android.tools.build:gradle:8.7.2")
             library("kotlin-plugin", "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
             library("ktlint-gradle", "org.jlleitschuh.gradle:ktlint-gradle:11.3.1")
@@ -28,7 +28,7 @@ dependencyResolutionManagement {
             library("core-ktx", "androidx.core:core-ktx:1.15.0")
             library("appcompat", "androidx.appcompat:appcompat:1.7.0")
             library("material", "com.google.android.material:material:1.12.0")
-            val roomVersion = "2.6.1"
+            val roomVersion = "2.8.4"
             library("room-runtime", "androidx.room:room-runtime:$roomVersion")
             library("room-ktx", "androidx.room:room-ktx:$roomVersion")
             library("room-compiler", "androidx.room:room-compiler:$roomVersion")
@@ -42,7 +42,7 @@ dependencyResolutionManagement {
             library("blurview", "com.github.Dimezis:BlurView:version-2.0.3")
 
             // third party libs
-            val daggerVersion = "2.51.1"
+            val daggerVersion = "2.57.2"
             library("dagger-hilt-android", "com.google.dagger:hilt-android:$daggerVersion")
             library("dagger-hilt-compiler", "com.google.dagger:hilt-compiler:$daggerVersion")
 
@@ -55,6 +55,10 @@ dependencyResolutionManagement {
 
             // QR code
             library("zxing-core", "com.google.zxing:core:3.5.3")
+
+            // VIP screen UX: confetti + shimmer
+            library("konfetti-xml", "nl.dionsegijn:konfetti-xml:2.0.5")
+            library("shimmer", "com.facebook.shimmer:shimmer:0.5.0")
 
             // benchmark && test libs
             library("benchmark", "androidx.benchmark:benchmark-macro-junit4:1.1.1")

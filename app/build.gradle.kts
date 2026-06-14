@@ -26,16 +26,17 @@ android {
         buildConfigField("String", "APPLOVIN_BANNER_ID", "\"d3455cc529985b25\"")
         buildConfigField("String", "APPLOVIN_INTERSTITIAL_ID", "\"a48241ebcb20ad5c\"")
         buildConfigField("String", "APPLOVIN_APP_OPEN_ID", "\"8239a7fd6896cf1f\"")
+        buildConfigField("String", "APPLOVIN_REWARDED_ID", "\"87a4f5696dfd4212\"")
+        buildConfigField("String", "PRIVACY_POLICY_URL", "\"https://loitp.notion.site/Term-Privacy-Policy-Disclaimer-319b1cd8783942fa8923d2a3c9bce60f\"")
     }
 
     configurations.all {
         resolutionStrategy {
-            force("com.google.android.gms:play-services-ads:23.6.0")
             force("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
             force("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
             force("androidx.core:core-ktx:1.15.0")
             force("androidx.core:core:1.15.0")
-            force("org.jetbrains.kotlin:kotlin-stdlib:1.9.25")
+            force("org.jetbrains.kotlin:kotlin-stdlib:2.1.0")
         }
     }
 
@@ -65,6 +66,7 @@ android {
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
             buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"ca-app-pub-3940256099942544/9257395921\"")
+            buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
         }
 
         val release by getting {
@@ -73,6 +75,7 @@ android {
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3612191981543807/3976595378\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3612191981543807/2663513707\"")
             buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"ca-app-pub-3612191981543807/6718308789\"")
+            buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
 
             isMinifyEnabled = true
             isShrinkResources = true
@@ -116,6 +119,7 @@ android {
 
     lint {
         baseline = file("lint-baseline.xml")
+        disable += "NullSafeMutableLiveData"
     }
 
     testOptions {
@@ -163,7 +167,9 @@ dependencies {
     api(libs.blurview)
     api(libs.zxing.core)
 
-    implementation("com.github.royt93:AdmobWrapper:1.1.2")
+    implementation("com.github.royt93:AdmobApplovinWrapper:1.1.5")
+    implementation(libs.konfetti.xml)
+    implementation(libs.shimmer)
     api("com.jakewharton:process-phoenix:3.0.0")
     implementation("com.google.android.play:review:2.0.2")
     implementation("com.google.android.play:review-ktx:2.0.2")

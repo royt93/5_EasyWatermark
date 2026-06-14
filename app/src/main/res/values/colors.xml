@@ -108,4 +108,8 @@
     <color name="glass_accent">#7C4DFF</color>
     <color name="glass_accent_light">#B39DFF</color>
 
+    <!-- VIP -->
+    <color name="vip_gold">#FFFFD60A</color>
+    <color name="vip_gold_dark">#FFB8860B</color>
+
 </resources>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- VIP -->
+    <string name="vip_title">VIP</string>
+    <string name="vip_status_active">VIP đang kích hoạt</string>
+    <string name="vip_status_free">Chế độ miễn phí</string>
+    <string name="vip_entry_first_install">🎁 Quà tặng cài đặt mới</string>
+    <string name="vip_entry_manual">Gói VIP</string>
+    <string name="vip_entry_none">Chưa có gói VIP</string>
+    <string name="vip_expiry">Hết hạn %1$s</string>
+    <string name="vip_expiry_none">Chưa có hạn</string>
+    <string name="vip_redeem_title">Nhập mã VIP</string>
+    <string name="vip_key_hint">Nhập mã VIP</string>
+    <string name="vip_redeem_button">Kích hoạt VIP</string>
+    <string name="vip_key_invalid">Mã VIP không hợp lệ</string>
+    <string name="vip_key_activated">Đã kích hoạt VIP %1$d ngày</string>
+    <string name="vip_reward_title">Nhận 3 ngày VIP</string>
+    <string name="vip_reward_desc">Xem một quảng cáo có thưởng để kích hoạt gói VIP 3 ngày.</string>
+    <string name="vip_watch_rewarded">Xem quảng cáo → 3 ngày VIP</string>
+    <string name="vip_reward_activated">Đã kích hoạt VIP %1$d ngày</string>
+    <string name="vip_reward_unavailable">Quảng cáo có thưởng chưa sẵn sàng</string>
+    <string name="vip_privacy_footer">Chính sách bảo mật</string>
+    <!-- VIP extended -->
+    <string name="vip_activated_at">Kích hoạt: %1$s</string>
+    <string name="vip_time_left">Thời gian còn lại</string>
+    <string name="vip_remaining">%1$d ngày %2$02dg %3$02dp %4$02ds</string>
+    <string name="vip_active_card_title">Gói VIP đang dùng</string>
+    <string name="vip_revoke_button">Thu hồi VIP</string>
+    <string name="vip_revoke_confirm_title">Xác nhận thu hồi</string>
+    <string name="vip_revoke_confirm_message">Bạn có chắc muốn thu hồi VIP và quay về gói Miễn phí?</string>
+    <string name="vip_revoked">Đã thu hồi VIP</string>
+    <string name="vip_buy_title">Mua VIP</string>
+    <string name="vip_buy_30d_locked">Mua VIP 30 ngày — sắp ra mắt</string>
+    <string name="vip_buy_90d_locked">Mua VIP 90 ngày — sắp ra mắt</string>
+    <string name="vip_buy_1y_locked">Mua VIP 1 năm — sắp ra mắt</string>
+    <string name="vip_buy_lifetime_locked">Mua VIP trọn đời — sắp ra mắt</string>
+    <string name="vip_restore_locked">Khôi phục mua hàng — sắp ra mắt</string>
+    <string name="cancel">Huỷ</string>
+    <string name="confirm">Xác nhận</string>
+</resources>

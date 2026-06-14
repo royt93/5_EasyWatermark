@@ -44,6 +44,10 @@ import com.mckimquyen.watermark.data.model.FuncTitleModel
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.google.android.material.badge.BadgeDrawable
+import com.google.android.material.badge.BadgeUtils
+import com.google.android.material.badge.ExperimentalBadgeUtils
+import com.mckimquyen.watermark.feature.vip.VipManagementActivity
 import com.mckimquyen.watermark.rateAppInApp
 import com.mckimquyen.watermark.ui.about.AboutActivity
 import com.mckimquyen.watermark.ui.adapter.FuncPanelAdapter
@@ -182,6 +186,7 @@ class MainActivity : BaseActivity() {
     private val vibrateHelper: VibrateHelper by lazy { VibrateHelper.get() }
 
     private lateinit var launchView: LaunchView
+    private var vipBadge: BadgeDrawable? = null
 
     private var bgTransformAnimator: ObjectAnimator? = null
 
@@ -317,6 +322,7 @@ class MainActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        refreshVipBadge()
         if (MyApplication.recoveryMode) {
             return
         }
@@ -763,12 +769,42 @@ class MainActivity : BaseActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu, menu)
+        refreshVipBadge()
         return true
+    }
+
+    /** Badge VIP vàng trên icon crown khi gói VIP còn hiệu lực; tự gỡ khi hết VIP. */
+    @OptIn(ExperimentalBadgeUtils::class)
+    private fun refreshVipBadge() {
+        if (!this::launchView.isInitialized) return
+        val toolbar = launchView.toolbar
+        val active = com.roy.sdkadbmob.AdManager.isVipByKeyActive()
+        toolbar.post {
+            if (isFinishing || isDestroyed) return@post
+            if (toolbar.menu.findItem(R.id.actionVip) == null) return@post
+            val existing = vipBadge
+            if (active && existing == null) {
+                val badge = BadgeDrawable.create(this).apply {
+                    backgroundColor = ContextCompat.getColor(this@MainActivity, R.color.vip_gold)
+                    isVisible = true
+                }
+                vipBadge = badge
+                runCatching { BadgeUtils.attachBadgeDrawable(badge, toolbar, R.id.actionVip) }
+            } else if (!active && existing != null) {
+                runCatching { BadgeUtils.detachBadgeDrawable(existing, toolbar, R.id.actionVip) }
+                vipBadge = null
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.actionSettings -> {
             startActivity(Intent(this, AboutActivity::class.java))
+            true
+        }
+
+        R.id.actionVip -> {
+            startActivity(Intent(this, VipManagementActivity::class.java))
             true
         }
 

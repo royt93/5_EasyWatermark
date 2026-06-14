@@ -1,81 +1,198 @@
-# 📊 KẾ HOẠCH MIGRATE AD SYSTEM SANG ADMOB WRAPPER SDK
+# AD migration plan - EasyWatermark
 
-> **✅ ĐÃ HOÀN TẤT MIGRATION (cập nhật 2026-06-14).** File dưới là kế hoạch gốc, giữ lại để tham khảo. Trạng thái thực tế trên code:
-> - SDK: `com.github.royt93:AdmobWrapper` (`com.roy.sdkadbmob.AdManager`); `AdMobManager.kt` cũ đã xóa.
-> - Khởi tạo: `MyApplication.setupAdmob()` (`setConfig` → `earlyInit` → `init`), switch provider bằng `BuildConfig.IS_ENABLE_ADMOB`; ID/Key lấy từ `BuildConfig` (đã có đủ AdMob + AppLovin).
-> - App Open: `SplashActivity` (`AdManager.initSplashScreen`) + `registerAppOpenAdLifecycle` trong `MyApplication`.
-> - Banner + Interstitial: `AboutActivity` (`loadBanner`/`bannerResume`/`bannerPause`/`bannerDestroy`; `loadInterstitial` + `showInterstitial` trong override `finish()`).
-> - Giữ đúng 3 touchpoint, KHÔNG có Reward Ad.
+Updated: 2026-06-14
 
-## 1. TÌNH TRẠNG HIỆN TẠI (BEFORE MIGRATION)
-Dự án EasyWatermark đang tự triển khai manual integration của AdMob thông qua class local `AdMobManager.kt`.
-Các Touchpoints hiện có trong dự án:
-- **App Open Ad:** Được gọi tại `SplashActivity`.
-- **Banner Ad:** Được gắn tại `AboutActivity` (`layout_ad_banner`).
-- **Interstitial Ad:** Được load và show tại `AboutActivity` (trong hàm `finish()`).
-- **Reward Ad:** **KHÔNG CÓ** (Không tìm thấy touchpoint).
+## VIP screen full-spec upgrade (2026-06-14, lần 2)
 
-> **Note Spec 5:** Vì không tự tiện thêm ad mới, quá trình migrate sẽ giữ nguyên 3 touchpoint trên và **không tích hợp Reward Ad**.
+Nâng `VipManagementActivity` lên đúng spec template Step 10 (giữ kiểu Activity, không đổi Fragment):
 
----
+- **Bug fix chặn app (phát hiện khi test thật trên Pixel 7 Pro)**: gỡ `<meta-data android:name="applovin.sdk.key">` khỏi `AndroidManifest.xml`. AppLovin SDK 13.x (pin bởi wrapper 1.1.5) ném `IllegalStateException: Invalid initialization process` nếu key vẫn còn trong manifest — phải set programmatically (wrapper đã làm qua `AdSdkConfig.applovinSdkKey = BuildConfig.APPLOVIN_SDK_KEY`). Trước fix: app crash ngay ở `SplashActivity` consent callback.
+- **UI 13/13 component**: hero header gold/xám + crown shimmer, activation date row, expiry row, `LinearProgressIndicator` elapsed-semantic, countdown `Xd HHh MMm SSs`, key input (clear icon), watch-rewarded, 4 nút Buy disabled (30d/90d/1y/lifetime), active VIP card single-entry + nút Revoke, Restore disabled, privacy footer.
+- **Animation 5/5**: pulse nút watch-ad (`ObjectAnimator`), slide/shimmer crown (`ShimmerFrameLayout`), count-up bump khi đổi phút (`ValueAnimator`), confetti khi activate (`konfetti-xml:2.0.5`) + haptic `CONFIRM`/`LONG_PRESS`. Tất cả nullable + cancel ở `onPause`/`onDestroy` (đúng rule memory-leak 10.5).
+- **Deps mới**: `nl.dionsegijn:konfetti-xml:2.0.5`, `com.facebook.shimmer:shimmer:0.5.0` (qua version catalog inline trong `settings.gradle.kts`).
+- **i18n**: thêm `values-vi/strings.xml` (default repo là tiếng Anh) + bổ sung string VIP mở rộng ở `values/strings.xml`.
+- **Toolbar badge**: `BadgeDrawable` vàng gắn lên menu item crown (`actionVip`) của `MainActivity`, refresh ở `onResume`/`onCreateOptionsMenu` theo `AdManager.isVipByKeyActive()`.
+- **VipPrefs**: thêm `clearGrantedAtMs()` cho revoke.
 
-## 2. NHỮNG THÔNG TIN CẦN THÊM TỪ USER (CẦN CUNG CẤP)
-Dự án hiện tại chỉ có AdMob ID. Wrap SDK (`_260321AdmobWrapper`) hỗ trợ cả AppLovin MAX. Vì vậy để build config hoàn chỉnh, tôi cần bạn cung cấp các thông tin sau:
-1. **AppLovin SDK Key**
-2. **AppLovin Banner ID**
-3. **AppLovin Interstitial ID**
-4. **AppLovin App Open ID**
+Kiểm thử thực tế trên Pixel 7 Pro (192.168.21.185, Android, AppLovin primary):
+- `:app:assembleAppTestDebug` + `:app:assembleAppReleaseRelease`: PASS (release qua minify+shrink, konfetti/shimmer không lỗi ProGuard).
+- Luồng chạy: Splash → App Open ad (AppLovin MAX test) hiển thị → Main → About (banner AppLovin MAX test hiển thị) → VIP screen.
+- Redeem key 3 ngày: kích hoạt OK, confetti bắn, countdown live tick, progress bar rỗng→đầy đúng elapsed-semantic, active card + revoke hiện.
+- Revoke: dialog Material confirm → về free state, timer/active card ẩn, reward card hiện lại.
+- 0 FATAL exception suốt session sau khi fix manifest.
+- `:app` ktlint: các file VIP mới sạch (project có sẵn nhiều vi phạm trailing-comma pre-existing, ngoài phạm vi).
 
-*Nếu bạn chỉ muốn tiếp tục chạy AdMob, hãy confirm lại. Tuy nhiên khai báo stub IDs cho AppLovin vẫn có thể cần thiết.*
+## Implementation status
 
----
+Implemented on 2026-06-14.
 
-## 3. KẾ HOẠCH TRIỂN KHAI (STEP-BY-STEP)
+- `./gradlew :app:assembleAppTestDebug`: PASS.
+- `./gradlew :app:assembleAppReleaseRelease`: PASS.
+- Wrapper dependency is now `com.github.royt93:AdmobApplovinWrapper:1.1.5`.
+- AppLovin remains primary provider via `BuildConfig.IS_ENABLE_ADMOB=false`; AdMob rewarded fallback uses the official test rewarded ID.
+- Compatibility updates required by wrapper-pinned Google Ads `24.5.0`:
+  - Kotlin `2.1.0`.
+  - Room `2.8.4`.
+  - Hilt `2.57.2`.
+  - Disabled lint detector `NullSafeMutableLiveData` because AGP 8.7.2 lint crashes on that lifecycle detector with the Kotlin analysis API used here.
 
-### BƯỚC 1: Xoá bỏ local implementation cũ
-- Xóa file: `app/src/main/java/com/mckimquyen/watermark/sdkadbmob/AdMobManager.kt`.
-- Xóa các logic liên quan tới biến `AdMobManager` cũ trong các file `MyApplication`, `SplashActivity`, `AboutActivity`.
-- Xoá dependencies AdMob/AppLovin cũ trong `app/build.gradle.kts`.
+Selected implementation options:
+- Scope: full migrate.
+- Build verification: `:app:assembleAppTestDebug` and `:app:assembleAppReleaseRelease`.
+- Underlying SDK policy: wrapper-pinned transitive dependencies; do not force latest Google/AppLovin SDK from the app.
 
-### BƯỚC 2: Thêm SDK JitPack & Dependency
-- Thêm `maven { url = uri("https://jitpack.io") }` vào `settings.gradle.kts` hoặc repository project level.
-- Thêm dependency `implementation("com.github.royt93:AdmobWrapper:1.1.1")` vào `app/build.gradle.kts`.
-- Thêm các biến `buildConfigField` cho `APPLOVIN_SDK_KEY` và các `APPLOVIN_*_ID` tương ứng (sau khi được cung cấp ở trên).
-- Thêm cờ `IS_ENABLE_ADMOB` để switch ad provider.
+## Decisions
 
-### BƯỚC 3: Cấu hình Manifest
-- Đảm bảo có `com.google.android.gms.ads.APPLICATION_ID`.
-- Mới: Thêm `<meta-data android:name="applovin.sdk.key" ... />`.
+- Target SDK wrapper: `com.github.royt93:AdmobApplovinWrapper:1.1.5`.
+- Runtime provider priority: AppLovin MAX primary. AdMob remains fallback only; keep `BuildConfig.IS_ENABLE_ADMOB=false`.
+- Current app dependency: `com.github.royt93:AdmobWrapper:1.1.2`.
+- Current app forced Google Mobile Ads SDK: `23.6.0`.
+- Latest checked SDKs:
+  - `_AdmobWrapper`: local git tag `1.1.5`.
+  - Google Mobile Ads SDK: `25.3.0` from Google Maven / official release notes.
+  - AppLovin Android SDK: `13.6.3` from Maven Central metadata.
+- Migration rule: consume wrapper `1.1.5` first. Do not force app-level Google Ads `25.3.0` or AppLovin `13.6.3` unless `_AdmobWrapper` is upgraded and verified separately.
 
-### BƯỚC 4: Khởi tạo ở MyApplication
-- Tạo đối tượng `AdSdkConfig` truyền đủ ID của AdMob/AppLoyin lấy từ `BuildConfig`.
-- Gọi tuần tự:
-  1. `AdManager.setConfig(adConfig)`
-  2. `AdManager.earlyInit(this)`
-  3. Khởi tạo Native SDK (MobileAds Init hoặc AppLovinSdk Init dựa theo flag `IS_ENABLE_ADMOB`).
-  4. Gọi `AdManager.init(this, ...)`.
-- Đảm bảo logic recovery mode hoặc tính toàn vẹn của app được giữ nguyên.
+## Supplied IDs and config
 
-### BƯỚC 5: Migrate App Open Ad (Splash Screen & Background)
-- Tại `SplashActivity`: Đổi `AdMobManager(local).initSplashScreen()` thành `AdManager(sdk).initSplashScreen()`.
-- Note: SDK wrapper đã tự động bind lifecycle ngầm để catch App Open Ad mỗi khi resume từ background, nên không cần lo logic background tự chế.
+| Field | Value |
+|---|---|
+| AppLovin SDK key | `e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt` |
+| AppLovin banner ID | `d3455cc529985b25` |
+| AppLovin interstitial ID | `a48241ebcb20ad5c` |
+| AppLovin app open ID | `8239a7fd6896cf1f` |
+| AppLovin rewarded ID | `87a4f5696dfd4212` |
+| AdMob banner ID | existing debug/release values in `app/build.gradle.kts` |
+| AdMob interstitial ID | existing debug/release values in `app/build.gradle.kts` |
+| AdMob app open ID | existing debug/release values in `app/build.gradle.kts` |
+| AdMob rewarded ID | AdMob test rewarded ID `ca-app-pub-3940256099942544/5224354917` |
+| Privacy Policy URL | `https://loitp.notion.site/Term-Privacy-Policy-Disclaimer-319b1cd8783942fa8923d2a3c9bce60f` |
+| VIP key 30 days | `9fA0q7eN!27cLx04@21993Y2u0I7#Q0` |
+| VIP key 3 days | `eQ7@93L0f!2Y2707xN04021993u0I#2aK` |
 
-### BƯỚC 6: Migrate Banner Ad (AboutActivity)
-- Layout tại `AboutActivity` (`layout_ad_banner`) đã chuẩn.
-- Đổi hàm load banner thành `AdManager.loadBanner(context, container, tvLabelAd)`.
-- **QUAN TRỌNG:** Phải map các App Lifecycle callbacks `onResume`, `onPause`, `onDestroy` vào Activity cho Banner theo định nghĩa của SDK, tránh rò rỉ impression hoặc memory leak.
+VIP keys must be compiled as Base64-obfuscated constants, not plain strings.
 
-### BƯỚC 7: Migrate Interstitial Ad (AboutActivity)
-- Tại `AboutActivity.onCreate()`: load sẵn ad dùng `AdManager.loadInterstitial(this)`.
-- Khi đóng Activity (back/finish): dùng `AdManager.showInterstitial(this)` và catch callback đóng ad để gọi `super.finish()`.
+## API surface summary
 
----
+`AdManager` is the wrapper facade. App code sets `AdSdkConfig`, calls `initialize`, then uses `requestConsentInfoUpdate`, `awaitSplashComplete`, `loadBanner`, `loadInterstitial`, `showInterstitial`, `loadRewarded`, `showRewarded`, and VIP helpers. Wrapper `1.1.5` owns provider selection, App Open lifecycle through `ProcessLifecycleOwner`, banner auto lifecycle, listener cleanup, frequency/safety limits, UMP consent, rewarded, VIP by key, and first-install 1-day VIP trial.
 
-## 4. REVIEW POLICY & PERFORMANCE
-- Ad Banner: Lifecycle đúng của Wrapper tự pause/resume, tránh invalid traffic hoặc ấn nhầm khi scroll.
-- Ad Open App: Wrapper chặn show app open ad ở cold start, delay 5s để tránh trigger nhầm khi ấn ad back lại (AdSafety filters).
-- Bug & Memory Leaks: Việc dùng AdManager theo pattern của wrapper huỷ view reference cẩn thận. Cleanup banner trên `onDestroy`.
+## Current audit
 
----
+| Question | Answer | Evidence |
+|---|---|---|
+| Project already applies target wrapper? | Yes. It uses `AdmobApplovinWrapper:1.1.5`. | `app/build.gradle.kts` dependency |
+| Any old SDK/manual manager still active? | No old local `AdMobManager` found. A commented legacy AppLovin helper remains but is not active. | `app/src/main/java/com/mckimquyen/watermark/utils/Applovin.kt` comments |
+| Application init? | `MyApplication.setupAdmob()` builds full `AdSdkConfig`, calls `setConfig`, then wrapper `initialize`. | `MyApplication.kt` |
+| Splash consent/App Open warmup? | Yes. `SplashActivity` calls `requestConsentInfoUpdate`; if ads can be requested it runs `awaitSplashComplete`, otherwise it navigates to main. | `SplashActivity.kt` |
+| Banner? | `AboutActivity` loads adaptive banner into `layoutAdBanner.bannerContainer`; wrapper auto-manages lifecycle. | `AboutActivity.kt` |
+| Interstitial? | `AboutActivity.finish()` and post-save in `MainActivity` call `showInterstitial`. | `AboutActivity.kt`, `MainActivity.kt` |
+| VIP screen? | Present as standalone `VipManagementActivity`, with About row and main toolbar crown entry points. | `feature/vip`, `a_about.xml`, `menu.xml` |
 
-**→ Xin vui lòng phản hồi lại các KEY/ID bạn muốn sử dụng (Mục 2) và review kế hoạch này để tôi bắt đầu code migration.**
+## Touchpoint table
+
+| Slot | File hiện tại | Trigger | API mới | API cũ thay thế |
+|---|---|---|---|---|
+| Banner | `AboutActivity` | `onCreate` after view init | `AdManager.loadBanner(autoManageLifecycle=true)` | `loadBanner` + manual `bannerResume/bannerPause/bannerDestroy` |
+| Interstitial | `AboutActivity` | Back/finish from About | `AdManager.showInterstitial` | existing `showInterstitial`, keep trigger |
+| Interstitial | `MainActivity` | after save job finished, delayed 800ms | `AdManager.showInterstitial` | existing `showInterstitial`, keep trigger |
+| App Open | `SplashActivity` + app foreground resume | consent resolved, splash warmup, resume by wrapper lifecycle | `requestConsentInfoUpdate` + `awaitSplashComplete` | `initSplashScreen` + manual lifecycle registration |
+| Rewarded | New `VipManagementActivity` | user taps "Watch ad - 3 days VIP" | `loadRewarded` + `showRewarded`, interstitial fallback only if wrapper supports required callback path | `(chua co)` |
+| VIP entry | `AboutActivity`/settings | user taps VIP row | start `VipManagementActivity` | `(chua co)` |
+| VIP entry | `MainActivity` | crown icon on main screen | start `VipManagementActivity` | `(chua co)` |
+
+## Step-by-step migrate plan
+
+### 1. Setup
+
+- Edit `app/build.gradle.kts`.
+- Replace `implementation("com.github.royt93:AdmobWrapper:1.1.2")` with `implementation("com.github.royt93:AdmobApplovinWrapper:1.1.5")`.
+- Add `ADMOB_REWARDED_ID`, `APPLOVIN_REWARDED_ID`, and `PRIVACY_POLICY_URL` `buildConfigField`.
+- Keep `IS_ENABLE_ADMOB=false` for AppLovin primary runtime.
+- Remove or relax `force("com.google.android.gms:play-services-ads:23.6.0")` if it conflicts with wrapper `1.1.5`.
+
+### 2. App init and consent
+
+- Edit `MyApplication.kt`.
+- Add all ad IDs, `applovinSdkKey`, `vipKeySecret`, and `safety` to `AdSdkConfig`.
+- Replace the current manual provider init block with wrapper `AdManager.initialize(this)`.
+- Use debug-friendly `AdSafetyLimits.TEST` or explicit relaxed safety only when `BuildConfig.DEBUG`; release must use default limits.
+- Keep crash recovery and `CMonet.init` behavior intact.
+
+### 3. Splash
+
+- Edit `SplashActivity.kt`.
+- Replace `initSplashScreen` with consent-first flow:
+  - `AdManager.requestConsentInfoUpdate`.
+  - `AdManager.awaitSplashComplete`.
+  - `goToMain()`.
+- Do not add a second foreground lifecycle observer in app code; wrapper owns App Open resume.
+
+### 4. VIP Activity
+
+- Add `VipManagementActivity` under `feature/vip`.
+- Add `VipKeys.kt` for Base64-obfuscated 30-day and 3-day key validation.
+- Add `VipPrefs.kt` for app-owned flags: `pref_user_redeemed_key_at_least_once`, granted timestamp if needed for UI.
+- Register Activity in manifest.
+- UI requirements:
+  - Standalone Activity, edge-to-edge safe.
+  - Style must match current app glass/dynamic-color visual language.
+  - Show current VIP status, expiry, grace label for first-install gift, key input, redeem action, watch rewarded for 3 days, privacy footer.
+  - No fake close ad UI and no ad-click encouragement.
+
+### 5. VIP entry points
+
+- Settings/About touchpoint: add a VIP row/action in `AboutActivity` using existing settings screen style.
+- Main screen touchpoint: add crown icon in `LaunchView`/main toolbar area and wire it from `MainActivity` to start `VipManagementActivity`.
+
+### 6. Banner
+
+- Edit `AboutActivity.kt`.
+- Keep existing banner container.
+- Use wrapper auto-managed banner lifecycle.
+- Remove manual `bannerResume`, `bannerPause`, and `bannerDestroy` if no mid-lifecycle destroy is needed.
+
+### 7. Interstitial
+
+- Keep the existing two triggers only.
+- Do not add any new interstitial trigger.
+- Trust `AdSafetyLimits` for frequency cap.
+
+### 8. Rewarded
+
+- Load rewarded only in `VipManagementActivity`.
+- Show rewarded only after user taps the watch-ad button.
+- On earned reward, activate/grant 3-day VIP path and persist "user redeemed/watched" state needed by UI.
+- Use AdMob rewarded test ID only for fallback config, not active runtime while `IS_ENABLE_ADMOB=false`.
+
+## Before / after
+
+| Area | Before | After |
+|---|---|---|
+| Provider | AppLovin via old wrapper path, AdMob switch possible | AppLovin primary via `AdmobApplovinWrapper:1.1.5`, AdMob fallback disabled by flag |
+| Dependency | `AdmobWrapper:1.1.2` | `AdmobApplovinWrapper:1.1.5` |
+| Init | App manually initializes MobileAds/AppLovinSdk | Wrapper `initialize` owns provider init |
+| App Open | `initSplashScreen` + app registers lifecycle | consent-first splash + wrapper lifecycle |
+| Consent | Not explicit in Splash | UMP request before ad warmup/load |
+| Banner lifecycle | Manual resume/pause/destroy | SDK auto lifecycle |
+| Interstitial | Existing two triggers | Same triggers, newer safety caps |
+| Rewarded | Not present | VIP Activity user-click only |
+| VIP | Not present | Key-based VIP, rewarded 3 days, first-install 1-day grace |
+| Memory risk | Manual banner references in Activity | SDK-owned lifecycle and cleanup |
+| Policy posture | Partial | Consent, App Open splash gating, rewarded user click, cap documented |
+
+## Information still open
+
+- Confirm required build tasks. Assumption: `./gradlew :app:assembleAppTestDebug` and `./gradlew :app:assembleAppReleaseRelease`.
+- Optional: test device IDs for AdMob debug/test-device config.
+- Optional: EEA test geography override plan for consent QA.
+
+## Verification plan
+
+- Run `./gradlew :app:assembleAppTestDebug`.
+- Run `./gradlew :app:assembleAppReleaseRelease`.
+- Manual code review:
+  - Banner container does not overlay interactive content.
+  - Splash does not show App Open before consent/warmup completion.
+  - Rewarded only fires from VIP button click.
+  - No manual duplicate App Open lifecycle observer.
+  - Activity/banner/rewarded callbacks do not hold destroyed Activity references.

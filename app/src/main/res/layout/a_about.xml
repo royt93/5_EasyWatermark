@@ -280,6 +280,50 @@
                         android:layout_marginStart="48dp"
                         android:background="@color/glass_border" />
 
+                    <!-- VIP row -->
+                    <LinearLayout
+                        android:id="@+id/rowVip"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.9"
+                            android:src="@drawable/ic_workspace_premium"
+                            app:tint="@color/glass_text_primary"
+                            tools:ignore="ContentDescription" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:text="@string/vip_title"
+                            android:textColor="@color/glass_text_primary"
+                            android:textSize="15sp" />
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:alpha="0.5"
+                            android:rotation="45"
+                            android:src="@drawable/baseline_cancel_24"
+                            app:tint="@color/glass_text_secondary"
+                            tools:ignore="ContentDescription" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginStart="48dp"
+                        android:background="@color/glass_border" />
+
                     <!-- Privacy row -->
                     <LinearLayout
                         android:id="@+id/tvPrivacyEng"

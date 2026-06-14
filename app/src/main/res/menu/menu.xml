@@ -15,6 +15,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/actionVip"
+        android:icon="@drawable/ic_workspace_premium"
+        android:title="@string/vip_title"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/actionSettings"
         android:icon="@drawable/ic_about"
         android:title="@string/action_settings"

@@ -2,7 +2,6 @@ package com.mckimquyen.watermark.ui.about
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.view.ViewCompat
@@ -14,6 +13,7 @@ import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.AAboutBinding
+import com.mckimquyen.watermark.feature.vip.VipManagementActivity
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.openLink
 import com.roy.sdkadbmob.AdManager
@@ -27,21 +27,6 @@ class AboutActivity : BaseActivity() {
     private val viewModel: AboutViewModel by viewModels()
 
 //    private lateinit var bgDrawable: GradientDrawable
-
-    //    private var adView: MaxAdView? = null
-    private var adView: View? = null
-
-    override fun onResume() {
-        super.onResume()
-        Log.d(LOG_TAG, "AboutActivity onResume")
-        AdManager.bannerResume(adView)
-    }
-
-    override fun onPause() {
-        Log.d(LOG_TAG, "AboutActivity onPause")
-        AdManager.bannerPause(adView)
-        super.onPause()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,7 +87,10 @@ class AboutActivity : BaseActivity() {
 //            }
             tvPrivacyEng.setOnClickListener {
                 Log.d(LOG_TAG, "AboutActivity tvPrivacyEng clicked — opening privacy policy")
-                openLink(Uri.parse("https://loitp.notion.site/loitp/Privacy-Policy-319b1cd8783942fa8923d2a3c9bce60f"))
+                openLink(Uri.parse(BuildConfig.PRIVACY_POLICY_URL))
+            }
+            rowVip.setOnClickListener {
+                startActivity(android.content.Intent(this@AboutActivity, VipManagementActivity::class.java))
             }
 
             switchDebug.setOnCheckedChangeListener { _, isChecked ->
@@ -130,10 +118,11 @@ class AboutActivity : BaseActivity() {
                 switchDebug.isChecked = boundsEnabled
             }
 
-            adView = AdManager.loadBanner(
+            AdManager.loadBanner(
                 context = this@AboutActivity,
                 container = binding.layoutAdBanner.bannerContainer,
-                tvLabelAd = binding.layoutAdBanner.tvLabelAd
+                tvLabelAd = binding.layoutAdBanner.tvLabelAd,
+                adSize = AdManager.getAdaptiveBannerSize(this@AboutActivity),
             )
             AdManager.loadInterstitial(this@AboutActivity)
         }
@@ -157,8 +146,4 @@ class AboutActivity : BaseActivity() {
         }
     }
 
-    override fun onDestroy() {
-        AdManager.bannerDestroy(adView)
-        super.onDestroy()
-    }
 }
