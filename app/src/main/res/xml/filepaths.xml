@@ -3,6 +3,9 @@
     <cache-path
         name="my_compressor_images"
         path="compressor/" />
+    <cache-path
+        name="qr_codes"
+        path="qrcodes/" />
     <external-path
         name="my_external_dir"
         path="Pictures/EasyWaterMark/" />
