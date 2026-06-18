@@ -1,0 +1,285 @@
+{
+  "schemaVersion": 2,
+  "appName": "Watermark Creator",
+  "themeId": "dark-bold",
+  "connectedCanvas": true,
+  "locales": [
+    "en"
+  ],
+  "locale": "en",
+  "device": "android",
+  "orientation": "portrait",
+  "appIcon": "/app-icon.png",
+  "slidesByDevice": {
+    "iphone": [
+      {
+        "id": "s_mqjlsuar_0",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Sell one\nidea per slide."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mqjlsuar_1",
+        "layout": "device-bottom",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Your headline\nlives here."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mqjlsuar_2",
+        "layout": "two-devices",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "Show two\nscreens at once."
+        },
+        "screenshot": "",
+        "screenshotSecondary": ""
+      },
+      {
+        "id": "s_mqjlsuar_3",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 03"
+        },
+        "headline": {
+          "en": "Flip the contrast\nfor visual rhythm."
+        },
+        "screenshot": "",
+        "inverted": true
+      },
+      {
+        "id": "s_mqjlsuar_4",
+        "layout": "no-device",
+        "label": {
+          "en": "MORE"
+        },
+        "headline": {
+          "en": "And so\nmuch more."
+        },
+        "screenshot": ""
+      }
+    ],
+    "android": [
+      {
+        "id": "watermark-hero",
+        "layout": "hero",
+        "label": {
+          "en": "WATERMARK CREATOR"
+        },
+        "headline": {
+          "en": "Protect your\nphotos fast."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/01.png",
+        "transforms": {
+          "device": {
+            "x": 205,
+            "y": 670,
+            "width": 690,
+            "height": 1495,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        }
+      },
+      {
+        "id": "watermark-edit",
+        "layout": "device-bottom",
+        "label": {
+          "en": "CREATE"
+        },
+        "headline": {
+          "en": "Make every\nshare yours."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/02.png",
+        "transforms": {
+          "device": {
+            "x": 196,
+            "y": 642,
+            "width": 705,
+            "height": 1528,
+            "rotation": 0,
+            "zIndex": 3
+          },
+          "caption": {
+            "x": 80,
+            "y": 94,
+            "width": 940,
+            "height": 430,
+            "rotation": 0,
+            "zIndex": 4
+          }
+        }
+      },
+      {
+        "id": "watermark-style",
+        "layout": "device-top",
+        "label": {
+          "en": "STYLE"
+        },
+        "headline": {
+          "en": "Your mark,\nyour look."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/03.png",
+        "inverted": true
+      },
+      {
+        "id": "watermark-layout",
+        "layout": "two-devices",
+        "label": {
+          "en": "CONTROL"
+        },
+        "headline": {
+          "en": "Place it\njust right."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/04.png",
+        "screenshotSecondary": "/screenshots/android/phone/{locale}/02.png",
+        "transforms": {
+          "device": {
+            "x": 108,
+            "y": 650,
+            "width": 622,
+            "height": 1348,
+            "rotation": -4,
+            "zIndex": 3
+          },
+          "deviceSecondary": {
+            "x": 372,
+            "y": 610,
+            "width": 622,
+            "height": 1348,
+            "rotation": 6,
+            "zIndex": 2
+          }
+        }
+      },
+      {
+        "id": "watermark-vip",
+        "layout": "device-bottom",
+        "label": {
+          "en": "READY"
+        },
+        "headline": {
+          "en": "Create more.\nWorry less."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/05.png",
+        "transforms": {
+          "device": {
+            "x": 195,
+            "y": 642,
+            "width": 705,
+            "height": 1528,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        }
+      }
+    ],
+    "ipad": [
+      {
+        "id": "s_mqjlsuar_a",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Made for\nthe big screen."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mqjlsuar_b",
+        "layout": "device-bottom",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Built for\nfocus."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mqjlsuar_c",
+        "layout": "device-top",
+        "label": {
+          "en": "FEATURE 02"
+        },
+        "headline": {
+          "en": "Always within reach."
+        },
+        "screenshot": "",
+        "inverted": true
+      }
+    ],
+    "android-7": [
+      {
+        "id": "s_mqjlsuar_d",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Pocket-sized\npower."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mqjlsuar_e",
+        "layout": "split-landscape",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Wide canvas,\nbigger ideas."
+        },
+        "screenshot": ""
+      }
+    ],
+    "android-10": [
+      {
+        "id": "s_mqjlsuar_f",
+        "layout": "hero",
+        "label": {
+          "en": "MEET YOUR APP"
+        },
+        "headline": {
+          "en": "Made for\nthe big screen."
+        },
+        "screenshot": ""
+      },
+      {
+        "id": "s_mqjlsuar_g",
+        "layout": "split-landscape",
+        "label": {
+          "en": "FEATURE 01"
+        },
+        "headline": {
+          "en": "Wide canvas,\nbigger ideas."
+        },
+        "screenshot": ""
+      }
+    ],
+    "feature-graphic": [
+      {
+        "id": "watermark-feature-graphic",
+        "layout": "feature-graphic",
+        "label": {},
+        "headline": {
+          "en": "Protect every image in seconds."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/02.png"
+      }
+    ]
+  },
+  "tagline": "Protect every image in seconds."
+}
