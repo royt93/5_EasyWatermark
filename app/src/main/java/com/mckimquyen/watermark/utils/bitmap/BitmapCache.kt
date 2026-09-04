@@ -30,7 +30,10 @@ object BitmapCache {
     }
 
     fun addToCache(info: BitmapInfo, bitmapValue: BitmapValue?) {
-        memoryCache.put(info, bitmapValue)
+        // LruCache.put() ném NullPointerException nếu value null (decode ảnh lỗi trả về null).
+        if (bitmapValue != null) {
+            memoryCache.put(info, bitmapValue)
+        }
     }
 
     data class BitmapInfo(
