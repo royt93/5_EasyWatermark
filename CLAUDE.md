@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Fork/rebrand của EasyWatermark, package `com.mckimquyen.watermark` (tên Gradle root: `Watermark_Creator`).
 Kiến trúc MVVM + Hilt DI, không dùng Jetpack Compose.
 
-- compileSdk/targetSdk 36, minSdk 24, JVM 17, Kotlin 1.9.25, AGP 8.7.2.
+- compileSdk/targetSdk 37, minSdk 24, JVM 17, Kotlin 2.1.0, AGP 8.7.2, Gradle 8.9.
 - Toàn bộ giao tiếp/comment trong repo bằng tiếng Việt — giữ nguyên quy ước này.
 
 ## Lệnh thường dùng
@@ -25,14 +25,21 @@ Build có 2 trục: flavor (`appTest`, `appRelease`) × buildType (`debug`, `rel
 ./gradlew clean
 ```
 
-- **Chưa có unit/instrumentation test nào** — các thư viện test và 2 module benchmark (`baseBenchmarks`, `macrobenchmark`) đã bị comment trong `settings.gradle.kts` / version catalog. `testInstrumentationRunner` khai báo sẵn nhưng không có test class.
+- **Unit test (`app/src/test`)**: `QrCodeGeneratorTest`, `TextTokenResolverTest`, `QrPreviewWidgetTest`, `OutputImageUtilsTest`, `ImageFormatRoboTest` (Robolectric), `ExifModelTest`, `DateConverterTest`.
+  ```bash
+  ./gradlew testAppReleaseDebugUnitTest                                    # toàn bộ unit test
+  ./gradlew testAppReleaseDebugUnitTest --tests "*.DateConverterTest"      # 1 class
+  ```
+- **Instrumentation test (`app/src/androidTest`)**: 1 test — `TemplateDaoIntegrationTest` (Room). Chạy bằng `./gradlew connectedAppReleaseDebugAndroidTest` (cần thiết bị/emulator).
+- 2 module benchmark (`baseBenchmarks`, `macrobenchmark`) vẫn bị comment trong `settings.gradle.kts` — chưa dùng được.
 - Release ký bằng các property `KEY_ALIAS` / `KEY_PASSWORD` / `STORE_FILE` / `STORE_PASSWORD` (hiện đặt trong `gradle.properties`, store `keystore.jks`).
 
 ## Cấu hình build & dependency (lưu ý đặc biệt)
 
 - **Version catalog được khai báo inline trong `settings.gradle.kts`** (khối `dependencyResolutionManagement { versionCatalogs { create("libs") {...} } }`), **không phải** `gradle/libs.versions.toml`. Thêm/sửa thư viện ở đây.
 - `buildSrc/` chỉ chứa `Apps.kt` (hằng `targetSdk`) và `Dependencies.kt`.
-- App phụ thuộc nhiều bản vá `resolutionStrategy.force(...)` trong `app/build.gradle.kts` để khóa version (play-services-ads, coroutines, core-ktx, kotlin-stdlib) — cẩn trọng khi nâng cấp.
+- App phụ thuộc nhiều bản vá `resolutionStrategy.force(...)` trong `app/build.gradle.kts` để khóa version (coroutines-android/core, core-ktx, core, kotlin-stdlib) — cẩn trọng khi nâng cấp.
+- `app/build.gradle.kts` có 2 khối `compileOptions` (khối đầu set `VERSION_11`, khối sau set `VERSION_17`) — khối sau ghi đè, hiệu lực thật là JVM 17. Đây là artifact còn sót lại trong file, không phải bug cần fix ngay.
 - Dùng **kapt** cho Hilt / Room / Glide compiler.
 
 ## Module
@@ -75,5 +82,6 @@ Build có 2 trục: flavor (`appTest`, `appRelease`) × buildType (`debug`, `rel
 
 - `doc/feat.md` — đề xuất tính năng.
 - `doc/AD.MD` — kế hoạch migrate Ad sang AdmobWrapper.
+- `doc/AD_PROMPT_AOS.MD` — prompt/ghi chú liên quan cấu hình Ad Android.
 - `doc/memory_leak.md` & `doc/todo.md` — các vấn đề kỹ thuật cần xử lý (memory leak ở `WaterMarkImageView`, dọn code comment, hardcoded strings như log tag `roy93~`).
 - Các file rời ở gốc repo (`old_launch.kt`, `sim.kt`, `test_anim.kt`, `translate.py`, `build_log.txt`...) là file nháp/tham khảo, **không** thuộc source build.
