@@ -45,6 +45,7 @@
 | [ENH-10](todo/ENH-10-android-photo-picker.md) | M | Chuyển sang Android Photo Picker thay `ACTION_PICK` legacy |
 | [ENH-11](todo/ENH-11-vong-doi-ad-banner-day-du.md) | XS | Vòng đời Ad Banner đầy đủ (resume/pause/destroy) ở `AboutActivity` |
 | [ENH-12](todo/ENH-12-monet-manufacturer-dua-vao-api-chinh-thuc.md) | S | `MonetManufacturer` whitelist nên dựa API `isDynamicColorAvailable()` |
+| [ENH-13](todo/ENH-13-hien-thi-so-anh-thanh-cong-that-bai-cuoi-batch.md) | S | Hiển thị số ảnh thành công/thất bại cuối batch (tách từ BUG-03) |
 
 ## NEW_FEATURES (13) — tính năng mới thực dụng, 1-2 tuần
 

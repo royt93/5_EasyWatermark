@@ -184,7 +184,9 @@ class MainViewModel @Inject constructor(
                     info.jobState = JobState.Ing
                     launch(Dispatchers.Main) { saveProcess.value = info }
                     info.result = generateImage(contentResolver, viewInfo, info, index)
-                    info.jobState = JobState.Success(info.result!!)
+                    // generateImage() có thể trả Result.failure (không throw) khi lỗi I/O/logic —
+                    // JobStateResolver kiểm tra isFailure() thay vì luôn coi là Success (BUG-03).
+                    info.jobState = JobStateResolver.resolve(info.result)
                     launch(Dispatchers.Main) { saveProcess.value = info }
                 } catch (fne: FileNotFoundException) {
                     fne.printStackTrace()
@@ -193,6 +195,14 @@ class MainViewModel @Inject constructor(
                     saveProcess.postValue(info)
                 } catch (oom: OutOfMemoryError) {
                     info.result = Result.failure(null, code = TYPE_ERROR_SAVE_OOM)
+                    info.jobState = JobState.Failure(info.result!!)
+                    saveProcess.postValue(info)
+                } catch (e: Exception) {
+                    // Exception ngoài 2 loại trên (vd SecurityException khi mất quyền MediaStore
+                    // giữa batch) trước đây không có handler, làm crash cả batch — chỉ đánh dấu
+                    // ảnh này lỗi và tiếp tục ảnh kế tiếp.
+                    e.printStackTrace()
+                    info.result = Result.failure(null, code = TYPE_ERROR_SAVE_UNKNOWN, message = e.message)
                     info.jobState = JobState.Failure(info.result!!)
                     saveProcess.postValue(info)
                 }
@@ -949,6 +959,7 @@ ${System.currentTimeMillis().formatDate("yyy-MM-dd")}
         const val TYPE_ERROR_NOT_IMG = "type_error_not_img"
         const val TYPE_ERROR_FILE_NOT_FOUND = "type_error_file_not_found"
         const val TYPE_ERROR_SAVE_OOM = "type_error_save_oom"
+        const val TYPE_ERROR_SAVE_UNKNOWN = "type_error_save_unknown"
         const val TYPE_COMPRESS_ERROR = "type_CompressError"
         const val TYPE_COMPRESS_OK = "type_CompressOK"
         const val TYPE_COMPRESSING = "type_Compressing"
