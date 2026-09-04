@@ -9,16 +9,16 @@ plugins {
 }
 
 android {
-    compileSdk = 36
-    buildToolsVersion = "36.0.0"
+    compileSdk = 37
+//    buildToolsVersion = "37.0.0"
     namespace = "com.mckimquyen.watermark"
 
     defaultConfig {
         applicationId = "com.mckimquyen.watermark"
         minSdk = 24
-        targetSdk = 36
-        versionCode = 20260620
-        versionName = "2026.06.20"
+        targetSdk = 37
+        versionCode = 20260905
+        versionName = "2026.09.05"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "$applicationId-v$versionName($versionCode)")
 
