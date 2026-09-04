@@ -230,6 +230,12 @@ class MainViewModel @Inject constructor(
                     code = "-1",
                     message = "Copy bitmap from uri failed."
                 )
+            // rect.data.bitmap không cache/chia sẻ nơi khác (decodeBitmapFromUri không qua
+            // BitmapCache) — đã copy xong sang mutableBitmap nên recycle ngay, tránh giữ 2 bitmap
+            // full-res cùng lúc khi xử lý batch nhiều ảnh (BUG-05).
+            rect.data?.bitmap?.let { original ->
+                if (original !== mutableBitmap && !original.isRecycled) original.recycle()
+            }
 
             val inSample = calculateInSampleSize(
                 width = mutableBitmap.width,
@@ -370,6 +376,10 @@ class MainViewModel @Inject constructor(
                 textPaint.color = Color.DKGRAY
                 exCanvas.drawText(eModel.dateTime, mutableBitmap.width * 0.95f, mutableBitmap.height + borderHeight * 0.75f, textPaint)
 
+                // mutableBitmap đã được vẽ (drawBitmap) sang expandedBitmap, không còn dùng nữa
+                // (finalExportBitmap trỏ sang expandedBitmap) — recycle để tránh giữ 2 bitmap
+                // full-res cùng lúc (BUG-05).
+                mutableBitmap.recycle()
                 expandedBitmap
             } else {
                 mutableBitmap
@@ -380,6 +390,12 @@ class MainViewModel @Inject constructor(
                 finalExportBitmap,
                 maxOutputLongEdge
             )
+            // resizeIfNeeded trả về CÙNG instance khi maxOutputLongEdge=0 (không resize) — chỉ
+            // recycle finalExportBitmap khi thực sự đã tạo bitmap mới, tránh recycle nhầm bitmap
+            // đang dùng (BUG-05).
+            if (exportBitmap !== finalExportBitmap && !finalExportBitmap.isRecycled) {
+                finalExportBitmap.recycle()
+            }
 
             return@withContext if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val imageCollection =
@@ -407,6 +423,8 @@ class MainViewModel @Inject constructor(
                         /* stream = */ FileOutputStream(pfd!!.fileDescriptor)
                     )
                 }
+                // Đã compress xong, không còn dùng bitmap này nữa (BUG-05).
+                exportBitmap.recycle()
                 imageDetail.clear()
                 imageDetail.put(MediaStore.Images.Media.IS_PENDING, 0)
                 contentResolver.update(imageContentUri, imageDetail, null, null)
@@ -438,6 +456,8 @@ class MainViewModel @Inject constructor(
                         /* stream = */ fileOutputStream
                     )
                 }
+                // Đã compress xong, không còn dùng bitmap này nữa (BUG-05).
+                exportBitmap.recycle()
                 applyCopyrightExif(outputFile.absolutePath)
                 val outputUri = FileProvider.getUriForFile(
                     /* context = */ MyApplication.instance,

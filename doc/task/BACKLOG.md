@@ -46,6 +46,8 @@
 | [ENH-11](todo/ENH-11-vong-doi-ad-banner-day-du.md) | XS | Vòng đời Ad Banner đầy đủ (resume/pause/destroy) ở `AboutActivity` |
 | [ENH-12](todo/ENH-12-monet-manufacturer-dua-vao-api-chinh-thuc.md) | S | `MonetManufacturer` whitelist nên dựa API `isDynamicColorAvailable()` |
 | [ENH-13](todo/ENH-13-hien-thi-so-anh-thanh-cong-that-bai-cuoi-batch.md) | S | Hiển thị số ảnh thành công/thất bại cuối batch (tách từ BUG-03) |
+| [ENH-14](todo/ENH-14-downsample-truc-tiep-khi-decode-export.md) | M | Downsample trực tiếp khi decode ảnh export (tách từ BUG-05) |
+| [ENH-15](todo/ENH-15-bitmapcache-recycle-an-toan-khi-evict.md) | M | BitmapCache recycle an toàn khi evict — cần thiết kế refcounting (tách từ BUG-05) |
 
 ## NEW_FEATURES (13) — tính năng mới thực dụng, 1-2 tuần
 
