@@ -27,5 +27,11 @@ val imageContentUri = contentResolver.insert(imageCollection, imageDetail)
 Thêm mã lỗi mới (vd `TYPE_ERROR_MEDIASTORE_INSERT_FAILED`) nhất quán với các `Result.failure` khác trong hàm.
 
 ## Acceptance Criteria
-- [ ] Không còn `!!` trên `imageContentUri`.
-- [ ] Trường hợp `insert()` trả null có test mô phỏng (hoặc ít nhất review code path) trả `Result.failure` thay vì crash.
+- [x] Không còn `!!` trên `imageContentUri` — extract `MediaStoreInsertResolver.resolve()` (pure function, theo pattern `JobStateResolver`/`TextTokenResolver` đã có).
+- [x] Trường hợp `insert()` trả null có unit test trực tiếp (`MediaStoreInsertResolverTest`, 2/2 pass: null → failure đúng code, non-null → success đúng data).
+
+## Kết quả kiểm chứng
+- Unit test: `MediaStoreInsertResolverTest` (2/2 pass), full suite 41/41 pass, không regression.
+- Compile sạch, không lint violation mới.
+- Smoke test thật trên Pixel 7 Pro (Android 16, chắc chắn đi qua nhánh Q+): export ảnh thật qua UI 2 lần (trước và sau khi extract resolver) → thành công cả 2 lần, checkmark xanh, logcat `generateList` xác nhận, không crash.
+- Nhánh `insert()` trả null (thực tế hiếm, cần MediaStore từ chối/hết dung lượng) không mô phỏng được an toàn trên device thật — coverage dựa vào unit test resolver (đã tách pure logic, không phụ thuộc Android runtime thật cho phần quyết định).

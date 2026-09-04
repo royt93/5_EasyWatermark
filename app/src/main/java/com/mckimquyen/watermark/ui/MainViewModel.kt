@@ -394,8 +394,13 @@ class MainViewModel @Inject constructor(
                     put(MediaStore.Images.Media.IS_PENDING, 1)
                 }
 
-                val imageContentUri = contentResolver.insert(imageCollection, imageDetail)
-                contentResolver.openFileDescriptor(imageContentUri!!, "w", null).use { pfd ->
+                val insertResult = MediaStoreInsertResolver.resolve(
+                    contentResolver.insert(imageCollection, imageDetail),
+                    TYPE_ERROR_SAVE_MEDIASTORE_INSERT
+                )
+                if (insertResult.isFailure()) return@withContext insertResult
+                val imageContentUri = insertResult.data!!
+                contentResolver.openFileDescriptor(imageContentUri, "w", null).use { pfd ->
                     exportBitmap.compress(
                         /* format = */ outputFormat,
                         /* quality = */ compressLevel,
@@ -960,6 +965,7 @@ ${System.currentTimeMillis().formatDate("yyy-MM-dd")}
         const val TYPE_ERROR_FILE_NOT_FOUND = "type_error_file_not_found"
         const val TYPE_ERROR_SAVE_OOM = "type_error_save_oom"
         const val TYPE_ERROR_SAVE_UNKNOWN = "type_error_save_unknown"
+        const val TYPE_ERROR_SAVE_MEDIASTORE_INSERT = "type_error_save_mediastore_insert"
         const val TYPE_COMPRESS_ERROR = "type_CompressError"
         const val TYPE_COMPRESS_OK = "type_CompressOK"
         const val TYPE_COMPRESSING = "type_Compressing"
