@@ -481,11 +481,24 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
 
     private val scaleListener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
+        // Chụp textSize hiện tại làm mốc NGAY KHI bắt đầu mỗi phiên pinch, và reset mScaleFactor
+        // về 1f — tránh dùng mScaleFactor cũ (tích luỹ từ phiên pinch trước, có thể đã sát biên
+        // 0.1/5.0) làm mốc cho phiên mới, nhất là sau khi textSize vừa bị đổi từ nguồn khác
+        // (slider TextSizePbFragment) khiến pinch tiếp theo nhảy vọt/kẹt ở MAX_TEXT_SIZE ngay
+        // lập tức và có cảm giác "không hoạt động".
+        private var baselineTextSize = DEFAULT_TEXT_SIZE
+
+        override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+            baselineTextSize = config?.textSize ?: DEFAULT_TEXT_SIZE
+            mScaleFactor = 1f
+            return true
+        }
+
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             mScaleFactor *= detector.scaleFactor
             mScaleFactor = mScaleFactor.coerceAtLeast(0.1f).coerceAtMost(5.0f)
             // Don't let the object get too small or too large.
-            val textSize = (config?.textSize ?: DEFAULT_TEXT_SIZE) * if (mScaleFactor > 1f) {
+            val textSize = baselineTextSize * if (mScaleFactor > 1f) {
                 ((1 - mScaleFactor).absoluteValue * 0.1f + 1f)
             } else {
                 1 - (1 - mScaleFactor).absoluteValue * 0.1f

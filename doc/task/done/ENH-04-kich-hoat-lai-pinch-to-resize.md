@@ -26,3 +26,14 @@ Kích hoạt lại cùng giới hạn kích thước rõ ràng (min/max size h�
 - Uncomment 3 dòng: `mScaleDetector.onTouchEvent(event)` + guard `isInProgress` — giới hạn min/max size (`MIN_TEXT_SIZE`/`MAX_TEXT_SIZE`) đã có sẵn trong `onScale()`, không cần thêm.
 - Compile sạch, không lint violation mới. Full regression 49/49 pass.
 - Smoke test thật trên Tecno KJ7: pinch tay thật, icon watermark to/nhỏ đúng theo cử chỉ, không crash. Xem thêm chi tiết log tại `BUG-06` (cùng phiên fix, cùng lần test).
+
+## Bug phát sinh #2 sau khi bật pinch: "slide slider rồi pinch thì pinch không work"
+Người dùng test thật phát hiện: dùng slider `TextSizePbFragment` đặt `textSize` trực tiếp, sau đó pinch lại thì watermark không đổi kích thước (hoặc nhảy vọt/kẹt).
+
+**Nguyên nhân xác nhận qua đọc code**: `scaleListener.mScaleFactor` là biến tích luỹ nhân dồn xuyên suốt VÒNG ĐỜI VIEW (không phải theo từng phiên pinch) — dòng reset `mScaleFactor = 1f` trong `onScaleEnd()` bị comment sẵn từ trước. Slider ghi `config.textSize` trực tiếp qua path khác (ViewModel → DataStore → Flow), hoàn toàn không đụng tới `mScaleFactor`. Khi pinch lại, công thức `onScale()` dùng `mScaleFactor` CŨ (có thể đã gần sát biên 0.1/5.0 từ phiên pinch trước đó) làm hệ số nhân lên `textSize` MỚI (do slider vừa đặt) — kết quả tính sai, dễ vọt qua `MAX_TEXT_SIZE`/`MIN_TEXT_SIZE` ngay bước đầu và bị early-return (giữ nguyên, "không work").
+
+**Fix**: thêm override `onScaleBegin()` — chụp `config.textSize` hiện tại làm `baselineTextSize` VÀ reset `mScaleFactor = 1f` ngay khi bắt đầu MỖI phiên pinch mới (bất kể `textSize` đến từ đâu — slider hay phiên pinch trước). `onScale()` đổi sang nhân với `baselineTextSize` cố định trong phiên thay vì `config?.textSize` đọc lại mỗi frame.
+
+**Kiểm chứng**: log logcat thật trên Tecno KJ7 xác nhận đúng hành vi mới — mỗi phiên pinch mới bắt đầu bằng `onScale 1.0, textSize: X ==> X` (mScaleFactor reset đúng, baseline lấy đúng giá trị hiện tại), tiến triển mượt qua các frame tiếp theo, không nhảy vọt. Người dùng tự test kịch bản gốc (slide → pinch) trên device thật, xác nhận **đã hết bug**, pinch hoạt động bình thường sau khi dùng slider.
+
+**Còn lại**: người dùng xác nhận pinch vẫn "rất lag" — đúng như dự đoán, đây là chi phí rebuild `buildIconBitmapShader`/`buildTextBitmapShader` (cấp phát bitmap mới) mỗi frame `onScale`, KHÔNG phải do bug vừa fix. Thuộc phạm vi `ENH-02`, chưa làm.

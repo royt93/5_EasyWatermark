@@ -34,7 +34,7 @@
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [ENH-01](todo/ENH-01-batch-export-workmanager-huy-tien-do.md) | L | Batch export chạy qua WorkManager + huỷ + tiến độ tổng |
-| [ENH-02](todo/ENH-02-debounce-ghi-datastore-khi-gesture.md) | S | Debounce ghi DataStore khi kéo/pinch/nhập text |
+| [ENH-02](todo/ENH-02-debounce-ghi-datastore-khi-gesture.md) | S | Debounce ghi DataStore khi nhập text (đã đính chính: KHÔNG phải pinch/kéo) |
 | [ENH-03](todo/ENH-03-gate-log-debug-build-config.md) | S | Gate toàn bộ `Log.d` bằng `BuildConfig.DEBUG` |
 | [ENH-04](todo/ENH-04-kich-hoat-lai-pinch-to-resize.md) | S | Kích hoạt lại pinch-to-resize (đang bị comment) |
 | [ENH-05](todo/ENH-05-preview-token-khop-export.md) | S | Preview token watermark khớp với lúc export |
@@ -48,6 +48,7 @@
 | [ENH-13](todo/ENH-13-hien-thi-so-anh-thanh-cong-that-bai-cuoi-batch.md) | S | Hiển thị số ảnh thành công/thất bại cuối batch (tách từ BUG-03) |
 | [ENH-14](todo/ENH-14-downsample-truc-tiep-khi-decode-export.md) | M | Downsample trực tiếp khi decode ảnh export (tách từ BUG-05) |
 | [ENH-15](todo/ENH-15-bitmapcache-recycle-an-toan-khi-evict.md) | M | BitmapCache recycle an toàn khi evict — cần thiết kế refcounting (tách từ BUG-05) |
+| [ENH-16](todo/ENH-16-throttle-rebuild-shader-khi-pinch.md) | M | Throttle rebuild shader khi pinch — nguyên nhân lag thật (tách từ ENH-02 sau khi test BUG-06/ENH-04) |
 
 ## NEW_FEATURES (13) — tính năng mới thực dụng, 1-2 tuần
 
