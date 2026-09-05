@@ -231,30 +231,30 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 WaterMarkRepository.MarkMode.Image -> {
                     Log.d(LOG_TAG, "[WMIV] Image mode: iconUri=${newConfig.iconUri}  localIconUri=$localIconUri")
                     Log.d(LOG_TAG, "[WMIV] Image mode: iconBitmap null=${iconBitmap == null}")
-                    if (iconBitmap == null ||
-                        localIconUri != newConfig.iconUri ||
-                        (iconBitmap!!.width != newConfig.textSize.toInt() && iconBitmap!!.height != newConfig.textSize.toInt())
-                    ) {
-                        Log.d(LOG_TAG, "[WMIV] Image mode: will decode icon bitmap from uri=${newConfig.iconUri}")
-                        val iconBitmapRect = decodeSampledBitmapFromResource(
-                            resolver = context.contentResolver,
-                            uri = newConfig.iconUri,
-                            reqWidth = measuredWidth,
-                            reqHeight = measuredHeight
-                        )
-                        Log.d(LOG_TAG, "[WMIV] Image mode: icon decode isFailure=${iconBitmapRect.isFailure()} dataNull=${iconBitmapRect.data == null} bitmapNull=${iconBitmapRect.data?.bitmap == null}")
-                        if (iconBitmapRect.isFailure() || iconBitmapRect.data == null) {
-                            Log.d(LOG_TAG, "[WMIV] Image mode: icon decode FAILED → return (watermark will NOT render)")
-                            return@launch
-                        }
-                        iconBitmap = iconBitmapRect.data!!.bitmap
-                        Log.d(LOG_TAG, "[WMIV] Image mode: iconBitmap set: ${iconBitmap?.width}x${iconBitmap?.height}")
-                    } else {
-                        Log.d(LOG_TAG, "[WMIV] Image mode: reusing cached iconBitmap")
-                    }
-                    localIconUri = newConfig.iconUri
-                    layoutPaint.shader = null
+                    // Check reuse-cache + decode + gán iconBitmap + build shader đều nằm trong
+                    // CÙNG 1 mutex để tránh race giữa 2 job applyNewConfig chồng lấn (pinch nhanh
+                    // liên tục) cùng đọc/ghi iconBitmap/localIconUri (BUG-06).
                     generateBitmapMutex.withLock {
+                        if (iconBitmap == null || localIconUri != newConfig.iconUri) {
+                            Log.d(LOG_TAG, "[WMIV] Image mode: will decode icon bitmap from uri=${newConfig.iconUri}")
+                            val iconBitmapRect = decodeSampledBitmapFromResource(
+                                resolver = context.contentResolver,
+                                uri = newConfig.iconUri,
+                                reqWidth = measuredWidth,
+                                reqHeight = measuredHeight
+                            )
+                            Log.d(LOG_TAG, "[WMIV] Image mode: icon decode isFailure=${iconBitmapRect.isFailure()} dataNull=${iconBitmapRect.data == null} bitmapNull=${iconBitmapRect.data?.bitmap == null}")
+                            if (iconBitmapRect.isFailure() || iconBitmapRect.data == null) {
+                                Log.d(LOG_TAG, "[WMIV] Image mode: icon decode FAILED → return (watermark will NOT render)")
+                                return@launch
+                            }
+                            iconBitmap = iconBitmapRect.data!!.bitmap
+                            Log.d(LOG_TAG, "[WMIV] Image mode: iconBitmap set: ${iconBitmap?.width}x${iconBitmap?.height}")
+                        } else {
+                            Log.d(LOG_TAG, "[WMIV] Image mode: reusing cached iconBitmap")
+                        }
+                        localIconUri = newConfig.iconUri
+                        layoutPaint.shader = null
                         buildIconBitmapShader(
                             imageInfo = curImageInfo,
                             srcBitmap = iconBitmap!!,
@@ -525,10 +525,10 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         if (enableTouch.not()) {
             return false
         }
-//        mScaleDetector.onTouchEvent(event)
-//        if (mScaleDetector.isInProgress) {
-//            return true
-//        }
+        mScaleDetector.onTouchEvent(event)
+        if (mScaleDetector.isInProgress) {
+            return true
+        }
         if (isTouchWaterMark(event).not() || event.pointerCount > 1) {
             return true
         }
