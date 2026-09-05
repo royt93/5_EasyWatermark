@@ -37,13 +37,17 @@ Token trong nội dung text watermark được thay theo từng ảnh khi xuất
 - `ui/dlg/QrCodeBottomSheetFragment.kt` nhập text → preview live → `updateIcon(uri)` reuse toàn bộ pipeline Image (rotation/alpha/tile).
 - `FuncTitleModel.FuncType.QRCode` + entry trong `contentFunList` (icon `ic_func_qr_code`) + route trong `MainActivity.handleFuncItem`.
 
+### 7. Position Anchor 9-grid (2026-09-05)
+**Đã làm:** Preset neo watermark theo lưới 3x3 (góc/cạnh/giữa) + slider margin, thay thế/bổ sung cho kéo thả tự do (CLAMP).
+- `data/model/Anchor.kt` (enum 9 giá trị) — `toOffset(marginPercent, wmFracW, wmFracH)` tính offsetX/offsetY chuẩn hóa 0..1, trừ kích thước watermark thật để không tràn mép.
+- `WaterMarkImageView.applyAnchor()` — tính toán dựa trên `drawableBounds`/`layoutShader` (chỉ View mới biết kích thước thật), tái dùng callback `onOffsetChanged` sẵn có (giống hệt luồng kéo thả tay).
+- `WaterMarkRepository` — persist `anchor`/`marginPercent` (lựa chọn cuối) vào DataStore qua `updateAnchor()`/`updateMargin()`.
+- `ui/dlg/PositionAnchorBottomSheetFragment.kt` + `f_position_anchor_bottom_sheet.xml` — bottom sheet 9 nút vuông (3 `LinearLayout` hàng ngang weight=1) + `Slider` margin 0-20%, mở từ nút "Position" mới trong `TileModeFragment`/`f_tile_mode.xml` (chỉ hiện khi tileMode = Decal/CLAMP).
+- **Lưu ý đã verify trên thiết bị thật:** preset chỉ thấy rõ hiệu ứng dịch chuyển khi watermark nhỏ hơn canvas (Image/logo, hoặc Text có hGap/vGap > 0) — nếu gap = 0, block CLAMP to bằng cả ảnh nên 9 vị trí trông giống nhau (không phải bug, giới hạn hình học khi watermark ~ full-canvas).
+
 ---
 
 ## 💭 Đề xuất tính năng mới (chưa làm)
-
-### D. Position Anchor 9-grid
-**Mô tả:** Ngoài kéo thả tự do (CLAMP), thêm preset neo theo lưới 3x3 + margin (góc/cạnh/giữa) cho watermark đơn.
-**Triển khai:** Map anchor → `offsetX/offsetY` trong `ImageInfo` (`WaterMarkImageView` đã dùng offset chuẩn hóa 0..1), không cần đổi cơ chế vẽ.
 
 ### E. Frame presets cho EXIF border
 **Mô tả:** Thêm các kiểu khung (Polaroid, film strip, logo hãng máy Canon/Sony/Apple/Leica) cho tính năng EXIF border đã có.

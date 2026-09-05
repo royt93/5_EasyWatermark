@@ -1,7 +1,17 @@
 package com.mckimquyen.watermark.ui
 import android.app.Activity
-import android.content.*
-import android.graphics.*
+import android.content.ActivityNotFoundException
+import android.content.ContentResolver
+import android.content.ContentUris
+import android.content.ContentValues
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.Shader
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -10,13 +20,28 @@ import android.text.TextPaint
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.FileProvider
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
 import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
-import com.mckimquyen.watermark.data.model.*
+import com.mckimquyen.watermark.data.model.Anchor
+import com.mckimquyen.watermark.data.model.ImageInfo
+import com.mckimquyen.watermark.data.model.JobState
+import com.mckimquyen.watermark.data.model.JobStateResolver
+import com.mckimquyen.watermark.data.model.MediaStoreInsertResolver
+import com.mckimquyen.watermark.data.model.Result
+import com.mckimquyen.watermark.data.model.TextPaintStyle
+import com.mckimquyen.watermark.data.model.TextTypeface
+import com.mckimquyen.watermark.data.model.UserPreferences
+import com.mckimquyen.watermark.data.model.ViewInfo
+import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.data.model.entity.Template
 import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
@@ -34,7 +59,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import id.zelory.compressor.Compressor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -688,6 +717,19 @@ class MainViewModel @Inject constructor(
         launch {
             autoScroll = false
             waterMarkRepo.updateOffset(info)
+        }
+    }
+
+    fun selectAnchor(anchor: Anchor) {
+        launch {
+            waterMarkRepo.updateAnchor(anchor)
+            uiState.emit(UiState.ApplyAnchor(anchor, waterMark.value?.marginPercent ?: WaterMarkRepository.DEFAULT_MARGIN_PERCENT))
+        }
+    }
+
+    fun updateMarginPercent(percent: Float) {
+        launch {
+            waterMarkRepo.updateMargin(percent)
         }
     }
 

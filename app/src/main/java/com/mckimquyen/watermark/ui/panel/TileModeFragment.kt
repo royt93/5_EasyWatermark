@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentActivity
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.FTileModeBinding
 import com.mckimquyen.watermark.ui.base.BaseBindFragment
+import com.mckimquyen.watermark.ui.dlg.PositionAnchorBottomSheetFragment
 import com.mckimquyen.watermark.utils.ktx.commitWithAnimation
 import com.mckimquyen.watermark.utils.ktx.titleTextColor
 
@@ -31,6 +32,8 @@ class TileModeFragment : BaseBindFragment<FTileModeBinding>() {
                 Shader.TileMode.CLAMP.ordinal -> R.id.rbTileModeDecal
                 else -> R.id.rbTileModeRepeat
             }
+            binding?.btnPositionAnchor?.visibility =
+                if (it.tileMode == Shader.TileMode.CLAMP.ordinal) View.VISIBLE else View.GONE
             binding?.rgTileMode?.setOnCheckedChangeListener(null)
             binding?.rgTileMode?.check(checkedId)
             binding?.rgTileMode?.setOnCheckedChangeListener { _, id ->
@@ -51,6 +54,10 @@ class TileModeFragment : BaseBindFragment<FTileModeBinding>() {
             val color = it.titleTextColor(requireContext())
             binding?.rbTileModeDecal?.setTextColor(color)
             binding?.rbTileModeRepeat?.setTextColor(color)
+            binding?.btnPositionAnchor?.setTextColor(color)
+        }
+        binding?.btnPositionAnchor?.setOnClickListener {
+            PositionAnchorBottomSheetFragment.safetyShow(parentFragmentManager)
         }
     }
 

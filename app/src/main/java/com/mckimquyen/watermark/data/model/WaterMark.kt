@@ -19,4 +19,6 @@ data class WaterMark(
     val markMode: WaterMarkRepository.MarkMode,
     val enableBounds: Boolean,
     val enableExif: Boolean = false,
+    val anchor: Int = Anchor.CENTER.ordinal,
+    val marginPercent: Float = 0.05f
 )

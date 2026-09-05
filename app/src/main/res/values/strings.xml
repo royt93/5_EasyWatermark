@@ -95,6 +95,10 @@
     <string name="tips_database_init_error">Database init failed.</string>
     <string name="tile_mode_title_repeat">Repeat</string>
     <string name="tile_mode_title_decal">Single</string>
+    <string name="position_anchor_button">Position</string>
+    <string name="position_anchor_title">Watermark Position</string>
+    <string name="position_anchor_margin">Margin from edge</string>
+    <string name="position_anchor_margin_value">%d%%</string>
     <string name="aa">Aa!</string>
     <string name="send_email">Send email</string>
     <string name="send_telegram">Send Telegram</string>

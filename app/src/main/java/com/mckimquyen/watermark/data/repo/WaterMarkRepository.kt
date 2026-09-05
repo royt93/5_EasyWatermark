@@ -15,6 +15,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
+import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.TextPaintStyle
 import com.mckimquyen.watermark.data.model.TextTypeface
@@ -45,7 +46,7 @@ import javax.inject.Singleton
 
 @Singleton
 class WaterMarkRepository @Inject constructor(
-    @Named("WaterMarkPreferences") private val dataStore: DataStore<Preferences>,
+    @Named("WaterMarkPreferences") private val dataStore: DataStore<Preferences>
 ) {
 
     private object PreferenceKeys {
@@ -64,6 +65,8 @@ class WaterMarkRepository @Inject constructor(
         val KEY_MODE = intPreferencesKey(SP_KEY_WATERMARK_MODE)
         val KEY_ENABLE_BOUNDS = booleanPreferencesKey(SP_KEY_ENABLE_BOUNDS)
         val KEY_ENABLE_EXIF = booleanPreferencesKey(SP_KEY_ENABLE_EXIF)
+        val KEY_ANCHOR = intPreferencesKey(SP_KEY_ANCHOR)
+        val KEY_MARGIN = floatPreferencesKey(SP_KEY_MARGIN)
 //        val KEY_TILE_MODE = intPreferencesKey(SP_KEY_TILE_MODEL)
 //        val KEY_OFFSET_X = floatPreferencesKey(SP_KEY_OFFSET_X)
 //        val KEY_OFFSET_Y = floatPreferencesKey(SP_KEY_OFFSET_Y)
@@ -95,7 +98,9 @@ class WaterMarkRepository @Inject constructor(
                 iconUri = Uri.parse(it[KEY_ICON_URI] ?: ""),
                 markMode = if (it[PreferenceKeys.KEY_MODE] == MarkMode.Image.value) MarkMode.Image else MarkMode.Text,
                 enableBounds = it[PreferenceKeys.KEY_ENABLE_BOUNDS] ?: false,
-                enableExif = it[PreferenceKeys.KEY_ENABLE_EXIF] ?: false
+                enableExif = it[PreferenceKeys.KEY_ENABLE_EXIF] ?: false,
+                anchor = it[PreferenceKeys.KEY_ANCHOR] ?: Anchor.CENTER.ordinal,
+                marginPercent = it[PreferenceKeys.KEY_MARGIN] ?: DEFAULT_MARGIN_PERCENT
             )
         }
 
@@ -210,6 +215,14 @@ class WaterMarkRepository @Inject constructor(
         dataStore.edit { it[KEY_ENABLE_BOUNDS] = enable }
     }
 
+    suspend fun updateAnchor(anchor: Anchor) {
+        dataStore.edit { it[PreferenceKeys.KEY_ANCHOR] = anchor.ordinal }
+    }
+
+    suspend fun updateMargin(percent: Float) {
+        dataStore.edit { it[PreferenceKeys.KEY_MARGIN] = percent.coerceIn(MIN_MARGIN_PERCENT, MAX_MARGIN_PERCENT) }
+    }
+
 //    suspend fun resetList() {
 //        updateImageList(emptyList())
 //    }
@@ -240,18 +253,24 @@ class WaterMarkRepository @Inject constructor(
         const val SP_KEY_ENABLE_BOUNDS = "${SP_NAME}_key_enable_bounds"
         const val SP_KEY_ENABLE_EXIF = "${SP_NAME}_key_enable_exif"
         const val SP_KEY_ICON_URI = "${SP_NAME}_key_icon_uri"
+
 //        const val SP_KEY_URI = "${SP_NAME}_key_uri"
         const val SP_KEY_WATERMARK_MODE = "${SP_NAME}_key_watermark_mode"
+
 //        const val SP_KEY_IMAGE_ROTATION = "${SP_NAME}_key_watermark_mode"
 //        const val SP_KEY_TILE_MODEL = "${SP_NAME}_key_tile_model"
 //        const val SP_KEY_OFFSET_X = "${SP_NAME}_key_offset_x"
 //        const val SP_KEY_OFFSET_Y = "${SP_NAME}_key_offset_y"
+        const val SP_KEY_ANCHOR = "${SP_NAME}_key_anchor"
+        const val SP_KEY_MARGIN = "${SP_NAME}_key_margin"
         const val MAX_TEXT_SIZE = 100f
         const val MIN_TEXT_SIZE = 1f
         const val DEFAULT_TEXT_SIZE = 14f
         const val MAX_DEGREE = 360f
         const val MAX_HORIZON_GAP = 500
         const val MAX_VERTICAL_GAP = 500
-
+        const val MIN_MARGIN_PERCENT = 0f
+        const val MAX_MARGIN_PERCENT = 0.2f
+        const val DEFAULT_MARGIN_PERCENT = 0.05f
     }
 }

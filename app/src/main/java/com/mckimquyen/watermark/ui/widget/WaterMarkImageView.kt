@@ -1,4 +1,5 @@
 package com.mckimquyen.watermark.ui.widget
+
 import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
@@ -24,6 +25,7 @@ import androidx.core.animation.doOnEnd
 import androidx.core.graphics.withSave
 import androidx.palette.graphics.Palette
 import com.mckimquyen.watermark.LOG_TAG
+import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
@@ -33,9 +35,15 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository.Companion.MIN_TEXT
 import com.mckimquyen.watermark.ui.widget.utils.WaterMarkShader
 import com.mckimquyen.watermark.utils.bitmap.decodeSampledBitmapFromResource
 import com.mckimquyen.watermark.utils.ktx.applyConfig
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
@@ -382,6 +390,28 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         setImageBitmap(null)
         setBackgroundColor(Color.TRANSPARENT)
         decodedUri = Uri.EMPTY
+    }
+
+    /**
+     * Áp preset neo 9-grid, tính offsetX/offsetY từ kích thước watermark thật ([layoutShader])
+     * so với [drawableBounds] để cạnh phải/dưới không tràn mép, rồi báo ra ngoài qua đúng
+     * callback [onOffsetChanged] mà luồng kéo thả tay đang dùng.
+     */
+    fun applyAnchor(anchor: Anchor, marginPercent: Float) {
+        if (curImageInfo.obtainTileMode() != Shader.TileMode.CLAMP) {
+            return
+        }
+        val boundsW = drawableBounds.width()
+        val boundsH = drawableBounds.height()
+        val wmW = (layoutShader?.width ?: 0).toFloat()
+        val wmH = (layoutShader?.height ?: 0).toFloat()
+        if (boundsW <= 0f || boundsH <= 0f) {
+            return
+        }
+        val (offsetX, offsetY) = anchor.toOffset(marginPercent, wmW / boundsW, wmH / boundsH)
+        curImageInfo = curImageInfo.copy(offsetX = offsetX, offsetY = offsetY)
+        invalidate()
+        onOffsetChanged(curImageInfo)
     }
 
     private fun updateWaterMarkOffset(deltaX: Float, deltaY: Float): ImageInfo {

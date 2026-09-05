@@ -1,4 +1,5 @@
 package com.mckimquyen.watermark.ui
+
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.ClipData
@@ -33,6 +34,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.badge.BadgeDrawable
+import com.google.android.material.badge.BadgeUtils
+import com.google.android.material.badge.ExperimentalBadgeUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.mckimquyen.watermark.BaseActivity
@@ -44,9 +48,6 @@ import com.mckimquyen.watermark.data.model.FuncTitleModel
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
-import com.google.android.material.badge.BadgeDrawable
-import com.google.android.material.badge.BadgeUtils
-import com.google.android.material.badge.ExperimentalBadgeUtils
 import com.mckimquyen.watermark.feature.vip.VipManagementActivity
 import com.mckimquyen.watermark.rateAppInApp
 import com.mckimquyen.watermark.ui.about.AboutActivity
@@ -381,6 +382,9 @@ class MainActivity : BaseActivity() {
             ).collect {
                 if (it == UiState.GoEditDialog) {
                     TextWatermarkBSDFragment.safetyShow(supportFragmentManager)
+                }
+                if (it is UiState.ApplyAnchor) {
+                    launchView.ivPhoto.applyAnchor(it.anchor, it.marginPercent)
                 }
             }
         }
