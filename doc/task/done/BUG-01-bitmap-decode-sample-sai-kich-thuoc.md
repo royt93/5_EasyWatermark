@@ -22,6 +22,11 @@ verified: true
 - `interChangeSize`: đổi điều kiện thành `rotation == 90f || rotation == 270f`.
 
 ## Acceptance Criteria
-- [ ] Ảnh nhỏ hơn kích thước yêu cầu decode ở full-resolution (inSampleSize=1).
-- [ ] Ảnh EXIF orientation 90°/270° đảo đúng W/H khi tính sample size; 180° giữ nguyên.
-- [ ] Có unit test cho `calculateInSampleSize` (ảnh nhỏ hơn req → trả 1) và `interChangeSize` (90/270 → true, 180/0 → false) — bổ sung vào `app/src/test`.
+- [x] Ảnh nhỏ hơn kích thước yêu cầu decode ở full-resolution (inSampleSize=1).
+- [x] Ảnh EXIF orientation 90°/270° đảo đúng W/H khi tính sample size; 180° giữ nguyên — đổi tên qua hàm thuần `shouldInterchangeSize(rotation)` (tách khỏi `interChangeSize(context, uri)` để dễ test, theo pattern resolver đã dùng ở BUG-02/03/04).
+- [x] Unit test `BitmapUtilsTest` (8/8 pass): `calculateInSampleSize` 4 case (nhỏ hơn/bằng/gấp đôi/gấp 4 → 1/1/2/4), `shouldInterchangeSize` 4 case (90/270 → true, 180/0 → false).
+
+## Kết quả kiểm chứng
+- Compile sạch, không lint violation mới (3 violation ktlint báo ở dòng lân cận đã tồn tại từ trước, ngoài diff).
+- Full regression: 49/49 unit test pass.
+- Smoke test thật trên **Tecno KJ7** (Android 14) — chuyển từ Pixel 7 Pro sang theo yêu cầu (Pixel đang được dùng song song bởi người khác trong lúc test): load ảnh camera thật `IMG_20231204_180640.jpg` (1280x960) qua `ACTION_SEND`, xem preview, export — thành công, không crash. Logcat xác nhận trực tiếp `inSample = 1` cho ảnh này (đúng hành vi mới, trước fix sẽ luôn ≥2 khi vào nhánh if).

@@ -247,13 +247,14 @@ fun decodeSampledBitmapFromResourceSync(
     }
 }
 
-fun interChangeSize(context: Context, uri: Uri): Boolean {
-    val rotation = getOrientation(context, uri)
-    if (rotation == 90f || rotation == 180f) {
-        return true
-    }
-    return false
-}
+fun interChangeSize(context: Context, uri: Uri): Boolean =
+    shouldInterchangeSize(getOrientation(context, uri))
+
+/**
+ * Chỉ ảnh xoay 90°/270° mới cần đảo chiều rộng/cao khi tính sample size; 180° giữ nguyên
+ * (BUG-01). Hàm thuần (không phụ thuộc Context/Uri) để dễ unit test.
+ */
+fun shouldInterchangeSize(rotation: Float): Boolean = rotation == 90f || rotation == 270f
 
 fun calculateInSampleSize(
     width: Int,
@@ -265,7 +266,7 @@ fun calculateInSampleSize(
     Log.i(
         "generateImage", "w = $width, h = $height, reqW = $reqWidth, reqH = $reqHeight"
     )
-    var inSampleSize = 2
+    var inSampleSize = 1
 
     if (height > reqHeight || width > reqWidth) {
 
