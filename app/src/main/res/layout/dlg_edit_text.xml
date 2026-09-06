@@ -50,13 +50,33 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tvTitle" />
 
+    <!-- Token quick-insert row: {filename} {date} {seq}... -->
+    <HorizontalScrollView
+        android:id="@+id/hsvTokens"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/cgTokens"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:chipSpacingHorizontal="6dp"
+            app:singleLine="true" />
+
+    </HorizontalScrollView>
+
     <!-- Text input field: semi-transparent, white text -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tlWaterText"
         style="@style/TextInputLayoutStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         android:hint=""
         android:minHeight="130dp"
         android:paddingTop="4dp"
@@ -70,7 +90,7 @@
         app:layout_constraintBottom_toTopOf="@id/btnConfirm"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintTop_toBottomOf="@id/hsvTokens"
         app:layout_constraintVertical_bias="0">
 
         <com.google.android.material.textfield.TextInputEditText
