@@ -161,43 +161,66 @@
                         tools:text="v2.6.0" />
 
                     <!-- Action pills row -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:orientation="horizontal">
+                        android:scrollbars="none">
 
-                        <!-- Rate: white pill dark text -->
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/tvRating"
-                            style="@style/Widget.Material3.Button.TonalButton"
+                        <LinearLayout
                             android:layout_width="wrap_content"
-                            android:layout_height="40dp"
-                            android:layout_marginEnd="8dp"
-                            android:backgroundTint="@color/glass_cta_bg"
-                            android:text="⭐  Rate Us"
-                            android:textColor="@color/glass_cta_text"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            app:cornerRadius="45dp"
-                            app:strokeWidth="0dp" />
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
 
-                        <!-- More apps: dark frosted pill white text -->
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/tvMoreApp"
-                            style="@style/Widget.Material3.Button.TonalButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="40dp"
-                            android:backgroundTint="@color/glass_overlay_medium"
-                            android:text="🛍  More Apps"
-                            android:textColor="@color/glass_text_primary"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            app:cornerRadius="45dp"
-                            app:strokeColor="@color/glass_border"
-                            app:strokeWidth="0.5dp" />
+                            <!-- Rate: white pill dark text -->
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/tvRating"
+                                style="@style/Widget.Material3.Button.TonalButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="40dp"
+                                android:layout_marginEnd="8dp"
+                                android:backgroundTint="@color/glass_cta_bg"
+                                android:text="⭐  Rate Us"
+                                android:textColor="@color/glass_cta_text"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="45dp"
+                                app:strokeWidth="0dp" />
 
-                    </LinearLayout>
+                            <!-- More apps: dark frosted pill white text -->
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/tvMoreApp"
+                                style="@style/Widget.Material3.Button.TonalButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="40dp"
+                                android:layout_marginEnd="8dp"
+                                android:backgroundTint="@color/glass_overlay_medium"
+                                android:text="🛍  More Apps"
+                                android:textColor="@color/glass_text_primary"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="45dp"
+                                app:strokeColor="@color/glass_border"
+                                app:strokeWidth="0.5dp" />
+
+                            <!-- Share app: dark frosted pill white text -->
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/tvShareApp"
+                                style="@style/Widget.Material3.Button.TonalButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="40dp"
+                                android:backgroundTint="@color/glass_overlay_medium"
+                                android:text="📤  Share App"
+                                android:textColor="@color/glass_text_primary"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="45dp"
+                                app:strokeColor="@color/glass_border"
+                                app:strokeWidth="0.5dp" />
+
+                        </LinearLayout>
+
+                    </HorizontalScrollView>
 
                 </LinearLayout>
 

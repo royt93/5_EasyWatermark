@@ -71,6 +71,19 @@ class AboutActivity : BaseActivity() {
                 Log.d(LOG_TAG, "AboutActivity tvMoreApp clicked — opening developer page")
                 openLink("https://play.google.com/store/apps/developer?id=SAIGON PHANTOM LABS")
             }
+            tvShareApp.setOnClickListener {
+                Log.d(LOG_TAG, "AboutActivity tvShareApp clicked — opening share sheet")
+                val message = getString(
+                    R.string.share_app_message,
+                    getString(R.string.app_name),
+                    packageName,
+                )
+                val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(android.content.Intent.EXTRA_TEXT, message)
+                }
+                startActivity(android.content.Intent.createChooser(sendIntent, getString(R.string.share_app)))
+            }
 //            tvChangeLog.setOnClickListener {
 //                openLink("https://github.com/rosuH/EasyWatermark/releases/")
 //            }
