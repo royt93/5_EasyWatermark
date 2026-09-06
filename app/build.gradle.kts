@@ -62,7 +62,7 @@ android {
     buildTypes {
         val debug by getting {
 //            applicationIdSuffix = ".debug"
-            buildConfigField("Boolean", "IS_ENABLE_ADMOB", "false")
+            buildConfigField("Boolean", "IS_ENABLE_ADMOB", "true")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
             buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"ca-app-pub-3940256099942544/9257395921\"")
@@ -71,7 +71,7 @@ android {
 
         val release by getting {
             // nho check APPLICATION_ID trong manifest
-            buildConfigField("Boolean", "IS_ENABLE_ADMOB", "false")
+            buildConfigField("Boolean", "IS_ENABLE_ADMOB", "true")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3612191981543807/3976595378\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3612191981543807/2663513707\"")
             buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"ca-app-pub-3612191981543807/6718308789\"")
