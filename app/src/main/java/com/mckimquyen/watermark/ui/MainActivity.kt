@@ -394,9 +394,16 @@ class MainActivity : BaseActivity() {
                 return@observe
             }
             Log.d(LOG_TAG, "[MAIN] waterMark observer: markMode=${it.markMode}, iconUri=${it.iconUri}, text='${it.text}'")
+            // Preview cần render giá trị token thật ({filename}/{date}/{exif}...) thay vì hiển thị
+            // nguyên văn "{filename}" — resolve theo ảnh đang chọn, KHÔNG ghi ngược vào repo nên
+            // dialog sửa text (đọc từ viewModel.waterMark.value) vẫn thấy đúng token gốc để sửa tiếp.
+            val previewConfig = viewModel.selectedImage.value?.let { info ->
+                val resolvedText = viewModel.resolvePreviewText(it.text, info)
+                if (resolvedText != it.text) it.copy(text = resolvedText) else it
+            } ?: it
             launchView.post {
                 Log.d(LOG_TAG, "[MAIN] launchView.post → setting ivPhoto.config")
-                launchView.ivPhoto.config = it
+                launchView.ivPhoto.config = previewConfig
             }
             if (it.markMode == WaterMarkRepository.MarkMode.Image && launchView.tabLayout.selectedTabPosition == 0) {
                 Log.d(LOG_TAG, "[MAIN] markMode=Image → hideDetailPanel()")
@@ -409,6 +416,12 @@ class MainActivity : BaseActivity() {
                 return@observe
             }
             try {
+                // Đổi ảnh chọn cũng phải re-resolve token ({filename}/{exif}...) theo ảnh MỚI trước
+                // khi updateUri() render, tránh preview giữ giá trị token của ảnh cũ một nhịp.
+                viewModel.waterMark.value?.let { config ->
+                    val resolvedText = viewModel.resolvePreviewText(config.text, it)
+                    launchView.ivPhoto.config = config.copy(text = resolvedText)
+                }
                 val isAnimating = launchView.toEditorMode()
                 if (isAnimating) {
                     launchView.ivPhoto.updateUri(true, it)

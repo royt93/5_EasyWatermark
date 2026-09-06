@@ -536,8 +536,24 @@ class MainViewModel @Inject constructor(
         return com.mckimquyen.watermark.utils.TextTokenResolver.resolve(text, tokens)
     }
 
+    /**
+     * Resolve token cho preview trong editor (không phải export) — dùng đúng logic/token với
+     * [resolveTextTokens], nhưng lấy index từ vị trí thật của ảnh trong danh sách batch và
+     * `appContext.contentResolver` thay vì contentResolver truyền từ export flow.
+     * No-op khi text không chứa '{' (fast path, không query filename mỗi lần gõ phím).
+     */
+    fun resolvePreviewText(text: String, imageInfo: ImageInfo): String {
+        if (!text.contains('{')) return text
+        val index = waterMarkRepo.imageInfoList.indexOfFirst { it.uri == imageInfo.uri }.coerceAtLeast(0)
+        return resolveTextTokens(text, imageInfo, appContext.contentResolver, index)
+    }
+
+    private var lastDisplayName: Pair<Uri, String>? = null
+
+    /** Cache theo uri hiện tại — preview gọi lại nhiều lần (mỗi ký tự gõ) không query lặp ContentResolver. */
     private fun queryDisplayName(contentResolver: ContentResolver, uri: Uri): String {
-        return try {
+        lastDisplayName?.let { (cachedUri, cachedName) -> if (cachedUri == uri) return cachedName }
+        val name = try {
             contentResolver.query(
                 uri,
                 arrayOf(android.provider.OpenableColumns.DISPLAY_NAME),
@@ -555,6 +571,8 @@ class MainViewModel @Inject constructor(
         } catch (e: Exception) {
             uri.lastPathSegment?.substringBeforeLast('.').orEmpty()
         }
+        lastDisplayName = uri to name
+        return name
     }
 
     private fun generateOutputName(): String {

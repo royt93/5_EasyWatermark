@@ -23,7 +23,8 @@ Vẽ chữ ký tay, xuất bitmap rồi tái dùng pipeline Image watermark.
 Token trong nội dung text watermark được thay theo từng ảnh khi xuất (batch).
 - `MainViewModel.resolveTextTokens()` resolve trước `buildTextBitmapShader` trong `generateImage`, có guard `!text.contains('{')` nên text thường không đổi.
 - Token hỗ trợ: `{filename}` `{seq}` `{date}` `{model}` `{make}` `{iso}` `{fnumber}` `{exposure}` `{focal}` `{exif}` (lấy từ `ImageInfo.exifModel` + `OpenableColumns.DISPLAY_NAME`).
-- **Còn lại (chưa làm):** preview trong editor hiện hiển thị token nguyên văn (chỉ resolve khi save); và UI nút chèn token nhanh trong dialog sửa text.
+- **Preview token động trong editor (2026-09-06):** ĐÃ XONG. `MainViewModel.resolvePreviewText(text, imageInfo)` (public, tái dùng `resolveTextTokens` private sẵn có) resolve token theo ảnh đang chọn — `{seq}` lấy đúng vị trí thật trong `waterMarkRepo.imageInfoList`, `{filename}` cache theo uri (tránh query `ContentResolver` lặp lại mỗi ký tự gõ). `MainActivity` gọi hàm này ở cả `viewModel.waterMark.observe` (đổi text/config) lẫn `viewModel.selectedImage.observe` (đổi ảnh) rồi mới set `launchView.ivPhoto.config` — **chỉ set text đã resolve vào View để render, KHÔNG ghi ngược vào repo**, nên `EditTextContentFragment` (đọc `shareViewModel.waterMark.value.text`) vẫn thấy đúng token gốc để sửa tiếp.
+- **Còn lại (chưa làm):** UI nút chèn token nhanh trong dialog sửa text (autocomplete/chip gợi ý `{filename}` `{date}`...).
 
 ### 5. Export options (định dạng + chất lượng + WEBP + resize + copyright)
 - `SaveImageBSDialogFragment` có dropdown format (JPEG/PNG/**WEBP**) + slider quality; `MainViewModel.saveOutput()` lưu vào `UserPreferences`.
