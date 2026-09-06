@@ -25,6 +25,7 @@ class BitmapUtilsDecodeFailureIntegrationTest {
 
         // Trước fix BUG-02: dòng dưới ném NullPointerException (LruCache.put value null).
         val result = decodeSampledBitmapFromResource(
+            context = context,
             resolver = context.contentResolver,
             uri = nonExistentUri,
             reqWidth = 100,
@@ -36,6 +37,7 @@ class BitmapUtilsDecodeFailureIntegrationTest {
         // Gọi lại lần 2 với cùng URI để xác nhận cache không bị "kẹt" ở trạng thái lỗi
         // và vẫn không crash khi tra cứu/ghi lại.
         val secondResult = decodeSampledBitmapFromResource(
+            context = context,
             resolver = context.contentResolver,
             uri = nonExistentUri,
             reqWidth = 100,

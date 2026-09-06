@@ -1,6 +1,5 @@
 package com.mckimquyen.watermark
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -48,7 +47,6 @@ class MyApplication : Application() {
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
-        instance = this
         catchException()
     }
 
@@ -154,10 +152,6 @@ class MyApplication : Application() {
     companion object {
 
         val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-
-        @SuppressLint("StaticFieldLeak")
-        lateinit var instance: Context
-            private set
 
         var recoveryMode = false
             private set

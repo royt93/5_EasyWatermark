@@ -165,6 +165,7 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 drawableAlphaAnimator.cancel()
                 // decode with inSample
                 val decodeResult = decodeSampledBitmapFromResource(
+                    context,
                     context.contentResolver,
                     uri,
                     calculateDrawLimitWidth(
@@ -246,6 +247,7 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                         if (iconBitmap == null || localIconUri != newConfig.iconUri) {
                             Log.d(LOG_TAG, "[WMIV] Image mode: will decode icon bitmap from uri=${newConfig.iconUri}")
                             val iconBitmapRect = decodeSampledBitmapFromResource(
+                                context = context,
                                 resolver = context.contentResolver,
                                 uri = newConfig.iconUri,
                                 reqWidth = measuredWidth,

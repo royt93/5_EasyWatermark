@@ -177,7 +177,7 @@ class MainActivity : BaseActivity() {
     }
 
     private val funcAdapter by lazy {
-        FuncPanelAdapter(ArrayList(contentFunList)).apply {
+        FuncPanelAdapter(this, ArrayList(contentFunList)).apply {
             setHasStableIds(true)
         }
     }
@@ -258,7 +258,7 @@ class MainActivity : BaseActivity() {
 
         findViewById<Button>(R.id.btnCloseRecoveryMode).apply {
             setOnClickListener {
-                (MyApplication.instance as MyApplication).launchSuccess()
+                (application as MyApplication).launchSuccess()
                 Toast.makeText(this@MainActivity, R.string.recovery_mode_closed, Toast.LENGTH_SHORT)
                     .show()
             }
@@ -332,7 +332,7 @@ class MainActivity : BaseActivity() {
             if (this@MainActivity.isFinishing) {
                 return@launch
             }
-            (MyApplication.instance as? MyApplication?)?.launchSuccess()
+            (application as? MyApplication?)?.launchSuccess()
         }
     }
 

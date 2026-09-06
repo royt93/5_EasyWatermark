@@ -1,7 +1,7 @@
 package com.mckimquyen.watermark.ui.widget
 
+import android.content.Context
 import android.widget.SeekBar
-import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.ui.widget.DetectedPerformanceSeekBarListener.Companion.HIGH_PERFORMANCE_MEMORY
@@ -20,8 +20,11 @@ import com.mckimquyen.watermark.utils.bitmap.getAvailableMemory
  * 放到 [onStopTrackingTouch] 方法里调用。
  */
 open class DetectedPerformanceSeekBarListener(
+    context: Context,
     private val config: WaterMark?,
 ) : SeekBar.OnSeekBarChangeListener {
+
+    private val appContext = context.applicationContext
 
     private var inTimeAction: (SeekBar?, Int, Boolean) -> Unit = { _, _, _ -> }
 
@@ -29,7 +32,7 @@ open class DetectedPerformanceSeekBarListener(
 
     private var isHighPerformancePredicate: () -> Boolean = {
         config?.markMode == WaterMarkRepository.MarkMode.Text ||
-                !getAvailableMemory(MyApplication.instance).lowMemory
+                !getAvailableMemory(appContext).lowMemory
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {

@@ -1,5 +1,6 @@
 package com.mckimquyen.watermark.data.repo
 
+import android.content.Context
 import android.graphics.Color
 import android.graphics.Shader
 import android.net.Uri
@@ -13,7 +14,6 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ImageInfo
@@ -43,9 +43,11 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 @Singleton
 class WaterMarkRepository @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     @Named("WaterMarkPreferences") private val dataStore: DataStore<Preferences>
 ) {
 
@@ -86,7 +88,7 @@ class WaterMarkRepository @Inject constructor(
         }
         .map {
             WaterMark(
-                text = it[KEY_TEXT] ?: MyApplication.instance.getString(R.string.config_default_water_mark_text),
+                text = it[KEY_TEXT] ?: appContext.getString(R.string.config_default_water_mark_text),
                 textSize = (it[KEY_TEXT_SIZE] ?: 14f).coerceAtLeast(1f),
                 textColor = it[KEY_TEXT_COLOR] ?: Color.parseColor("#FFB800"),
                 textStyle = TextPaintStyle.obtainSealedClass(it[KEY_TEXT_STYLE] ?: 0),

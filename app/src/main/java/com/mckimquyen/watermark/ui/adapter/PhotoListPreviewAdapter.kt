@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
 import com.mckimquyen.watermark.ui.widget.PhotoPreviewItem
@@ -75,7 +74,7 @@ class PhotoListPreviewAdapter(
             }
         }
         with(differ.currentList[position]) {
-            Glide.with(MyApplication.instance)
+            Glide.with(context)
                 .load(this.uri)
                 .into(holder.ivIcon)
             when {

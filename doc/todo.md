@@ -19,8 +19,11 @@
 ## Kiểm thử (Test)
 
 - [x] Đã bật lại test deps trong `settings.gradle.kts` + `app/build.gradle.kts`; thêm `testOptions` cho Robolectric.
-- [x] **31 unit test** (JVM + Robolectric): `ExifModelTest`, `DateConverterTest`, `TextTokenResolverTest`, `OutputImageUtilsTest`, `ImageFormatRoboTest`, `QrCodeGeneratorTest`, `QrPreviewWidgetTest` — PASS.
-- [x] **4 integration test** Room `TemplateDaoIntegrationTest` (androidTest) — PASS trên 2 thiết bị thật (Android 16).
+- [x] **60 unit test** (JVM + Robolectric) — PASS, gồm 2 file mới cho refactor gỡ `MyApplication.instance`:
+  - `FuncPanelAdapterRoboTest` — bind item, màu chữ theo `context` truyền vào, `applyTextColor`/`seNewData`.
+  - `DetectedPerformanceSeekBarListenerRoboTest` — predicate hiệu năng theo `context` + mock `ActivityManager.MemoryInfo`.
+- [x] **9 integration test** (androidTest, PASS trên TECNO KJ7 - Android 14): Room `TemplateDaoIntegrationTest` (4) + `BitmapUtilsDecodeFailureIntegrationTest` (1) + `BitmapUtilsContextThreadingIntegrationTest` (2, mới — decode JPEG thật + EXIF orientation=90 qua `context` tham số) + `WaterMarkRepositoryIntegrationTest` (2, mới — default text/round-trip qua `@ApplicationContext` + DataStore thật).
+- [x] Smoke test thủ công trên TECNO KJ7: Splash → Launch → nhận ảnh qua `ACTION_SEND` → editor render watermark → Export to album (file thật ghi ra `/Pictures/WaterMarkCreator/`) — không crash, logcat sạch `FATAL EXCEPTION`.
 - Lệnh: `./gradlew :app:testAppReleaseDebugUnitTest` và `./gradlew :app:connectedAppReleaseDebugAndroidTest`.
 
 ## Sửa lỗi rò rỉ bộ nhớ (Memory Leak Fixes)
@@ -28,7 +31,12 @@
 - [x] ~~**WaterMarkImageView** — scope/executor leak~~ — ĐÃ XONG:
   - `onDetachedFromWindow()` đã override và gọi `generateBitmapJob?.cancel()`.
   - Không còn `Executors.newSingleThreadExecutor()`; dùng `Dispatchers.Default` cho `generateBitmapCoroutineCtx`. (Import rác `Executors` đã được xóa.)
-- [ ] **MyApplication** — static `instance: Context` (`@SuppressLint("StaticFieldLeak")`) vẫn còn. **Khuyến nghị HOÃN:** chỉ giữ Application context (không leak Activity), nhưng `instance` được dùng ở ~11 nơi gồm cả top-level functions (`BitmapUtils`: `decodeBitmapFromUri`/`getOrientation`/`interChangeSize`), adapter (`SaveImageListAdapter`, `PhotoListPreviewAdapter`, `FuncPanelAdapter`) và repo. Gỡ hẳn cần thread `Context` qua API của các hàm util (cascading, rủi ro hồi quy cao) trong khi lợi ích thực tế thấp. Nếu làm: inject `@ApplicationContext` vào `MainViewModel` + `WaterMarkRepository` (Hilt), `itemView.context` cho adapter, và thêm tham số `Context` cho hàm trong `BitmapUtils`.
+- [x] ~~**MyApplication** — static `instance: Context`~~ — ĐÃ XONG (2026-09-06): gỡ field `instance`, thread `Context` qua toàn bộ chuỗi gọi.
+  - `MainViewModel`/`WaterMarkRepository` nhận `@ApplicationContext` qua Hilt (`RepositoryModule.provideWaterMarkRepository` cập nhật theo).
+  - `BitmapUtils`: `decodeBitmapWithExif(Sync)`/`decodeBitmapFromUri`/`decodeSampledBitmapFromResource(Sync)` nhận thêm tham số `context`; caller ở `MainViewModel` truyền `appContext`, `WaterMarkImageView` truyền `context` (View) sẵn có.
+  - `SaveImageListAdapter`/`PhotoListPreviewAdapter` dùng field `context` sẵn có thay vì `MyApplication.instance`; `FuncPanelAdapter` nhận thêm tham số `context` ở constructor.
+  - `DetectedPerformanceSeekBarListener` (class chưa dùng ở đâu) nhận `context` ở constructor.
+  - `MainActivity` dùng `application as MyApplication` thay vì `MyApplication.instance as MyApplication`.
 
 ## Tham khảo
 - Chi tiết các leak đã fix: xem `doc/memory_leak.md`.

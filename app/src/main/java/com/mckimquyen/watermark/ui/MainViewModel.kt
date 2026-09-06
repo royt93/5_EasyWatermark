@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -29,7 +30,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
 import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.LOG_TAG
-import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ImageInfo
@@ -56,6 +56,7 @@ import com.mckimquyen.watermark.utils.ktx.applyConfig
 import com.mckimquyen.watermark.utils.ktx.formatDate
 import com.mckimquyen.watermark.utils.ktx.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import id.zelory.compressor.Compressor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -74,6 +75,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val userRepo: UserConfigRepository,
     private val waterMarkRepo: WaterMarkRepository,
     private val memorySettingRepo: MemorySettingRepo,
@@ -249,7 +251,7 @@ class MainViewModel @Inject constructor(
         index: Int
     ): Result<Uri> =
         withContext(Dispatchers.IO) {
-            val rect = decodeBitmapFromUri(contentResolver, imageInfo.uri)
+            val rect = decodeBitmapFromUri(appContext, contentResolver, imageInfo.uri)
             if (rect.isFailure()) {
                 return@withContext Result.extendMsg(rect)
             }
@@ -323,6 +325,7 @@ class MainViewModel @Inject constructor(
 
                 WaterMarkRepository.MarkMode.Image -> {
                     val iconBitmapRect = decodeSampledBitmapFromResource(
+                        context = appContext,
                         resolver = contentResolver,
                         uri = tmpConfig.iconUri,
                         reqWidth = viewInfo.width,
@@ -489,11 +492,11 @@ class MainViewModel @Inject constructor(
                 exportBitmap.recycle()
                 applyCopyrightExif(outputFile.absolutePath)
                 val outputUri = FileProvider.getUriForFile(
-                    /* context = */ MyApplication.instance,
+                    /* context = */ appContext,
                     /* authority = */ "${BuildConfig.APPLICATION_ID}.fileprovider",
                     /* file = */ outputFile
                 )
-                MyApplication.instance.sendBroadcast(
+                appContext.sendBroadcast(
                     Intent(
                         Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
                         Uri.fromFile(outputFile)

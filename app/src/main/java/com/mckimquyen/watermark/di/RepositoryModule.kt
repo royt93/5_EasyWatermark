@@ -1,5 +1,6 @@
 package com.mckimquyen.watermark.di
 
+import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.mckimquyen.watermark.data.db.dao.TemplateDao
@@ -10,6 +11,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Named
 import javax.inject.Singleton
@@ -28,8 +30,11 @@ object RepositoryModule {
     @Named("WaterMarkPreferences")
     @Provides
     @Singleton
-    fun provideWaterMarkRepository(dataStore: DataStore<Preferences>): WaterMarkRepository {
-        return WaterMarkRepository(dataStore)
+    fun provideWaterMarkRepository(
+        @ApplicationContext context: Context,
+        dataStore: DataStore<Preferences>
+    ): WaterMarkRepository {
+        return WaterMarkRepository(context, dataStore)
     }
 
     @Named("WaterMarkPreferences")

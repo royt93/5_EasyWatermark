@@ -1,6 +1,7 @@
 package com.mckimquyen.watermark.ui.adapter
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,17 +9,17 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.color.MaterialColors
-import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.FuncTitleModel
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
 import com.mckimquyen.watermark.utils.ktx.colorPrimary
 
 class FuncPanelAdapter(
+    context: Context,
     val dataSet: ArrayList<FuncTitleModel>,
 ) : RecyclerView.Adapter<FuncPanelAdapter.FuncTitleHolder>() {
 
-    var textColor: Int = MyApplication.instance.applicationContext.colorPrimary
+    var textColor: Int = context.applicationContext.colorPrimary
         private set
 
     var selectedPos = 0

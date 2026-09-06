@@ -12,7 +12,6 @@ import android.provider.MediaStore
 import android.util.Log
 import android.widget.ImageView
 import androidx.exifinterface.media.ExifInterface
-import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.data.model.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -22,15 +21,17 @@ import java.io.InputStream
 private const val TAG = "BitmapUtils"
 
 suspend fun decodeBitmapWithExif(
+    context: Context,
     uri: Uri,
     inputStream: InputStream,
     options: BitmapFactory.Options? = null,
 ): Result<BitmapCache.BitmapValue> =
     withContext(Dispatchers.IO) {
-        return@withContext decodeBitmapWithExifSync(uri, inputStream, options)
+        return@withContext decodeBitmapWithExifSync(context, uri, inputStream, options)
     }
 
 fun decodeBitmapWithExifSync(
+    context: Context,
     uri: Uri,
     inputStream: InputStream,
     options: BitmapFactory.Options? = null,
@@ -38,8 +39,8 @@ fun decodeBitmapWithExifSync(
     val bitmap = BitmapFactory.decodeStream(inputStream, null, options)
         ?: return Result.failure(null, "-1", "Generate Bitmap failed.")
     val inSampleSize = options?.inSampleSize ?: 1
-    val rotation = getOrientation(MyApplication.instance, uri)
-    val exifModel = getExifData(MyApplication.instance, uri)
+    val rotation = getOrientation(context, uri)
+    val exifModel = getExifData(context, uri)
     val bitmapValue = BitmapCache.BitmapValue(bitmap, inSampleSize, exifModel)
     if (rotation == 0f) {
         return Result.success(bitmapValue)
@@ -169,6 +170,7 @@ private fun getOrientation(
 
 
 suspend fun decodeBitmapFromUri(
+    context: Context,
     resolver: ContentResolver,
     uri: Uri,
 ): Result<BitmapCache.BitmapValue> =
@@ -177,11 +179,12 @@ suspend fun decodeBitmapFromUri(
             if (inputStream == null) {
                 return@withContext Result.failure(null, "-1", "Open input stream failed.")
             }
-            return@withContext decodeBitmapWithExif(uri, inputStream)
+            return@withContext decodeBitmapWithExif(context, uri, inputStream)
         }
     }
 
 suspend fun decodeSampledBitmapFromResource(
+    context: Context,
     resolver: ContentResolver,
     uri: Uri,
     reqWidth: Int,
@@ -191,6 +194,7 @@ suspend fun decodeSampledBitmapFromResource(
     var cacheValue = BitmapCache.getFromCache(info)
     if (cacheValue?.bitmap == null) {
         cacheValue = decodeSampledBitmapFromResourceSync(
+            context,
             resolver,
             uri,
             reqWidth,
@@ -204,6 +208,7 @@ suspend fun decodeSampledBitmapFromResource(
 }
 
 fun decodeSampledBitmapFromResourceSync(
+    context: Context,
     resolver: ContentResolver,
     uri: Uri,
     reqWidth: Int,
@@ -217,7 +222,7 @@ fun decodeSampledBitmapFromResourceSync(
             BitmapFactory.decodeStream(`is`, null, options)
         }
         // 2. Calculate inSampleSize
-        val (oHeight: Int, oWidth: Int) = if (interChangeSize(MyApplication.instance, uri)) {
+        val (oHeight: Int, oWidth: Int) = if (interChangeSize(context, uri)) {
             options.run { outWidth to outHeight }
         } else {
             options.run { outHeight to outWidth }
@@ -233,7 +238,7 @@ fun decodeSampledBitmapFromResourceSync(
             if (inputStream == null) {
                 return Result.failure(null, "-1", "Open input stream failed.")
             }
-            return decodeBitmapWithExifSync(uri, inputStream, options)
+            return decodeBitmapWithExifSync(context, uri, inputStream, options)
         }
     } catch (fne: FileNotFoundException) {
         return Result.failure(null, "-1", fne.message)
