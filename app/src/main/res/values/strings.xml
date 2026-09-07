@@ -122,6 +122,11 @@
     <string name="save_failed">Save failed!</string>
     <string name="leica_exif_border">Leica EXIF Border</string>
     <string name="leica_exif_border_desc">Automatically appends a professional EXIF metadata border at the bottom of exported images. Note: The border is not shown in the preview window to optimize performance.</string>
+    <string name="exif_frame_style_label">Frame Style</string>
+    <string name="exif_frame_style_classic">Classic</string>
+    <string name="exif_frame_style_polaroid">Polaroid</string>
+    <string name="exif_frame_style_film_strip">Film Strip</string>
+    <string name="exif_frame_style_minimal">Minimal</string>
     <string name="qr_code">QR Code</string>
     <string name="qr_code_title">QR Code Watermark</string>
     <string name="qr_code_hint">Enter URL or text…</string>

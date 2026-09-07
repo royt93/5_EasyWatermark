@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R
+import com.mckimquyen.watermark.data.model.ExifFrameStyle
 import com.mckimquyen.watermark.di.waterMarkDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -52,5 +53,48 @@ class WaterMarkRepositoryIntegrationTest {
 
         assertThat(waterMark.text).isEqualTo("hello from test")
         assertThat(waterMark.markMode).isEqualTo(WaterMarkRepository.MarkMode.Text)
+    }
+
+    /**
+     * feat.md #9 — Frame presets cho EXIF border: [WaterMarkRepository.updateExifFrameStyle]
+     * phải persist qua DataStore thật (không chỉ trong bộ nhớ) và đọc lại đúng qua ordinal,
+     * theo đúng pattern round-trip đã có của `anchor`.
+     */
+    @Test
+    fun waterMark_emptyDataStore_defaultExifFrameStyleIsClassic() = runBlocking {
+        val waterMark = repo.waterMark.first()
+
+        assertThat(waterMark.exifFrameStyle).isEqualTo(ExifFrameStyle.CLASSIC.ordinal)
+    }
+
+    @Test
+    fun updateExifFrameStyle_thenReadWaterMark_reflectsNewValue_roundTrip() = runBlocking {
+        repo.updateExifFrameStyle(ExifFrameStyle.FILM_STRIP)
+
+        val waterMark = repo.waterMark.first()
+
+        assertThat(waterMark.exifFrameStyle).isEqualTo(ExifFrameStyle.FILM_STRIP.ordinal)
+    }
+
+    @Test
+    fun updateExifFrameStyle_everyStyle_roundTripsCorrectly() = runBlocking {
+        ExifFrameStyle.entries.forEach { style ->
+            repo.updateExifFrameStyle(style)
+
+            val waterMark = repo.waterMark.first()
+
+            assertThat(waterMark.exifFrameStyle).isEqualTo(style.ordinal)
+        }
+    }
+
+    @Test
+    fun updateExifFrameStyle_persistsIndependently_fromEnableExifToggle() = runBlocking {
+        repo.updateExifFrameStyle(ExifFrameStyle.POLAROID)
+        repo.updateEnableExif(true)
+
+        val waterMark = repo.waterMark.first()
+
+        assertThat(waterMark.enableExif).isTrue()
+        assertThat(waterMark.exifFrameStyle).isEqualTo(ExifFrameStyle.POLAROID.ordinal)
     }
 }

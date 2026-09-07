@@ -10,6 +10,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.SeekBar
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -69,6 +71,18 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySignatureBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Edge-to-edge (BaseActivity.applyEdgeToEdge): llBottomControls chỉ có padding cố
+        // định 16dp, không đủ tránh navigation bar/gesture bar → btnApply bị che (đã verify
+        // trên thiết bị thật). Dùng padding gốc từ XML làm base cố định (không đọc lại
+        // view.paddingBottom trong callback — listener có thể chạy nhiều lần, đọc giá trị đã
+        // bị cộng dồn từ lần trước sẽ làm padding tăng vô hạn).
+        val basePaddingBottom = binding.llBottomControls.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(binding.llBottomControls) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, basePaddingBottom + systemBars.bottom)
+            insets
+        }
 
         repo = SignatureRepository(this)
 

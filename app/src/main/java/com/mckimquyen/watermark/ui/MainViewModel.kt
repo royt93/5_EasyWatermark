@@ -32,6 +32,8 @@ import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.Anchor
+import com.mckimquyen.watermark.data.model.ExifFrameStyle
+import com.mckimquyen.watermark.data.model.ExifModel
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
 import com.mckimquyen.watermark.data.model.JobStateResolver
@@ -381,33 +383,11 @@ class MainViewModel @Inject constructor(
             }
 
             val finalExportBitmap = if (tmpConfig.enableExif && imageInfo.exifModel != null && !imageInfo.exifModel!!.isEmpty()) {
-                val eModel = imageInfo.exifModel!!
-                val borderHeight = (mutableBitmap.height * 0.12f).toInt()
-                val expandedBitmap = Bitmap.createBitmap(mutableBitmap.width, mutableBitmap.height + borderHeight, Bitmap.Config.ARGB_8888)
-                val exCanvas = Canvas(expandedBitmap)
-                exCanvas.drawColor(Color.WHITE)
-                exCanvas.drawBitmap(mutableBitmap, 0f, 0f, null)
-                val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                    color = Color.BLACK
-                    textSize = borderHeight * 0.35f
-                    textAlign = Paint.Align.LEFT
-                    typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
-                }
-
-                // Draw Camera Model
-                exCanvas.drawText(eModel.getCameraName(), mutableBitmap.width * 0.05f, mutableBitmap.height + borderHeight * 0.5f, textPaint)
-
-                // Draw Exif Details
-                textPaint.textSize = borderHeight * 0.22f
-                textPaint.textAlign = Paint.Align.RIGHT
-                textPaint.typeface = android.graphics.Typeface.DEFAULT
-                exCanvas.drawText(eModel.getFormattedExif(), mutableBitmap.width * 0.95f, mutableBitmap.height + borderHeight * 0.45f, textPaint)
-
-                // Draw Date
-                textPaint.textSize = borderHeight * 0.18f
-                textPaint.color = Color.DKGRAY
-                exCanvas.drawText(eModel.dateTime, mutableBitmap.width * 0.95f, mutableBitmap.height + borderHeight * 0.75f, textPaint)
-
+                val expandedBitmap = buildExifBorderBitmap(
+                    source = mutableBitmap,
+                    eModel = imageInfo.exifModel!!,
+                    style = ExifFrameStyle.obtain(tmpConfig.exifFrameStyle)
+                )
                 // mutableBitmap đã được vẽ (drawBitmap) sang expandedBitmap, không còn dùng nữa
                 // (finalExportBitmap trỏ sang expandedBitmap) — recycle để tránh giữ 2 bitmap
                 // full-res cùng lúc (BUG-05).
@@ -720,10 +700,159 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Vẽ khung EXIF theo [style] lên canvas mở rộng từ [source] — chỉ dùng Canvas thuần
+     * (chữ + hình khối), không dùng logo hãng máy thật để tránh rủi ro bản quyền/trademark.
+     */
+    internal fun buildExifBorderBitmap(source: Bitmap, eModel: ExifModel, style: ExifFrameStyle): Bitmap {
+        return when (style) {
+            ExifFrameStyle.CLASSIC -> buildClassicExifBorder(source, eModel)
+            ExifFrameStyle.POLAROID -> buildPolaroidExifBorder(source, eModel)
+            ExifFrameStyle.FILM_STRIP -> buildFilmStripExifBorder(source, eModel)
+            ExifFrameStyle.MINIMAL -> buildMinimalExifBorder(source, eModel)
+        }
+    }
+
+    /** Thanh trắng dưới đáy: tên máy đậm trái, thông số + ngày phải (hành vi gốc). */
+    private fun buildClassicExifBorder(source: Bitmap, eModel: ExifModel): Bitmap {
+        val borderHeight = (source.height * 0.12f).toInt()
+        val expanded = Bitmap.createBitmap(source.width, source.height + borderHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(expanded)
+        canvas.drawColor(Color.WHITE)
+        canvas.drawBitmap(source, 0f, 0f, null)
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK
+            textSize = borderHeight * 0.35f
+            textAlign = Paint.Align.LEFT
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+        canvas.drawText(eModel.getCameraName(), source.width * 0.05f, source.height + borderHeight * 0.5f, textPaint)
+
+        textPaint.textSize = borderHeight * 0.22f
+        textPaint.textAlign = Paint.Align.RIGHT
+        textPaint.typeface = Typeface.DEFAULT
+        canvas.drawText(eModel.getFormattedExif(), source.width * 0.95f, source.height + borderHeight * 0.45f, textPaint)
+
+        textPaint.textSize = borderHeight * 0.18f
+        textPaint.color = Color.DKGRAY
+        canvas.drawText(eModel.dateTime, source.width * 0.95f, source.height + borderHeight * 0.75f, textPaint)
+        return expanded
+    }
+
+    /** Viền trắng dày đều 4 cạnh kiểu ảnh Polaroid, caption căn giữa ở đáy. */
+    private fun buildPolaroidExifBorder(source: Bitmap, eModel: ExifModel): Bitmap {
+        val sideBorder = (minOf(source.width, source.height) * 0.05f).toInt()
+        val bottomBorder = (source.height * 0.16f).toInt()
+        val totalWidth = source.width + sideBorder * 2
+        val totalHeight = source.height + sideBorder + bottomBorder
+        val expanded = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(expanded)
+        canvas.drawColor(Color.WHITE)
+        canvas.drawBitmap(source, sideBorder.toFloat(), sideBorder.toFloat(), null)
+
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK
+            textAlign = Paint.Align.CENTER
+            typeface = Typeface.create(Typeface.SERIF, Typeface.NORMAL)
+        }
+        textPaint.textSize = bottomBorder * 0.32f
+        canvas.drawText(eModel.getCameraName(), totalWidth / 2f, source.height + sideBorder + bottomBorder * 0.55f, textPaint)
+
+        textPaint.textSize = bottomBorder * 0.2f
+        textPaint.color = Color.DKGRAY
+        val detail = listOfNotNull(
+            eModel.getFormattedExif().takeIf { it.isNotEmpty() },
+            eModel.dateTime.takeIf { it.isNotEmpty() }
+        ).joinToString("   ·   ")
+        canvas.drawText(detail, totalWidth / 2f, source.height + sideBorder + bottomBorder * 0.85f, textPaint)
+        return expanded
+    }
+
+    /** Dải đen trên/dưới có lỗ sprocket như phim máy ảnh; caption phủ scrim mờ ở đáy ảnh. */
+    private fun buildFilmStripExifBorder(source: Bitmap, eModel: ExifModel): Bitmap {
+        val bandHeight = (source.height * 0.10f).toInt()
+        val totalHeight = source.height + bandHeight * 2
+        val expanded = Bitmap.createBitmap(source.width, totalHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(expanded)
+        canvas.drawColor(Color.BLACK)
+        canvas.drawBitmap(source, 0f, bandHeight.toFloat(), null)
+
+        val holePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
+        val holeSize = bandHeight * 0.42f
+        val holeRadius = holeSize * 0.25f
+        val holeGap = holeSize * 1.7f
+        val holeCount = (source.width / holeGap).toInt().coerceAtLeast(2)
+        fun drawHoleRow(centerY: Float) {
+            for (i in 0 until holeCount) {
+                val cx = holeGap * 0.5f + i * holeGap
+                canvas.drawRoundRect(
+                    cx - holeSize / 2f, centerY - holeSize / 2f, cx + holeSize / 2f, centerY + holeSize / 2f,
+                    holeRadius, holeRadius, holePaint
+                )
+            }
+        }
+        drawHoleRow(bandHeight * 0.5f)
+        drawHoleRow(totalHeight - bandHeight * 0.5f)
+
+        // Scrim mờ phủ đáy ảnh thật (không phải dải đen) để chữ không đè lên lỗ sprocket.
+        val scrimHeight = bandHeight * 1.1f
+        val scrimTop = bandHeight + source.height - scrimHeight
+        canvas.drawRect(0f, scrimTop, source.width.toFloat(), (bandHeight + source.height).toFloat(), Paint().apply {
+            color = Color.argb(140, 0, 0, 0)
+        })
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            textAlign = Paint.Align.LEFT
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textSize = bandHeight * 0.34f
+        }
+        canvas.drawText(eModel.getCameraName(), source.width * 0.04f, bandHeight + source.height - scrimHeight * 0.45f, textPaint)
+        textPaint.textSize = bandHeight * 0.22f
+        textPaint.typeface = Typeface.DEFAULT
+        val detail = listOfNotNull(
+            eModel.getFormattedExif().takeIf { it.isNotEmpty() },
+            eModel.dateTime.takeIf { it.isNotEmpty() }
+        ).joinToString("  ·  ")
+        canvas.drawText(detail, source.width * 0.04f, bandHeight + source.height - scrimHeight * 0.15f, textPaint)
+        return expanded
+    }
+
+    /** Dải trắng mỏng + 1 dòng chữ gọn (tên máy · thông số · ngày), gọn nhẹ hơn CLASSIC. */
+    private fun buildMinimalExifBorder(source: Bitmap, eModel: ExifModel): Bitmap {
+        val borderHeight = (source.height * 0.06f).toInt().coerceAtLeast(1)
+        val expanded = Bitmap.createBitmap(source.width, source.height + borderHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(expanded)
+        canvas.drawColor(Color.WHITE)
+        canvas.drawBitmap(source, 0f, 0f, null)
+        canvas.drawLine(0f, source.height.toFloat(), source.width.toFloat(), source.height.toFloat(), Paint().apply {
+            color = Color.LTGRAY
+            strokeWidth = borderHeight * 0.03f
+        })
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.DKGRAY
+            textSize = borderHeight * 0.4f
+            textAlign = Paint.Align.LEFT
+            typeface = Typeface.DEFAULT
+        }
+        val line = listOfNotNull(
+            eModel.getCameraName().takeIf { it.isNotEmpty() && it != "Unknown Device" },
+            eModel.getFormattedExif().takeIf { it.isNotEmpty() },
+            eModel.dateTime.takeIf { it.isNotEmpty() }
+        ).joinToString("   ")
+        canvas.drawText(line, source.width * 0.03f, source.height + borderHeight * 0.65f, textPaint)
+        return expanded
+    }
+
     fun toggleExifBorder() {
         launch {
             val currentValue = waterMark.value?.enableExif ?: false
             waterMarkRepo.updateEnableExif(!currentValue)
+        }
+    }
+
+    fun selectExifFrameStyle(style: ExifFrameStyle) {
+        launch {
+            waterMarkRepo.updateExifFrameStyle(style)
         }
     }
 

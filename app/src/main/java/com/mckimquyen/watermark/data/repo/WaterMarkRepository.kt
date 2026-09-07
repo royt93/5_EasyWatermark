@@ -16,6 +16,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.Anchor
+import com.mckimquyen.watermark.data.model.ExifFrameStyle
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.TextPaintStyle
 import com.mckimquyen.watermark.data.model.TextTypeface
@@ -67,6 +68,7 @@ class WaterMarkRepository @Inject constructor(
         val KEY_MODE = intPreferencesKey(SP_KEY_WATERMARK_MODE)
         val KEY_ENABLE_BOUNDS = booleanPreferencesKey(SP_KEY_ENABLE_BOUNDS)
         val KEY_ENABLE_EXIF = booleanPreferencesKey(SP_KEY_ENABLE_EXIF)
+        val KEY_EXIF_FRAME_STYLE = intPreferencesKey(SP_KEY_EXIF_FRAME_STYLE)
         val KEY_ANCHOR = intPreferencesKey(SP_KEY_ANCHOR)
         val KEY_MARGIN = floatPreferencesKey(SP_KEY_MARGIN)
 //        val KEY_TILE_MODE = intPreferencesKey(SP_KEY_TILE_MODEL)
@@ -101,6 +103,7 @@ class WaterMarkRepository @Inject constructor(
                 markMode = if (it[PreferenceKeys.KEY_MODE] == MarkMode.Image.value) MarkMode.Image else MarkMode.Text,
                 enableBounds = it[PreferenceKeys.KEY_ENABLE_BOUNDS] ?: false,
                 enableExif = it[PreferenceKeys.KEY_ENABLE_EXIF] ?: false,
+                exifFrameStyle = it[PreferenceKeys.KEY_EXIF_FRAME_STYLE] ?: ExifFrameStyle.CLASSIC.ordinal,
                 anchor = it[PreferenceKeys.KEY_ANCHOR] ?: Anchor.CENTER.ordinal,
                 marginPercent = it[PreferenceKeys.KEY_MARGIN] ?: DEFAULT_MARGIN_PERCENT
             )
@@ -173,6 +176,10 @@ class WaterMarkRepository @Inject constructor(
         dataStore.edit {
             it[PreferenceKeys.KEY_ENABLE_EXIF] = enable
         }
+    }
+
+    suspend fun updateExifFrameStyle(style: ExifFrameStyle) {
+        dataStore.edit { it[PreferenceKeys.KEY_EXIF_FRAME_STYLE] = style.ordinal }
     }
 
     suspend fun updateTileMode(imageInfo: ImageInfo, mode: Shader.TileMode): ImageInfo {
@@ -254,6 +261,7 @@ class WaterMarkRepository @Inject constructor(
         const val SP_KEY_CHANGE_LOG = "${SP_NAME}_key_change_log"
         const val SP_KEY_ENABLE_BOUNDS = "${SP_NAME}_key_enable_bounds"
         const val SP_KEY_ENABLE_EXIF = "${SP_NAME}_key_enable_exif"
+        const val SP_KEY_EXIF_FRAME_STYLE = "${SP_NAME}_key_exif_frame_style"
         const val SP_KEY_ICON_URI = "${SP_NAME}_key_icon_uri"
 
 //        const val SP_KEY_URI = "${SP_NAME}_key_uri"

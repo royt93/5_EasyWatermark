@@ -82,4 +82,92 @@
 
         </LinearLayout>
     </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/groupFrameStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/exif_frame_style_label"
+            android:textColor="#A0A0A0"
+            android:textSize="13sp" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStyleClassic"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="8dp"
+                    android:backgroundTint="@color/glass_overlay_medium"
+                    android:text="@string/exif_frame_style_classic"
+                    android:textColor="@color/glass_text_primary"
+                    android:textSize="13sp"
+                    app:cornerRadius="45dp"
+                    app:strokeColor="@color/glass_border"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStylePolaroid"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="8dp"
+                    android:backgroundTint="@color/glass_overlay_medium"
+                    android:text="@string/exif_frame_style_polaroid"
+                    android:textColor="@color/glass_text_primary"
+                    android:textSize="13sp"
+                    app:cornerRadius="45dp"
+                    app:strokeColor="@color/glass_border"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStyleFilmStrip"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="8dp"
+                    android:backgroundTint="@color/glass_overlay_medium"
+                    android:text="@string/exif_frame_style_film_strip"
+                    android:textColor="@color/glass_text_primary"
+                    android:textSize="13sp"
+                    app:cornerRadius="45dp"
+                    app:strokeColor="@color/glass_border"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStyleMinimal"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:backgroundTint="@color/glass_overlay_medium"
+                    android:text="@string/exif_frame_style_minimal"
+                    android:textColor="@color/glass_text_primary"
+                    android:textSize="13sp"
+                    app:cornerRadius="45dp"
+                    app:strokeColor="@color/glass_border"
+                    app:strokeWidth="1dp" />
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+    </LinearLayout>
+
 </LinearLayout>
