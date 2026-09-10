@@ -26,6 +26,7 @@ import com.mckimquyen.watermark.ui.MainActivity
 import com.mckimquyen.watermark.ui.MainViewModel
 import com.mckimquyen.watermark.ui.adapter.SaveImageListAdapter
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
+import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
 import com.mckimquyen.watermark.utils.ktx.preCheckStoragePermission
 
 class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
@@ -41,9 +42,10 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         Bitmap.CompressFormat.WEBP
     )
 
-    // Resize cạnh dài: nhãn ↔ giá trị px (0 = giữ nguyên).
-    private val resizeArray = arrayOf("Original", "1080", "2048", "4096")
-    private val resizeValues = intArrayOf(0, 1080, 2048, 4096)
+    // Resize cạnh dài: nhãn ↔ giá trị px (0 = giữ nguyên) — nguồn từ OutputImageUtils.resizePresets
+    // (gồm preset px thuần + preset đặt tên theo nền tảng mạng xã hội, xem FEAT-09).
+    private val resizeArray = OutputImageUtils.resizePresets.map { it.label }.toTypedArray()
+    private val resizeValues = OutputImageUtils.resizePresets.map { it.maxLongEdge }.toIntArray()
 
     /** PNG là lossless nên ẩn slider chất lượng; JPEG/WEBP có dùng. */
     private fun supportsQuality(format: Bitmap.CompressFormat): Boolean =

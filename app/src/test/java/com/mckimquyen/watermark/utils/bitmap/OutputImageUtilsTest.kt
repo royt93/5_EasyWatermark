@@ -41,4 +41,38 @@ class OutputImageUtilsTest {
     fun targetDimensions_invalidInput_returnsAsIs() {
         assertThat(OutputImageUtils.targetDimensions(0, 0, 100)).isEqualTo(0 to 0)
     }
+
+    @Test
+    fun resizePresets_containsOriginalAsFirstEntry() {
+        val first = OutputImageUtils.resizePresets.first()
+        assertThat(first.label).isEqualTo("Original")
+        assertThat(first.maxLongEdge).isEqualTo(OutputImageUtils.RESIZE_ORIGINAL)
+    }
+
+    @Test
+    fun resizePresets_containsPlatformPresets() {
+        val byLabel = OutputImageUtils.resizePresets.associate { it.label to it.maxLongEdge }
+        assertThat(byLabel["Instagram (1080)"]).isEqualTo(1080)
+        assertThat(byLabel["Facebook (2048)"]).isEqualTo(2048)
+        assertThat(byLabel["Zalo (1600)"]).isEqualTo(1600)
+    }
+
+    @Test
+    fun resizePresets_keepsLegacyPxPresetsForBackwardCompat() {
+        val byLabel = OutputImageUtils.resizePresets.associate { it.label to it.maxLongEdge }
+        assertThat(byLabel["1080"]).isEqualTo(1080)
+        assertThat(byLabel["2048"]).isEqualTo(2048)
+        assertThat(byLabel["4096"]).isEqualTo(4096)
+    }
+
+    @Test
+    fun resizePresets_neverBreaksAspectRatio() {
+        // Mọi preset chỉ giới hạn cạnh dài (targetDimensions không crop) — verify qua 1 ảnh mẫu.
+        OutputImageUtils.resizePresets.forEach { preset ->
+            val (w, h) = OutputImageUtils.targetDimensions(4000, 3000, preset.maxLongEdge)
+            val originalRatio = 4000.0 / 3000.0
+            val resultRatio = w.toDouble() / h.toDouble()
+            assertThat(resultRatio).isWithin(0.01).of(originalRatio)
+        }
+    }
 }

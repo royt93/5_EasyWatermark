@@ -11,6 +11,24 @@ object OutputImageUtils {
     /** Không giới hạn cạnh dài (giữ nguyên kích thước gốc). */
     const val RESIZE_ORIGINAL = 0
 
+    /** 1 preset resize cho dropdown xuất ảnh: nhãn hiển thị + giới hạn cạnh dài (px). */
+    data class ResizePreset(val label: String, val maxLongEdge: Int)
+
+    /**
+     * Preset resize cho dropdown xuất ảnh: preset theo px (giữ nguyên từ trước) cộng preset đặt
+     * tên theo nền tảng mạng xã hội phổ biến. Chỉ giới hạn cạnh dài, KHÔNG crop — tỉ lệ khung
+     * hình gốc luôn được giữ nguyên (xem [targetDimensions]).
+     */
+    val resizePresets: List<ResizePreset> = listOf(
+        ResizePreset("Original", RESIZE_ORIGINAL),
+        ResizePreset("1080", 1080),
+        ResizePreset("2048", 2048),
+        ResizePreset("4096", 4096),
+        ResizePreset("Instagram (1080)", 1080),
+        ResizePreset("Facebook (2048)", 2048),
+        ResizePreset("Zalo (1600)", 1600),
+    )
+
     /** Phần đuôi file theo định dạng nén. */
     fun extensionFor(format: Bitmap.CompressFormat): String = when (format) {
         Bitmap.CompressFormat.PNG -> "png"
