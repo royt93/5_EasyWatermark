@@ -129,6 +129,13 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 }
             }
 
+            etOutputName.setText(shareViewModel.outputNamePattern)
+            etOutputName.setOnFocusChangeListener { _, hasFocus ->
+                if (!hasFocus) {
+                    shareViewModel.saveOutputNamePattern(etOutputName.text?.toString().orEmpty().trim())
+                }
+            }
+
             flQuality.isVisible = supportsQuality(shareViewModel.outputFormat)
             slideQuality.isVisible = supportsQuality(shareViewModel.outputFormat)
 

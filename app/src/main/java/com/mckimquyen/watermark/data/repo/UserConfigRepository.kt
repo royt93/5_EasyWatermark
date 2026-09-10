@@ -14,6 +14,7 @@ import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KE
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_COPYRIGHT
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_MAX_LONG_EDGE
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_OUTPUT_FORMAT
+import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_OUTPUT_NAME_PATTERN
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -31,6 +32,7 @@ class UserConfigRepository @Inject constructor(
         val KEY_COMPRESS_LEVEL = intPreferencesKey(SP_KEY_COMPRESS_LEVEL)
         val KEY_MAX_LONG_EDGE = intPreferencesKey(SP_KEY_MAX_LONG_EDGE)
         val KEY_COPYRIGHT = stringPreferencesKey(SP_KEY_COPYRIGHT)
+        val KEY_OUTPUT_NAME_PATTERN = stringPreferencesKey(SP_KEY_OUTPUT_NAME_PATTERN)
         val KEY_CHANGE_LOG = stringPreferencesKey(WaterMarkRepository.SP_KEY_CHANGE_LOG)
     }
 
@@ -56,7 +58,8 @@ class UserConfigRepository @Inject constructor(
             val compressLevel = if (savedValue % 20 != 0) DEFAULT_COMPRESS_LEVEL else savedValue
             val maxLongEdge = (it[KEY_MAX_LONG_EDGE] ?: DEFAULT_MAX_LONG_EDGE).coerceAtLeast(DEFAULT_MAX_LONG_EDGE)
             val copyright = it[KEY_COPYRIGHT] ?: ""
-            UserPreferences(outputFormat, compressLevel, maxLongEdge, copyright)
+            val outputNamePattern = it[KEY_OUTPUT_NAME_PATTERN] ?: ""
+            UserPreferences(outputFormat, compressLevel, maxLongEdge, copyright, outputNamePattern)
         }
 
     suspend fun updateFormat(
@@ -91,6 +94,14 @@ class UserConfigRepository @Inject constructor(
         }
     }
 
+    suspend fun updateOutputNamePattern(
+        pattern: String
+    ) {
+        dataStore.edit {
+            it[KEY_OUTPUT_NAME_PATTERN] = pattern
+        }
+    }
+
     suspend fun saveVersionCode() {
         dataStore.edit {
             it[KEY_CHANGE_LOG] = BuildConfig.VERSION_CODE.toString()
@@ -108,5 +119,6 @@ class UserConfigRepository @Inject constructor(
         const val SP_KEY_COMPRESS_LEVEL = "${SP_NAME}_key_compress_level"
         const val SP_KEY_MAX_LONG_EDGE = "${SP_NAME}_key_max_long_edge"
         const val SP_KEY_COPYRIGHT = "${SP_NAME}_key_copyright"
+        const val SP_KEY_OUTPUT_NAME_PATTERN = "${SP_NAME}_key_output_name_pattern"
     }
 }

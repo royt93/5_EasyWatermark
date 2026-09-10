@@ -136,6 +136,8 @@
     <string name="dialog_save_config_resize_none">Original</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>
     <string name="dialog_save_config_copyright_hint">© Your name</string>
+    <string name="dialog_save_config_name_pattern">File name pattern</string>
+    <string name="dialog_save_config_name_pattern_hint">e.g. {filename}_wm_{seq} — leave empty for default</string>
     <string name="vip_title">VIP Access</string>
     <string name="vip_status_active">VIP Active</string>
     <string name="vip_status_free">Free mode</string>

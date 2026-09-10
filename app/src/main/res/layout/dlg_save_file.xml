@@ -118,6 +118,35 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- ══ SECTION: FILE NAME PATTERN ═══════════════════════════════════════ -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilOutputName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_glassmorphism_panel"
+        android:hint="@string/dialog_save_config_name_pattern"
+        app:boxBackgroundColor="@android:color/transparent"
+        app:boxStrokeWidth="0dp"
+        app:boxStrokeWidthFocused="0dp"
+        app:hintTextColor="@color/glass_text_hint">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etOutputName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/dialog_save_config_name_pattern_hint"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/glass_text_primary"
+            android:textColorHint="@color/glass_text_hint"
+            android:textSize="15sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
     <!-- ══ SECTION: COPYRIGHT (EXIF) ════════════════════════════════════════ -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilCopyright"

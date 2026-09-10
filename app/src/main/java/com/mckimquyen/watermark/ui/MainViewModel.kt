@@ -129,6 +129,9 @@ class MainViewModel @Inject constructor(
     val copyright: String
         get() = userPreferences.value.copyright
 
+    val outputNamePattern: String
+        get() = userPreferences.value.outputNamePattern
+
     val colorPalette: MutableLiveData<Palette> = MutableLiveData()
 
     private var matrixValues = FloatArray(9)
@@ -415,7 +418,7 @@ class MainViewModel @Inject constructor(
                 val imageDetail = ContentValues().apply {
                     put(
                         MediaStore.Images.Media.DISPLAY_NAME,
-                        generateOutputName()
+                        generateOutputName(contentResolver, imageInfo, index)
                     )
                     put(MediaStore.Images.Media.MIME_TYPE, "image/${trapOutputExtension()}")
                     put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/$outPutFolderName/")
@@ -460,7 +463,7 @@ class MainViewModel @Inject constructor(
                 if (!mediaDir.exists()) {
                     mediaDir.mkdirs()
                 }
-                val outputFile = File(mediaDir, generateOutputName())
+                val outputFile = File(mediaDir, generateOutputName(contentResolver, imageInfo, index))
                 outputFile.outputStream().use { fileOutputStream ->
                     exportBitmap.compress(
                         /* format = */ outputFormat,
@@ -555,8 +558,23 @@ class MainViewModel @Inject constructor(
         return name
     }
 
-    private fun generateOutputName(): String {
-        return "ewm_${System.currentTimeMillis()}.${trapOutputExtension()}"
+    /**
+     * Tên file xuất — mặc định "ewm_{timestamp}" nếu user chưa đặt pattern ([outputNamePattern]
+     * rỗng); nếu có pattern, resolve token qua đúng [resolveTextTokens] đang dùng cho text
+     * watermark (vd "{filename}_wm_{seq}"). Phần đuôi file luôn theo [trapOutputExtension].
+     */
+    internal fun generateOutputName(
+        contentResolver: ContentResolver,
+        imageInfo: ImageInfo,
+        index: Int
+    ): String {
+        val pattern = outputNamePattern.trim()
+        val base = if (pattern.isEmpty()) {
+            "ewm_${System.currentTimeMillis()}"
+        } else {
+            resolveTextTokens(pattern, imageInfo, contentResolver, index)
+        }
+        return "$base.${trapOutputExtension()}"
     }
 
     private fun trapOutputExtension(): String {
@@ -901,6 +919,12 @@ class MainViewModel @Inject constructor(
     fun saveCopyright(copyright: String) {
         viewModelScope.launch {
             userRepo.updateCopyright(copyright)
+        }
+    }
+
+    fun saveOutputNamePattern(pattern: String) {
+        viewModelScope.launch {
+            userRepo.updateOutputNamePattern(pattern)
         }
     }
 
