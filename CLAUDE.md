@@ -25,12 +25,12 @@ Build có 2 trục: flavor (`appTest`, `appRelease`) × buildType (`debug`, `rel
 ./gradlew clean
 ```
 
-- **Unit test (`app/src/test`)**: `QrCodeGeneratorTest`, `TextTokenResolverTest`, `QrPreviewWidgetTest`, `OutputImageUtilsTest`, `ImageFormatRoboTest` (Robolectric), `ExifModelTest`, `DateConverterTest`.
+- **Unit test (`app/src/test`, 17 file)**: `data/db/DateConverterTest`, `data/model/ExifFrameStyleTest`, `data/model/ExifModelTest`, `data/model/JobStateResolverTest`, `data/model/MediaStoreInsertResolverTest`, `ui/MainViewModelExifBorderRoboTest`, `ui/MainViewModelResolvePreviewTextRoboTest`, `ui/adapter/FuncPanelAdapterRoboTest`, `ui/dlg/ExifFrameStyleHighlighterRoboTest`, `ui/widget/DetectedPerformanceSeekBarListenerRoboTest`, `ui/widget/QrPreviewWidgetTest`, `utils/QrCodeGeneratorTest`, `utils/TextTokenResolverTest`, `utils/bitmap/BitmapCacheTest`, `utils/bitmap/BitmapUtilsTest`, `utils/bitmap/ImageFormatRoboTest`, `utils/bitmap/OutputImageUtilsTest` (nhiều test Robolectric, hậu tố `*RoboTest`).
   ```bash
   ./gradlew testAppReleaseDebugUnitTest                                    # toàn bộ unit test
   ./gradlew testAppReleaseDebugUnitTest --tests "*.DateConverterTest"      # 1 class
   ```
-- **Instrumentation test (`app/src/androidTest`)**: 1 test — `TemplateDaoIntegrationTest` (Room). Chạy bằng `./gradlew connectedAppReleaseDebugAndroidTest` (cần thiết bị/emulator).
+- **Instrumentation test (`app/src/androidTest`, 4 file)**: `data/db/TemplateDaoIntegrationTest` (Room), `data/repo/WaterMarkRepositoryIntegrationTest` (DataStore), `utils/bitmap/BitmapUtilsContextThreadingIntegrationTest`, `utils/bitmap/BitmapUtilsDecodeFailureIntegrationTest`. Chạy bằng `./gradlew connectedAppReleaseDebugAndroidTest` (cần thiết bị/emulator).
 - 2 module benchmark (`baseBenchmarks`, `macrobenchmark`) vẫn bị comment trong `settings.gradle.kts` — chưa dùng được.
 - Release ký bằng các property `KEY_ALIAS` / `KEY_PASSWORD` / `STORE_FILE` / `STORE_PASSWORD` (hiện đặt trong `gradle.properties`, store `keystore.jks`).
 
