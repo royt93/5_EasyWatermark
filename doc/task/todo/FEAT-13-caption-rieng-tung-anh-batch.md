@@ -19,3 +19,6 @@ Thêm màn hình nhập multi-line/paste CSV, map theo index vào `ImageInfo` t�
 - [ ] Nhập được danh sách caption nhiều dòng, khớp đúng thứ tự ảnh trong batch.
 - [ ] Export batch áp đúng caption riêng cho từng ảnh.
 - [ ] Số dòng caption không khớp số ảnh có cảnh báo rõ ràng (không âm thầm sai lệch).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `FEAT-13`, file ticket = `todo/FEAT-13-caption-rieng-tung-anh-batch.md`.

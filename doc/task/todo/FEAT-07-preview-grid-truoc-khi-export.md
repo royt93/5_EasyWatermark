@@ -19,3 +19,6 @@ Kết hợp hiển thị số ảnh, kích thước dự kiến, định dạng,
 - [ ] Trước khi export, hiển thị grid thumbnail có watermark áp sẵn cho từng ảnh trong batch.
 - [ ] Hiển thị ước tính dung lượng/kích thước output.
 - [ ] Người dùng có thể quay lại chỉnh sửa trước khi xác nhận export.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `FEAT-07`, file ticket = `todo/FEAT-07-preview-grid-truoc-khi-export.md`.

@@ -20,3 +20,6 @@ Serialize bảng `Template` (Room) sang JSON + copy thư mục chứa file signa
 - [ ] Xuất được file backup chứa đủ Template + Signature hiện có.
 - [ ] Nhập file backup vào máy khác khôi phục đúng toàn bộ Template + Signature.
 - [ ] Xử lý hợp lý trường hợp trùng tên/conflict khi nhập vào máy đã có dữ liệu sẵn.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `FEAT-05`, file ticket = `todo/FEAT-05-backup-restore-template-signature.md`.

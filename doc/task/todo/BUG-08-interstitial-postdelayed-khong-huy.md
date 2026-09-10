@@ -32,3 +32,6 @@ private val showInterstitialRunnable = Runnable {
 ## Acceptance Criteria
 - [ ] `Runnable` được lưu tham chiếu và `removeCallbacks` trong `onDestroy()`.
 - [ ] Thoát Activity ngay sau khi save (trong 800ms) không crash/log lỗi WindowManager.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-08`, file ticket = `todo/BUG-08-interstitial-postdelayed-khong-huy.md`.

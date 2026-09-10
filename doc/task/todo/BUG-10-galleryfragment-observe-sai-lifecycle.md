@@ -27,3 +27,6 @@ Dùng `this` (Fragment) làm `LifecycleOwner` thay vì `viewLifecycleOwner`. Fra
 ## Acceptance Criteria
 - [ ] Cả 2 `observe()` dùng `viewLifecycleOwner`.
 - [ ] Chuyển Fragment qua lại (navigate away/back) nhiều lần không tích luỹ observer/log warning.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-10`, file ticket = `todo/BUG-10-galleryfragment-observe-sai-lifecycle.md`.

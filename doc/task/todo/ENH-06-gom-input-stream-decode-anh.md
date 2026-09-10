@@ -18,3 +18,6 @@ Gộp các bước đọc EXIF + đo bounds + decode vào tối đa 1-2 lần m�
 ## Acceptance Criteria
 - [ ] Decode 1 ảnh (kèm đọc EXIF + orientation) chỉ mở tối đa 1-2 `InputStream`.
 - [ ] Không thay đổi hành vi/kết quả decode so với hiện tại (regression test bằng ảnh có EXIF orientation khác nhau).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-06`, file ticket = `todo/ENH-06-gom-input-stream-decode-anh.md`.

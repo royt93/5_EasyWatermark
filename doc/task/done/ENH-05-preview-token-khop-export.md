@@ -17,5 +17,8 @@ files:
 Gọi `resolveTextTokens()` (hoặc tương đương) trực tiếp trong `WaterMarkImageView` cho ảnh đang được chọn preview, dùng cùng logic resolve với lúc export để đảm bảo nhất quán.
 
 ## Acceptance Criteria
-- [ ] Text watermark chứa token hiển thị giá trị đã resolve (không phải token thô) trong lúc chỉnh sửa preview.
-- [ ] Giá trị preview khớp chính xác với giá trị thật khi export.
+- [x] Text watermark chứa token hiển thị giá trị đã resolve (không phải token thô) trong lúc chỉnh sửa preview.
+- [x] Giá trị preview khớp chính xác với giá trị thật khi export.
+
+## Kết quả kiểm chứng (re-audit 2026-09-10)
+Đã triển khai đầy đủ ngoài luồng backlog (2026-09-06) — xem `doc/feat.md` mục 4. `MainViewModel.resolvePreviewText(text, imageInfo)` public, gọi ở cả `waterMark.observe` và `selectedImage.observe`, chỉ set vào View (không ghi ngược repo). Xác nhận lại bởi `claude -p` (external CLI, đọc trực tiếp `MainViewModel.kt:525-529`) trong đợt re-audit 2026-09-10. Move sang `done/`.

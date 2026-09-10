@@ -27,3 +27,6 @@ related: BUG-05
 ## Acceptance Criteria
 - [ ] Batch nhiều ảnh (đủ để cache evict entry cũ) không gây crash "trying to use a recycled bitmap" ở bất kỳ đâu đang hiển thị bitmap từ cache.
 - [ ] Bitmap bị evict thực sự được giải phóng bộ nhớ nhanh hơn hiện tại (đo qua Memory Profiler).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-15`, file ticket = `todo/ENH-15-bitmapcache-recycle-an-toan-khi-evict.md`.

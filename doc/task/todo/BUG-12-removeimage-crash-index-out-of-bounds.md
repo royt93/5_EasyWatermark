@@ -30,3 +30,6 @@ list.removeAt(removePos)
 ## Acceptance Criteria
 - [ ] Gọi `removeImage(null, ...)` không crash.
 - [ ] Vuốt xoá nhanh nhiều ảnh liên tiếp trong danh sách preview không crash (test thủ công).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-12`, file ticket = `todo/BUG-12-removeimage-crash-index-out-of-bounds.md`.

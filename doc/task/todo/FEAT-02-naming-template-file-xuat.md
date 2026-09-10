@@ -19,3 +19,6 @@ Hạ tầng token (`{filename}`, `{seq}`, `{date}`...) đã tồn tại — ch�
 - [ ] User nhập được pattern tên file trước khi export batch.
 - [ ] Token resolve đúng cho từng ảnh trong batch (không trùng tên khi có `{seq}`).
 - [ ] Giữ hành vi mặc định cũ nếu user không đổi pattern.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `FEAT-02`, file ticket = `todo/FEAT-02-naming-template-file-xuat.md`.

@@ -20,3 +20,6 @@ Tạo wrapper `AppLog.d(...)` (hoặc dùng Timber) no-op ở release build (`if
 ## Acceptance Criteria
 - [ ] Build release không còn log debug xuất hiện trong Logcat.
 - [ ] Build debug vẫn giữ nguyên log để dev dùng.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-03`, file ticket = `todo/ENH-03-gate-log-debug-build-config.md`.

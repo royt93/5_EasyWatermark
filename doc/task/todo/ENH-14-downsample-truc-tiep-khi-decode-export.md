@@ -26,3 +26,6 @@ Thay đổi độ phân giải decode ảnh hưởng trực tiếp tới toàn b
 - [ ] Export với resize option (1080/2048/4096) giảm peak memory rõ rệt so với hiện tại (đo qua Memory Profiler, so sánh trước/sau).
 - [ ] Vị trí/kích thước watermark trên ảnh output không đổi so với trước khi thay đổi (test trực quan, so sánh pixel-level nếu có thể).
 - [ ] Export với "Original" (không resize) không đổi hành vi.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-14`, file ticket = `todo/ENH-14-downsample-truc-tiep-khi-decode-export.md`.

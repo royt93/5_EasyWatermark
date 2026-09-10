@@ -16,6 +16,9 @@ Ngoài kéo thả tự do hiện có, thêm preset neo watermark theo lưới 3x
 `WaterMarkImageView` đã dùng `offsetX/offsetY` chuẩn hoá 0..1 trong `ImageInfo` — map preset anchor → giá trị offset tương ứng, không cần đổi cơ chế vẽ hiện có. Chỉ cần thêm UI chọn preset (9 nút/lưới) + input margin.
 
 ## Acceptance Criteria
-- [ ] Chọn 1 trong 9 vị trí preset đặt đúng watermark vào góc/cạnh/giữa tương ứng.
-- [ ] Margin áp dụng đúng theo % trên mọi tỷ lệ ảnh khác nhau trong batch.
-- [ ] Vẫn giữ được chế độ kéo tay tự do song song.
+- [x] Chọn 1 trong 9 vị trí preset đặt đúng watermark vào góc/cạnh/giữa tương ứng.
+- [x] Margin áp dụng đúng theo % trên mọi tỷ lệ ảnh khác nhau trong batch.
+- [x] Vẫn giữ được chế độ kéo tay tự do song song.
+
+## Kết quả kiểm chứng (re-audit 2026-09-10)
+Đã triển khai đầy đủ ngoài luồng backlog (2026-09-05) — xem `doc/feat.md` mục 7. `data/model/Anchor.kt`, `WaterMarkImageView.applyAnchor()`, `PositionAnchorBottomSheetFragment.kt` + persist qua `WaterMarkRepository.updateAnchor()/updateMargin()`. Đã verify trên thiết bị thật (TECNO KJ7) theo ghi chú trong feat.md. Xác nhận lại bởi `claude -p` (external CLI, đọc trực tiếp code) trong đợt re-audit 2026-09-10. Move sang `done/`.

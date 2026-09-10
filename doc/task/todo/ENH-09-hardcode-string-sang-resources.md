@@ -19,3 +19,6 @@ Audit toàn bộ string hardcode trong `ui/`, chuyển vào `res/values/strings.
 ## Acceptance Criteria
 - [ ] Không còn string UI hardcode trực tiếp trong code Kotlin (trừ log/debug).
 - [ ] Các chuỗi đếm số lượng dùng `<plurals>` đúng chuẩn.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-09`, file ticket = `todo/ENH-09-hardcode-string-sang-resources.md`.

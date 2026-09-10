@@ -18,3 +18,6 @@ Dùng `ActivityResultContracts.OpenDocumentTree` (`ACTION_OPEN_DOCUMENT_TREE`), 
 ## Acceptance Criteria
 - [ ] Chọn 1 thư mục đưa được toàn bộ ảnh hợp lệ trong đó (không đệ quy subfolder, trừ khi cần) vào danh sách batch.
 - [ ] Giữ được lựa chọn multi-pick từng ảnh như cũ song song.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `FEAT-08`, file ticket = `todo/FEAT-08-chon-thu-muc-saf-batch.md`.

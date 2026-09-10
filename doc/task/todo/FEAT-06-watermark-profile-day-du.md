@@ -20,3 +20,6 @@ Mở rộng schema `Template` (hoặc bảng mới `WatermarkProfile`) lưu toà
 - [ ] Lưu được 1 profile chứa toàn bộ cấu hình watermark hiện tại (không chỉ text).
 - [ ] Áp dụng lại profile khôi phục đúng toàn bộ cấu hình đã lưu.
 - [ ] Danh sách profile hiển thị dễ chọn (dropdown/list có tên).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `FEAT-06`, file ticket = `todo/FEAT-06-watermark-profile-day-du.md`.

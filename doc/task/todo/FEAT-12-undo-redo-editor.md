@@ -19,3 +19,6 @@ Lưu stack snapshot `WaterMark` mỗi lần thay đổi có ý nghĩa (không ph
 - [ ] Undo hoàn tác đúng thay đổi gần nhất (vị trí/size/màu/góc xoay).
 - [ ] Redo khôi phục lại thay đổi vừa undo.
 - [ ] Stack không phình to bất thường khi thao tác kéo/pinch liên tục (nhờ debounce).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `FEAT-12`, file ticket = `todo/FEAT-12-undo-redo-editor.md`.

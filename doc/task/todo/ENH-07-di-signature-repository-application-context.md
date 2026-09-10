@@ -19,3 +19,6 @@ files:
 ## Acceptance Criteria
 - [ ] `SignatureRepository` được cung cấp qua Hilt, không khởi tạo thủ công trong Activity.
 - [ ] Không còn phụ thuộc trực tiếp vào Activity context trong repo.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-07`, file ticket = `todo/ENH-07-di-signature-repository-application-context.md`.

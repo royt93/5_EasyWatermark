@@ -25,3 +25,6 @@ appContext.contentResolver.openInputStream(waterMarkRepo.imageInfoList.first().u
 ## Acceptance Criteria
 - [ ] Gọi `compressImg` khi danh sách ảnh rỗng không crash.
 - [ ] Huỷ coroutine giữa lúc nén (thoát màn hình) không để lại file tạm trong cache.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-11`, file ticket = `todo/BUG-11-compressimg-khong-guard-rong-leak-file-tam.md`.

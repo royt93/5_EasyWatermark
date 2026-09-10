@@ -31,3 +31,6 @@ Vài hướng khả thi, có thể kết hợp:
 - [ ] Đo được (Profiler) mức giảm allocation/CPU rõ rệt khi pinch sau khi fix, so với trước.
 - [ ] Pinch mượt hơn rõ rệt theo cảm nhận thực tế trên device tầm trung/thấp (không chỉ trên Tecno KJ7).
 - [ ] Không phá vỡ độ chính xác kích thước cuối cùng sau khi nhả tay (rebuild đầy đủ ở `onScaleEnd` nếu dùng hướng throttle).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-16`, file ticket = `todo/ENH-16-throttle-rebuild-shader-khi-pinch.md`.

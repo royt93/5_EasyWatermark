@@ -19,3 +19,6 @@ Thêm nút nhanh resize theo kích thước chuẩn mạng xã hội phổ biế
 ## Acceptance Criteria
 - [ ] Chọn preset nền tảng resize đúng kích thước chuẩn tương ứng.
 - [ ] Preset không phá vỡ tỉ lệ khung hình gốc trừ khi người dùng chủ động chọn crop.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `FEAT-09`, file ticket = `todo/FEAT-09-preset-resize-theo-nen-tang.md`.

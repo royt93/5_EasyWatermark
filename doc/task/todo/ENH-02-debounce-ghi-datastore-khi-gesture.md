@@ -26,3 +26,6 @@ Nếu xác nhận đúng là ghi mỗi ký tự: debounce 100-300ms trước khi
 ## Acceptance Criteria
 - [ ] Xác nhận lại (đọc code) tần suất ghi DataStore thực tế khi nhập text watermark trước khi fix.
 - [ ] Nếu cần: gõ liên tục chỉ ghi DataStore sau khi dừng gõ >100-300ms, preview vẫn tức thời.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-02`, file ticket = `todo/ENH-02-debounce-ghi-datastore-khi-gesture.md`.

@@ -20,3 +20,6 @@ files:
 - [ ] Có thể thêm tối thiểu 2 layer (vd text + logo) cùng lúc trong 1 config.
 - [ ] Mỗi layer có vị trí/opacity/thứ tự (z-order) riêng, chỉnh sửa độc lập.
 - [ ] Export batch áp dụng đúng toàn bộ layer, hiệu năng không giảm đáng kể so với 1 layer.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `FEAT-03`, file ticket = `todo/FEAT-03-multi-layer-watermark.md`.

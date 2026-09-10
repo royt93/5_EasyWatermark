@@ -24,3 +24,6 @@ Cả 4 nguồn AI độc lập (khác model, khác hãng) đều tự đưa ra �
 - [ ] Với ảnh có mặt người rõ ràng, watermark tự động không đè lên vùng mặt.
 - [ ] Thời gian xử lý thêm không làm chậm batch quá đáng kể (đo benchmark cụ thể khi triển khai).
 - [ ] Vẫn cho phép user override thủ công sau khi có gợi ý tự động.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `IDEA-01`, file ticket = `todo/IDEA-01-ai-auto-placement-nhan-dien-chu-the.md`.

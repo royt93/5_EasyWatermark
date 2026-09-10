@@ -20,3 +20,6 @@ Chỉ cần lưu metadata nhẹ (không nhân bản ảnh input): thêm bảng R
 - [ ] Sau mỗi batch export, có 1 entry lịch sử mới xuất hiện.
 - [ ] Mở lại entry cũ xem được danh sách ảnh output + ảnh lỗi (nếu có).
 - [ ] Có nút "chạy lại" áp dụng lại đúng config batch cũ.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `FEAT-04`, file ticket = `todo/FEAT-04-lich-su-batch-gan-day.md`.

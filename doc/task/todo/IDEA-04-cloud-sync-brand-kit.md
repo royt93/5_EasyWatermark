@@ -20,3 +20,6 @@ Cần hạ tầng backend (đã có ghi chú TODO Firebase trong `doc/todo.md`) 
 ## Acceptance Criteria (sơ bộ, cần thiết kế backend riêng)
 - [ ] Đăng nhập/liên kết tài khoản đồng bộ được cấu hình cơ bản (logo + màu + template) giữa 2 thiết bị.
 - [ ] Thay đổi trên 1 thiết bị phản ánh đúng trên thiết bị còn lại trong thời gian hợp lý.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `IDEA-04`, file ticket = `todo/IDEA-04-cloud-sync-brand-kit.md`.

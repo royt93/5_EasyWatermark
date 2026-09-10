@@ -41,3 +41,6 @@ override fun onStart() {
 - [ ] Share ảnh từ Gallery vào app (app đang đóng) hoạt động đúng.
 - [ ] Share ảnh vào app khi app đang mở sẵn ở foreground cũng nhận được ảnh.
 - [ ] Background rồi mở lại app không tự động re-import ảnh share cũ.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-09`, file ticket = `todo/BUG-09-action-send-thieu-extra-stream.md`.

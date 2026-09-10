@@ -20,3 +20,6 @@ Sau khi `saveImage()` nhận `result.data` (là `List<ImageInfo>` với `jobStat
 ## Acceptance Criteria
 - [ ] Sau batch export có ảnh lỗi, UI hiển thị rõ số lượng thành công/thất bại (không chỉ 1 trạng thái chung).
 - [ ] Batch toàn bộ thành công vẫn hiển thị bình thường như hiện tại (không thêm nhiễu UI khi không cần).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-13`, file ticket = `todo/ENH-13-hien-thi-so-anh-thanh-cong-that-bai-cuoi-batch.md`.

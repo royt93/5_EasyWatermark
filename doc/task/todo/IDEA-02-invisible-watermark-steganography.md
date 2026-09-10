@@ -21,3 +21,6 @@ Effort rất cao (XL), cần R&D thuật toán DCT/DWT watermarking bền vững
 - [ ] Nghiên cứu khả thi: chọn thuật toán cụ thể (DCT-based robust watermarking) và đánh giá độ bền qua resize/nén JPEG chất lượng khác nhau.
 - [ ] Watermark ẩn không ảnh hưởng nhận biết được chất lượng ảnh hiển thị (blind test).
 - [ ] Có công cụ (trong app hoặc riêng) verify được watermark ẩn từ ảnh output.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `IDEA-02`, file ticket = `todo/IDEA-02-invisible-watermark-steganography.md`.

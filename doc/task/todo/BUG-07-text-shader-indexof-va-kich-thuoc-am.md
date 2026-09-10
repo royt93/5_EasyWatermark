@@ -27,3 +27,6 @@ verified: true
 - [ ] Watermark text nhiều dòng có nội dung trùng lặp giữa các dòng vẽ đúng kích thước khung.
 - [ ] Text watermark với gap âm lớn không crash `IllegalArgumentException`.
 - [ ] Text nhiều dòng căn giữa đúng theo chiều dọc trong bitmap kết quả (kiểm tra trực quan).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-07`, file ticket = `todo/BUG-07-text-shader-indexof-va-kich-thuoc-am.md`.

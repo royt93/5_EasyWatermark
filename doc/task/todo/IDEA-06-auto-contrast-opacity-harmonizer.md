@@ -22,3 +22,6 @@ Effort thấp hơn nhiều so với các idea khác trong nhóm này (không c�
 ## Acceptance Criteria
 - [ ] Batch ảnh có độ sáng nền khác nhau tại vị trí watermark tự động chọn màu/opacity đọc rõ.
 - [ ] Có toggle bật/tắt (một số user muốn giữ đồng nhất màu watermark theo brand, không muốn tự động đổi).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `IDEA-06`, file ticket = `todo/IDEA-06-auto-contrast-opacity-harmonizer.md`.

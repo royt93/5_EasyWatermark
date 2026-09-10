@@ -23,3 +23,6 @@ Effort thấp nhất trong nhóm "chứng thực nguồn gốc" (so với `IDEA-
 ## Acceptance Criteria
 - [ ] Mỗi ảnh trong batch có QR chứa hash riêng của chính ảnh đó (không trùng giữa các ảnh).
 - [ ] Quét QR (bằng app QR thường) ra được thông tin hash + timestamp + link đọc được.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `IDEA-07`, file ticket = `todo/IDEA-07-batch-qr-smart-bridge.md`.

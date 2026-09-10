@@ -18,3 +18,6 @@ Triển khai đầy đủ 3 lời gọi tương ứng đúng lifecycle callback.
 ## Acceptance Criteria
 - [ ] `bannerResume`/`bannerPause`/`bannerDestroy` được gọi đúng lifecycle.
 - [ ] Không còn banner ad hoạt động ngầm khi `AboutActivity` không ở foreground.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-11`, file ticket = `todo/ENH-11-vong-doi-ad-banner-day-du.md`.

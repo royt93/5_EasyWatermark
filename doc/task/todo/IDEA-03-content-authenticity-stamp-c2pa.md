@@ -21,3 +21,6 @@ Hợp lý với đối tượng nhiếp ảnh gia đang lo bị đánh cắp ả
 ## Acceptance Criteria (sơ bộ)
 - [ ] Ảnh export chứa metadata xác thực (hash + timestamp + owner ID) đọc lại được.
 - [ ] Có cách kiểm tra (trong app hoặc công cụ riêng) xác minh ảnh chưa bị chỉnh sửa kể từ lúc xuất.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `IDEA-03`, file ticket = `todo/IDEA-03-content-authenticity-stamp-c2pa.md`.

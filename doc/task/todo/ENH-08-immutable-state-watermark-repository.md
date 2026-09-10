@@ -18,3 +18,6 @@ Chuyển `ImageInfo` sang model bất biến hoàn toàn (mọi thay đổi tạ
 ## Acceptance Criteria
 - [ ] Không còn chỗ nào mutate field của `ImageInfo` trực tiếp (mọi update qua `copy()`).
 - [ ] DiffUtil nhận diện đúng thay đổi sau khi refactor (kiểm tra UI list cập nhật đúng khi đổi selected/offset/jobState).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-08`, file ticket = `todo/ENH-08-immutable-state-watermark-repository.md`.

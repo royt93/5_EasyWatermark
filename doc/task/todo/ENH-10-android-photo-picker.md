@@ -20,3 +20,6 @@ Thay `PickImageContract`/`MultiPickContract` bằng `ActivityResultContracts.Pic
 - [ ] Chọn ảnh (đơn + nhiều) dùng Android Photo Picker trên Android 13+.
 - [ ] Không yêu cầu quyền `READ_MEDIA_IMAGES` trên thiết bị hỗ trợ Photo Picker.
 - [ ] Có fallback hoạt động trên Android cũ hơn không hỗ trợ.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-10`, file ticket = `todo/ENH-10-android-photo-picker.md`.

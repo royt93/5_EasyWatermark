@@ -21,3 +21,6 @@ Batch export hiện chạy trong `viewModelScope` (`saveImage`/`generateList`) �
 - [ ] Batch export tiếp tục chạy khi app bị đưa xuống nền.
 - [ ] Có nút huỷ giữa batch.
 - [ ] Notification hiển thị tiến độ %.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-01`, file ticket = `todo/ENH-01-batch-export-workmanager-huy-tien-do.md`.

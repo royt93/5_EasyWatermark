@@ -1,43 +1,46 @@
 # Task Backlog — EasyWatermark
 
-> Sinh ngày 2026-09-04. Nguồn: đọc trực tiếp toàn bộ `app/src/main` + `cmonet/src/main`, đối chiếu `CLAUDE.md`, `doc/todo.md`, `doc/feat.md`, `doc/memory_leak.md`, `doc/AD.MD` (không lặp việc đã ghi "ĐÃ XONG"), cộng review độc lập song song từ 4 AI agent: Claude Code (internal), **codex exec** (OpenAI Codex, sandbox read-only), **claude -p** (session riêng, allowlist Read/Grep/Glob), **agy** (plan mode). Mỗi bug quan trọng đã được verify lại bằng cách đọc trực tiếp source, không chỉ tin theo báo cáo AI.
+> Sinh ngày 2026-09-04. **Re-audit 2026-09-10**: đọc lại toàn bộ `app/src/main` + `cmonet/src/main`, đối chiếu 5 commit mới từ ngày sinh backlog (Frame presets EXIF border, Share App, chip token, AdMob debug/release, preview token — xem `doc/feat.md`), cross-check 4 nguồn độc lập: **Claude fork nội bộ** (đọc trực tiếp), **codex exec** (OpenAI Codex, sandbox read-only), **claude -p** (session riêng, allowlist Read/Grep/Glob), **agy** (timeout 2 lần sau ~10 phút, không có kết quả — bỏ qua, 3/4 nguồn còn lại đủ đồng thuận). Mỗi finding quan trọng đã verify lại bằng đọc trực tiếp source, không chỉ tin theo báo cáo AI.
 
 ## Quy ước
 
 - Mỗi ticket là 1 file `.md` trong `doc/task/todo/` → di chuyển sang `doc/task/inprogress/` khi bắt đầu làm, `doc/task/done/` khi xong (đổi trạng thái = di chuyển file).
 - Prefix: `BUG-` (lỗi cần fix), `ENH-` (cải tiến tính năng có sẵn), `FEAT-` (tính năng mới thực dụng), `IDEA-` (tính năng độc quyền/đột phá, effort cao, để tham khảo định hướng dài hạn).
-- `priority`: P0 (crash/mất dữ liệu/bảo mật, core feature) > P1 (leak/perf/crash edge-case) > P2 (nhỏ, tối ưu).
+- `priority`: P0 (crash/mất dữ liệu/bảo mật/doanh thu, core feature) > P1 (leak/perf/crash edge-case) > P2 (nhỏ, tối ưu).
 - `effort`: XS (<2h) / S (nửa ngày) / M (1-2 ngày) / L (3-5 ngày) / XL (>1 tuần, cần thiết kế riêng).
-- `sources`: agent nào tìm ra/đồng thuận — độ đồng thuận cao (3-4/4) = độ tin cậy cao.
+- `sources`: agent nào tìm ra/đồng thuận — độ đồng thuận cao = độ tin cậy cao.
+- **Prompt loop:** mỗi ticket trong `todo/` có section "## Prompt loop" trỏ tới [PROMPT_TEMPLATE.md](PROMPT_TEMPLATE.md) — Definition of Done dùng chung (audit >9/10 + unit/widget/integration test đủ mọi case + smoke test thật trên device đã khoá → mới được move `done/` + push).
 
-## BUGS_TO_FIX (14) — ưu tiên P0 trước
+## BUGS_TO_FIX (15 todo + 6 done) — ưu tiên P0 trước
 
 | ID | Priority | Effort | Tiêu đề |
 |---|---|---|---|
-| [BUG-02](todo/BUG-02-bitmapcache-npe-khi-decode-fail.md) | P0 | XS | BitmapCache NPE khi decode ảnh lỗi |
-| [BUG-03](todo/BUG-03-batch-export-bao-thanh-cong-gia.md) | P0 | S | Batch export báo "thành công" giả dù ảnh lỗi |
-| [BUG-04](todo/BUG-04-content-resolver-insert-force-unwrap.md) | P0 | S | `contentResolver.insert()!!` crash khi MediaStore trả null |
-| [BUG-05](todo/BUG-05-oom-batch-export-khong-downsample-recycle.md) | P0 | M | OOM khi export batch: không downsample + không recycle bitmap |
-| [BUG-01](todo/BUG-01-bitmap-decode-sample-sai-kich-thuoc.md) | P1 | S | Tính sai `inSampleSize` và chiều xoay ảnh khi decode |
-| [BUG-06](todo/BUG-06-watermark-imageview-icon-cache-race-leak.md) | P1 | M | Icon watermark cache luôn miss khi pinch-zoom + race coroutine |
+| [BUG-14](todo/BUG-14-vip-secret-hardcode-trong-apk.md) | P0 | M | VIP secret hardcode base64, lặp 3 chỗ + 1 secret thứ 2 chưa từng ticket hoá (mở rộng 2026-09-10) |
+| [BUG-15](todo/BUG-15-admob-rewarded-release-dung-test-id.md) | P0 | XS | `ADMOB_REWARDED_ID` build release vẫn dùng ID test — mất doanh thu, vi phạm chính sách AdMob |
 | [BUG-07](todo/BUG-07-text-shader-indexof-va-kich-thuoc-am.md) | P1 | S | Text shader: `indexOf` sai dòng trùng lặp + kích thước bitmap có thể ≤0 |
 | [BUG-08](todo/BUG-08-interstitial-postdelayed-khong-huy.md) | P1 | XS | `postDelayed` hiện interstitial không huỷ khi thoát Activity |
 | [BUG-09](todo/BUG-09-action-send-thieu-extra-stream.md) | P1 | S | Nhận ảnh share (`ACTION_SEND`) thiếu `EXTRA_STREAM`, lặp/rơi ảnh |
 | [BUG-10](todo/BUG-10-galleryfragment-observe-sai-lifecycle.md) | P1 | XS | `GalleryFragment` observe LiveData sai lifecycle owner |
 | [BUG-12](todo/BUG-12-removeimage-crash-index-out-of-bounds.md) | P1 | XS | `removeImage` crash `IndexOutOfBoundsException` khi xoá ảnh |
-| [BUG-14](todo/BUG-14-vip-secret-hardcode-trong-apk.md) | P1 | M | VIP secret hardcode base64 trong APK, dễ bypass |
+| [BUG-18](todo/BUG-18-exifpbfragment-lazy-button-leak.md) | P1 | S | `styleButtons by lazy` trong `ExifPbFragment` giữ view cũ qua tái tạo dialog (mới 2026-09-10) |
+| [BUG-19](todo/BUG-19-mediastore-ghi-that-bai-khong-guard.md) | P1 | M | Nhánh ghi MediaStore không guard `openFileDescriptor`/`compress` thất bại (mới 2026-09-10) |
+| [BUG-21](todo/BUG-21-generateimage-early-return-khong-recycle.md) | P1 | M | `generateImage()` còn early-return không recycle bitmap ở nhánh lỗi (bổ sung sau BUG-05, mới 2026-09-10) |
 | [BUG-11](todo/BUG-11-compressimg-khong-guard-rong-leak-file-tam.md) | P2 | XS | `compressImg` không guard danh sách rỗng + leak file tạm |
 | [BUG-13](todo/BUG-13-qrcode-sinh-dong-bo-main-thread.md) | P2 | XS | Sinh QR đồng bộ trên Main thread mỗi ký tự gõ |
+| [BUG-16](todo/BUG-16-edittextcontent-hien-chuoi-null.md) | P2 | XS | `EditTextContentFragment` hiện chuỗi `"null"` literal khi `waterMark` chưa emit (mới 2026-09-10) |
+| [BUG-17](todo/BUG-17-filmstrip-holegap-zero-treo-oom.md) | P2 | XS | `buildFilmStripExifBorder` có thể treo/OOM khi ảnh nguồn cực nhỏ (mới 2026-09-10) |
+| [BUG-20](todo/BUG-20-edittextcontent-collect-fragment-lifecycle.md) | P2 | XS | `EditTextContentFragment` collect Flow theo Fragment lifecycle thay vì view lifecycle (mới 2026-09-10) |
 
-## ENHANCEMENTS (12) — cải tiến tính năng có sẵn
+**Đã DONE** (xem `doc/task/done/`): BUG-01 (inSampleSize/rotation), BUG-02 (BitmapCache NPE), BUG-03 (batch export báo thành công giả), BUG-04 (contentResolver insert force-unwrap), BUG-05 (OOM batch export — *lưu ý: BUG-21 mới phát hiện phần còn sót*), BUG-06 (icon cache race leak).
+
+## ENHANCEMENTS (18 todo + 2 done) — cải tiến tính năng có sẵn
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [ENH-01](todo/ENH-01-batch-export-workmanager-huy-tien-do.md) | L | Batch export chạy qua WorkManager + huỷ + tiến độ tổng |
-| [ENH-02](todo/ENH-02-debounce-ghi-datastore-khi-gesture.md) | S | Debounce ghi DataStore khi nhập text (đã đính chính: KHÔNG phải pinch/kéo) |
+| [ENH-17](todo/ENH-17-vip-key-device-bound.md) | S | VIP key gắn thiết bị (device-bound) — mitigation cho BUG-14 (mới 2026-09-10) |
+| [ENH-02](todo/ENH-02-debounce-ghi-datastore-khi-gesture.md) | S | Debounce ghi DataStore khi nhập text (KHÔNG phải pinch/kéo) |
 | [ENH-03](todo/ENH-03-gate-log-debug-build-config.md) | S | Gate toàn bộ `Log.d` bằng `BuildConfig.DEBUG` |
-| [ENH-04](todo/ENH-04-kich-hoat-lai-pinch-to-resize.md) | S | Kích hoạt lại pinch-to-resize (đang bị comment) |
-| [ENH-05](todo/ENH-05-preview-token-khop-export.md) | S | Preview token watermark khớp với lúc export |
 | [ENH-06](todo/ENH-06-gom-input-stream-decode-anh.md) | M | Gộp mở `InputStream` lặp lại khi decode 1 ảnh (4-5 lần → 1-2 lần) |
 | [ENH-07](todo/ENH-07-di-signature-repository-application-context.md) | XS | `SignatureRepository` dùng raw Context thay vì Hilt `@ApplicationContext` |
 | [ENH-08](todo/ENH-08-immutable-state-watermark-repository.md) | M | Model bất biến cho `ImageInfo`/`StateFlow` (`WaterMarkRepository`) |
@@ -45,41 +48,59 @@
 | [ENH-10](todo/ENH-10-android-photo-picker.md) | M | Chuyển sang Android Photo Picker thay `ACTION_PICK` legacy |
 | [ENH-11](todo/ENH-11-vong-doi-ad-banner-day-du.md) | XS | Vòng đời Ad Banner đầy đủ (resume/pause/destroy) ở `AboutActivity` |
 | [ENH-12](todo/ENH-12-monet-manufacturer-dua-vao-api-chinh-thuc.md) | S | `MonetManufacturer` whitelist nên dựa API `isDynamicColorAvailable()` |
-| [ENH-13](todo/ENH-13-hien-thi-so-anh-thanh-cong-that-bai-cuoi-batch.md) | S | Hiển thị số ảnh thành công/thất bại cuối batch (tách từ BUG-03) |
-| [ENH-14](todo/ENH-14-downsample-truc-tiep-khi-decode-export.md) | M | Downsample trực tiếp khi decode ảnh export (tách từ BUG-05) |
-| [ENH-15](todo/ENH-15-bitmapcache-recycle-an-toan-khi-evict.md) | M | BitmapCache recycle an toàn khi evict — cần thiết kế refcounting (tách từ BUG-05) |
-| [ENH-16](todo/ENH-16-throttle-rebuild-shader-khi-pinch.md) | M | Throttle rebuild shader khi pinch — nguyên nhân lag thật (tách từ ENH-02 sau khi test BUG-06/ENH-04) |
+| [ENH-13](todo/ENH-13-hien-thi-so-anh-thanh-cong-that-bai-cuoi-batch.md) | S | Hiển thị số ảnh thành công/thất bại cuối batch |
+| [ENH-14](todo/ENH-14-downsample-truc-tiep-khi-decode-export.md) | M | Downsample trực tiếp khi decode ảnh export |
+| [ENH-15](todo/ENH-15-bitmapcache-recycle-an-toan-khi-evict.md) | M | BitmapCache recycle an toàn khi evict — cần refcounting |
+| [ENH-16](todo/ENH-16-throttle-rebuild-shader-khi-pinch.md) | M | Throttle rebuild shader khi pinch — nguyên nhân lag thật |
+| [ENH-18](todo/ENH-18-unknown-device-fallback-hang-so-chung.md) | XS | Fallback string "Unknown Device" hardcode trùng lặp 2 file (mới 2026-09-10) |
+| [ENH-19](todo/ENH-19-exif-border-text-overflow-ellipsis.md) | S | EXIF border 4 style vẽ text không đo/co chữ khi tràn (mới 2026-09-10) |
+| [ENH-20](todo/ENH-20-preview-filename-query-main-thread.md) | S | Preview `{filename}` query đồng bộ trên Main thread (mới 2026-09-10) |
 
-## NEW_FEATURES (13) — tính năng mới thực dụng, 1-2 tuần
+**Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4).
+
+## NEW_FEATURES (13 todo + 1 done) — tính năng mới thực dụng, 1-2 tuần
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
-| [FEAT-01](todo/FEAT-01-9-grid-position-anchor.md) | S | Preset vị trí neo 9-grid + margin % |
 | [FEAT-02](todo/FEAT-02-naming-template-file-xuat.md) | S | Naming template cho file xuất (tái dùng token có sẵn) |
-| [FEAT-03](todo/FEAT-03-multi-layer-watermark.md) | L | Watermark đa lớp (chồng text + logo/QR cùng lúc) |
+| [FEAT-09](todo/FEAT-09-preset-resize-theo-nen-tang.md) | XS | Preset resize theo nền tảng (Instagram/Facebook/Zalo) |
+| [FEAT-08](todo/FEAT-08-chon-thu-muc-saf-batch.md) | S | Chọn cả thư mục (SAF tree) để batch |
+| [FEAT-11](todo/FEAT-11-hieu-ung-vien-bong-text.md) | S | Hiệu ứng viền/bóng/nền pill cho text watermark |
+| [FEAT-10](todo/FEAT-10-frame-preset-nhan-dien-hang-may.md) | S | Tự nhận diện hãng máy để gợi ý style khung EXIF (scope thu hẹp sau audit — phần style đã xong) |
+| [FEAT-14](todo/FEAT-14-custom-frame-builder-tham-so-hoa.md) | S | Custom Frame Builder — tham số hoá 4 EXIF frame style đã có (mới 2026-09-10) |
 | [FEAT-04](todo/FEAT-04-lich-su-batch-gan-day.md) | M | Lịch sử batch export gần đây |
 | [FEAT-05](todo/FEAT-05-backup-restore-template-signature.md) | M | Xuất/nhập Template + Signature (backup/restore) |
-| [FEAT-06](todo/FEAT-06-watermark-profile-day-du.md) | M | Watermark profile đầy đủ (không chỉ text, đặt tên tái dùng) |
+| [FEAT-06](todo/FEAT-06-watermark-profile-day-du.md) | M | Watermark profile đầy đủ |
 | [FEAT-07](todo/FEAT-07-preview-grid-truoc-khi-export.md) | M | Preview grid trước khi export cả batch |
-| [FEAT-08](todo/FEAT-08-chon-thu-muc-saf-batch.md) | S | Chọn cả thư mục (SAF tree) để batch |
-| [FEAT-09](todo/FEAT-09-preset-resize-theo-nen-tang.md) | XS | Preset resize theo nền tảng (Instagram/Facebook/Zalo) |
-| [FEAT-10](todo/FEAT-10-frame-preset-nhan-dien-hang-may.md) | M | Frame preset EXIF border + tự nhận diện hãng máy |
-| [FEAT-11](todo/FEAT-11-hieu-ung-vien-bong-text.md) | S | Hiệu ứng viền/bóng/nền pill cho text watermark |
 | [FEAT-12](todo/FEAT-12-undo-redo-editor.md) | M | Undo/Redo chỉnh sửa watermark trong editor |
 | [FEAT-13](todo/FEAT-13-caption-rieng-tung-anh-batch.md) | M | Nhập caption/text riêng theo từng ảnh trong batch (CSV) |
+| [FEAT-03](todo/FEAT-03-multi-layer-watermark.md) | L | Watermark đa lớp (chồng text + logo/QR cùng lúc) |
 
-## UNIQUE_IDEAS (7) — tính năng độc quyền/đột phá, effort cao
+**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7).
+
+## UNIQUE_IDEAS (10) — tính năng độc quyền/đột phá, effort cao
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
-| [IDEA-01](todo/IDEA-01-ai-auto-placement-nhan-dien-chu-the.md) | L | Auto-placement bằng on-device ML (né mặt người/chủ thể) — **đồng thuận 4/4 agent** |
-| [IDEA-02](todo/IDEA-02-invisible-watermark-steganography.md) | XL | Invisible watermark / steganography chống xoá |
-| [IDEA-03](todo/IDEA-03-content-authenticity-stamp-c2pa.md) | L | Content authenticity stamp kiểu C2PA |
-| [IDEA-04](todo/IDEA-04-cloud-sync-brand-kit.md) | XL | Cloud sync Brand Kit đa thiết bị |
-| [IDEA-05](todo/IDEA-05-cho-template-cong-dong.md) | XL | Chợ template cộng đồng (network effect) |
+| [IDEA-01](todo/IDEA-01-ai-auto-placement-nhan-dien-chu-the.md) | L | Auto-placement bằng on-device ML (né mặt người/chủ thể) — **đồng thuận 4/4 agent (đợt gốc)** |
+| [IDEA-08](todo/IDEA-08-referral-vip-qua-share-app.md) | M | Referral VIP qua Share App — tái dùng hạ tầng sẵn có, không cần backend (mới 2026-09-10) |
 | [IDEA-06](todo/IDEA-06-auto-contrast-opacity-harmonizer.md) | M | Auto-contrast/opacity harmonizer theo từng ảnh |
 | [IDEA-07](todo/IDEA-07-batch-qr-smart-bridge.md) | M | Batch QR Smart-Bridge (hash SHA-256 + xác thực nguồn gốc) |
+| [IDEA-03](todo/IDEA-03-content-authenticity-stamp-c2pa.md) | L | Content authenticity stamp kiểu C2PA |
+| [IDEA-09](todo/IDEA-09-watermark-survivability-preview.md) | L | Watermark Survivability Preview — mô phỏng crop/recompress mạng xã hội (mới 2026-09-10) |
+| [IDEA-10](todo/IDEA-10-recipient-fingerprint-batch.md) | L | Recipient Fingerprint Batch — watermark riêng theo người nhận, truy nguồn rò rỉ (mới 2026-09-10) |
+| [IDEA-02](todo/IDEA-02-invisible-watermark-steganography.md) | XL | Invisible watermark / steganography chống xoá |
+| [IDEA-04](todo/IDEA-04-cloud-sync-brand-kit.md) | XL | Cloud sync Brand Kit đa thiết bị |
+| [IDEA-05](todo/IDEA-05-cho-template-cong-dong.md) | XL | Chợ template cộng đồng (network effect) |
 
-## Gợi ý sprint đầu tiên
+## Ghi chú re-audit 2026-09-10 (khác biệt so với đợt sinh backlog gốc)
 
-Nhóm P0 (BUG-02, 03, 04, 05) là core-feature crash/data-loss trong đúng luồng chính (save/export ảnh) — nên làm trước tiên, gộp chung 1 sprint vì cùng khu vực code (`MainViewModel` export path). Sau đó chọn 2-3 FEAT effort S/XS (FEAT-01, FEAT-02, FEAT-09) để có tính năng "nhìn thấy được" song song với dọn nợ kỹ thuật.
+- **FEAT-01, ENH-05** đã triển khai xong ngoài luồng backlog — move sang `done/`, không phải làm lại.
+- **FEAT-10** chỉ done 1 phần (4 style khung — xong; tự nhận diện hãng máy — chưa) — đã tách lại scope trong file ticket.
+- **BUG-14** mở rộng đáng kể phạm vi (3 vị trí lặp secret + 1 secret thứ 2 chưa ticket hoá + cả package `feature/vip/` chưa từng audit) — nâng ưu tiên lên **P0**.
+- **BUG-05 (đã done)** vẫn còn sót: `generateImage()` có nhánh early-return không recycle bitmap ở đường lỗi (không phải đường thành công) — theo dõi tiếp ở BUG-21 mới, không mở lại BUG-05.
+- 2 ý kiến độc lập lệch nhau về hướng fix BUG-14: `claude -p` + fork nội bộ khuyến nghị **native NDK/JNI** (app chưa có hạ tầng network, effort thấp hơn); `codex exec` khuyến nghị **server-side verify** (trust boundary thật, thu hồi/giới hạn được key) — đã hỏi user quyết định qua AskUserQuestion trong phiên này.
+
+## Gợi ý sprint đầu tiên (cập nhật sau re-audit)
+
+Nhóm P0 giờ có 3 ticket cùng khu vực rủi ro cao: BUG-14 + ENH-17 (bảo mật VIP), BUG-15 (doanh thu Ad thật/test lẫn lộn) — nên gộp 1 sprint đầu, xử lý trước cả nhóm BUG-02..05 cũ (đã done). Sau đó nhóm P1 mới phát hiện (BUG-18/19/21) cùng khu vực `MainViewModel`/`ExifPbFragment` nên làm chung sprint kế tiếp với BUG-07/08/09/10/12 cũ. FEAT effort S/XS (FEAT-02, FEAT-09, FEAT-14) vẫn là lựa chọn tốt để có tính năng "nhìn thấy được" song song.

@@ -21,3 +21,6 @@ Effort cao nhất trong nhóm ý tưởng (cần backend, moderation nội dung 
 - [ ] User export được 1 template thành định dạng chia sẻ được (JSON).
 - [ ] Có nơi (trong app) duyệt/tải template người khác chia sẻ.
 - [ ] Có cơ chế kiểm duyệt cơ bản (tránh nội dung vi phạm bản quyền/không phù hợp).
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `IDEA-05`, file ticket = `todo/IDEA-05-cho-template-cong-dong.md`.

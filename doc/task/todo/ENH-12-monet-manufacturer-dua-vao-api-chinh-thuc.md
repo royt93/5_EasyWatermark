@@ -18,3 +18,6 @@ files:
 ## Acceptance Criteria
 - [ ] Logic bật/tắt dynamic color ưu tiên `isDynamicColorAvailable()`.
 - [ ] Deny-list (nếu giữ) có comment giải thích lý do cụ thể từng thiết bị, không phải "cứ hãng X là tắt".
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-12`, file ticket = `todo/ENH-12-monet-manufacturer-dua-vao-api-chinh-thuc.md`.

@@ -25,3 +25,6 @@ val bitmap = QrCodeGenerator.generate(content, size = QrCodeGenerator.DEFAULT_SI
 ## Acceptance Criteria
 - [ ] Gõ liên tục vào ô nhập nội dung QR không giật lag bàn phím.
 - [ ] `QrCodeGenerator.generate` không còn chạy trên Main thread.
+
+## Prompt loop (tự động hoá)
+Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-13`, file ticket = `todo/BUG-13-qrcode-sinh-dong-bo-main-thread.md`.
