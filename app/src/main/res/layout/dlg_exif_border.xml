@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_glass_gradient_sheet"
@@ -167,6 +168,129 @@
             </LinearLayout>
 
         </HorizontalScrollView>
+
+    </LinearLayout>
+
+    <!-- ══ FEAT-14: Custom Frame Builder — tham số hoá 4 style sẵn có ══════════ -->
+    <LinearLayout
+        android:id="@+id/groupCustomize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/exif_customize_label"
+                android:textColor="#A0A0A0"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tvExifCustomizeReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:text="@string/exif_customize_reset"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="13sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/exif_customize_band_color"
+                android:textColor="@color/glass_text_primary"
+                android:textSize="14sp" />
+
+            <View
+                android:id="@+id/vExifBandColorSwatch"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/bg_color_swatch" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/exif_customize_band_thickness"
+                android:textColor="@color/glass_text_primary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvExifBandThicknessValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/glass_text_secondary"
+                android:textSize="13sp"
+                tools:text="12%" />
+
+        </LinearLayout>
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/slideExifBandThickness"
+            style="@style/MySeekBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:stepSize="1"
+            android:valueFrom="4"
+            android:valueTo="30"
+            tools:value="12" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/exif_customize_serif_caption"
+                android:textColor="@color/glass_text_primary"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/swExifSerifCaption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:thumbTint="@null"
+                app:trackTint="@null"
+                app:switchMinWidth="50dp"
+                android:background="@null"
+                android:thumb="@drawable/bg_ios_switch_thumb"
+                app:track="@drawable/bg_ios_switch_track" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

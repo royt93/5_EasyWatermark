@@ -33,6 +33,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_TEXT_STYLE
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_TEXT_TYPEFACE
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_VERTICAL_GAP
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,7 +45,6 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
-import dagger.hilt.android.qualifiers.ApplicationContext
 
 @Singleton
 class WaterMarkRepository @Inject constructor(
@@ -71,6 +71,9 @@ class WaterMarkRepository @Inject constructor(
         val KEY_EXIF_FRAME_STYLE = intPreferencesKey(SP_KEY_EXIF_FRAME_STYLE)
         val KEY_ANCHOR = intPreferencesKey(SP_KEY_ANCHOR)
         val KEY_MARGIN = floatPreferencesKey(SP_KEY_MARGIN)
+        val KEY_EXIF_BAND_COLOR = intPreferencesKey(SP_KEY_EXIF_BAND_COLOR)
+        val KEY_EXIF_BAND_THICKNESS = floatPreferencesKey(SP_KEY_EXIF_BAND_THICKNESS)
+        val KEY_EXIF_SERIF_CAPTION = booleanPreferencesKey(SP_KEY_EXIF_SERIF_CAPTION)
 //        val KEY_TILE_MODE = intPreferencesKey(SP_KEY_TILE_MODEL)
 //        val KEY_OFFSET_X = floatPreferencesKey(SP_KEY_OFFSET_X)
 //        val KEY_OFFSET_Y = floatPreferencesKey(SP_KEY_OFFSET_Y)
@@ -105,7 +108,10 @@ class WaterMarkRepository @Inject constructor(
                 enableExif = it[PreferenceKeys.KEY_ENABLE_EXIF] ?: false,
                 exifFrameStyle = it[PreferenceKeys.KEY_EXIF_FRAME_STYLE] ?: ExifFrameStyle.CLASSIC.ordinal,
                 anchor = it[PreferenceKeys.KEY_ANCHOR] ?: Anchor.CENTER.ordinal,
-                marginPercent = it[PreferenceKeys.KEY_MARGIN] ?: DEFAULT_MARGIN_PERCENT
+                marginPercent = it[PreferenceKeys.KEY_MARGIN] ?: DEFAULT_MARGIN_PERCENT,
+                exifBandColor = it[PreferenceKeys.KEY_EXIF_BAND_COLOR],
+                exifBandThicknessPercent = it[PreferenceKeys.KEY_EXIF_BAND_THICKNESS],
+                exifUseSerifCaption = it[PreferenceKeys.KEY_EXIF_SERIF_CAPTION]
             )
         }
 
@@ -232,6 +238,41 @@ class WaterMarkRepository @Inject constructor(
         dataStore.edit { it[PreferenceKeys.KEY_MARGIN] = percent.coerceIn(MIN_MARGIN_PERCENT, MAX_MARGIN_PERCENT) }
     }
 
+    /** FEAT-14 — null = xoá override, quay lại màu mặc định của style đang chọn. */
+    suspend fun updateExifBandColor(color: Int?) {
+        dataStore.edit {
+            if (color == null) it.remove(PreferenceKeys.KEY_EXIF_BAND_COLOR) else it[PreferenceKeys.KEY_EXIF_BAND_COLOR] = color
+        }
+    }
+
+    /** FEAT-14 — null = xoá override, quay lại tỉ lệ mặc định của style đang chọn. Có giá trị thì clamp trong khoảng an toàn (tránh band cao 0px, xem BUG-17). */
+    suspend fun updateExifBandThicknessPercent(percent: Float?) {
+        dataStore.edit {
+            if (percent == null) {
+                it.remove(PreferenceKeys.KEY_EXIF_BAND_THICKNESS)
+            } else {
+                it[PreferenceKeys.KEY_EXIF_BAND_THICKNESS] =
+                    percent.coerceIn(MIN_EXIF_BAND_THICKNESS_PERCENT, MAX_EXIF_BAND_THICKNESS_PERCENT)
+            }
+        }
+    }
+
+    /** FEAT-14 — null = xoá override, quay lại font mặc định của style đang chọn. */
+    suspend fun updateExifUseSerifCaption(useSerif: Boolean?) {
+        dataStore.edit {
+            if (useSerif == null) it.remove(PreferenceKeys.KEY_EXIF_SERIF_CAPTION) else it[PreferenceKeys.KEY_EXIF_SERIF_CAPTION] = useSerif
+        }
+    }
+
+    /** FEAT-14 — xoá cả 3 override cùng lúc (nút "Reset" trong UI). */
+    suspend fun resetExifCustomization() {
+        dataStore.edit {
+            it.remove(PreferenceKeys.KEY_EXIF_BAND_COLOR)
+            it.remove(PreferenceKeys.KEY_EXIF_BAND_THICKNESS)
+            it.remove(PreferenceKeys.KEY_EXIF_SERIF_CAPTION)
+        }
+    }
+
 //    suspend fun resetList() {
 //        updateImageList(emptyList())
 //    }
@@ -273,6 +314,11 @@ class WaterMarkRepository @Inject constructor(
 //        const val SP_KEY_OFFSET_Y = "${SP_NAME}_key_offset_y"
         const val SP_KEY_ANCHOR = "${SP_NAME}_key_anchor"
         const val SP_KEY_MARGIN = "${SP_NAME}_key_margin"
+        const val SP_KEY_EXIF_BAND_COLOR = "${SP_NAME}_key_exif_band_color"
+        const val SP_KEY_EXIF_BAND_THICKNESS = "${SP_NAME}_key_exif_band_thickness"
+        const val SP_KEY_EXIF_SERIF_CAPTION = "${SP_NAME}_key_exif_serif_caption"
+        const val MIN_EXIF_BAND_THICKNESS_PERCENT = 0.04f
+        const val MAX_EXIF_BAND_THICKNESS_PERCENT = 0.30f
         const val MAX_TEXT_SIZE = 100f
         const val MIN_TEXT_SIZE = 1f
         const val DEFAULT_TEXT_SIZE = 14f

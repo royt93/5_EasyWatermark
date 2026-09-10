@@ -21,5 +21,9 @@ data class WaterMark(
     val enableExif: Boolean = false,
     val exifFrameStyle: Int = ExifFrameStyle.CLASSIC.ordinal,
     val anchor: Int = Anchor.CENTER.ordinal,
-    val marginPercent: Float = 0.05f
+    val marginPercent: Float = 0.05f,
+    /** FEAT-14 Custom Frame Builder — null = dùng màu/tỉ lệ/font mặc định của style đang chọn. */
+    val exifBandColor: Int? = null,
+    val exifBandThicknessPercent: Float? = null,
+    val exifUseSerifCaption: Boolean? = null
 )

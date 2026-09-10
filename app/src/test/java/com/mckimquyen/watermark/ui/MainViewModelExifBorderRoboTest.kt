@@ -129,4 +129,88 @@ class MainViewModelExifBorderRoboTest {
             assertThat(result.height).isGreaterThan(80)
         }
     }
+
+    // ══ FEAT-14 Custom Frame Builder — bandColor/bandThicknessPercent/useSerifCaption override ══
+
+    @Test
+    fun nullOverrides_produceSameSize_asOmittingParamsEntirely() {
+        // AC "không tuỳ chỉnh gì → hành vi giữ nguyên": gọi tường minh với null phải ra kết quả
+        // giống hệt gọi không truyền tham số (giá trị mặc định của hàm cũng là null).
+        ExifFrameStyle.entries.forEach { style ->
+            val default = viewModel.buildExifBorderBitmap(redSource(100, 100), exif, style)
+            val explicitNull = viewModel.buildExifBorderBitmap(
+                redSource(100, 100),
+                exif,
+                style,
+                bandColor = null,
+                bandThicknessPercent = null,
+                useSerifCaption = null
+            )
+            assertThat(explicitNull.width).isEqualTo(default.width)
+            assertThat(explicitNull.height).isEqualTo(default.height)
+        }
+    }
+
+    @Test
+    fun customBandThicknessPercent_changesExpandedHeight_forEveryStyle() {
+        // Độ dày băng tuỳ chỉnh (20%) phải khác độ dày mặc định của TỪNG style — chứng minh tham
+        // số thật sự được dùng để tính kích thước canvas, không bị bỏ qua.
+        ExifFrameStyle.entries.forEach { style ->
+            val default = viewModel.buildExifBorderBitmap(redSource(100, 100), exif, style)
+            val customized = viewModel.buildExifBorderBitmap(
+                redSource(100, 100),
+                exif,
+                style,
+                bandThicknessPercent = 0.20f
+            )
+            assertThat(customized.height).isNotEqualTo(default.height)
+        }
+    }
+
+    @Test
+    fun customBandThicknessPercent_classic_matchesExactExpectedHeight() {
+        val result = viewModel.buildExifBorderBitmap(
+            redSource(100, 100),
+            exif,
+            ExifFrameStyle.CLASSIC,
+            bandThicknessPercent = 0.20f
+        )
+
+        assertThat(result.height).isEqualTo(120) // 100 + (100*0.20).toInt()
+    }
+
+    @Test
+    fun customBandColorAndSerifCaption_doNotCrash_andKeepSizeUnaffected() {
+        // Màu/font không ảnh hưởng kích thước canvas — chỉ verify không crash + size ổn định
+        // (assert màu pixel không khả thi trên môi trường Robolectric hiện tại, xem comment ở
+        // redSource() phía trên; màu đã verify bằng mắt qua smoke test thật trên thiết bị).
+        ExifFrameStyle.entries.forEach { style ->
+            val default = viewModel.buildExifBorderBitmap(redSource(100, 100), exif, style)
+            listOf(true, false).forEach { serif ->
+                val customized = viewModel.buildExifBorderBitmap(
+                    redSource(100, 100),
+                    exif,
+                    style,
+                    bandColor = Color.rgb(10, 20, 30),
+                    useSerifCaption = serif
+                )
+                assertThat(customized.width).isEqualTo(default.width)
+                assertThat(customized.height).isEqualTo(default.height)
+                assertThat(customized.config).isEqualTo(Bitmap.Config.ARGB_8888)
+            }
+        }
+    }
+
+    @Test
+    fun customBandThicknessPercent_tinySource_stillNeverZeroHeight() {
+        // coerceAtLeast(1) phải giữ đúng kể cả khi override rất nhỏ.
+        val result = viewModel.buildExifBorderBitmap(
+            redSource(2, 2),
+            exif,
+            ExifFrameStyle.MINIMAL,
+            bandThicknessPercent = 0.01f
+        )
+
+        assertThat(result.height).isGreaterThan(2)
+    }
 }

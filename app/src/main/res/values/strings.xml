@@ -138,6 +138,11 @@
     <string name="dialog_save_config_copyright_hint">© Your name</string>
     <string name="dialog_save_config_name_pattern">File name pattern</string>
     <string name="dialog_save_config_name_pattern_hint">e.g. {filename}_wm_{seq} — leave empty for default</string>
+    <string name="exif_customize_label">CUSTOMIZE</string>
+    <string name="exif_customize_reset">Reset</string>
+    <string name="exif_customize_band_color">Band color</string>
+    <string name="exif_customize_band_thickness">Band thickness</string>
+    <string name="exif_customize_serif_caption">Serif caption</string>
     <string name="vip_title">VIP Access</string>
     <string name="vip_status_active">VIP Active</string>
     <string name="vip_status_free">Free mode</string>

@@ -97,4 +97,93 @@ class WaterMarkRepositoryIntegrationTest {
         assertThat(waterMark.enableExif).isTrue()
         assertThat(waterMark.exifFrameStyle).isEqualTo(ExifFrameStyle.POLAROID.ordinal)
     }
+
+    /**
+     * FEAT-14 Custom Frame Builder: 3 override nhẹ (band color/thickness/serif caption) phải mặc
+     * định là `null` (AC "không tuỳ chỉnh gì → hành vi giữ nguyên") và persist qua DataStore thật
+     * theo đúng pattern round-trip của `exifFrameStyle` ở trên.
+     */
+    @Test
+    fun waterMark_emptyDataStore_exifCustomizationDefaultsToNull() = runBlocking {
+        val waterMark = repo.waterMark.first()
+
+        assertThat(waterMark.exifBandColor).isNull()
+        assertThat(waterMark.exifBandThicknessPercent).isNull()
+        assertThat(waterMark.exifUseSerifCaption).isNull()
+    }
+
+    @Test
+    fun updateExifBandColor_thenReadWaterMark_reflectsNewValue_roundTrip() = runBlocking {
+        repo.updateExifBandColor(android.graphics.Color.RED)
+
+        val waterMark = repo.waterMark.first()
+
+        assertThat(waterMark.exifBandColor).isEqualTo(android.graphics.Color.RED)
+    }
+
+    @Test
+    fun updateExifBandColor_withNull_clearsOverride() = runBlocking {
+        repo.updateExifBandColor(android.graphics.Color.RED)
+        repo.updateExifBandColor(null)
+
+        val waterMark = repo.waterMark.first()
+
+        assertThat(waterMark.exifBandColor).isNull()
+    }
+
+    @Test
+    fun updateExifBandThicknessPercent_thenReadWaterMark_reflectsNewValue_roundTrip() = runBlocking {
+        repo.updateExifBandThicknessPercent(0.2f)
+
+        val waterMark = repo.waterMark.first()
+
+        assertThat(waterMark.exifBandThicknessPercent).isEqualTo(0.2f)
+    }
+
+    @Test
+    fun updateExifBandThicknessPercent_outOfRange_getsClampedToSafeBounds() = runBlocking {
+        repo.updateExifBandThicknessPercent(0.99f)
+        assertThat(repo.waterMark.first().exifBandThicknessPercent)
+            .isEqualTo(WaterMarkRepository.MAX_EXIF_BAND_THICKNESS_PERCENT)
+
+        repo.updateExifBandThicknessPercent(0.0f)
+        assertThat(repo.waterMark.first().exifBandThicknessPercent)
+            .isEqualTo(WaterMarkRepository.MIN_EXIF_BAND_THICKNESS_PERCENT)
+    }
+
+    @Test
+    fun updateExifUseSerifCaption_thenReadWaterMark_reflectsNewValue_roundTrip() = runBlocking {
+        repo.updateExifUseSerifCaption(true)
+
+        assertThat(repo.waterMark.first().exifUseSerifCaption).isTrue()
+
+        repo.updateExifUseSerifCaption(false)
+
+        assertThat(repo.waterMark.first().exifUseSerifCaption).isFalse()
+    }
+
+    @Test
+    fun resetExifCustomization_clearsAllThreeOverrides_atOnce() = runBlocking {
+        repo.updateExifBandColor(android.graphics.Color.BLUE)
+        repo.updateExifBandThicknessPercent(0.25f)
+        repo.updateExifUseSerifCaption(true)
+
+        repo.resetExifCustomization()
+
+        val waterMark = repo.waterMark.first()
+        assertThat(waterMark.exifBandColor).isNull()
+        assertThat(waterMark.exifBandThicknessPercent).isNull()
+        assertThat(waterMark.exifUseSerifCaption).isNull()
+    }
+
+    @Test
+    fun exifCustomization_persistsIndependently_fromFrameStyleSelection() = runBlocking {
+        repo.updateExifBandColor(android.graphics.Color.GREEN)
+        repo.updateExifFrameStyle(ExifFrameStyle.MINIMAL)
+
+        val waterMark = repo.waterMark.first()
+
+        assertThat(waterMark.exifBandColor).isEqualTo(android.graphics.Color.GREEN)
+        assertThat(waterMark.exifFrameStyle).isEqualTo(ExifFrameStyle.MINIMAL.ordinal)
+    }
 }
