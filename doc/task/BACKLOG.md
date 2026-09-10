@@ -93,6 +93,12 @@
 | [IDEA-04](todo/IDEA-04-cloud-sync-brand-kit.md) | XL | Cloud sync Brand Kit đa thiết bị |
 | [IDEA-05](todo/IDEA-05-cho-template-cong-dong.md) | XL | Chợ template cộng đồng (network effect) |
 
+## ⏸️ Deferred theo quyết định user (2026-09-10)
+
+- **BUG-14** (VIP secret hardcode), **BUG-15** (AdMob rewarded test ID), **ENH-17** (VIP key device-bound) — user quyết định: **bỏ qua, dời sang tháng sau** ("các tính năng về AD và IAP sẽ làm ở tháng sau"). Không đưa vào sprint hiện tại, không chọn hướng NDK/JNI hay server-side lúc này — quyết định BUG-14 để ngỏ tới khi quay lại nhóm AD/IAP.
+- **UNIQUE_IDEAS**: user chọn không đầu tư idea nào ngay ("nên làm đủ backlog trước, các tính năng mới để sau") — giữ nguyên 10 IDEA để tham khảo định hướng, không triển khai.
+- **Sprint đang chạy**: FEAT-02, FEAT-09, FEAT-14 (nhóm FEAT effort S/XS) — loop tự động qua `PROMPT_TEMPLATE.md`, kick off 2026-09-10.
+
 ## Ghi chú re-audit 2026-09-10 (khác biệt so với đợt sinh backlog gốc)
 
 - **FEAT-01, ENH-05** đã triển khai xong ngoài luồng backlog — move sang `done/`, không phải làm lại.
