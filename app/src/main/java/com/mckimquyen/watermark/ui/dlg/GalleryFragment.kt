@@ -203,13 +203,13 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         }
 
         // ── Observe image list ───────────────────────────────────────────────
-        shareViewModel.galleryPickedImageList.observe(this) {
+        shareViewModel.galleryPickedImageList.observe(viewLifecycleOwner) {
             Log.d(LOG_TAG, "GalleryFragment galleryPickedImageList updated — count=${it?.size ?: 0}")
             galleryAdapter.submitList(it)
         }
 
         // ── Observe selection count → animate FAB + hint pill ────────────────
-        galleryAdapter.selectedCount.observe(this) { count ->
+        galleryAdapter.selectedCount.observe(viewLifecycleOwner) { count ->
             Log.d(LOG_TAG, "GalleryFragment selectedCount changed -> $count")
             if (count > 0) {
                 val label = if (count == 1) "Select 1 photo" else "Select $count photos"
