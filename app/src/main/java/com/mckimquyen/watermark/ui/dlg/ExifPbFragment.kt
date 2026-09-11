@@ -24,14 +24,17 @@ import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
  */
 class ExifPbFragment : BaseBindBSDFragment<DlgExifBorderBinding>() {
 
-    private val styleButtons by lazy {
-        mapOf(
+    // BUG-18: KHÔNG dùng `by lazy` — nó cache vĩnh viễn theo instance Fragment, trong khi
+    // BottomSheetDialogFragment có thể tái tạo View (onCreateView gọi lại) nhiều lần trong cùng
+    // 1 Fragment instance (xoay màn hình, dialog bị hệ thống tái tạo). Property getter thuần
+    // luôn đọc từ `binding` hiện tại — không giữ tham chiếu tới View đã bị gỡ khỏi hierarchy.
+    private val styleButtons
+        get() = mapOf(
             ExifFrameStyle.CLASSIC to binding.btnStyleClassic,
             ExifFrameStyle.POLAROID to binding.btnStylePolaroid,
             ExifFrameStyle.FILM_STRIP to binding.btnStyleFilmStrip,
             ExifFrameStyle.MINIMAL to binding.btnStyleMinimal
         )
-    }
 
     override fun bindView(
         layoutInflater: LayoutInflater,
