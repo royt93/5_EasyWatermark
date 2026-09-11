@@ -190,6 +190,7 @@ class MainActivity : BaseActivity() {
     private var vipBadge: BadgeDrawable? = null
 
     private var bgTransformAnimator: ObjectAnimator? = null
+    private var showInterstitialRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -347,6 +348,8 @@ class MainActivity : BaseActivity() {
     override fun onDestroy() {
         bgTransformAnimator?.cancel()
         bgTransformAnimator = null
+        showInterstitialRunnable?.let { launchView.removeCallbacks(it) }
+        showInterstitialRunnable = null
         super.onDestroy()
     }
 
@@ -471,9 +474,11 @@ class MainActivity : BaseActivity() {
             } else {
                 toast(it.message)
                 if (it.code == MainViewModel.TYPE_JOB_FINISH) {
-                    launchView.postDelayed({
+                    val runnable = Runnable {
                         com.roy.sdkadbmob.AdManager.showInterstitial(this@MainActivity) {}
-                    }, 800)
+                    }
+                    showInterstitialRunnable = runnable
+                    launchView.postDelayed(runnable, INTERSTITIAL_DELAY_MS)
                 }
             }
         }
@@ -1031,5 +1036,6 @@ class MainActivity : BaseActivity() {
         private const val REQ_CODE_PICK_IMAGE: Int = 42
         const val REQ_CODE_REQ_WRITE_PERMISSION: Int = 43
         const val REQ_PICK_ICON: Int = 44
+        private const val INTERSTITIAL_DELAY_MS: Long = 800
     }
 }
