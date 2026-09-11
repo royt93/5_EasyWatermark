@@ -1026,6 +1026,7 @@ class MainViewModel @Inject constructor(
     ) {
         val list = imageList.value?.first?.toMutableList() ?: return
         val removePos = list.indexOf(imageInfo)
+        if (removePos < 0) return
         list.removeAt(removePos)
         val selectedPos =
             if (removePos < curSelectedPos || removePos >= (
