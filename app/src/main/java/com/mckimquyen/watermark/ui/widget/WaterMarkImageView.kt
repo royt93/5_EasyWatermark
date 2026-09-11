@@ -778,15 +778,20 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
             val showDebugRect = config.enableBounds
             var maxLineWidth = 0
             val tileMode = imageInfo.obtainTileMode()
-            // calculate the max width of all lines
+            // calculate the max width of all lines — dùng offset tuyến tính thực tế (không phải
+            // indexOf, vốn luôn trả vị trí lần xuất hiện ĐẦU TIÊN nên sai lệch khi có dòng trùng
+            // nội dung hoặc dòng rỗng).
+            var lineCursor = 0
             config.text.split("\n").forEach {
-                val startIndex = config.text.indexOf(it).coerceAtLeast(0)
+                val startIndex = lineCursor
+                val endIndex = (startIndex + it.length).coerceAtMost(config.text.length)
                 val lineWidth = textPaint.measureText(
                     /* text = */ config.text,
                     /* start = */ startIndex,
-                    /* end = */ (startIndex + it.length).coerceAtMost(config.text.length)
+                    /* end = */ endIndex
                 ).toInt()
                 maxLineWidth = max(maxLineWidth, lineWidth)
+                lineCursor = endIndex + 1 // +1 cho ký tự '\n' vừa tiêu thụ
             }
 
             val staticLayout =
@@ -817,8 +822,8 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
             val fixWidth = textWidth * cos(radians) + textHeight * sin(radians)
             val fixHeight = textWidth * sin(radians) + textHeight * cos(radians)
 
-            val finalWidth = adjustHorizontalGap(config, fixWidth.toInt())
-            val finalHeight = adjustVerticalGap(config, fixHeight.toInt())
+            val finalWidth = adjustHorizontalGap(config, fixWidth.toInt()).coerceAtLeast(1)
+            val finalHeight = adjustVerticalGap(config, fixHeight.toInt()).coerceAtLeast(1)
             val bitmap = Bitmap.createBitmap(finalWidth, finalHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             if (showDebugRect) {
@@ -840,7 +845,7 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
             canvas.withSave {
                 this.translate(
                     ((finalWidth) / 2).toFloat(),
-                    ((finalHeight - staticLayout.getLineBottom(0) - staticLayout.getLineTop(0)) / 2).toFloat()
+                    ((finalHeight - staticLayout.height) / 2).toFloat()
                 )
                 staticLayout.draw(canvas)
             }

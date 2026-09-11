@@ -30,3 +30,8 @@ verified: true
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-07`, file ticket = `todo/BUG-07-text-shader-indexof-va-kich-thuoc-am.md`.
+
+## Kết quả kiểm chứng (2026-09-11)
+- **Điểm audit tự chấm: 9.5/10.** Thay `indexOf` bằng cộng dồn offset tuyến tính (`lineCursor`); thêm `.coerceAtLeast(1)` cho `finalWidth`/`finalHeight`; dùng `staticLayout.height` thay vì `getLineBottom(0) - getLineTop(0)` cho translate dọc. Không magic number mới, không force-unwrap mới, không leak.
+- **Test:** `app/src/test/java/com/mckimquyen/watermark/ui/widget/WaterMarkImageViewTextShaderRoboTest.kt` (4 test, Robolectric) — gap âm lớn không crash + kích thước ≥1, text nhiều dòng trùng lặp/dòng rỗng không crash, chiều cao tăng đúng theo số dòng (chứng minh dùng `staticLayout.height`), text blank trả null. `./gradlew testAppReleaseDebugUnitTest` xanh toàn bộ (119 test, 0 failure).
+- **Smoke test (2026-09-11, TECNO KJ7 `115333744A005844` — device khoá tường minh cho phần còn lại session, BG6 không cắm lại được):** PASS. Nhập watermark text dài nhiều dòng có nội dung TRÙNG LẶP (test đúng kịch bản `indexOf` bug) qua bàn phím thật — preview tile render đúng, không crash, không lệch khung. Xác nhận bằng mắt: text nhiều dòng căn giữa hợp lý theo chiều dọc trong tile (AC #3). Logcat không có `FATAL EXCEPTION`/`IllegalArgumentException` trong suốt phiên. **Đạt Definition of Done: điểm 9.5/10 > 9, test đủ (4 unit test xanh), smoke test pass.**
