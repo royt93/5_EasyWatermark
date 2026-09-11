@@ -6,7 +6,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.ACTION_SEND
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -71,6 +70,7 @@ import com.mckimquyen.watermark.ui.widget.LaunchView
 import com.mckimquyen.watermark.ui.widget.onItemClick
 import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.PickImageContract
+import com.mckimquyen.watermark.utils.ShareIntentResolver
 import com.mckimquyen.watermark.utils.VibrateHelper
 import com.mckimquyen.watermark.utils.ktx.bgColor
 import com.mckimquyen.watermark.utils.ktx.colorPrimary
@@ -311,14 +311,22 @@ class MainActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         this.intent = intent
+        handleShareIntent(intent)
     }
 
     override fun onStart() {
         super.onStart()
-        // Accepting shared images from other apps
-        if (intent?.action == ACTION_SEND && intent?.data != null) {
-            dealWithImage(listOf(intent?.data!!))
-        }
+        // Accepting shared images from other apps — xử lý cả trường hợp launch nguội
+        // (onCreate/onStart với intent ban đầu, không qua onNewIntent).
+        handleShareIntent(intent)
+    }
+
+    private fun handleShareIntent(intent: Intent?) {
+        val uri = ShareIntentResolver.resolveSharedImageUri(intent) ?: return
+        dealWithImage(listOf(uri))
+        // Tiêu thụ intent để onStart lần sau (background rồi mở lại app bình thường)
+        // không re-import lại ảnh share cũ.
+        intent?.action = null
     }
 
     override fun onResume() {

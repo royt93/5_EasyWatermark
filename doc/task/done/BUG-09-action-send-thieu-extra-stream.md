@@ -44,3 +44,12 @@ override fun onStart() {
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-09`, file ticket = `todo/BUG-09-action-send-thieu-extra-stream.md`.
+
+## Kết quả kiểm chứng (2026-09-11)
+- **Điểm audit tự chấm: 10/10.** Tách `ShareIntentResolver.resolveSharedImageUri()` (pure, testable) đọc cả `EXTRA_STREAM` lẫn `data`; `handleShareIntent()` dùng chung cho cả `onNewIntent` (xử lý ngay khi app đang foreground) và `onStart` (launch nguội); tiêu thụ intent (`intent.action = null`) sau khi xử lý để tránh re-import khi background/mở lại.
+- **Test:** `app/src/test/java/com/mckimquyen/watermark/utils/ShareIntentResolverTest.kt` (6 test, Robolectric) — cả 3 case AC: `EXTRA_STREAM` only, `data` only, `data` ưu tiên hơn `EXTRA_STREAM`, không có URI, action khác `ACTION_SEND`, intent null. Toàn bộ xanh.
+- **Smoke test (2026-09-11, TECNO KJ7 `115333744A005844`):** PASS cả 3 kịch bản, qua ACTION_SEND thật (`am start -a android.intent.action.SEND --eu android.intent.extra.STREAM <mediastore-uri> --grant-read-uri-permission`, ảnh thật từ MediaStore trên máy):
+  1. App đóng (force-stop) → share ảnh → editor mở đúng ảnh vừa share.
+  2. App đang mở (foreground) → share ảnh khác → `onNewIntent` xử lý ngay, editor cập nhật ảnh mới ngay lập tức, không cần đợi `onStart`.
+  3. Home → mở lại app bình thường (không qua share) → ảnh KHÔNG bị re-import lại (giữ nguyên ảnh hiện tại), xác nhận tiêu thụ intent hoạt động đúng.
+  Không crash trong suốt 3 kịch bản. **Đạt Definition of Done: điểm 10/10, test đủ (6 unit test xanh), smoke test pass đầy đủ 3/3 AC.**
