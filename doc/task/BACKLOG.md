@@ -11,12 +11,12 @@
 - `sources`: agent nào tìm ra/đồng thuận — độ đồng thuận cao = độ tin cậy cao.
 - **Prompt loop:** mỗi ticket trong `todo/` có section "## Prompt loop" trỏ tới [PROMPT_TEMPLATE.md](PROMPT_TEMPLATE.md) — Definition of Done dùng chung (audit >9/10 + unit/widget/integration test đủ mọi case + smoke test thật trên device đã khoá → mới được move `done/` + push).
 
-## BUGS_TO_FIX (15 todo + 6 done) — ưu tiên P0 trước
+## BUGS_TO_FIX (10 todo + 11 done) — ưu tiên P0 trước
 
 | ID | Priority | Effort | Tiêu đề |
 |---|---|---|---|
-| [BUG-14](todo/BUG-14-vip-secret-hardcode-trong-apk.md) | P0 | M | VIP secret hardcode base64, lặp 3 chỗ + 1 secret thứ 2 chưa từng ticket hoá (mở rộng 2026-09-10) |
-| [BUG-15](todo/BUG-15-admob-rewarded-release-dung-test-id.md) | P0 | XS | `ADMOB_REWARDED_ID` build release vẫn dùng ID test — mất doanh thu, vi phạm chính sách AdMob |
+| [BUG-14](todo/BUG-14-vip-secret-hardcode-trong-apk.md) | P0 | M | VIP secret hardcode base64, lặp 3 chỗ + 1 secret thứ 2 chưa từng ticket hoá (mở rộng 2026-09-10) — **deferred, xem ghi chú cuối file** |
+| [BUG-15](todo/BUG-15-admob-rewarded-release-dung-test-id.md) | P0 | XS | `ADMOB_REWARDED_ID` build release vẫn dùng ID test — mất doanh thu, vi phạm chính sách AdMob — **deferred, xem ghi chú cuối file** |
 | [BUG-07](todo/BUG-07-text-shader-indexof-va-kich-thuoc-am.md) | P1 | S | Text shader: `indexOf` sai dòng trùng lặp + kích thước bitmap có thể ≤0 |
 | [BUG-08](todo/BUG-08-interstitial-postdelayed-khong-huy.md) | P1 | XS | `postDelayed` hiện interstitial không huỷ khi thoát Activity |
 | [BUG-09](todo/BUG-09-action-send-thieu-extra-stream.md) | P1 | S | Nhận ảnh share (`ACTION_SEND`) thiếu `EXTRA_STREAM`, lặp/rơi ảnh |
@@ -25,13 +25,8 @@
 | [BUG-18](todo/BUG-18-exifpbfragment-lazy-button-leak.md) | P1 | S | `styleButtons by lazy` trong `ExifPbFragment` giữ view cũ qua tái tạo dialog (mới 2026-09-10) |
 | [BUG-19](todo/BUG-19-mediastore-ghi-that-bai-khong-guard.md) | P1 | M | Nhánh ghi MediaStore không guard `openFileDescriptor`/`compress` thất bại (mới 2026-09-10) |
 | [BUG-21](todo/BUG-21-generateimage-early-return-khong-recycle.md) | P1 | M | `generateImage()` còn early-return không recycle bitmap ở nhánh lỗi (bổ sung sau BUG-05, mới 2026-09-10) |
-| [BUG-11](todo/BUG-11-compressimg-khong-guard-rong-leak-file-tam.md) | P2 | XS | `compressImg` không guard danh sách rỗng + leak file tạm |
-| [BUG-13](todo/BUG-13-qrcode-sinh-dong-bo-main-thread.md) | P2 | XS | Sinh QR đồng bộ trên Main thread mỗi ký tự gõ |
-| [BUG-16](todo/BUG-16-edittextcontent-hien-chuoi-null.md) | P2 | XS | `EditTextContentFragment` hiện chuỗi `"null"` literal khi `waterMark` chưa emit (mới 2026-09-10) |
-| [BUG-17](todo/BUG-17-filmstrip-holegap-zero-treo-oom.md) | P2 | XS | `buildFilmStripExifBorder` có thể treo/OOM khi ảnh nguồn cực nhỏ (mới 2026-09-10) |
-| [BUG-20](todo/BUG-20-edittextcontent-collect-fragment-lifecycle.md) | P2 | XS | `EditTextContentFragment` collect Flow theo Fragment lifecycle thay vì view lifecycle (mới 2026-09-10) |
 
-**Đã DONE** (xem `doc/task/done/`): BUG-01 (inSampleSize/rotation), BUG-02 (BitmapCache NPE), BUG-03 (batch export báo thành công giả), BUG-04 (contentResolver insert force-unwrap), BUG-05 (OOM batch export — *lưu ý: BUG-21 mới phát hiện phần còn sót*), BUG-06 (icon cache race leak).
+**Đã DONE** (xem `doc/task/done/`): BUG-01 (inSampleSize/rotation), BUG-02 (BitmapCache NPE), BUG-03 (batch export báo thành công giả), BUG-04 (contentResolver insert force-unwrap), BUG-05 (OOM batch export — *lưu ý: BUG-21 mới phát hiện phần còn sót*), BUG-06 (icon cache race leak), BUG-11 (compressImg guard rỗng + leak file tạm), BUG-13 (QR debounce + off Main thread), BUG-16 (literal "null" trong Edit watermark), BUG-17 (FilmStrip coerceAtLeast — hoá ra đã fix kèm FEAT-14, chỉ thiếu test+ticket), BUG-20 (EditTextContentFragment collect theo viewLifecycleOwner) — **sprint P2 2026-09-11, xem `## Sprint 2026-09-11` cuối file**.
 
 ## ENHANCEMENTS (18 todo + 2 done) — cải tiến tính năng có sẵn
 
@@ -97,7 +92,17 @@
 
 - **BUG-14** (VIP secret hardcode), **BUG-15** (AdMob rewarded test ID), **ENH-17** (VIP key device-bound) — user quyết định: **bỏ qua, dời sang tháng sau** ("các tính năng về AD và IAP sẽ làm ở tháng sau"). Không đưa vào sprint hiện tại, không chọn hướng NDK/JNI hay server-side lúc này — quyết định BUG-14 để ngỏ tới khi quay lại nhóm AD/IAP.
 - **UNIQUE_IDEAS**: user chọn không đầu tư idea nào ngay ("nên làm đủ backlog trước, các tính năng mới để sau") — giữ nguyên 10 IDEA để tham khảo định hướng, không triển khai.
-- **Sprint đang chạy**: FEAT-02, FEAT-09, FEAT-14 (nhóm FEAT effort S/XS) — loop tự động qua `PROMPT_TEMPLATE.md`, kick off 2026-09-10.
+- **Sprint đang chạy**: FEAT-02, FEAT-09, FEAT-14 (nhóm FEAT effort S/XS) — loop tự động qua `PROMPT_TEMPLATE.md`, kick off 2026-09-10. **Đã DONE** (xem `doc/task/done/`).
+
+## Sprint 2026-09-11 — P2 bug sprint (BUG-11/13/16/17/20)
+
+Toàn bộ 5 ticket P2 còn lại trong BUGS_TO_FIX đã hoàn thành theo `PROMPT_TEMPLATE.md` (audit >9/10, test đủ, smoke test thật) — chi tiết từng ticket xem "Kết quả kiểm chứng" trong file tương ứng ở `doc/task/done/`.
+
+- **BUG-17** hoá ra code đã được fix sẵn (kèm theo FEAT-14 hôm 2026-09-10, sau khi ticket này được sinh) — chỉ còn thiếu test hồi quy + đóng ticket.
+- **BUG-13**: có widget test thật (`QrCodeBottomSheetFragmentRoboTest`, dùng lại kỹ thuật `add()` fragment với `setShowsDialog(false)` từ `GalleryFragmentLifecycleRoboTest`/BUG-10) chứng minh cả debounce lẫn huỷ job cũ khi gõ liên tục. Bài học: `shadowOf(Looper).idle()` trần chạy hết cả task lên lịch tương lai — phải dùng `idleFor(duration)` mới test đúng debounce.
+- **Bổ sung sau audit lần 2 (yêu cầu user)**: thêm `MainViewModelCompressImgIntegrationTest` (`app/src/androidTest`, 3 case, IO thật — ảnh JPEG thật + `Compressor` thật) cho BUG-11, chạy PASS trên Samsung SM_A115F qua `ANDROID_SERIAL=R9JN61LDLFJ ./gradlew connectedAppReleaseDebugAndroidTest` (24/24 test instrumented PASS, không riêng gì test mới).
+- **Phát hiện mới, chưa ticket hoá**: dialog `SaveImageBSDialogFragment` (Export to the album) dùng `LinearLayout` gốc không bọc `ScrollView` — trên màn hình nhỏ (Samsung SM_A115F, 720×1560, có nav bar), nút "Export to the album" bị tràn ngoài viewport, không bấm được bằng thao tác chạm thường (phải tăng chiều cao ảo màn hình qua `adb shell wm size` mới bấm tới). Cần 1 ticket riêng (ENH, ưu tiên P1 vì chặn hẳn luồng export trên máy màn nhỏ) — chưa tạo file ticket, chờ xác nhận từ user ở sprint kế tiếp.
+- **Device smoke test đổi giữa chừng**: bắt đầu trên TECNO_KJ7 (khoá theo R3 lúc chỉ có 1 device), gặp App Open Ad test che toàn màn hình ngay sau splash → dừng theo R4, chờ user xác nhận. User yêu cầu tường minh đổi sang Samsung SM_A115F (R9JN61LDLFJ) — mọi smoke test từ đó về sau chạy trên Samsung.
 
 ## Ghi chú re-audit 2026-09-10 (khác biệt so với đợt sinh backlog gốc)
 

@@ -1109,20 +1109,27 @@ class MainViewModel @Inject constructor(
     fun compressImg(activity: Activity) {
         val appContext = activity.applicationContext
         compressedJob = viewModelScope.launch(Dispatchers.IO) {
-            waterMark.value?.let {
-                compressedResult.postValue(Result.success(null, code = TYPE_COMPRESSING))
-                val tmpFile = File.createTempFile("easy_water_mark_", "_compressed")
-                appContext.contentResolver.openInputStream(waterMarkRepo.imageInfoList.first().uri)
+            val firstImage = waterMarkRepo.imageInfoList.firstOrNull()
+            if (waterMark.value == null || firstImage == null) {
+                compressedResult.postValue(
+                    Result.failure(
+                        null,
+                        code = TYPE_COMPRESS_ERROR,
+                        message = "Config value is null."
+                    )
+                )
+                return@launch
+            }
+            compressedResult.postValue(Result.success(null, code = TYPE_COMPRESSING))
+            val tmpFile = File.createTempFile("easy_water_mark_", "_compressed")
+            try {
+                appContext.contentResolver.openInputStream(firstImage.uri)
                     .use { input ->
                         tmpFile.outputStream().use { output ->
                             input?.copyTo(output)
                         }
                     }
                 val compressedFile = Compressor.compress(appContext, tmpFile)
-                // clear tmp files
-                if (tmpFile.exists()) {
-                    tmpFile.delete()
-                }
                 try {
                     val compressedFileUri = FileProvider.getUriForFile(
                         appContext,
@@ -1140,14 +1147,10 @@ class MainViewModel @Inject constructor(
                         )
                     )
                 }
-            } ?: kotlin.run {
-                compressedResult.postValue(
-                    Result.failure(
-                        null,
-                        code = TYPE_COMPRESS_ERROR,
-                        message = "Config value is null."
-                    )
-                )
+            } finally {
+                if (tmpFile.exists()) {
+                    tmpFile.delete()
+                }
             }
         }
     }

@@ -104,6 +104,18 @@ class MainViewModelExifBorderRoboTest {
         assertThat(result.height).isGreaterThan(4)
     }
 
+    @Test(timeout = 5000)
+    fun filmStrip_tinySource_neverHangs_andHasValidBitmapSize() {
+        // BUG-17: bandHeight/holeGap = 0 từng có thể khiến holeCount = Int.MAX_VALUE (treo/OOM).
+        // coerceAtLeast(1)/(2) đã chặn (xem buildFilmStripExifBorder) — timeout ở đây là guard
+        // hồi quy nếu ai đó gỡ coerceAtLeast trong tương lai.
+        val result = viewModel.buildExifBorderBitmap(redSource(5, 5), exif, ExifFrameStyle.FILM_STRIP)
+
+        assertThat(result.width).isEqualTo(5)
+        assertThat(result.height).isGreaterThan(5)
+        assertThat(result.config).isEqualTo(Bitmap.Config.ARGB_8888)
+    }
+
     @Test
     fun allStyles_produceDistinctHeightExpansion_forSameSource() {
         val heights = ExifFrameStyle.entries.associateWith {

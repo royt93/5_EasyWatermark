@@ -14,6 +14,7 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.mckimquyen.watermark.LOG_TAG
@@ -21,6 +22,11 @@ import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.FQrCodeBottomSheetBinding
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
 import com.mckimquyen.watermark.utils.QrCodeGenerator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
@@ -30,6 +36,7 @@ import java.io.FileOutputStream
 class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>() {
 
     private var previewBitmap: Bitmap? = null
+    private var refreshJob: Job? = null
 
     override fun bindView(
         layoutInflater: LayoutInflater,
@@ -71,10 +78,16 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
     }
 
     private fun refreshPreview(content: String) {
-        val bitmap = QrCodeGenerator.generate(content, size = QrCodeGenerator.DEFAULT_SIZE)
-        previewBitmap = bitmap
-        binding.ivPreview.setImageBitmap(bitmap)
-        Log.d(LOG_TAG, "[QR] refreshPreview: content.len=${content.length} bitmap=${bitmap != null}")
+        refreshJob?.cancel()
+        refreshJob = viewLifecycleOwner.lifecycleScope.launch {
+            delay(QR_REFRESH_DEBOUNCE_MS)
+            val bitmap = withContext(Dispatchers.Default) {
+                QrCodeGenerator.generate(content, size = QrCodeGenerator.DEFAULT_SIZE)
+            }
+            previewBitmap = bitmap
+            binding.ivPreview.setImageBitmap(bitmap)
+            Log.d(LOG_TAG, "[QR] refreshPreview: content.len=${content.length} bitmap=${bitmap != null}")
+        }
     }
 
     private fun saveBitmapToCache(bitmap: Bitmap): Uri? {
@@ -112,6 +125,7 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
 
     companion object {
         const val TAG = "QrCodeBottomSheetFragment"
+        private const val QR_REFRESH_DEBOUNCE_MS = 250L
 
         fun safetyShow(manager: FragmentManager) {
             try {

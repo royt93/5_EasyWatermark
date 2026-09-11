@@ -31,7 +31,7 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding?.etWaterText?.apply {
-            setText(shareViewModel.waterMark.value?.text.toString())
+            setText(initialText(shareViewModel.waterMark.value?.text))
             addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
                 }
@@ -76,9 +76,9 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
             }
         }
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             shareViewModel.uiStateFlow.flowWithLifecycle(
-                this@EditTextContentFragment.lifecycle,
+                viewLifecycleOwner.lifecycle,
                 Lifecycle.State.STARTED
             )
                 .collect {
@@ -113,6 +113,9 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
 
     companion object {
         const val TAG = "TextContentFragment"
+
+        /** BUG-16: `null?.text.toString()` cho ra literal "null"; đây giữ ô nhập trống khi chưa có config. */
+        internal fun initialText(text: String?): String = text.orEmpty()
 
         fun replaceShow(fa: FragmentActivity, containerId: Int) {
             val f = fa.supportFragmentManager.findFragmentByTag(TAG)
