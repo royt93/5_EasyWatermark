@@ -11,7 +11,7 @@
 - `sources`: agent nào tìm ra/đồng thuận — độ đồng thuận cao = độ tin cậy cao.
 - **Prompt loop:** mỗi ticket trong `todo/` có section "## Prompt loop" trỏ tới [PROMPT_TEMPLATE.md](PROMPT_TEMPLATE.md) — Definition of Done dùng chung (audit >9/10 + unit/widget/integration test đủ mọi case + smoke test thật trên device đã khoá → mới được move `done/` + push).
 
-## BUGS_TO_FIX (10 todo + 11 done) — ưu tiên P0 trước
+## BUGS_TO_FIX (10 todo + 12 done, +1 ngoài kế hoạch gốc: BUG-22) — ưu tiên P0 trước
 
 | ID | Priority | Effort | Tiêu đề |
 |---|---|---|---|
@@ -26,7 +26,7 @@
 | [BUG-19](todo/BUG-19-mediastore-ghi-that-bai-khong-guard.md) | P1 | M | Nhánh ghi MediaStore không guard `openFileDescriptor`/`compress` thất bại (mới 2026-09-10) |
 | [BUG-21](todo/BUG-21-generateimage-early-return-khong-recycle.md) | P1 | M | `generateImage()` còn early-return không recycle bitmap ở nhánh lỗi (bổ sung sau BUG-05, mới 2026-09-10) |
 
-**Đã DONE** (xem `doc/task/done/`): BUG-01 (inSampleSize/rotation), BUG-02 (BitmapCache NPE), BUG-03 (batch export báo thành công giả), BUG-04 (contentResolver insert force-unwrap), BUG-05 (OOM batch export — *lưu ý: BUG-21 mới phát hiện phần còn sót*), BUG-06 (icon cache race leak), BUG-11 (compressImg guard rỗng + leak file tạm), BUG-13 (QR debounce + off Main thread), BUG-16 (literal "null" trong Edit watermark), BUG-17 (FilmStrip coerceAtLeast — hoá ra đã fix kèm FEAT-14, chỉ thiếu test+ticket), BUG-20 (EditTextContentFragment collect theo viewLifecycleOwner) — **sprint P2 2026-09-11, xem `## Sprint 2026-09-11` cuối file**.
+**Đã DONE** (xem `doc/task/done/`): BUG-01 (inSampleSize/rotation), BUG-02 (BitmapCache NPE), BUG-03 (batch export báo thành công giả), BUG-04 (contentResolver insert force-unwrap), BUG-05 (OOM batch export — *lưu ý: BUG-21 mới phát hiện phần còn sót*), BUG-06 (icon cache race leak), BUG-11 (compressImg guard rỗng + leak file tạm), BUG-13 (QR debounce + off Main thread), BUG-16 (literal "null" trong Edit watermark), BUG-17 (FilmStrip coerceAtLeast — hoá ra đã fix kèm FEAT-14, chỉ thiếu test+ticket), BUG-20 (EditTextContentFragment collect theo viewLifecycleOwner) — **sprint P2 2026-09-11, xem `## Sprint 2026-09-11` cuối file**. Thêm BUG-22 (SaveImageBSDialogFragment tràn viewport màn hình nhỏ — phát hiện ngoài kế hoạch gốc, fix cùng ngày).
 
 ## ENHANCEMENTS (18 todo + 2 done) — cải tiến tính năng có sẵn
 
@@ -101,7 +101,7 @@ Toàn bộ 5 ticket P2 còn lại trong BUGS_TO_FIX đã hoàn thành theo `PROM
 - **BUG-17** hoá ra code đã được fix sẵn (kèm theo FEAT-14 hôm 2026-09-10, sau khi ticket này được sinh) — chỉ còn thiếu test hồi quy + đóng ticket.
 - **BUG-13**: có widget test thật (`QrCodeBottomSheetFragmentRoboTest`, dùng lại kỹ thuật `add()` fragment với `setShowsDialog(false)` từ `GalleryFragmentLifecycleRoboTest`/BUG-10) chứng minh cả debounce lẫn huỷ job cũ khi gõ liên tục. Bài học: `shadowOf(Looper).idle()` trần chạy hết cả task lên lịch tương lai — phải dùng `idleFor(duration)` mới test đúng debounce.
 - **Bổ sung sau audit lần 2 (yêu cầu user)**: thêm `MainViewModelCompressImgIntegrationTest` (`app/src/androidTest`, 3 case, IO thật — ảnh JPEG thật + `Compressor` thật) cho BUG-11, chạy PASS trên Samsung SM_A115F qua `ANDROID_SERIAL=R9JN61LDLFJ ./gradlew connectedAppReleaseDebugAndroidTest` (24/24 test instrumented PASS, không riêng gì test mới).
-- **Phát hiện mới, chưa ticket hoá**: dialog `SaveImageBSDialogFragment` (Export to the album) dùng `LinearLayout` gốc không bọc `ScrollView` — trên màn hình nhỏ (Samsung SM_A115F, 720×1560, có nav bar), nút "Export to the album" bị tràn ngoài viewport, không bấm được bằng thao tác chạm thường (phải tăng chiều cao ảo màn hình qua `adb shell wm size` mới bấm tới). Cần 1 ticket riêng (ENH, ưu tiên P1 vì chặn hẳn luồng export trên máy màn nhỏ) — chưa tạo file ticket, chờ xác nhận từ user ở sprint kế tiếp.
+- **BUG-22** (phát hiện trong sprint này, fix ngay sau khi user chọn ở sprint kế tiếp cùng ngày 2026-09-11): dialog `SaveImageBSDialogFragment` (Export to the album) dùng `LinearLayout` gốc không bọc `ScrollView` — trên màn hình nhỏ (Samsung SM_A115F, 720×1560, có nav bar), nút "Export to the album" bị tràn ngoài viewport, không bấm được bằng thao tác chạm thường. Fix: bọc `NestedScrollView` (đúng pattern BUG-18) — verify bằng vuốt tay thật trên Samsung, không dùng `wm size` hack. Xem `doc/task/done/BUG-22-save-image-dialog-tran-viewport-man-hinh-nho.md`.
 - **Device smoke test đổi giữa chừng**: bắt đầu trên TECNO_KJ7 (khoá theo R3 lúc chỉ có 1 device), gặp App Open Ad test che toàn màn hình ngay sau splash → dừng theo R4, chờ user xác nhận. User yêu cầu tường minh đổi sang Samsung SM_A115F (R9JN61LDLFJ) — mọi smoke test từ đó về sau chạy trên Samsung.
 
 ## Ghi chú re-audit 2026-09-10 (khác biệt so với đợt sinh backlog gốc)

@@ -11,12 +11,23 @@
     - CTA btn: iOS Blue (#007AFF) + white bold text  ← VIVID, no way to miss
     - Secondary: white text ghost button
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- BUG-22: nội dung (format/resize/name pattern/copyright/quality/export list + 2 nút CTA)
+     có thể cao hơn chiều cao khả dụng trên màn hình nhỏ (đã xác nhận trên Samsung SM_A115F
+     720x1560) — trước đây root là LinearLayout match_parent trực tiếp nên btnSave/btnOpenGallery
+     bị đẩy ra ngoài viewport, không bấm được. Bọc NestedScrollView, đúng pattern đã dùng ở
+     dlg_exif_border.xml (BUG-18) cho cùng họ lỗi. -->
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/llContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true">
+
+<LinearLayout
+    android:id="@+id/llContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:background="@drawable/bg_glass_gradient"
     android:orientation="vertical"
     android:paddingStart="16dp"
@@ -295,3 +306,5 @@
         android:textColor="@color/glass_text_secondary" />
 
 </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>
