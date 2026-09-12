@@ -196,4 +196,10 @@
         <item quantity="one">%1$d selected</item>
         <item quantity="other">%1$d selected</item>
     </plurals>
+
+    <!-- ENH-01: batch export qua WorkManager — notification tiến độ + huỷ. -->
+    <string name="export_notification_channel_name">Batch export</string>
+    <string name="export_notification_title">Exporting watermark images…</string>
+    <string name="export_notification_progress">%1$d/%2$d done</string>
+    <string name="dialog_save_cancel">Cancel</string>
 </resources>

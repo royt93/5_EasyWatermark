@@ -3,22 +3,14 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.ContentResolver
 import android.content.ContentUris
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Shader
-import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.provider.MediaStore
-import android.text.TextPaint
-import android.util.Log
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.lifecycle.LiveData
@@ -28,8 +20,8 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
-import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.AppLog
+import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.Anchor
@@ -37,9 +29,6 @@ import com.mckimquyen.watermark.data.model.ExifFrameStyle
 import com.mckimquyen.watermark.data.model.ExifModel
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
-import com.mckimquyen.watermark.data.model.JobStateResolver
-import com.mckimquyen.watermark.data.model.MediaStoreInsertResolver
-import com.mckimquyen.watermark.data.model.MediaStoreWriteResolver
 import com.mckimquyen.watermark.data.model.Result
 import com.mckimquyen.watermark.data.model.TextPaintStyle
 import com.mckimquyen.watermark.data.model.TextTypeface
@@ -51,13 +40,7 @@ import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
-import com.mckimquyen.watermark.ui.widget.WaterMarkImageView
-import com.mckimquyen.watermark.utils.FileUtils.Companion.outPutFolderName
-import com.mckimquyen.watermark.utils.bitmap.BitmapRecycleGuard
-import com.mckimquyen.watermark.utils.bitmap.calculateInSampleSize
-import com.mckimquyen.watermark.utils.bitmap.decodeBitmapFromUri
-import com.mckimquyen.watermark.utils.bitmap.decodeSampledBitmapFromResource
-import com.mckimquyen.watermark.utils.ktx.applyConfig
+import com.mckimquyen.watermark.export.BatchExportWorker
 import com.mckimquyen.watermark.utils.ktx.formatDate
 import com.mckimquyen.watermark.utils.ktx.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -73,8 +56,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
 import java.util.*
 import javax.inject.Inject
 
@@ -84,7 +65,8 @@ class MainViewModel @Inject constructor(
     private val userRepo: UserConfigRepository,
     private val waterMarkRepo: WaterMarkRepository,
     private val memorySettingRepo: MemorySettingRepo,
-    private val templateRepo: TemplateRepository
+    private val templateRepo: TemplateRepository,
+    private val exportNaming: com.mckimquyen.watermark.export.ExportNaming = com.mckimquyen.watermark.export.ExportNaming()
 ) : ViewModel() {
 
     var nextSelectedPos: Int = 0
@@ -107,8 +89,6 @@ class MainViewModel @Inject constructor(
     val galleryPickedImageList: MutableLiveData<List<Image>> = MutableLiveData()
 
     val selectedImage: LiveData<ImageInfo> = waterMarkRepo.selectedImage.asLiveData()
-
-    private val saveImageUri: MutableLiveData<List<ImageInfo>> = MutableLiveData()
 
     val saveProcess: MutableLiveData<ImageInfo?> = MutableLiveData()
 
@@ -136,8 +116,6 @@ class MainViewModel @Inject constructor(
         get() = userPreferences.value.outputNamePattern
 
     val colorPalette: MutableLiveData<Palette> = MutableLiveData()
-
-    private var matrixValues = FloatArray(9)
 
     private val projection = arrayOf(
         MediaStore.Images.Media._ID,
@@ -187,408 +165,107 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /** WorkInfo observer đang gắn cho lần export hiện tại — gỡ khi work xong để tránh leak. */
+    private var exportWorkObserver: androidx.lifecycle.Observer<androidx.work.WorkInfo?>? = null
+    private var exportWorkLiveData: LiveData<androidx.work.WorkInfo?>? = null
+
+    /**
+     * ENH-01: chạy qua `BatchExportWorker` (WorkManager) thay vì `viewModelScope` — batch sống sót
+     * khi app xuống nền (Doze/OEM background-kill, đã thấy trên chính các máy Samsung/TECNO dùng
+     * để test trong dự án này). `contentResolver`/`imageList` không cần truyền cho Worker nữa
+     * (Worker tự đọc `waterMarkRepo.imageInfoList` + `applicationContext.contentResolver`) — giữ
+     * nguyên tham số hàm để không phải sửa call site (`SaveImageBSDialogFragment`).
+     */
     fun saveImage(
         contentResolver: ContentResolver,
         viewInfo: ViewInfo,
         imageList: List<ImageInfo>
     ) {
-        viewModelScope.launch {
-            if (this@MainViewModel.imageList.value?.first.isNullOrEmpty()) {
-                saveResult.value = Result.failure(data = null, code = TYPE_ERROR_NOT_IMG)
-                return@launch
-            }
-            saveResult.value =
-                Result.success(null, code = TYPE_SAVING)
-            val result = generateList(contentResolver, viewInfo, imageList)
-            if (result.isFailure()) {
-                saveResult.value = Result.failure(data = null, code = TYPE_ERROR_FILE_NOT_FOUND)
-                return@launch
-            }
-            saveImageUri.value = result.data!!
-            saveResult.value = Result.success(code = TYPE_JOB_FINISH, data = result.data)
+        if (this.imageList.value?.first.isNullOrEmpty()) {
+            saveResult.value = Result.failure(data = null, code = TYPE_ERROR_NOT_IMG)
+            return
         }
+        saveResult.value = Result.success(null, code = TYPE_SAVING)
+        BatchExportWorker.enqueue(appContext, viewInfo)
+        observeExportWork()
     }
 
-    private suspend fun generateList(
-        contentResolver: ContentResolver,
-        viewInfo: ViewInfo,
-        infoList: List<ImageInfo>?
-    ): Result<List<ImageInfo>> =
-        withContext(Dispatchers.Default) {
-            if (infoList.isNullOrEmpty()) {
-                return@withContext Result.failure(null, TYPE_ERROR_NOT_IMG)
-            }
-            // ENH-08: imageInfo bất biến — mỗi bước cập nhật jobState/result phải tạo instance
-            // MỚI qua copy() (không mutate object trong infoList), và list trả về phải chứa các
-            // instance MỚI này (không phải infoList gốc) — người gọi (saveImage()) publish list
-            // trả về qua saveImageUri, cần phản ánh đúng jobState/result cuối cùng.
-            val updatedList = infoList.mapIndexed { index, original ->
-                var info = original
-                try {
-                    info = info.copy(jobState = JobState.Ing)
-                    launch(Dispatchers.Main) { saveProcess.value = info }
-                    val generateResult = generateImage(contentResolver, viewInfo, info, index)
-                    // generateImage() có thể trả Result.failure (không throw) khi lỗi I/O/logic —
-                    // JobStateResolver kiểm tra isFailure() thay vì luôn coi là Success (BUG-03).
-                    info = info.copy(result = generateResult, jobState = JobStateResolver.resolve(generateResult))
-                    launch(Dispatchers.Main) { saveProcess.value = info }
-                } catch (fne: FileNotFoundException) {
-                    fne.printStackTrace()
-                    val failResult = Result.failure(null, code = TYPE_ERROR_FILE_NOT_FOUND)
-                    info = info.copy(result = failResult, jobState = JobState.Failure(failResult))
-                    saveProcess.postValue(info)
-                } catch (oom: OutOfMemoryError) {
-                    val failResult = Result.failure(null, code = TYPE_ERROR_SAVE_OOM)
-                    info = info.copy(result = failResult, jobState = JobState.Failure(failResult))
-                    saveProcess.postValue(info)
-                } catch (e: Exception) {
-                    // Exception ngoài 2 loại trên (vd SecurityException khi mất quyền MediaStore
-                    // giữa batch) trước đây không có handler, làm crash cả batch — chỉ đánh dấu
-                    // ảnh này lỗi và tiếp tục ảnh kế tiếp.
-                    e.printStackTrace()
-                    val failResult = Result.failure(null, code = TYPE_ERROR_SAVE_UNKNOWN, message = e.message)
-                    info = info.copy(result = failResult, jobState = JobState.Failure(failResult))
-                    saveProcess.postValue(info)
-                }
-                Log.i("generateList", "${info.uri} : ${info.result}")
-                info
-            }
-            // reset process state
-            saveProcess.postValue(null)
-            return@withContext Result.success(updatedList)
-        }
-
-    private suspend fun generateImage(
-        contentResolver: ContentResolver,
-        viewInfo: ViewInfo,
-        originalImageInfo: ImageInfo,
-        index: Int
-    ): Result<Uri> =
-        withContext(Dispatchers.IO) {
-            // ENH-08: imageInfo bất biến (mọi field val) — width/height/inSample/scaleX/scaleY/
-            // exifModel tính ra trong lúc export chỉ dùng cục bộ trong hàm này (không caller nào
-            // đọc lại sau khi hàm return), nên reassign biến local qua copy() thay vì mutate
-            // instance được truyền vào (tránh side-effect ngoài ý muốn lên object caller đang giữ).
-            var imageInfo = originalImageInfo
-            // ENH-14: downsample ngay lúc decode khi user đã chọn resize output (maxOutputLongEdge
-            // != 0) — giảm peak memory khi vẽ watermark trên ảnh 12-48MP không cần thiết phải ở
-            // full-res nếu output cuối cùng sẽ bị resize nhỏ lại. "Original" (0) giữ hành vi cũ.
-            val rect = decodeBitmapFromUri(appContext, contentResolver, imageInfo.uri, maxOutputLongEdge)
-            if (rect.isFailure()) {
-                return@withContext Result.extendMsg(rect)
-            }
-            val mutableBitmap = rect.data?.bitmap?.copy(Bitmap.Config.ARGB_8888, true)
-                ?: return@withContext Result.failure(
-                    data = null,
-                    code = "-1",
-                    message = "Copy bitmap from uri failed."
-                )
-            // rect.data.bitmap không cache/chia sẻ nơi khác (decodeBitmapFromUri không qua
-            // BitmapCache) — đã copy xong sang mutableBitmap nên recycle ngay, tránh giữ 2 bitmap
-            // full-res cùng lúc khi xử lý batch nhiều ảnh (BUG-05).
-            rect.data?.bitmap?.let { original ->
-                if (original !== mutableBitmap && !original.isRecycled) original.recycle()
-            }
-
-            // BUG-21: theo dõi bitmap đang "sở hữu" (chưa recycle) — mọi early-return lỗi bên
-            // dưới (config/icon/MediaStore) đều recycle qua finally, không chỉ nhánh thành công
-            // (nhánh thành công tự gọi release() nên finally là no-op). Xem [BitmapRecycleGuard].
-            val bitmapGuard = BitmapRecycleGuard(mutableBitmap)
-            try {
-                val inSample = calculateInSampleSize(
-                    width = mutableBitmap.width,
-                    height = mutableBitmap.height,
-                    reqWidth = WaterMarkImageView.calculateDrawLimitWidth(viewInfo.width, viewInfo.paddingLeft),
-                    reqHeight = WaterMarkImageView.calculateDrawLimitHeight(viewInfo.height, viewInfo.paddingRight)
-                )
-                imageInfo = imageInfo.copy(
-                    width = mutableBitmap.width,
-                    height = mutableBitmap.height,
-                    exifModel = rect.data?.exifModel
-                )
-                val tmpConfig = waterMark.value ?: return@withContext Result.failure(
-                    data = null,
-                    code = "-1",
-                    message = "config.value == null"
-                )
-                imageInfo = imageInfo.copy(inSample = inSample)
-                val canvas = Canvas(mutableBitmap)
-                // generate matrix of drawable
-                val imageMatrix = WaterMarkImageView.adjustMatrix(
-                    srcMatrix = Matrix(),
-                    viewWidth = viewInfo.width,
-                    viewHeight = viewInfo.height,
-                    paddingLeft = viewInfo.paddingLeft,
-                    paddingTop = viewInfo.paddingTop,
-                    bitmapWidth = imageInfo.width,
-                    bitmapHeight = imageInfo.height
-                )
-                Log.i(
-                    "generateImage",
-                    """
-                        imageMatrix = $imageMatrix,
-                        inSample = $inSample,
-                        imageInfo = $imageInfo
-                        viewInfo = $viewInfo,
-                        bitmapW = ${mutableBitmap.width}
-                        bitmapH = ${mutableBitmap.height},
-                    """.trimIndent()
-                )
-                // calculate the scale factor
-                imageMatrix.getValues(matrixValues)
-                imageInfo = imageInfo.copy(
-                    scaleX = 1 / matrixValues[Matrix.MSCALE_X],
-                    scaleY = 1 / matrixValues[Matrix.MSCALE_X]
-                )
-                val bitmapPaint = TextPaint().applyConfig(imageInfo, tmpConfig, isScale = false)
-                val layoutPaint = Paint()
-                val shader = when (waterMark.value?.markMode) {
-                    WaterMarkRepository.MarkMode.Text -> {
-                        // Resolve dynamic text tokens (e.g. {date}, {filename}, {iso}) per image at export time.
-                        val resolvedText = resolveTextTokens(tmpConfig.text, imageInfo, contentResolver, index)
-                        WaterMarkImageView.buildTextBitmapShader(
-                            imageInfo = imageInfo,
-                            config = tmpConfig.copy(text = resolvedText),
-                            textPaint = bitmapPaint,
-                            coroutineContext = Dispatchers.IO
-                        )
-                    }
-
-                    WaterMarkRepository.MarkMode.Image -> {
-                        val iconBitmapRect = decodeSampledBitmapFromResource(
-                            context = appContext,
-                            resolver = contentResolver,
-                            uri = tmpConfig.iconUri,
-                            reqWidth = viewInfo.width,
-                            reqHeight = viewInfo.height
-                        )
-                        if (iconBitmapRect.isFailure() || iconBitmapRect.data == null) {
-                            return@withContext Result.failure(
-                                data = null,
-                                code = "-1",
-                                message = "decodeSampledBitmapFromResource == null"
-                            )
-                        }
-                        // ENH-15: giữ (retain) bitmap này trong lúc dùng để BitmapCache không
-                        // recycle nó nếu bị evict giữa chừng (batch nhiều ảnh có thể evict entry
-                        // đang xử lý) — release ngay sau khi build shader xong (đã copy pixel vào
-                        // shader riêng, không cần iconBitmap gốc nữa).
-                        val iconBitmapValue = iconBitmapRect.data!!
-                        iconBitmapValue.retain()
-                        try {
-                            WaterMarkImageView.buildIconBitmapShader(
-                                imageInfo = imageInfo,
-                                srcBitmap = iconBitmapValue.bitmap!!,
-                                config = tmpConfig,
-                                textPaint = bitmapPaint,
-                                scale = true,
-                                coroutineContext = Dispatchers.IO
-                            )
-                        } finally {
-                            iconBitmapValue.release()
-                        }
-                    }
-
-                    null -> return@withContext Result.failure(
-                        data = null,
-                        code = "-1",
-                        message = "Unknown markmode"
-                    )
-                }
-
-                layoutPaint.shader = shader?.bitmapShader
-
-                if (imageInfo.obtainTileMode() == Shader.TileMode.CLAMP) {
-                    canvas.translate(
-                        0 + imageInfo.offsetX * mutableBitmap.width,
-                        0 + imageInfo.offsetY * mutableBitmap.height
-                    )
-                    canvas.drawRect(
-                        /* left = */ 0f,
-                        /* top = */ 0f,
-                        /* right = */ (shader?.width ?: 0).toFloat(),
-                        /* bottom = */ (shader?.height ?: 0).toFloat(),
-                        /* paint = */ layoutPaint
-                    )
-                } else {
-                    canvas.drawRect(
-                        /* left = */ 0f,
-                        /* top = */ 0f,
-                        /* right = */ mutableBitmap.width.toFloat(),
-                        /* bottom = */ mutableBitmap.height.toFloat(),
-                        /* paint = */ layoutPaint
-                    )
-                }
-
-                val finalExportBitmap = if (tmpConfig.enableExif && imageInfo.exifModel != null && !imageInfo.exifModel!!.isEmpty()) {
-                    val expandedBitmap = buildExifBorderBitmap(
-                        source = mutableBitmap,
-                        eModel = imageInfo.exifModel!!,
-                        style = ExifFrameStyle.obtain(tmpConfig.exifFrameStyle),
-                        // FEAT-14 Custom Frame Builder — null nếu user chưa tuỳ chỉnh, giữ hành vi gốc.
-                        bandColor = tmpConfig.exifBandColor,
-                        bandThicknessPercent = tmpConfig.exifBandThicknessPercent,
-                        useSerifCaption = tmpConfig.exifUseSerifCaption
-                    )
-                    // mutableBitmap đã được vẽ (drawBitmap) sang expandedBitmap, không còn dùng nữa
-                    // (finalExportBitmap trỏ sang expandedBitmap) — recycle để tránh giữ 2 bitmap
-                    // full-res cùng lúc (BUG-05).
-                    mutableBitmap.recycle()
-                    bitmapGuard.replace(expandedBitmap)
-                    expandedBitmap
-                } else {
-                    mutableBitmap
-                }
-
-                // Resize cạnh dài khi lưu (0 = giữ nguyên kích thước gốc).
-                val exportBitmap = com.mckimquyen.watermark.utils.bitmap.OutputImageUtils.resizeIfNeeded(
-                    finalExportBitmap,
-                    maxOutputLongEdge
-                )
-                // resizeIfNeeded trả về CÙNG instance khi maxOutputLongEdge=0 (không resize) — chỉ
-                // recycle finalExportBitmap khi thực sự đã tạo bitmap mới, tránh recycle nhầm bitmap
-                // đang dùng (BUG-05).
-                if (exportBitmap !== finalExportBitmap && !finalExportBitmap.isRecycled) {
-                    finalExportBitmap.recycle()
-                }
-                bitmapGuard.replace(exportBitmap)
-
-                return@withContext if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val imageCollection =
-                        MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-                    val imageDetail = ContentValues().apply {
-                        put(
-                            MediaStore.Images.Media.DISPLAY_NAME,
-                            generateOutputName(contentResolver, imageInfo, index)
-                        )
-                        put(MediaStore.Images.Media.MIME_TYPE, "image/${trapOutputExtension()}")
-                        put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/$outPutFolderName/")
-                        put(MediaStore.Images.Media.IS_PENDING, 1)
-                    }
-
-                    val insertResult = MediaStoreInsertResolver.resolve(
-                        contentResolver.insert(imageCollection, imageDetail),
-                        TYPE_ERROR_SAVE_MEDIASTORE_INSERT
-                    )
-                    if (insertResult.isFailure()) return@withContext insertResult
-                    val imageContentUri = insertResult.data!!
-                    // BUG-19: openFileDescriptor() có thể trả null, và compress() có thể trả false
-                    // (trước đây cả 2 bị bỏ qua → báo "thành công" giả + để lại row IS_PENDING rác).
-                    val writeResult = try {
-                        val pfd = contentResolver.openFileDescriptor(imageContentUri, "w", null)
-                        val compressOk = pfd?.use { p ->
-                            exportBitmap.compress(
-                                /* format = */ outputFormat,
-                                /* quality = */ compressLevel,
-                                /* stream = */ FileOutputStream(p.fileDescriptor)
-                            )
-                        } ?: false
-                        MediaStoreWriteResolver.resolve(
-                            fdAvailable = pfd != null,
-                            compressSucceeded = compressOk,
-                            errorCode = TYPE_ERROR_SAVE_MEDIASTORE_WRITE
-                        )
-                    } catch (e: Exception) {
-                        Result.failure<Unit>(data = null, code = TYPE_ERROR_SAVE_MEDIASTORE_WRITE, message = e.message)
-                    }
-                    if (writeResult.isFailure()) {
-                        // Ghi thất bại → xoá row IS_PENDING rác thay vì để lại file 0-byte/lỗi trong gallery.
-                        contentResolver.delete(imageContentUri, null, null)
-                        return@withContext Result.extendMsg(writeResult)
-                    }
-                    // Đã compress xong, không còn dùng bitmap này nữa (BUG-05).
-                    exportBitmap.recycle()
-                    bitmapGuard.release()
-                    imageDetail.clear()
-                    imageDetail.put(MediaStore.Images.Media.IS_PENDING, 0)
-                    contentResolver.update(imageContentUri, imageDetail, null, null)
-                    applyCopyrightExif(contentResolver, imageContentUri)
-                    Result.success(imageContentUri)
-                } else {
-                    // need request write_storage permission
-                    // should check Pictures folder exist
-                    val picturesFile: File =
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                            ?: return@withContext Result.failure(
-                                data = null,
-                                code = "-1",
-                                message = "Can't get pictures directory."
-                            )
-                    if (!picturesFile.exists()) {
-                        picturesFile.mkdir()
-                    }
-                    val mediaDir = File(picturesFile, outPutFolderName)
-
-                    if (!mediaDir.exists()) {
-                        mediaDir.mkdirs()
-                    }
-                    val outputFile = File(mediaDir, generateOutputName(contentResolver, imageInfo, index))
-                    val compressOk = outputFile.outputStream().use { fileOutputStream ->
-                        exportBitmap.compress(
-                            /* format = */ outputFormat,
-                            /* quality = */ compressLevel,
-                            /* stream = */ fileOutputStream
-                        )
-                    }
-                    if (!compressOk) {
-                        outputFile.delete()
-                        return@withContext Result.failure(
-                            data = null,
-                            code = TYPE_ERROR_SAVE_MEDIASTORE_WRITE,
-                            message = "Bitmap.compress() returned false."
-                        )
-                    }
-                    // Đã compress xong, không còn dùng bitmap này nữa (BUG-05).
-                    exportBitmap.recycle()
-                    bitmapGuard.release()
-                    applyCopyrightExif(outputFile.absolutePath)
-                    val outputUri = FileProvider.getUriForFile(
-                        /* context = */ appContext,
-                        /* authority = */ "${BuildConfig.APPLICATION_ID}.fileprovider",
-                        /* file = */ outputFile
-                    )
-                    appContext.sendBroadcast(
-                        Intent(
-                            Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
-                            Uri.fromFile(outputFile)
-                        )
-                    )
-                    Result.success(outputUri)
-                }
-            } finally {
-                bitmapGuard.recycleIfOwned()
-            }
-        }
+    /** ENH-01 AC2: huỷ batch export giữa chừng. */
+    fun cancelSaveImage() {
+        BatchExportWorker.cancel(appContext)
+    }
 
     /**
-     * Resolve dynamic text tokens in the watermark text for a given image, per-image at export time
-     * so batch jobs get per-photo values. No-op when the text has no '{' token.
-     * Supported: {filename} {seq} {date} {model} {make} {iso} {fnumber} {exposure} {focal} {exif}
+     * ENH-01 AC1: gọi khi dialog Export mở ra ([SaveImageBSDialogFragment.onViewCreated]) — bắt lại
+     * đúng trạng thái nếu batch_export vẫn đang chạy nền từ trước (app từng bị kill giữa chừng rồi
+     * mở lại, MainViewModel là instance MỚI chưa từng gọi saveImage()). Idempotent, gọi nhiều lần
+     * an toàn (observeExportWork() tự gỡ observer cũ trước khi gắn observer mới).
+     */
+    fun reattachExportWorkIfRunning() {
+        observeExportWork()
+    }
+
+    private fun observeExportWork() {
+        exportWorkObserver?.let { exportWorkLiveData?.removeObserver(it) }
+        val liveData = androidx.work.WorkManager.getInstance(appContext)
+            .getWorkInfosForUniqueWorkLiveData(BatchExportWorker.UNIQUE_WORK_NAME)
+            .map { it.firstOrNull() }
+        exportWorkLiveData = liveData
+        val observer = androidx.lifecycle.Observer<androidx.work.WorkInfo?> { info ->
+            if (info == null) return@Observer
+            if (info.state.isFinished) {
+                exportWorkObserver?.let { liveData.removeObserver(it) }
+                // Progress Data của item cuối cùng có thể đã bị WorkManager xoá trước khi observer
+                // này kịp thấy (xem BatchExportWorker.doWork()) — đẩy lại toàn bộ trạng thái cuối
+                // (đã ghi vào repo, tự imageList cập nhật) qua saveProcess để adapter không bị kẹt
+                // icon "đang xử lý" cho item bị lỡ progress update.
+                imageList.value?.first?.forEach { saveProcess.value = it }
+                saveProcess.value = null
+                saveResult.value = when (info.state) {
+                    androidx.work.WorkInfo.State.SUCCEEDED -> Result.success(code = TYPE_JOB_FINISH, data = null)
+                    androidx.work.WorkInfo.State.CANCELLED -> Result.failure(data = null, code = TYPE_ERROR_CANCELLED)
+                    else -> Result.failure(data = null, code = TYPE_ERROR_FILE_NOT_FOUND)
+                }
+            } else {
+                // ENQUEUED/RUNNING/BLOCKED: batch đang chạy (kể cả khi ViewModel này mới được tạo
+                // lại và bắt gặp work đã chạy sẵn từ trước, xem init{}) — đảm bảo saveResult phản
+                // ánh đúng "đang export" thay vì giữ giá trị mặc định null/trạng thái cũ.
+                if (saveResult.value?.code != TYPE_SAVING) {
+                    saveResult.value = Result.success(null, code = TYPE_SAVING)
+                }
+                applyExportProgress(info.progress)
+            }
+        }
+        exportWorkObserver = observer
+        liveData.observeForever(observer)
+    }
+
+    /** Bridge tiến độ per-image từ Worker (uri + state ordinal, xem [BatchExportWorker]) về đúng contract cũ (`saveProcess`). */
+    private fun applyExportProgress(progress: androidx.work.Data) {
+        val uriStr = progress.getString(BatchExportWorker.KEY_PROGRESS_URI) ?: return
+        val stateOrdinal = progress.getInt(BatchExportWorker.KEY_PROGRESS_STATE, -1)
+        if (stateOrdinal < 0) return
+        val uri = Uri.parse(uriStr)
+        val current = imageList.value?.first?.find { it.uri == uri } ?: return
+        val jobState = when (stateOrdinal) {
+            BatchExportWorker.STATE_ING -> JobState.Ing
+            BatchExportWorker.STATE_SUCCESS -> JobState.Success(Result.success(uri))
+            BatchExportWorker.STATE_FAILURE -> JobState.Failure(Result.failure(null, code = TYPE_ERROR_SAVE_UNKNOWN))
+            else -> return
+        }
+        saveProcess.value = current.copy(jobState = jobState)
+    }
+
+    /**
+     * ENH-01: logic thật đã chuyển sang [com.mckimquyen.watermark.export.ExportNaming] (dùng chung
+     * với `BatchExportWorker`) — giữ delegate ở đây để [resolvePreviewText] không đổi.
      */
     private fun resolveTextTokens(
         text: String,
         imageInfo: ImageInfo,
         contentResolver: ContentResolver,
         index: Int
-    ): String {
-        if (!text.contains('{')) return text
-        val exif = imageInfo.exifModel
-        val date = exif?.dateTime?.takeIf { it.isNotBlank() }
-            ?: System.currentTimeMillis().formatDate("yyyy-MM-dd")
-        val tokens = mapOf(
-            "filename" to queryDisplayName(contentResolver, imageInfo.uri),
-            "seq" to (index + 1).toString(),
-            "date" to date,
-            "model" to exif?.getCameraName().orEmpty(),
-            "make" to exif?.make.orEmpty(),
-            "iso" to exif?.iso.orEmpty(),
-            "fnumber" to exif?.fNumber.orEmpty(),
-            "exposure" to exif?.exposureTime.orEmpty(),
-            "focal" to exif?.focalLength.orEmpty(),
-            "exif" to exif?.getFormattedExif().orEmpty()
-        )
-        return com.mckimquyen.watermark.utils.TextTokenResolver.resolve(text, tokens)
-    }
+    ): String = exportNaming.resolveTextTokens(text, imageInfo, contentResolver, index)
 
     /**
      * Resolve token cho preview trong editor (không phải export) — dùng đúng logic/token với
@@ -609,33 +286,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private var lastDisplayName: Pair<Uri, String>? = null
-
-    /** Cache theo uri hiện tại — preview gọi lại nhiều lần (mỗi ký tự gõ) không query lặp ContentResolver. */
-    private fun queryDisplayName(contentResolver: ContentResolver, uri: Uri): String {
-        lastDisplayName?.let { (cachedUri, cachedName) -> if (cachedUri == uri) return cachedName }
-        val name = try {
-            contentResolver.query(
-                uri,
-                arrayOf(android.provider.OpenableColumns.DISPLAY_NAME),
-                null,
-                null,
-                null
-            )?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                    (if (nameIndex >= 0) cursor.getString(nameIndex) else null)?.substringBeforeLast('.')
-                } else {
-                    null
-                }
-            } ?: uri.lastPathSegment?.substringBeforeLast('.').orEmpty()
-        } catch (e: Exception) {
-            uri.lastPathSegment?.substringBeforeLast('.').orEmpty()
-        }
-        lastDisplayName = uri to name
-        return name
-    }
-
     /**
      * Tên file xuất — mặc định "ewm_{timestamp}" nếu user chưa đặt pattern ([outputNamePattern]
      * rỗng); nếu có pattern, resolve token qua đúng [resolveTextTokens] đang dùng cho text
@@ -645,52 +295,9 @@ class MainViewModel @Inject constructor(
         contentResolver: ContentResolver,
         imageInfo: ImageInfo,
         index: Int
-    ): String {
-        val pattern = outputNamePattern.trim()
-        val base = if (pattern.isEmpty()) {
-            "ewm_${System.currentTimeMillis()}"
-        } else {
-            resolveTextTokens(pattern, imageInfo, contentResolver, index)
-        }
-        return "$base.${trapOutputExtension()}"
-    }
+    ): String = exportNaming.generateOutputName(contentResolver, imageInfo, index, outputNamePattern, outputFormat)
 
-    private fun trapOutputExtension(): String {
-        return com.mckimquyen.watermark.utils.bitmap.OutputImageUtils.extensionFor(outputFormat)
-    }
-
-    /** Định dạng có hỗ trợ ghi EXIF (androidx ExifInterface): JPEG / WEBP / PNG. */
-    private fun supportsExifWrite(): Boolean = outputFormat != Bitmap.CompressFormat.PNG
-
-    /** Nhúng copyright vào EXIF cho ảnh đã lưu qua MediaStore (Android Q+). */
-    private fun applyCopyrightExif(contentResolver: ContentResolver, uri: Uri) {
-        val text = copyright.trim()
-        if (text.isEmpty() || !supportsExifWrite()) return
-        try {
-            contentResolver.openFileDescriptor(uri, "rw")?.use { pfd ->
-                val exif = androidx.exifinterface.media.ExifInterface(pfd.fileDescriptor)
-                exif.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_COPYRIGHT, text)
-                exif.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_ARTIST, text)
-                exif.saveAttributes()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    /** Nhúng copyright vào EXIF cho ảnh lưu theo đường dẫn file (Android < Q). */
-    private fun applyCopyrightExif(filePath: String) {
-        val text = copyright.trim()
-        if (text.isEmpty() || !supportsExifWrite()) return
-        try {
-            val exif = androidx.exifinterface.media.ExifInterface(filePath)
-            exif.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_COPYRIGHT, text)
-            exif.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_ARTIST, text)
-            exif.saveAttributes()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
+    private fun trapOutputExtension(): String = exportNaming.trapOutputExtension(outputFormat)
 
     fun selectImage(uri: Uri) {
         if (selectedImage.value?.uri == uri) {
@@ -797,12 +404,10 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * Vẽ khung EXIF theo [style] lên canvas mở rộng từ [source] — chỉ dùng Canvas thuần
-     * (chữ + hình khối), không dùng logo hãng máy thật để tránh rủi ro bản quyền/trademark.
-     *
-     * FEAT-14 Custom Frame Builder: [bandColor]/[bandThicknessPercent]/[useSerifCaption] override
-     * nhẹ lên style đang chọn — `null` (mặc định) giữ NGUYÊN hành vi gốc của từng style,
-     * không đổi output nếu user chưa tuỳ chỉnh gì.
+     * ENH-01: logic vẽ thật đã chuyển sang [com.mckimquyen.watermark.utils.bitmap.ExifBorderRenderer]
+     * (hàm thuần, không phụ thuộc state ViewModel) để `BatchExportEngine`/`BatchExportWorker` dùng
+     * chung được — giữ delegate 1 dòng ở đây để test hiện có (gọi qua instance `viewModel`) không
+     * cần sửa.
      */
     internal fun buildExifBorderBitmap(
         source: Bitmap,
@@ -811,212 +416,18 @@ class MainViewModel @Inject constructor(
         bandColor: Int? = null,
         bandThicknessPercent: Float? = null,
         useSerifCaption: Boolean? = null
-    ): Bitmap {
-        return when (style) {
-            ExifFrameStyle.CLASSIC -> buildClassicExifBorder(source, eModel, bandColor, bandThicknessPercent, useSerifCaption)
-            ExifFrameStyle.POLAROID -> buildPolaroidExifBorder(source, eModel, bandColor, bandThicknessPercent, useSerifCaption)
-            ExifFrameStyle.FILM_STRIP -> buildFilmStripExifBorder(source, eModel, bandColor, bandThicknessPercent, useSerifCaption)
-            ExifFrameStyle.MINIMAL -> buildMinimalExifBorder(source, eModel, bandColor, bandThicknessPercent, useSerifCaption)
-        }
-    }
+    ): Bitmap = com.mckimquyen.watermark.utils.bitmap.ExifBorderRenderer.buildExifBorderBitmap(
+        source,
+        eModel,
+        style,
+        bandColor,
+        bandThicknessPercent,
+        useSerifCaption
+    )
 
-    /**
-     * ENH-19: co [text] bằng dấu "…" nếu vượt quá [maxWidth] theo [paint] hiện tại — tránh vẽ
-     * tràn khỏi canvas khi model máy/copyright dài bất thường. Text bình thường (không vượt
-     * quá) trả về y nguyên, không đổi hành vi hiện có.
-     */
-    internal fun fitTextForCanvas(paint: Paint, text: String, maxWidth: Float): String {
-        if (text.isEmpty() || maxWidth <= 0f || paint.measureText(text) <= maxWidth) return text
-        val ellipsis = "…"
-        val ellipsisWidth = paint.measureText(ellipsis)
-        var end = text.length
-        while (end > 0 && paint.measureText(text, 0, end) + ellipsisWidth > maxWidth) {
-            end--
-        }
-        return if (end <= 0) ellipsis else text.substring(0, end) + ellipsis
-    }
-
-    /** null → font mặc định của style (không bold); true → serif; false → sans-serif ép buộc. */
-    private fun captionTypefaceBase(useSerifCaption: Boolean?, styleDefault: Typeface): Typeface = when (useSerifCaption) {
-        true -> Typeface.SERIF
-        false -> Typeface.SANS_SERIF
-        null -> styleDefault
-    }
-
-    /** Thanh trắng dưới đáy: tên máy đậm trái, thông số + ngày phải (hành vi gốc). */
-    private fun buildClassicExifBorder(
-        source: Bitmap,
-        eModel: ExifModel,
-        bandColor: Int?,
-        bandThicknessPercent: Float?,
-        useSerifCaption: Boolean?
-    ): Bitmap {
-        val borderHeight = (source.height * (bandThicknessPercent ?: ExifFrameStyle.CLASSIC.defaultBandThicknessPercent)).toInt().coerceAtLeast(1)
-        val expanded = Bitmap.createBitmap(source.width, source.height + borderHeight, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(expanded)
-        canvas.drawColor(bandColor ?: ExifFrameStyle.CLASSIC.defaultBandColor)
-        canvas.drawBitmap(source, 0f, 0f, null)
-        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.BLACK
-            textSize = borderHeight * 0.35f
-            textAlign = Paint.Align.LEFT
-            typeface = Typeface.create(captionTypefaceBase(useSerifCaption, Typeface.DEFAULT), Typeface.BOLD)
-        }
-        val maxTextWidth = source.width * 0.9f
-        canvas.drawText(fitTextForCanvas(textPaint, eModel.getCameraName(), maxTextWidth), source.width * 0.05f, source.height + borderHeight * 0.5f, textPaint)
-
-        textPaint.textSize = borderHeight * 0.22f
-        textPaint.textAlign = Paint.Align.RIGHT
-        textPaint.typeface = Typeface.DEFAULT
-        canvas.drawText(fitTextForCanvas(textPaint, eModel.getFormattedExif(), maxTextWidth), source.width * 0.95f, source.height + borderHeight * 0.45f, textPaint)
-
-        textPaint.textSize = borderHeight * 0.18f
-        textPaint.color = Color.DKGRAY
-        canvas.drawText(fitTextForCanvas(textPaint, eModel.dateTime, maxTextWidth), source.width * 0.95f, source.height + borderHeight * 0.75f, textPaint)
-        return expanded
-    }
-
-    /** Viền trắng dày đều 4 cạnh kiểu ảnh Polaroid, caption căn giữa ở đáy. */
-    private fun buildPolaroidExifBorder(
-        source: Bitmap,
-        eModel: ExifModel,
-        bandColor: Int?,
-        bandThicknessPercent: Float?,
-        useSerifCaption: Boolean?
-    ): Bitmap {
-        val sideBorder = (minOf(source.width, source.height) * 0.05f).toInt()
-        val bottomBorder = (source.height * (bandThicknessPercent ?: ExifFrameStyle.POLAROID.defaultBandThicknessPercent)).toInt().coerceAtLeast(1)
-        val totalWidth = source.width + sideBorder * 2
-        val totalHeight = source.height + sideBorder + bottomBorder
-        val expanded = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(expanded)
-        canvas.drawColor(bandColor ?: ExifFrameStyle.POLAROID.defaultBandColor)
-        canvas.drawBitmap(source, sideBorder.toFloat(), sideBorder.toFloat(), null)
-
-        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.BLACK
-            textAlign = Paint.Align.CENTER
-            // Polaroid mặc định VỐN đã là serif — captionTypefaceBase(null) trả về styleDefault = SERIF.
-            typeface = Typeface.create(captionTypefaceBase(useSerifCaption, Typeface.SERIF), Typeface.NORMAL)
-        }
-        val maxTextWidth = totalWidth * 0.9f
-        textPaint.textSize = bottomBorder * 0.32f
-        canvas.drawText(fitTextForCanvas(textPaint, eModel.getCameraName(), maxTextWidth), totalWidth / 2f, source.height + sideBorder + bottomBorder * 0.55f, textPaint)
-
-        textPaint.textSize = bottomBorder * 0.2f
-        textPaint.color = Color.DKGRAY
-        val detail = listOfNotNull(
-            eModel.getFormattedExif().takeIf { it.isNotEmpty() },
-            eModel.dateTime.takeIf { it.isNotEmpty() }
-        ).joinToString("   ·   ")
-        canvas.drawText(fitTextForCanvas(textPaint, detail, maxTextWidth), totalWidth / 2f, source.height + sideBorder + bottomBorder * 0.85f, textPaint)
-        return expanded
-    }
-
-    /** Dải đen trên/dưới có lỗ sprocket như phim máy ảnh; caption phủ scrim mờ ở đáy ảnh. */
-    private fun buildFilmStripExifBorder(
-        source: Bitmap,
-        eModel: ExifModel,
-        bandColor: Int?,
-        bandThicknessPercent: Float?,
-        useSerifCaption: Boolean?
-    ): Bitmap {
-        val bandHeight = (source.height * (bandThicknessPercent ?: ExifFrameStyle.FILM_STRIP.defaultBandThicknessPercent)).toInt().coerceAtLeast(1)
-        val totalHeight = source.height + bandHeight * 2
-        val expanded = Bitmap.createBitmap(source.width, totalHeight, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(expanded)
-        canvas.drawColor(bandColor ?: ExifFrameStyle.FILM_STRIP.defaultBandColor)
-        canvas.drawBitmap(source, 0f, bandHeight.toFloat(), null)
-
-        val holePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
-        val holeSize = bandHeight * 0.42f
-        val holeRadius = holeSize * 0.25f
-        val holeGap = holeSize * 1.7f
-        val holeCount = (source.width / holeGap).toInt().coerceAtLeast(2)
-        fun drawHoleRow(centerY: Float) {
-            for (i in 0 until holeCount) {
-                val cx = holeGap * 0.5f + i * holeGap
-                canvas.drawRoundRect(
-                    cx - holeSize / 2f,
-                    centerY - holeSize / 2f,
-                    cx + holeSize / 2f,
-                    centerY + holeSize / 2f,
-                    holeRadius,
-                    holeRadius,
-                    holePaint
-                )
-            }
-        }
-        drawHoleRow(bandHeight * 0.5f)
-        drawHoleRow(totalHeight - bandHeight * 0.5f)
-
-        // Scrim mờ phủ đáy ảnh thật (không phải dải đen) để chữ không đè lên lỗ sprocket.
-        val scrimHeight = bandHeight * 1.1f
-        val scrimTop = bandHeight + source.height - scrimHeight
-        canvas.drawRect(
-            0f,
-            scrimTop,
-            source.width.toFloat(),
-            (bandHeight + source.height).toFloat(),
-            Paint().apply {
-                color = Color.argb(140, 0, 0, 0)
-            }
-        )
-        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
-            textAlign = Paint.Align.LEFT
-            typeface = Typeface.create(captionTypefaceBase(useSerifCaption, Typeface.DEFAULT), Typeface.BOLD)
-            textSize = bandHeight * 0.34f
-        }
-        val maxTextWidth = source.width * 0.92f
-        canvas.drawText(fitTextForCanvas(textPaint, eModel.getCameraName(), maxTextWidth), source.width * 0.04f, bandHeight + source.height - scrimHeight * 0.45f, textPaint)
-        textPaint.textSize = bandHeight * 0.22f
-        textPaint.typeface = Typeface.DEFAULT
-        val detail = listOfNotNull(
-            eModel.getFormattedExif().takeIf { it.isNotEmpty() },
-            eModel.dateTime.takeIf { it.isNotEmpty() }
-        ).joinToString("  ·  ")
-        canvas.drawText(fitTextForCanvas(textPaint, detail, maxTextWidth), source.width * 0.04f, bandHeight + source.height - scrimHeight * 0.15f, textPaint)
-        return expanded
-    }
-
-    /** Dải trắng mỏng + 1 dòng chữ gọn (tên máy · thông số · ngày), gọn nhẹ hơn CLASSIC. */
-    private fun buildMinimalExifBorder(
-        source: Bitmap,
-        eModel: ExifModel,
-        bandColor: Int?,
-        bandThicknessPercent: Float?,
-        useSerifCaption: Boolean?
-    ): Bitmap {
-        val borderHeight = (source.height * (bandThicknessPercent ?: ExifFrameStyle.MINIMAL.defaultBandThicknessPercent)).toInt().coerceAtLeast(1)
-        val expanded = Bitmap.createBitmap(source.width, source.height + borderHeight, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(expanded)
-        canvas.drawColor(bandColor ?: ExifFrameStyle.MINIMAL.defaultBandColor)
-        canvas.drawBitmap(source, 0f, 0f, null)
-        canvas.drawLine(
-            0f,
-            source.height.toFloat(),
-            source.width.toFloat(),
-            source.height.toFloat(),
-            Paint().apply {
-                color = Color.LTGRAY
-                strokeWidth = borderHeight * 0.03f
-            }
-        )
-        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.DKGRAY
-            textSize = borderHeight * 0.4f
-            textAlign = Paint.Align.LEFT
-            typeface = captionTypefaceBase(useSerifCaption, Typeface.DEFAULT)
-        }
-        val line = listOfNotNull(
-            eModel.getCameraName().takeIf { it.isNotEmpty() && it != ExifModel.UNKNOWN_DEVICE_FALLBACK },
-            eModel.getFormattedExif().takeIf { it.isNotEmpty() },
-            eModel.dateTime.takeIf { it.isNotEmpty() }
-        ).joinToString("   ")
-        canvas.drawText(fitTextForCanvas(textPaint, line, source.width * 0.94f), source.width * 0.03f, source.height + borderHeight * 0.65f, textPaint)
-        return expanded
-    }
+    /** Xem [com.mckimquyen.watermark.utils.bitmap.ExifBorderRenderer.fitTextForCanvas]. */
+    internal fun fitTextForCanvas(paint: Paint, text: String, maxWidth: Float): String =
+        com.mckimquyen.watermark.utils.bitmap.ExifBorderRenderer.fitTextForCanvas(paint, text, maxWidth)
 
     fun toggleExifBorder() {
         launch {
@@ -1262,6 +673,10 @@ ${System.currentTimeMillis().formatDate("yyy-MM-dd")}
 
     override fun onCleared() {
         cancelCompressJob()
+        // ENH-01: exportWorkObserver dùng observeForever (không tự gỡ theo Lifecycle) — phải gỡ
+        // thủ công khi ViewModel bị huỷ thật, nếu không observer (giữ closure tham chiếu tới
+        // instance này) rò rỉ vĩnh viễn trong registry của LiveData/WorkManager.
+        exportWorkObserver?.let { exportWorkLiveData?.removeObserver(it) }
         super.onCleared()
     }
 
@@ -1401,5 +816,8 @@ ${System.currentTimeMillis().formatDate("yyy-MM-dd")}
         const val TYPE_COMPRESSING = "type_Compressing"
         const val TYPE_SAVING = "type_saving"
         const val TYPE_JOB_FINISH = "type_job_finish"
+
+        /** ENH-01: user bấm huỷ giữa batch export (WorkManager cancel). */
+        const val TYPE_ERROR_CANCELLED = "type_error_cancelled"
     }
 }

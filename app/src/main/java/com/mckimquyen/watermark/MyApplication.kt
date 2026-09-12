@@ -6,6 +6,8 @@ import android.content.Intent
 import android.util.Base64
 import android.util.Log
 import androidx.core.content.edit
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.roy.sdkadbmob.AdManager
@@ -38,10 +40,22 @@ import kotlin.system.exitProcess
 // ad applovin
 
 @HiltAndroidApp
-class MyApplication : Application() {
+class MyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var waterMarkRepo: WaterMarkRepository
+
+    // ENH-01: BatchExportWorker là @HiltWorker (@AssistedInject) — cần HiltWorkerFactory để
+    // WorkManager tạo Worker qua Hilt (inject WaterMarkRepository/UserConfigRepository/engine)
+    // thay vì reflection constructor rỗng mặc định. Đã gỡ WorkManagerInitializer mặc định trong
+    // AndroidManifest.xml (tools:node="remove") để override bằng workManagerConfiguration này.
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 
     private val sp by lazy { getSharedPreferences(SP_NAME, MODE_PRIVATE) }
 

@@ -151,6 +151,15 @@ dependencies {
     api(libs.datastore.preference)
     api(libs.dagger.hilt.android)
     kapt(libs.dagger.hilt.compiler)
+    // ENH-01: batch export qua WorkManager, Hilt Worker (@HiltWorker/@AssistedInject).
+    api(libs.work.runtime.ktx)
+    api(libs.hilt.work)
+    kapt(libs.hilt.work.compiler)
+    // WorkManager public API (ListenableWorker.startWork()) trả ListenableFuture — cần guava thật
+    // trên COMPILE classpath (không chỉ shim listenablefuture rỗng) để Kotlin resolve type đầy đủ
+    // khi subclass CoroutineWorker. Bản thật của guava vốn đã có ở runtime qua lib khác (AdMob/Play
+    // Review) nhưng chỉ transitive runtime, không lộ ra compile classpath — khai báo thẳng ở đây.
+    api("com.google.guava:guava:31.1-android")
     api(libs.asyncLayoutInflater)
     api(libs.glide.glide)
     kapt(libs.glide.compiler)
@@ -191,6 +200,7 @@ dependencies {
     testImplementation(libs.test.arch.core)
     testImplementation(libs.test.mockk)
     testImplementation(libs.test.core)
+    testImplementation(libs.test.work)
 
     // instrumentation test (androidTest)
     androidTestImplementation(libs.test.core)

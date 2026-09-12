@@ -3,7 +3,6 @@ package com.mckimquyen.watermark.ui.dlg
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
-import com.mckimquyen.watermark.AppLog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +16,7 @@ import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
@@ -84,18 +84,19 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         with(root) {
             btnSave.apply {
                 setOnClickListener {
-                    if (shareViewModel.saveResult.value?.code == MainViewModel.TYPE_JOB_FINISH) {
-                        // share to other apps
-                        openShare()
-                    } else {
-                        // saving jobs
-                        shareViewModel.saveCopyright(etCopyright.text?.toString().orEmpty().trim())
-                        requireActivity().preCheckStoragePermission {
-                            shareViewModel.saveImage(
-                                requireActivity().contentResolver,
-                                (requireContext() as MainActivity).getImageViewInfo(),
-                                (requireContext() as MainActivity).getImageList()
-                            )
+                    when (shareViewModel.saveResult.value?.code) {
+                        MainViewModel.TYPE_JOB_FINISH -> openShare()
+                        // ENH-01 AC2: đang export → nút chuyển sang Cancel, huỷ batch qua WorkManager.
+                        MainViewModel.TYPE_SAVING -> shareViewModel.cancelSaveImage()
+                        else -> {
+                            shareViewModel.saveCopyright(etCopyright.text?.toString().orEmpty().trim())
+                            requireActivity().preCheckStoragePermission {
+                                shareViewModel.saveImage(
+                                    requireActivity().contentResolver,
+                                    (requireContext() as MainActivity).getImageViewInfo(),
+                                    (requireContext() as MainActivity).getImageList()
+                                )
+                            }
                         }
                     }
                 }
@@ -208,6 +209,9 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // ENH-01 AC1: app có thể đã bị kill giữa lúc export (batch vẫn sống sót qua WorkManager) —
+        // bắt lại đúng trạng thái đang chạy nếu có, trước khi đọc saveResult hiện tại.
+        shareViewModel.reattachExportWorkIfRunning()
         setUpLoadingView(shareViewModel.saveResult.value)
     }
 
@@ -217,8 +221,9 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         when (saveResult?.code) {
             MainViewModel.TYPE_SAVING -> {
                 binding.btnSave.apply {
-                    isEnabled = false
-                    text = getString(R.string.dialog_save_exporting)
+                    // ENH-01 AC2: vẫn bấm được — dùng để huỷ batch export giữa chừng.
+                    isEnabled = true
+                    text = getString(R.string.dialog_save_cancel)
                 }
                 binding.btnOpenGallery.isInvisible = true
                 binding.atvFormat.isEnabled = false

@@ -10,6 +10,9 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- ENH-01: batch export chạy foreground qua WorkManager (setForeground), sống sót khi app xuống nền. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
@@ -94,6 +97,29 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
+
+        <!-- ENH-01: gỡ WorkManager default initializer — khởi tạo thủ công qua
+             MyApplication.Configuration.Provider (HiltWorkerFactory) để BatchExportWorker
+             (@HiltWorker) inject được repository/engine. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
+        <!-- ENH-01: BatchExportWorker.setForeground() promote với FOREGROUND_SERVICE_TYPE_DATA_SYNC
+             (API 34+) — hệ thống đối chiếu type này với foregroundServiceType khai báo trên chính
+             service chạy nó (SystemForegroundService của WorkManager, mặc định type "none"), không
+             khớp sẽ crash IllegalArgumentException ngay khi gọi. Phải override tường minh ở đây. -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
     </application>
 
 </manifest>

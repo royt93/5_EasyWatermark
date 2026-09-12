@@ -40,6 +40,11 @@ dependencyResolutionManagement {
             library("exifInterface", "androidx.exifinterface:exifinterface:1.3.5")
             library("palette-ktx", "androidx.palette:palette-ktx:1.0.0")
             library("blurview", "com.github.Dimezis:BlurView:version-2.0.3")
+            // ENH-01: batch export chạy qua WorkManager (sống sót khi app xuống nền) + Hilt Worker.
+            val workVersion = "2.9.1"
+            library("work-runtime-ktx", "androidx.work:work-runtime-ktx:$workVersion")
+            library("hilt-work", "androidx.hilt:hilt-work:1.2.0")
+            library("hilt-work-compiler", "androidx.hilt:hilt-compiler:1.2.0")
 
             // third party libs
             val daggerVersion = "2.57.2"
@@ -79,6 +84,7 @@ dependencyResolutionManagement {
             library("test-ext-junit", "androidx.test.ext:junit:1.2.1")
             library("test-espresso-core", "androidx.test.espresso:espresso-core:3.6.1")
             library("test-room", "androidx.room:room-testing:2.6.1")
+            library("test-work", "androidx.work:work-testing:$workVersion")
         }
     }
 }
