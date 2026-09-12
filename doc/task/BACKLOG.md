@@ -28,7 +28,7 @@
 
 **Đã DONE** (xem `doc/task/done/`): BUG-01 (inSampleSize/rotation), BUG-02 (BitmapCache NPE), BUG-03 (batch export báo thành công giả), BUG-04 (contentResolver insert force-unwrap), BUG-05 (OOM batch export — *lưu ý: BUG-21 mới phát hiện phần còn sót*), BUG-06 (icon cache race leak), BUG-11 (compressImg guard rỗng + leak file tạm), BUG-13 (QR debounce + off Main thread), BUG-16 (literal "null" trong Edit watermark), BUG-17 (FilmStrip coerceAtLeast — hoá ra đã fix kèm FEAT-14, chỉ thiếu test+ticket), BUG-20 (EditTextContentFragment collect theo viewLifecycleOwner) — **sprint P2 2026-09-11, xem `## Sprint 2026-09-11` cuối file**. Thêm BUG-22 (SaveImageBSDialogFragment tràn viewport màn hình nhỏ — phát hiện ngoài kế hoạch gốc, fix cùng ngày).
 
-## ENHANCEMENTS (6 todo + 14 done) — cải tiến tính năng có sẵn
+## ENHANCEMENTS (5 todo + 15 done) — cải tiến tính năng có sẵn
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
@@ -37,9 +37,8 @@
 | [ENH-08](todo/ENH-08-immutable-state-watermark-repository.md) | M | Model bất biến cho `ImageInfo`/`StateFlow` (`WaterMarkRepository`) |
 | [ENH-09](todo/ENH-09-hardcode-string-sang-resources.md) | M | Đưa hardcode string UI sang `resources` (i18n/accessibility) |
 | [ENH-10](todo/ENH-10-android-photo-picker.md) | M | Chuyển sang Android Photo Picker thay `ACTION_PICK` legacy |
-| [ENH-14](todo/ENH-14-downsample-truc-tiep-khi-decode-export.md) | M | Downsample trực tiếp khi decode ảnh export — **rủi ro cao nhất nhóm hiệu năng M, xem ghi chú Sprint ENH hiệu năng M cuối file, chưa quyết định hướng đi** |
 
-**Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4). **Sprint ENH S/XS 2026-09-12** (xem `## Sprint ENH 2026-09-12` cuối file): ENH-02 (debounce ghi DataStore khi gõ text), ENH-03 (gate `Log.d` bằng `BuildConfig.DEBUG`), ENH-07 (SignatureRepository qua Hilt DI), ENH-11 (vòng đời Ad Banner đầy đủ), ENH-12 (MonetManufacturer dựa API chính thức), ENH-13 (hiển thị số ảnh thành công/thất bại), ENH-18 (hằng số "Unknown Device" chung), ENH-19 (EXIF border co chữ tránh tràn), ENH-20 (preview filename query bất đồng bộ). **Sprint ENH hiệu năng M 2026-09-12** (xem `## Sprint ENH hiệu năng M 2026-09-12` cuối file): ENH-06 (gộp mở InputStream decode), ENH-15 (BitmapCache reference counting an toàn khi evict), ENH-16 (throttle rebuild shader khi pinch).
+**Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4). **Sprint ENH S/XS 2026-09-12** (xem `## Sprint ENH 2026-09-12` cuối file): ENH-02 (debounce ghi DataStore khi gõ text), ENH-03 (gate `Log.d` bằng `BuildConfig.DEBUG`), ENH-07 (SignatureRepository qua Hilt DI), ENH-11 (vòng đời Ad Banner đầy đủ), ENH-12 (MonetManufacturer dựa API chính thức), ENH-13 (hiển thị số ảnh thành công/thất bại), ENH-18 (hằng số "Unknown Device" chung), ENH-19 (EXIF border co chữ tránh tràn), ENH-20 (preview filename query bất đồng bộ). **Sprint ENH hiệu năng M 2026-09-12** (xem `## Sprint ENH hiệu năng M 2026-09-12` cuối file): ENH-06 (gộp mở InputStream decode), ENH-15 (BitmapCache reference counting an toàn khi evict), ENH-16 (throttle rebuild shader khi pinch), ENH-14 (downsample trực tiếp khi decode export — làm với AC hạ chuẩn, user quyết định 2026-09-12).
 
 ## NEW_FEATURES (13 todo + 1 done) — tính năng mới thực dụng, 1-2 tuần
 
@@ -103,9 +102,12 @@ Toàn bộ 5 ticket P2 còn lại trong BUGS_TO_FIX đã hoàn thành theo `PROM
 - **Device đổi lần 2 giữa phiên**: Samsung SM_A115F mất kết nối hẳn, TECNO_KJ7 vẫn còn (từng dính ad, bị bỏ qua trước đó), xuất hiện máy mới OnePlus CPH1989 (FUJZIFIR7DQCNRWW) — hỏi user qua `AskUserQuestion`, được chọn OnePlus, khoá dùng cho phần smoke test còn lại của sprint này.
 - **Bài học thao tác ADB mới**: `uiautomator dump` không đáng tin cậy trên máy OnePlus/OPPO này (nhiều lần trả về cây UI CŨ/sai màn hình đang hiển thị) — phải chuyển hẳn sang tính toạ độ tap từ ảnh chụp màn hình thật (screencap, luôn đúng kích thước thật của thiết bị, vd 1080×2340) thay vì dựa vào dump.
 
-## Sprint ENH hiệu năng M 2026-09-12 — nhóm bitmap/render (ENH-06/15/16)
+## Sprint ENH hiệu năng M 2026-09-12 — nhóm bitmap/render (ENH-06/15/16/14)
 
-3 ticket effort M trong nhóm "ENH hiệu năng M" hoàn thành theo `PROMPT_TEMPLATE.md` — chi tiết từng ticket xem "Kết quả kiểm chứng" trong file ở `doc/task/done/`.
+4 ticket effort M trong nhóm "ENH hiệu năng M" hoàn thành theo `PROMPT_TEMPLATE.md` — chi tiết từng ticket xem "Kết quả kiểm chứng" trong file ở `doc/task/done/`.
+
+- **ENH-14 (quyết định riêng qua AskUserQuestion sau khi 3 ticket đầu đã push)**: ticket yêu cầu đo bằng Android Studio Memory Profiler — không làm được qua CLI/ADB. User chọn phương án "làm nhưng hạ chuẩn AC" (thay vì bỏ qua hẳn hoặc chờ tự đo bằng Android Studio): thay Profiler bằng bằng chứng gián tiếp (`allocationByteCount` đo trực tiếp trên bitmap thật, tỷ lệ đúng dự đoán lý thuyết ~4 lần khi downsample cạnh dài còn 1/2). Rủi ro lệch vị trí/scale watermark KHÔNG xảy ra vì code tính toạ độ đã sẵn tính động theo kích thước bitmap thật, không cần sửa gì thêm ngoài truyền `reqLongEdge` vào hàm decode.
+- **Giới hạn phát hiện khi smoke test ENH-14 trên device thật**: không có sẵn ảnh nguồn đủ lớn (>2160px cạnh dài) trên Samsung S24 Ultra để chứng minh nhánh downsample thực sự kích hoạt ngoài đời thật (thư mục ảnh mẫu trên máy chỉ toàn Full HD ~1920px) — bằng chứng cho đúng nhánh downsample dựa vào unit test dùng ảnh JPEG thật tự tạo 3200x1600.
 
 - **ENH-06**: dừng ở 3 lần mở `InputStream`/ảnh (không đạt mục tiêu aspirational "1-2" trong ticket gốc) — quyết định có chủ đích, ghi rõ lý do trong ticket (gộp thêm bằng `mark/reset` rủi ro `IOException` không đoán trước trên SAF/cloud provider, đổi lấy giảm 1 lần mở stream không đáng).
 - **ENH-15**: chọn Phương án B (reference counting) thay vì Phương án A (chỉ giảm cacheSize) — vì Phương án A không giải quyết gốc rủi ro use-after-recycle nêu trong ticket. Audit đủ 2 nơi giữ tham chiếu trực tiếp bitmap từ cache (`WaterMarkImageView`, `MainViewModel.generateImage()`).

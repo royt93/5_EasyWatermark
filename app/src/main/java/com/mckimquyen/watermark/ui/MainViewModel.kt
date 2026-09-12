@@ -259,7 +259,10 @@ class MainViewModel @Inject constructor(
         index: Int
     ): Result<Uri> =
         withContext(Dispatchers.IO) {
-            val rect = decodeBitmapFromUri(appContext, contentResolver, imageInfo.uri)
+            // ENH-14: downsample ngay lúc decode khi user đã chọn resize output (maxOutputLongEdge
+            // != 0) — giảm peak memory khi vẽ watermark trên ảnh 12-48MP không cần thiết phải ở
+            // full-res nếu output cuối cùng sẽ bị resize nhỏ lại. "Original" (0) giữ hành vi cũ.
+            val rect = decodeBitmapFromUri(appContext, contentResolver, imageInfo.uri, maxOutputLongEdge)
             if (rect.isFailure()) {
                 return@withContext Result.extendMsg(rect)
             }

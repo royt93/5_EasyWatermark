@@ -166,17 +166,42 @@ private fun resolveRotation(
     }
 }
 
+/**
+ * ENH-14: [reqLongEdge] > 0 (user đã chọn resize output khác "Original") sẽ downsample NGAY lúc
+ * decode thay vì decode full-res rồi resize sau khi vẽ watermark — giảm peak memory lúc build
+ * canvas full-res không cần thiết cho ảnh 12-48MP. `reqLongEdge` = 0 (mặc định, "Original") giữ
+ * nguyên hành vi decode full-res như trước, không đổi.
+ */
 suspend fun decodeBitmapFromUri(
     context: Context,
     resolver: ContentResolver,
     uri: Uri,
+    reqLongEdge: Int = 0,
 ): Result<BitmapCache.BitmapValue> =
     withContext(Dispatchers.IO) {
+        if (reqLongEdge <= 0) {
+            resolver.openInputStream(uri).use { inputStream ->
+                if (inputStream == null) {
+                    return@withContext Result.failure(null, "-1", "Open input stream failed.")
+                }
+                return@withContext decodeBitmapWithExif(context, uri, inputStream)
+            }
+        }
+        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        resolver.openInputStream(uri).use { BitmapFactory.decodeStream(it, null, options) }
+        val (rotation, exifModel) = readExifOrientationAndModel(context, uri)
+        val (oHeight: Int, oWidth: Int) = if (shouldInterchangeSize(rotation)) {
+            options.run { outWidth to outHeight }
+        } else {
+            options.run { outHeight to outWidth }
+        }
+        options.inSampleSize = calculateInSampleSizeForLongEdge(maxOf(oWidth, oHeight), reqLongEdge)
+        options.inJustDecodeBounds = false
         resolver.openInputStream(uri).use { inputStream ->
             if (inputStream == null) {
                 return@withContext Result.failure(null, "-1", "Open input stream failed.")
             }
-            return@withContext decodeBitmapWithExif(context, uri, inputStream)
+            return@withContext decodeBitmapWithExifSync(inputStream, options, rotation, exifModel)
         }
     }
 
@@ -290,6 +315,23 @@ fun calculateInSampleSize(
 //        }
     }
 
+    return inSampleSize
+}
+
+/**
+ * ENH-14: sample size cho downsample-khi-export, tính theo CẠNH DÀI thay vì bounding box
+ * (width/height riêng) như [calculateInSampleSize] — vì mục tiêu chỉ là giới hạn cạnh dài
+ * ([reqLongEdge], khớp `maxOutputLongEdge`), không phải fit vừa 1 khung reqWidth x reqHeight.
+ * Dùng chung công thức [calculateInSampleSize] cho khung reqWidth=reqHeight=[longEdge] sẽ sai vì
+ * hàm đó bắt CẢ 2 cạnh đều phải >= req, trong khi cạnh ngắn của ảnh không hình vuông luôn nhỏ hơn
+ * cạnh dài — sẽ dừng downsample quá sớm. Hàm thuần, dễ test trực tiếp trên JVM.
+ */
+fun calculateInSampleSizeForLongEdge(longEdge: Int, reqLongEdge: Int): Int {
+    if (reqLongEdge <= 0 || longEdge <= reqLongEdge) return 1
+    var inSampleSize = 1
+    while (longEdge / (inSampleSize * 2) >= reqLongEdge) {
+        inSampleSize *= 2
+    }
     return inSampleSize
 }
 
