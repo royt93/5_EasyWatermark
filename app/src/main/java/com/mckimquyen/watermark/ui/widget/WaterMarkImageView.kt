@@ -14,6 +14,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
 import android.net.Uri
+import android.os.SystemClock
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
@@ -34,6 +35,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository.Companion.DEFAULT_
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.Companion.MAX_TEXT_SIZE
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.Companion.MIN_TEXT_SIZE
 import com.mckimquyen.watermark.ui.widget.utils.WaterMarkShader
+import com.mckimquyen.watermark.utils.bitmap.BitmapCache
 import com.mckimquyen.watermark.utils.bitmap.decodeSampledBitmapFromResource
 import com.mckimquyen.watermark.utils.ktx.applyConfig
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -79,6 +81,12 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
     @Volatile
     private var iconBitmap: Bitmap? = null
 
+    // ENH-15: theo dõi BitmapValue thật sự lấy từ BitmapCache cho ảnh chính/icon đang hiển thị —
+    // retain() khi bắt đầu dùng, release() khi thay bằng bitmap khác hoặc View bị detach. Cho
+    // phép BitmapCache tự recycle() bitmap bị evict an toàn (không đụng bitmap đang được vẽ).
+    private var mainImageBitmapValue: BitmapCache.BitmapValue? = null
+    private var iconBitmapValue: BitmapCache.BitmapValue? = null
+
     private var enableWaterMark = AtomicBoolean(false)
 
     private val drawableBounds = RectF()
@@ -111,6 +119,12 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         generateBitmapJob?.cancel()
+        // ENH-15: View không còn dùng 2 bitmap này nữa — release() để BitmapCache được phép
+        // recycle() nếu chúng đã (hoặc sẽ) bị evict.
+        mainImageBitmapValue?.release()
+        mainImageBitmapValue = null
+        iconBitmapValue?.release()
+        iconBitmapValue = null
     }
 
     fun updateUri(init: Boolean, imageInfo: ImageInfo) {
@@ -186,6 +200,12 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 }
                 // setting the bitmap of image
                 val imageBitmap = bitmapValue.bitmap ?: return@launch
+                // ENH-15: retain bitmap MỚI trước, release bitmap CŨ sau (không đảo thứ tự) —
+                // nếu 2 BitmapInfo trùng nhau (refCount>0 do đang được giữ ở nơi khác), release
+                // trước rồi retain sau có thể để lọt qua đúng lúc refCount chạm 0 và bị recycle.
+                bitmapValue.retain()
+                mainImageBitmapValue?.release()
+                mainImageBitmapValue = bitmapValue
                 // adjust bitmap via matrix
                 setImageBitmap(imageBitmap)
                 val matrix = adjustMatrix(
@@ -259,7 +279,12 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                                 AppLog.d(LOG_TAG, "[WMIV] Image mode: icon decode FAILED → return (watermark will NOT render)")
                                 return@launch
                             }
-                            iconBitmap = iconBitmapRect.data!!.bitmap
+                            // ENH-15: retain mới trước, release cũ sau (xem lý do ở nhánh main image).
+                            val newIconBitmapValue = iconBitmapRect.data!!
+                            newIconBitmapValue.retain()
+                            iconBitmapValue?.release()
+                            iconBitmapValue = newIconBitmapValue
+                            iconBitmap = newIconBitmapValue.bitmap
                             AppLog.d(LOG_TAG, "[WMIV] Image mode: iconBitmap set: ${iconBitmap?.width}x${iconBitmap?.height}")
                         } else {
                             AppLog.d(LOG_TAG, "[WMIV] Image mode: reusing cached iconBitmap")
@@ -521,9 +546,17 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         // lập tức và có cảm giác "không hoạt động".
         private var baselineTextSize = DEFAULT_TEXT_SIZE
 
+        // ENH-16: giá trị textSize MỚI NHẤT tính được mỗi frame pinch, kể cả frame bị throttle bỏ
+        // qua rebuild — dùng để áp dụng chính xác lúc nhả tay (onScaleEnd), không mất độ chính xác.
+        private var pendingTextSize = DEFAULT_TEXT_SIZE
+        private var lastShaderRebuildAtMs = 0L
+
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
             baselineTextSize = config?.textSize ?: DEFAULT_TEXT_SIZE
+            pendingTextSize = baselineTextSize
             mScaleFactor = 1f
+            // Frame đầu tiên của phiên pinch mới luôn được rebuild ngay (không đợi throttle).
+            lastShaderRebuildAtMs = 0L
             return true
         }
 
@@ -544,6 +577,14 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 Log.i(TAG, "onScale: $textSize, $mScaleFactor, to min")
                 return true
             }
+            pendingTextSize = textSize
+            val now = SystemClock.elapsedRealtime()
+            if (!shouldRebuildShader(now, lastShaderRebuildAtMs)) {
+                // ENH-16: bỏ qua rebuild shader ở frame này — pendingTextSize vẫn được cập nhật
+                // để onScaleEnd áp dụng đúng giá trị cuối cùng.
+                return true
+            }
+            lastShaderRebuildAtMs = now
             Log.i(TAG, "onScale $mScaleFactor, textSize: ${config?.textSize} ==> $textSize")
             config = config?.copy(textSize = textSize)
             invalidate()
@@ -553,9 +594,13 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         override fun onScaleEnd(detector: ScaleGestureDetector) {
             super.onScaleEnd(detector)
             Log.i(TAG, "onScaleEnd $mScaleFactor")
+            // ENH-16: đảm bảo giá trị CUỐI CÙNG luôn phản ánh đúng lúc nhả tay, kể cả khi frame
+            // cuối cùng của pinch bị throttle bỏ qua rebuild.
+            if (config?.textSize != pendingTextSize) {
+                config = config?.copy(textSize = pendingTextSize)
+                invalidate()
+            }
             val textSize = (config?.textSize ?: DEFAULT_TEXT_SIZE)
-//            config = config?.copy(textSize = textSize)
-//            mScaleFactor = 1f
             this@WaterMarkImageView.onScaleEnd(textSize)
         }
     }
@@ -624,6 +669,18 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         private const val TAG = "WatermarkImageView"
 
         const val ANIMATION_DURATION = 450L
+
+        /**
+         * ENH-16: pinch bắn `onScale` 60-120 lần/giây, mỗi lần trước đây rebuild shader từ đầu
+         * (2 lần cấp phát Bitmap trong `buildIconBitmapShader`/`buildTextBitmapShader`) — throttle
+         * còn ~25fps (đủ mượt để mắt không thấy giật cục) để giảm hẳn tần suất cấp phát/GC thật
+         * sự là nguyên nhân lag (không phải ghi DataStore, xem ENH-02).
+         */
+        const val SHADER_REBUILD_THROTTLE_MS = 40L
+
+        /** Hàm thuần để test biên giới không cần dựng View/ScaleGestureDetector thật. */
+        fun shouldRebuildShader(nowMs: Long, lastRebuildAtMs: Long, throttleMs: Long = SHADER_REBUILD_THROTTLE_MS): Boolean =
+            nowMs - lastRebuildAtMs >= throttleMs
 
         /**
          * Very simple way to fit the image into the canvas

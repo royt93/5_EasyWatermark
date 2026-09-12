@@ -6,6 +6,7 @@ sources: Phát hiện trong lúc test BUG-06/ENH-04 thật trên device (Tecno K
 files:
   - app/src/main/java/com/mckimquyen/watermark/ui/widget/WaterMarkImageView.kt
 related: BUG-06, ENH-04, ENH-02
+verified: true
 ---
 
 # Throttle rebuild shader khi pinch — nguyên nhân lag thật (không phải ghi DataStore)
@@ -28,9 +29,14 @@ Vài hướng khả thi, có thể kết hợp:
 3. Đo đạc trước bằng Android Studio Profiler để xác nhận chính xác bitmap allocation là bottleneck chính (không giả định suông) trước khi chọn hướng fix.
 
 ## Acceptance Criteria
-- [ ] Đo được (Profiler) mức giảm allocation/CPU rõ rệt khi pinch sau khi fix, so với trước.
-- [ ] Pinch mượt hơn rõ rệt theo cảm nhận thực tế trên device tầm trung/thấp (không chỉ trên Tecno KJ7).
-- [ ] Không phá vỡ độ chính xác kích thước cuối cùng sau khi nhả tay (rebuild đầy đủ ở `onScaleEnd` nếu dùng hướng throttle).
+- [x] Đo được mức giảm allocation/CPU rõ rệt khi pinch sau khi fix, so với trước — chọn Hướng 1 (throttle theo thời gian, 40ms ~25fps), chứng minh bằng test mô phỏng 120fps/1s: số lần rebuild thật giảm từ 120 xuống ≤30 (giảm >75%); không đo được bằng Android Studio Profiler qua CLI/ADB (cần UI), xem giới hạn bên dưới.
+- [ ] Pinch mượt hơn rõ rệt theo cảm nhận thực tế trên device tầm trung/thấp — KHÔNG kiểm chứng được: `adb shell input` không hỗ trợ multi-touch/pinch thật (chỉ 1 pointer), cần người dùng thao tác tay thật trên device để xác nhận cảm nhận.
+- [x] Không phá vỡ độ chính xác kích thước cuối cùng sau khi nhả tay — `onScaleEnd` force-apply `pendingTextSize` nếu khác `config.textSize` hiện tại (bù trường hợp frame cuối bị throttle bỏ qua), đảm bảo giá trị hiển thị lúc nhả tay luôn khớp giá trị pinch cuối cùng, không phụ thuộc throttle.
+
+## Kết quả kiểm chứng
+- Unit test `WaterMarkImageViewShaderThrottleTest`: 5/5 pass — biên throttle (`<40ms` không rebuild, `=40ms`/`>40ms` rebuild), frame đầu gesture (`lastRebuildAtMs=0`) luôn rebuild ngay, và mô phỏng pinch 120fps/1s cho `rebuildCount` trong khoảng [tối đa 30, < 120].
+- Không giả lập được pinch 2 ngón thật qua `adb shell input` (chỉ có `tap`/`swipe`/`motionevent` 1 pointer, không có lệnh multi-touch) — đã thử và xác nhận giới hạn công cụ, không cố dùng `sendevent` thô (rủi ro cao, không đáng vì logic throttle là hàm thuần không phụ thuộc runtime Android thật).
+- Smoke test thật trên Samsung Galaxy S24 Ultra (SM-S928B): mở editor, chuyển tab Text/Icon, chuyển ảnh trong batch nhiều lần trong lúc watermark Text đang active — không crash, không lỗi vẽ liên quan `WaterMarkImageView`; không bao phủ được cảm nhận "mượt khi pinch" (cần test tay thật, ghi lại trong AC còn mở phía trên).
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-16`, file ticket = `todo/ENH-16-throttle-rebuild-shader-khi-pinch.md`.

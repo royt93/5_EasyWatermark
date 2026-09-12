@@ -27,20 +27,24 @@ suspend fun decodeBitmapWithExif(
     options: BitmapFactory.Options? = null,
 ): Result<BitmapCache.BitmapValue> =
     withContext(Dispatchers.IO) {
-        return@withContext decodeBitmapWithExifSync(context, uri, inputStream, options)
+        val (rotation, exifModel) = readExifOrientationAndModel(context, uri)
+        return@withContext decodeBitmapWithExifSync(inputStream, options, rotation, exifModel)
     }
 
+/**
+ * ENH-06: [rotation]/[exifModel] phải được đọc TRƯỚC (qua [readExifOrientationAndModel], 1 lần
+ * mở stream duy nhất) và truyền vào đây — hàm này KHÔNG tự mở thêm stream nào để đọc EXIF, tránh
+ * lặp lại việc đọc EXIF nhiều lần cho cùng 1 Uri khi gọi từ [decodeSampledBitmapFromResourceSync].
+ */
 fun decodeBitmapWithExifSync(
-    context: Context,
-    uri: Uri,
     inputStream: InputStream,
-    options: BitmapFactory.Options? = null,
+    options: BitmapFactory.Options?,
+    rotation: Float,
+    exifModel: com.mckimquyen.watermark.data.model.ExifModel,
 ): Result<BitmapCache.BitmapValue> {
     val bitmap = BitmapFactory.decodeStream(inputStream, null, options)
         ?: return Result.failure(null, "-1", "Generate Bitmap failed.")
     val inSampleSize = options?.inSampleSize ?: 1
-    val rotation = getOrientation(context, uri)
-    val exifModel = getExifData(context, uri)
     val bitmapValue = BitmapCache.BitmapValue(bitmap, inSampleSize, exifModel)
     if (rotation == 0f) {
         return Result.success(bitmapValue)
@@ -65,57 +69,23 @@ fun decodeBitmapWithExifSync(
     return Result.success(rotateBitmapValue)
 }
 
-private fun getExifData(context: Context, uri: Uri): com.mckimquyen.watermark.data.model.ExifModel {
-    var exifModel = com.mckimquyen.watermark.data.model.ExifModel()
-    try {
-        context.contentResolver.openInputStream(uri)?.use {
-            if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.N) {
-                val exif = ExifInterface(it)
-                val make = exif.getAttribute(ExifInterface.TAG_MAKE) ?: ""
-                val model = exif.getAttribute(ExifInterface.TAG_MODEL) ?: ""
-                val dateTime = exif.getAttribute(ExifInterface.TAG_DATETIME) ?: ""
-                val fNumber = exif.getAttribute(ExifInterface.TAG_F_NUMBER) ?: ""
-                val exposureTime = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME) ?: ""
-                val focalLength = exif.getAttribute(ExifInterface.TAG_FOCAL_LENGTH) ?: ""
-                val iso = exif.getAttribute(ExifInterface.TAG_ISO_SPEED_RATINGS) ?: ""
-                
-                exifModel = com.mckimquyen.watermark.data.model.ExifModel(
-                    make = make,
-                    model = model,
-                    dateTime = dateTime,
-                    fNumber = if (fNumber.isNotEmpty()) "f/$fNumber" else "",
-                    exposureTime = if (exposureTime.isNotEmpty()) {
-                        val d = exposureTime.toDoubleOrNull()
-                        if (d != null && d < 1) "1/${(1/d).toInt()}s" else "${exposureTime}s"
-                    } else "",
-                    iso = iso,
-                    focalLength = if (focalLength.isNotEmpty()) {
-                        val parts = focalLength.split("/")
-                        if (parts.size == 2) "${parts[0].toDouble() / parts[1].toDouble()}mm" else "${focalLength}mm"
-                    } else ""
-                )
-            }
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-    return exifModel
-}
-
 /**
- * Get orientation from ExifInterface and System sql.
+ * ENH-06: đọc rotation (orientation) VÀ [com.mckimquyen.watermark.data.model.ExifModel] trong
+ * CÙNG 1 lần mở `InputStream`/`ExifInterface` cho 1 [uri] — trước đây `getOrientation()` và
+ * `getExifData()` mỗi hàm tự mở 1 stream riêng cho cùng dữ liệu EXIF, nhân đôi I/O không cần
+ * thiết (ảnh hưởng rõ với URI chậm từ SAF/cloud provider, đặc biệt khi xử lý batch).
  */
-private fun getOrientation(
+private fun readExifOrientationAndModel(
     context: Context,
     uri: Uri,
-): Float {
-    context.contentResolver.openInputStream(uri).use {
-        if (it == null) {
-            return 0f
+): Pair<Float, com.mckimquyen.watermark.data.model.ExifModel> {
+    context.contentResolver.openInputStream(uri).use { input ->
+        if (input == null) {
+            return 0f to com.mckimquyen.watermark.data.model.ExifModel()
         }
         val exif = if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.N) {
             try {
-                ExifInterface(it)
+                ExifInterface(input)
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
@@ -124,50 +94,77 @@ private fun getOrientation(
             // do not support api lower 24
             null
         }
-        val tagOrientation: Int = exif?.getAttributeInt(
-            ExifInterface.TAG_ORIENTATION,
-            ExifInterface.ORIENTATION_UNDEFINED
-        ) ?: ExifInterface.ORIENTATION_UNDEFINED
+        return resolveRotation(context, uri, exif) to buildExifModel(exif)
+    }
+}
 
-        when (tagOrientation) {
-            ExifInterface.ORIENTATION_ROTATE_90 -> {
-                return 90f
-            }
+private fun buildExifModel(exif: ExifInterface?): com.mckimquyen.watermark.data.model.ExifModel {
+    if (exif == null) return com.mckimquyen.watermark.data.model.ExifModel()
+    val make = exif.getAttribute(ExifInterface.TAG_MAKE) ?: ""
+    val model = exif.getAttribute(ExifInterface.TAG_MODEL) ?: ""
+    val dateTime = exif.getAttribute(ExifInterface.TAG_DATETIME) ?: ""
+    val fNumber = exif.getAttribute(ExifInterface.TAG_F_NUMBER) ?: ""
+    val exposureTime = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME) ?: ""
+    val focalLength = exif.getAttribute(ExifInterface.TAG_FOCAL_LENGTH) ?: ""
+    val iso = exif.getAttribute(ExifInterface.TAG_ISO_SPEED_RATINGS) ?: ""
+    return com.mckimquyen.watermark.data.model.ExifModel(
+        make = make,
+        model = model,
+        dateTime = dateTime,
+        fNumber = if (fNumber.isNotEmpty()) "f/$fNumber" else "",
+        exposureTime = if (exposureTime.isNotEmpty()) {
+            val d = exposureTime.toDoubleOrNull()
+            if (d != null && d < 1) "1/${(1/d).toInt()}s" else "${exposureTime}s"
+        } else "",
+        iso = iso,
+        focalLength = if (focalLength.isNotEmpty()) {
+            val parts = focalLength.split("/")
+            if (parts.size == 2) "${parts[0].toDouble() / parts[1].toDouble()}mm" else "${focalLength}mm"
+        } else ""
+    )
+}
 
-            ExifInterface.ORIENTATION_ROTATE_180 -> {
-                return 180f
-            }
+/**
+ * Get orientation from ExifInterface and System sql.
+ */
+private fun resolveRotation(
+    context: Context,
+    uri: Uri,
+    exif: ExifInterface?,
+): Float {
+    val tagOrientation: Int = exif?.getAttributeInt(
+        ExifInterface.TAG_ORIENTATION,
+        ExifInterface.ORIENTATION_UNDEFINED
+    ) ?: ExifInterface.ORIENTATION_UNDEFINED
 
-            ExifInterface.ORIENTATION_ROTATE_270 -> {
-                return 270f
-            }
-
-            else -> {
-                // do not need to rotate bitmap
-                try {
-                    val cursor: Cursor? = context.contentResolver.query(
-                        uri,
-                        arrayOf(MediaStore.Images.ImageColumns.ORIENTATION),
-                        null,
-                        null,
-                        null
-                    )
-                    if (cursor?.count != 1) {
-                        cursor?.close()
-                        return 0f
-                    }
-                    cursor.moveToFirst()
-                    val orientation: Int = cursor.getInt(0)
-                    cursor.close()
-                    return orientation.toFloat()
-                } catch (e: Exception) {
+    return when (tagOrientation) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+        ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+        ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+        else -> {
+            // do not need to rotate bitmap
+            try {
+                val cursor: Cursor? = context.contentResolver.query(
+                    uri,
+                    arrayOf(MediaStore.Images.ImageColumns.ORIENTATION),
+                    null,
+                    null,
+                    null
+                )
+                if (cursor?.count != 1) {
+                    cursor?.close()
                     return 0f
                 }
+                cursor.moveToFirst()
+                val orientation: Int = cursor.getInt(0)
+                cursor.close()
+                orientation.toFloat()
+            } catch (e: Exception) {
+                0f
             }
         }
     }
 }
-
 
 suspend fun decodeBitmapFromUri(
     context: Context,
@@ -221,8 +218,11 @@ fun decodeSampledBitmapFromResourceSync(
         resolver.openInputStream(uri).use { `is` ->
             BitmapFactory.decodeStream(`is`, null, options)
         }
-        // 2. Calculate inSampleSize
-        val (oHeight: Int, oWidth: Int) = if (interChangeSize(context, uri)) {
+        // 2. Đọc EXIF (rotation + model) 1 LẦN DUY NHẤT — ENH-06, tái dùng cho cả quyết định
+        // interchange width/height (bước này) lẫn gắn vào BitmapValue kết quả (bước 3), thay vì
+        // đọc lại EXIF lần thứ 2 bên trong decodeBitmapWithExifSync như trước.
+        val (rotation, exifModel) = readExifOrientationAndModel(context, uri)
+        val (oHeight: Int, oWidth: Int) = if (shouldInterchangeSize(rotation)) {
             options.run { outWidth to outHeight }
         } else {
             options.run { outHeight to outWidth }
@@ -238,7 +238,7 @@ fun decodeSampledBitmapFromResourceSync(
             if (inputStream == null) {
                 return Result.failure(null, "-1", "Open input stream failed.")
             }
-            return decodeBitmapWithExifSync(context, uri, inputStream, options)
+            return decodeBitmapWithExifSync(inputStream, options, rotation, exifModel)
         }
     } catch (fne: FileNotFoundException) {
         return Result.failure(null, "-1", fne.message)
@@ -251,9 +251,6 @@ fun decodeSampledBitmapFromResourceSync(
         )
     }
 }
-
-fun interChangeSize(context: Context, uri: Uri): Boolean =
-    shouldInterchangeSize(getOrientation(context, uri))
 
 /**
  * Chỉ ảnh xoay 90°/270° mới cần đảo chiều rộng/cao khi tính sample size; 180° giữ nguyên

@@ -351,15 +351,24 @@ class MainViewModel @Inject constructor(
                                 message = "decodeSampledBitmapFromResource == null"
                             )
                         }
-                        val iconBitmap = iconBitmapRect.data!!.bitmap!!
-                        WaterMarkImageView.buildIconBitmapShader(
-                            imageInfo = imageInfo,
-                            srcBitmap = iconBitmap,
-                            config = tmpConfig,
-                            textPaint = bitmapPaint,
-                            scale = true,
-                            coroutineContext = Dispatchers.IO
-                        )
+                        // ENH-15: giữ (retain) bitmap này trong lúc dùng để BitmapCache không
+                        // recycle nó nếu bị evict giữa chừng (batch nhiều ảnh có thể evict entry
+                        // đang xử lý) — release ngay sau khi build shader xong (đã copy pixel vào
+                        // shader riêng, không cần iconBitmap gốc nữa).
+                        val iconBitmapValue = iconBitmapRect.data!!
+                        iconBitmapValue.retain()
+                        try {
+                            WaterMarkImageView.buildIconBitmapShader(
+                                imageInfo = imageInfo,
+                                srcBitmap = iconBitmapValue.bitmap!!,
+                                config = tmpConfig,
+                                textPaint = bitmapPaint,
+                                scale = true,
+                                coroutineContext = Dispatchers.IO
+                            )
+                        } finally {
+                            iconBitmapValue.release()
+                        }
                     }
 
                     null -> return@withContext Result.failure(

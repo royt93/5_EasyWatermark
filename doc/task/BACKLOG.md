@@ -28,21 +28,18 @@
 
 **Đã DONE** (xem `doc/task/done/`): BUG-01 (inSampleSize/rotation), BUG-02 (BitmapCache NPE), BUG-03 (batch export báo thành công giả), BUG-04 (contentResolver insert force-unwrap), BUG-05 (OOM batch export — *lưu ý: BUG-21 mới phát hiện phần còn sót*), BUG-06 (icon cache race leak), BUG-11 (compressImg guard rỗng + leak file tạm), BUG-13 (QR debounce + off Main thread), BUG-16 (literal "null" trong Edit watermark), BUG-17 (FilmStrip coerceAtLeast — hoá ra đã fix kèm FEAT-14, chỉ thiếu test+ticket), BUG-20 (EditTextContentFragment collect theo viewLifecycleOwner) — **sprint P2 2026-09-11, xem `## Sprint 2026-09-11` cuối file**. Thêm BUG-22 (SaveImageBSDialogFragment tràn viewport màn hình nhỏ — phát hiện ngoài kế hoạch gốc, fix cùng ngày).
 
-## ENHANCEMENTS (9 todo + 11 done) — cải tiến tính năng có sẵn
+## ENHANCEMENTS (6 todo + 14 done) — cải tiến tính năng có sẵn
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [ENH-01](todo/ENH-01-batch-export-workmanager-huy-tien-do.md) | L | Batch export chạy qua WorkManager + huỷ + tiến độ tổng |
 | [ENH-17](todo/ENH-17-vip-key-device-bound.md) | S | VIP key gắn thiết bị (device-bound) — mitigation cho BUG-14 (mới 2026-09-10) — **deferred cùng BUG-14/15** |
-| [ENH-06](todo/ENH-06-gom-input-stream-decode-anh.md) | M | Gộp mở `InputStream` lặp lại khi decode 1 ảnh (4-5 lần → 1-2 lần) |
 | [ENH-08](todo/ENH-08-immutable-state-watermark-repository.md) | M | Model bất biến cho `ImageInfo`/`StateFlow` (`WaterMarkRepository`) |
 | [ENH-09](todo/ENH-09-hardcode-string-sang-resources.md) | M | Đưa hardcode string UI sang `resources` (i18n/accessibility) |
 | [ENH-10](todo/ENH-10-android-photo-picker.md) | M | Chuyển sang Android Photo Picker thay `ACTION_PICK` legacy |
-| [ENH-14](todo/ENH-14-downsample-truc-tiep-khi-decode-export.md) | M | Downsample trực tiếp khi decode ảnh export |
-| [ENH-15](todo/ENH-15-bitmapcache-recycle-an-toan-khi-evict.md) | M | BitmapCache recycle an toàn khi evict — cần refcounting |
-| [ENH-16](todo/ENH-16-throttle-rebuild-shader-khi-pinch.md) | M | Throttle rebuild shader khi pinch — nguyên nhân lag thật |
+| [ENH-14](todo/ENH-14-downsample-truc-tiep-khi-decode-export.md) | M | Downsample trực tiếp khi decode ảnh export — **rủi ro cao nhất nhóm hiệu năng M, xem ghi chú Sprint ENH hiệu năng M cuối file, chưa quyết định hướng đi** |
 
-**Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4). **Sprint ENH S/XS 2026-09-12** (xem `## Sprint ENH 2026-09-12` cuối file): ENH-02 (debounce ghi DataStore khi gõ text), ENH-03 (gate `Log.d` bằng `BuildConfig.DEBUG`), ENH-07 (SignatureRepository qua Hilt DI), ENH-11 (vòng đời Ad Banner đầy đủ), ENH-12 (MonetManufacturer dựa API chính thức), ENH-13 (hiển thị số ảnh thành công/thất bại), ENH-18 (hằng số "Unknown Device" chung), ENH-19 (EXIF border co chữ tránh tràn), ENH-20 (preview filename query bất đồng bộ).
+**Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4). **Sprint ENH S/XS 2026-09-12** (xem `## Sprint ENH 2026-09-12` cuối file): ENH-02 (debounce ghi DataStore khi gõ text), ENH-03 (gate `Log.d` bằng `BuildConfig.DEBUG`), ENH-07 (SignatureRepository qua Hilt DI), ENH-11 (vòng đời Ad Banner đầy đủ), ENH-12 (MonetManufacturer dựa API chính thức), ENH-13 (hiển thị số ảnh thành công/thất bại), ENH-18 (hằng số "Unknown Device" chung), ENH-19 (EXIF border co chữ tránh tràn), ENH-20 (preview filename query bất đồng bộ). **Sprint ENH hiệu năng M 2026-09-12** (xem `## Sprint ENH hiệu năng M 2026-09-12` cuối file): ENH-06 (gộp mở InputStream decode), ENH-15 (BitmapCache reference counting an toàn khi evict), ENH-16 (throttle rebuild shader khi pinch).
 
 ## NEW_FEATURES (13 todo + 1 done) — tính năng mới thực dụng, 1-2 tuần
 
@@ -105,6 +102,18 @@ Toàn bộ 5 ticket P2 còn lại trong BUGS_TO_FIX đã hoàn thành theo `PROM
 - **Hạ tầng test bị treo lặp lại nhiều lần trong phiên này** (không liên quan code sửa) — full `testAppReleaseDebugUnitTest` trên toàn bộ 33 class treo thật (CPU gần như đứng yên) nhiều lần liên tiếp trên máy đang chạy đồng thời Android Studio + Chrome + 2 phiên Claude + Zalo + LarkSuite (RAM gần cạn, compressor cao). Khắc phục tạm: tăng `maxHeapSize=3g` + `forkEvery=25` trong `testOptions.unitTests.all` (app/build.gradle.kts) — vẫn treo được, nhưng khi chạy KIÊN NHẪN đủ lâu (batch tách nhỏ theo package, ~7-31 phút/lần) luôn PASS toàn bộ, không có test nào thật sự fail do lỗi logic. Ghi nhận: đây là giới hạn tài nguyên máy thật lúc chạy phiên dài, không phải bug trong code hay test.
 - **Device đổi lần 2 giữa phiên**: Samsung SM_A115F mất kết nối hẳn, TECNO_KJ7 vẫn còn (từng dính ad, bị bỏ qua trước đó), xuất hiện máy mới OnePlus CPH1989 (FUJZIFIR7DQCNRWW) — hỏi user qua `AskUserQuestion`, được chọn OnePlus, khoá dùng cho phần smoke test còn lại của sprint này.
 - **Bài học thao tác ADB mới**: `uiautomator dump` không đáng tin cậy trên máy OnePlus/OPPO này (nhiều lần trả về cây UI CŨ/sai màn hình đang hiển thị) — phải chuyển hẳn sang tính toạ độ tap từ ảnh chụp màn hình thật (screencap, luôn đúng kích thước thật của thiết bị, vd 1080×2340) thay vì dựa vào dump.
+
+## Sprint ENH hiệu năng M 2026-09-12 — nhóm bitmap/render (ENH-06/15/16)
+
+3 ticket effort M trong nhóm "ENH hiệu năng M" hoàn thành theo `PROMPT_TEMPLATE.md` — chi tiết từng ticket xem "Kết quả kiểm chứng" trong file ở `doc/task/done/`.
+
+- **ENH-06**: dừng ở 3 lần mở `InputStream`/ảnh (không đạt mục tiêu aspirational "1-2" trong ticket gốc) — quyết định có chủ đích, ghi rõ lý do trong ticket (gộp thêm bằng `mark/reset` rủi ro `IOException` không đoán trước trên SAF/cloud provider, đổi lấy giảm 1 lần mở stream không đáng).
+- **ENH-15**: chọn Phương án B (reference counting) thay vì Phương án A (chỉ giảm cacheSize) — vì Phương án A không giải quyết gốc rủi ro use-after-recycle nêu trong ticket. Audit đủ 2 nơi giữ tham chiếu trực tiếp bitmap từ cache (`WaterMarkImageView`, `MainViewModel.generateImage()`).
+- **ENH-16**: chọn Hướng 1 (throttle theo thời gian, 40ms) trong 3 hướng đề xuất của ticket — đơn giản nhất, đủ hiệu quả (giảm >75% lần rebuild theo test mô phỏng 120fps), không đổi accuracy cuối cùng nhờ force-apply ở `onScaleEnd`.
+- **Giới hạn chung không tránh được của cả 3 ticket**: 2/2 Acceptance Criteria dạng "đo bằng Android Studio Memory/CPU Profiler" (ENH-15, ENH-16) không thực hiện được vì môi trường làm việc chỉ có CLI + ADB, không có Android Studio UI — thay bằng bằng chứng gián tiếp (unit test mô phỏng đúng cơ chế, hoặc số liệu đếm thực nghiệm qua `ContentProvider`/`LruCache` giả lập). Ghi rõ trong từng ticket, không tự nhận đã đo Profiler khi chưa đo.
+- **Pinch 2 ngón thật không giả lập được qua `adb shell input`** (chỉ hỗ trợ 1 pointer/không multi-touch) — AC "pinch mượt hơn theo cảm nhận thực tế" của ENH-16 còn để ngỏ trong ticket, cần người dùng xác nhận tay thật.
+- **Smoke test thật trên Samsung Galaxy S24 Ultra (SM-S928B, serial R5CX613VZBR)** — đổi từ OnePlus CPH1989 theo yêu cầu tường minh của user giữa phiên ("hãy dùng s24u"): batch 2 ảnh, bật Icon watermark mode (decode+hiển thị icon bitmap từ cache), chuyển qua lại giữa 2 ảnh nhiều lần, theo dõi `adb logcat *:E` xuyên suốt — không `FATAL EXCEPTION`/`AndroidRuntime` nào liên quan app, không crash.
+- **`uiautomator dump` tiếp tục không đáng tin cậy** trên cả OnePlus lẫn Samsung S24 Ultra (trả cây UI cũ/sai màn hình) — xác nhận đây là vấn đề công cụ trên các máy test gần đây, không phải riêng 1 hãng; toàn bộ thao tác tap phải tính toạ độ từ ảnh chụp màn hình thật, có lúc cần crop ảnh phóng to vùng nút để đo chính xác khi UI có nhiều cột hẹp sát nhau (row Text/Icon/Signature/QR Code).
 
 ## Ghi chú re-audit 2026-09-10 (khác biệt so với đợt sinh backlog gốc)
 
