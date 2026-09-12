@@ -28,11 +28,10 @@
 
 **Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4). **Sprint ENH S/XS 2026-09-12** (xem `## Sprint ENH 2026-09-12` cuối file): ENH-02 (debounce ghi DataStore khi gõ text), ENH-03 (gate `Log.d` bằng `BuildConfig.DEBUG`), ENH-07 (SignatureRepository qua Hilt DI), ENH-11 (vòng đời Ad Banner đầy đủ), ENH-12 (MonetManufacturer dựa API chính thức), ENH-13 (hiển thị số ảnh thành công/thất bại), ENH-18 (hằng số "Unknown Device" chung), ENH-19 (EXIF border co chữ tránh tràn), ENH-20 (preview filename query bất đồng bộ). **Sprint ENH hiệu năng M 2026-09-12** (xem `## Sprint ENH hiệu năng M 2026-09-12` cuối file): ENH-06 (gộp mở InputStream decode), ENH-15 (BitmapCache reference counting an toàn khi evict), ENH-16 (throttle rebuild shader khi pinch), ENH-14 (downsample trực tiếp khi decode export — làm với AC hạ chuẩn, user quyết định 2026-09-12). **Sprint ENH-08/09/10 2026-09-12** (xem `## Sprint ENH-08/09/10 2026-09-12` cuối file): ENH-08 (ImageInfo bất biến hoàn toàn), ENH-09 (hardcode string sang resources + plurals), ENH-10 (Android Photo Picker thay ACTION_PICK legacy). **ENH-01 2026-09-12** (xem `## ENH-01 2026-09-12` cuối file): batch export qua WorkManager + huỷ + tiến độ notification — phát hiện + fix crash `foregroundServiceType` thật qua smoke test Samsung SM-S928B.
 
-## NEW_FEATURES (9 todo + 5 done) — tính năng mới thực dụng, 1-2 tuần
+## NEW_FEATURES (8 todo + 6 done) — tính năng mới thực dụng, 1-2 tuần
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
-| [FEAT-08](todo/FEAT-08-chon-thu-muc-saf-batch.md) | S | Chọn cả thư mục (SAF tree) để batch |
 | [FEAT-10](todo/FEAT-10-frame-preset-nhan-dien-hang-may.md) | S | Tự nhận diện hãng máy để gợi ý style khung EXIF (scope thu hẹp sau audit — phần style đã xong) |
 | [FEAT-04](todo/FEAT-04-lich-su-batch-gan-day.md) | M | Lịch sử batch export gần đây |
 | [FEAT-05](todo/FEAT-05-backup-restore-template-signature.md) | M | Xuất/nhập Template + Signature (backup/restore) |
@@ -42,7 +41,7 @@
 | [FEAT-13](todo/FEAT-13-caption-rieng-tung-anh-batch.md) | M | Nhập caption/text riêng theo từng ảnh trong batch (CSV) |
 | [FEAT-03](todo/FEAT-03-multi-layer-watermark.md) | L | Watermark đa lớp (chồng text + logo/QR cùng lúc) |
 
-**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark.
+**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch.
 
 ## UNIQUE_IDEAS (10) — tính năng độc quyền/đột phá, effort cao
 
@@ -129,6 +128,15 @@ Ticket effort S, chi tiết đầy đủ xem "Kết quả kiểm chứng" trong 
 - Export dùng chung 100% code path với preview (`WaterMarkImageView.buildTextBitmapShader` + `PainKtx.applyConfig`) — không cần sửa gì thêm ở `BatchExportEngine`, verify bằng smoke test thật (export file, zoom kiểm tra bằng mắt khớp preview).
 - Smoke test trên Pixel 7 Pro xác nhận chip UI toggle độc lập đúng (3 chip active đồng thời), Material You dynamic color áp dụng đúng cho trạng thái checked (`?attr/colorPrimary`, không hardcode hex).
 - Nhân tiện dọn `BACKLOG.md`: bảng NEW_FEATURES liệt kê nhầm FEAT-02/FEAT-09/FEAT-14 là "todo" trong khi cả 3 đã xong từ trước (nằm ở `done/`) — sửa lại đúng trạng thái.
+
+## FEAT-08 2026-09-12 — chọn cả thư mục (SAF tree) để batch
+
+Ticket effort S, chi tiết đầy đủ xem "Kết quả kiểm chứng" trong `doc/task/done/FEAT-08-chon-thu-muc-saf-batch.md`.
+
+- Thêm nút "Choose folder" cạnh nút "pick via system" có sẵn (ENH-10) trong menu `GalleryFragment` — không đụng layout/FAB/grid hiện có.
+- Logic lọc ảnh trong cây SAF (`FileUtils.filterImageUris`) tách riêng khỏi phần gọi `DocumentFile.fromTreeUri` thật để test được bằng mock, không cần dựng cả `DocumentsProvider` giả.
+- Kết quả đẩy thẳng qua `handleActivityResult()` đã có sẵn cho multi-pick — không viết code riêng cho đường dẫn mới, giảm rủi ro hồi quy.
+- Smoke test thật trên Pixel 7 Pro qua đúng picker SAF hệ thống: chọn thư mục `Pictures` (có sẵn cả ảnh trực tiếp lẫn nhiều subfolder) — xác nhận chỉ ảnh trực tiếp được đưa vào batch, subfolder không bị đệ quy, không crash.
 
 ## Ghi chú re-audit 2026-09-10 (khác biệt so với đợt sinh backlog gốc)
 

@@ -82,6 +82,8 @@
     <string name="dialog_save_exporting">Exporting</string>
     <string name="tips_pick_image">Choose Images</string>
     <string name="pick_via_system">more…</string>
+    <!-- FEAT-08: chọn cả thư mục (SAF tree) đưa toàn bộ ảnh trong đó vào batch. -->
+    <string name="pick_folder">Choose folder</string>
     <string name="recovery_title">Recovery Mode</string>
     <string name="copy_success">Copy success</string>
     <string name="copy_failed">Copy failed</string>

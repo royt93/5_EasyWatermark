@@ -3,11 +3,15 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -44,6 +48,9 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
     /** ENH-10: Android Photo Picker — không cần quyền READ_MEDIA_IMAGES/READ_EXTERNAL_STORAGE. */
     private lateinit var pickImageVisualMediaLauncher: ActivityResultLauncher<PickVisualMediaRequest>
 
+    /** FEAT-08: chọn cả thư mục (SAF tree) — đưa toàn bộ ảnh trực tiếp trong đó vào batch. */
+    private lateinit var pickFolderLauncher: ActivityResultLauncher<Uri?>
+
     private var doOnDismiss: () -> Unit = {}
 
     fun doOnDismiss(doOnDismiss: () -> Unit) {
@@ -60,6 +67,17 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         pickImageVisualMediaLauncher =
             registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris: List<Uri> ->
                 handleActivityResult(uris)
+            }
+        pickFolderLauncher =
+            registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { treeUri: Uri? ->
+                if (treeUri == null) return@registerForActivityResult
+                // Giữ quyền đọc qua lần khởi động app sau — ảnh trong thư mục vẫn cần đọc lại lúc
+                // export (có thể đã sang tiến trình mới, xem BatchExportWorker/ENH-01).
+                requireContext().contentResolver.takePersistableUriPermission(
+                    treeUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+                handleActivityResult(FileUtils.listImagesInTree(requireContext(), treeUri))
             }
         shareViewModel.query(requireContext().contentResolver)
         AppLog.d(LOG_TAG, "GalleryFragment querying media store...")
@@ -176,6 +194,13 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                     } else {
                         pickImageLauncher.launch("image/*")
                     }
+                    return@setOnMenuItemClickListener true
+                }
+
+                R.id.ivPickFolder -> {
+                    // FEAT-08: chọn cả thư mục — ảnh hợp lệ trực tiếp trong đó (không đệ quy
+                    // subfolder) đưa hết vào batch, song song với multi-pick từng ảnh ở trên.
+                    pickFolderLauncher.launch(null)
                     return@setOnMenuItemClickListener true
                 }
             }

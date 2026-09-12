@@ -178,6 +178,7 @@ dependencies {
     api(libs.recyclerview)
     api(libs.constraintLayout)
     api(libs.exifInterface)
+    api(libs.documentfile)
     api(libs.palette.ktx)
     api(libs.profieinstaller)
     api(libs.colorpicker)

@@ -39,6 +39,8 @@ dependencyResolutionManagement {
             library("constraintLayout", "androidx.constraintlayout:constraintlayout:2.2.0")
             library("exifInterface", "androidx.exifinterface:exifinterface:1.3.5")
             library("palette-ktx", "androidx.palette:palette-ktx:1.0.0")
+            // FEAT-08: liệt kê ảnh trong cây thư mục SAF (ACTION_OPEN_DOCUMENT_TREE) qua DocumentFile API.
+            library("documentfile", "androidx.documentfile:documentfile:1.0.1")
             library("blurview", "com.github.Dimezis:BlurView:version-2.0.3")
             // ENH-01: batch export chạy qua WorkManager (sống sót khi app xuống nền) + Hilt Worker.
             val workVersion = "2.9.1"

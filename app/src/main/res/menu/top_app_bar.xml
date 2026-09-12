@@ -8,4 +8,11 @@
         android:title="@string/pick_via_system"
         app:iconTint="@color/glass_text_primary"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/ivPickFolder"
+        android:icon="@drawable/ic_folder_24"
+        android:title="@string/pick_folder"
+        app:iconTint="@color/glass_text_primary"
+        app:showAsAction="always" />
 </menu>
