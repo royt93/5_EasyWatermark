@@ -182,4 +182,18 @@
     <string name="confirm">Confirm</string>
     <string name="vip_success_title">Success</string>
     <string name="vip_failed_title">Failed</string>
+
+    <!-- ENH-09: string UI hardcode chuyển sang resources -->
+    <string name="func_title_signature">Signature</string>
+    <string name="func_title_leica_exif">Leica EXIF</string>
+    <string name="about_version_display">v%1$s</string>
+    <string name="share_error">Share error with %1$s</string>
+    <plurals name="gallery_select_photo_count">
+        <item quantity="one">Select %1$d photo</item>
+        <item quantity="other">Select %1$d photos</item>
+    </plurals>
+    <plurals name="gallery_selected_count">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
 </resources>

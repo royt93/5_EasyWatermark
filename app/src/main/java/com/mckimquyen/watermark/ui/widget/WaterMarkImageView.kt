@@ -234,10 +234,14 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 // collect the drawable of new image in ImageView
                 generateDrawableBounds()
                 // the scale factor which of real image and render bitmap
-                imageInfo.inSample = bitmapValue.inSampleSize
-                curImageInfo = imageInfo
-                curImageInfo.width = drawableBounds.width().toInt()
-                curImageInfo.height = drawableBounds.height().toInt()
+                // ENH-08: imageInfo bất biến — copy() thay vì mutate object truyền vào từ ngoài
+                // (repository/ViewModel có thể đang giữ cùng tham chiếu này), theo đúng pattern
+                // curImageInfo.copy(...) đã dùng ở các nơi khác trong file này (offsetX/offsetY).
+                curImageInfo = imageInfo.copy(
+                    inSample = bitmapValue.inSampleSize,
+                    width = drawableBounds.width().toInt(),
+                    height = drawableBounds.height().toInt()
+                )
                 decodedUri = uri
             } else {
                 AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: decodedUri == uri, skip main image decode")

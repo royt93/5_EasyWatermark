@@ -54,7 +54,7 @@ class AboutActivity : BaseActivity() {
             AppLog.d(LOG_TAG, "AboutActivity initView — versionName=${BuildConfig.VERSION_NAME}")
 
             // Version display
-            tvVersionValue.text = "v${BuildConfig.VERSION_NAME}"
+            tvVersionValue.text = getString(R.string.about_version_display, BuildConfig.VERSION_NAME)
             tvVersion2.text = BuildConfig.VERSION_NAME
 
             // Back navigation via CollapsingToolbar's nav icon

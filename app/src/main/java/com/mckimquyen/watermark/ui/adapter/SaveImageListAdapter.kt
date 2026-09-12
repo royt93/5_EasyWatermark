@@ -31,14 +31,29 @@ class SaveImageListAdapter(
 
     private var maxLineHeight = 0
 
+    // ENH-08 (bug phát hiện qua smoke test thật, batch 2 ảnh trên TECNO BG6): nguồn "sự thật"
+    // đồng bộ để build update kế tiếp trong updateJobState() — KHÔNG được dùng differ.currentList
+    // (chỉ đổi SAU KHI AsyncListDiffer tính xong diff trên background thread, bất đồng bộ). Nếu
+    // build list mới từ currentList mỗi lần, 2 lệnh updateJobState() gọi liên tiếp trước khi lần
+    // trước kịp áp dụng vào currentList sẽ làm MẤT update trước đó — quan sát thật: ảnh nặng (icon
+    // watermark tile trên ảnh camera full-res) mất >60s xử lý, khi export xong file thật trên đĩa
+    // nhưng card trong danh sách vẫn kẹt icon "đang xử lý" mãi mãi. `pendingList` mutate đồng bộ
+    // ngay tại lúc gọi (luôn trên main thread, đúng thứ tự FIFO) nên không bao giờ mất update.
+    private var pendingList: MutableList<ImageInfo> = mutableListOf()
+
     private val differ: AsyncListDiffer<ImageInfo> by lazy {
         AsyncListDiffer(this, differCallback)
     }
 
     private val differCallback: DiffUtil.ItemCallback<ImageInfo> by lazy {
         object : DiffUtil.ItemCallback<ImageInfo>() {
+            // ENH-08: "cùng item" phải xét theo khoá ổn định (uri), không phải full equals — 1
+            // ảnh đổi jobState/result vẫn LÀ CÙNG 1 item (chỉ nội dung đổi), không phải item mới.
+            // Trước đây (`oldItem == newItem`, data class equals so mọi field) tình cờ "đúng" chỉ
+            // vì ImageInfo còn mutable (mutate tại chỗ nên old/new luôn trùng object) — giờ
+            // ImageInfo bất biến (ENH-08), full equals sẽ luôn `false` khi jobState/result đổi.
             override fun areItemsTheSame(oldItem: ImageInfo, newItem: ImageInfo): Boolean {
-                return oldItem == newItem
+                return oldItem.uri == newItem.uri
             }
 
             override fun areContentsTheSame(oldItem: ImageInfo, newItem: ImageInfo): Boolean {
@@ -114,6 +129,7 @@ class SaveImageListAdapter(
     }
 
     fun submitList(imageInfoList: List<ImageInfo>) {
+        pendingList = imageInfoList.toMutableList()
         differ.submitList(imageInfoList)
     }
 
@@ -129,9 +145,21 @@ class SaveImageListAdapter(
         get() = data.count { it.jobState is JobState.Failure }
 
     fun updateJobState(it: ImageInfo?) {
-        val index = data.indexOf(it).takeIf { it != -1 } ?: return
-        Log.i("onBindViewHolder", "payloads, in $index")
-        notifyItemChanged(index, "state")
+        // ENH-08: ImageInfo bất biến — `it` là 1 COPY mới (jobState/result đã đổi so với item
+        // đang nằm trong danh sách), full equals `indexOf()` cũ sẽ luôn trả -1. Tìm theo uri (khoá
+        // ổn định), mutate `pendingList` (đồng bộ, không phụ thuộc AsyncListDiffer đã áp dụng xong
+        // hay chưa — xem comment tại khai báo `pendingList`) rồi submit bản sao của nó.
+        // `notifyItemChanged(index, "state")` trong commitCallback giữ nguyên payload "state" cũ
+        // (trigger animate khi thành công — xem `ImageHolder.success(isPayLoad)`), chạy SAU khi
+        // `submitList` đã cập nhật xong `currentList` nên không rebind nhầm dữ liệu cũ.
+        if (it == null) return
+        val index = pendingList.indexOfFirst { existing -> existing.uri == it.uri }
+        if (index == -1) return
+        pendingList[index] = it
+        differ.submitList(pendingList.toList()) {
+            Log.i("onBindViewHolder", "payloads, in $index")
+            notifyItemChanged(index, "state")
+        }
     }
 
     class ImageHolder(itemView: View) : BaseViewHolder(itemView) {

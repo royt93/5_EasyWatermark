@@ -218,47 +218,58 @@ class MainViewModel @Inject constructor(
             if (infoList.isNullOrEmpty()) {
                 return@withContext Result.failure(null, TYPE_ERROR_NOT_IMG)
             }
-            infoList.forEachIndexed { index, info ->
+            // ENH-08: imageInfo bất biến — mỗi bước cập nhật jobState/result phải tạo instance
+            // MỚI qua copy() (không mutate object trong infoList), và list trả về phải chứa các
+            // instance MỚI này (không phải infoList gốc) — người gọi (saveImage()) publish list
+            // trả về qua saveImageUri, cần phản ánh đúng jobState/result cuối cùng.
+            val updatedList = infoList.mapIndexed { index, original ->
+                var info = original
                 try {
-                    info.jobState = JobState.Ing
+                    info = info.copy(jobState = JobState.Ing)
                     launch(Dispatchers.Main) { saveProcess.value = info }
-                    info.result = generateImage(contentResolver, viewInfo, info, index)
+                    val generateResult = generateImage(contentResolver, viewInfo, info, index)
                     // generateImage() có thể trả Result.failure (không throw) khi lỗi I/O/logic —
                     // JobStateResolver kiểm tra isFailure() thay vì luôn coi là Success (BUG-03).
-                    info.jobState = JobStateResolver.resolve(info.result)
+                    info = info.copy(result = generateResult, jobState = JobStateResolver.resolve(generateResult))
                     launch(Dispatchers.Main) { saveProcess.value = info }
                 } catch (fne: FileNotFoundException) {
                     fne.printStackTrace()
-                    info.result = Result.failure(null, code = TYPE_ERROR_FILE_NOT_FOUND)
-                    info.jobState = JobState.Failure(info.result!!)
+                    val failResult = Result.failure(null, code = TYPE_ERROR_FILE_NOT_FOUND)
+                    info = info.copy(result = failResult, jobState = JobState.Failure(failResult))
                     saveProcess.postValue(info)
                 } catch (oom: OutOfMemoryError) {
-                    info.result = Result.failure(null, code = TYPE_ERROR_SAVE_OOM)
-                    info.jobState = JobState.Failure(info.result!!)
+                    val failResult = Result.failure(null, code = TYPE_ERROR_SAVE_OOM)
+                    info = info.copy(result = failResult, jobState = JobState.Failure(failResult))
                     saveProcess.postValue(info)
                 } catch (e: Exception) {
                     // Exception ngoài 2 loại trên (vd SecurityException khi mất quyền MediaStore
                     // giữa batch) trước đây không có handler, làm crash cả batch — chỉ đánh dấu
                     // ảnh này lỗi và tiếp tục ảnh kế tiếp.
                     e.printStackTrace()
-                    info.result = Result.failure(null, code = TYPE_ERROR_SAVE_UNKNOWN, message = e.message)
-                    info.jobState = JobState.Failure(info.result!!)
+                    val failResult = Result.failure(null, code = TYPE_ERROR_SAVE_UNKNOWN, message = e.message)
+                    info = info.copy(result = failResult, jobState = JobState.Failure(failResult))
                     saveProcess.postValue(info)
                 }
                 Log.i("generateList", "${info.uri} : ${info.result}")
+                info
             }
             // reset process state
             saveProcess.postValue(null)
-            return@withContext Result.success(infoList)
+            return@withContext Result.success(updatedList)
         }
 
     private suspend fun generateImage(
         contentResolver: ContentResolver,
         viewInfo: ViewInfo,
-        imageInfo: ImageInfo,
+        originalImageInfo: ImageInfo,
         index: Int
     ): Result<Uri> =
         withContext(Dispatchers.IO) {
+            // ENH-08: imageInfo bất biến (mọi field val) — width/height/inSample/scaleX/scaleY/
+            // exifModel tính ra trong lúc export chỉ dùng cục bộ trong hàm này (không caller nào
+            // đọc lại sau khi hàm return), nên reassign biến local qua copy() thay vì mutate
+            // instance được truyền vào (tránh side-effect ngoài ý muốn lên object caller đang giữ).
+            var imageInfo = originalImageInfo
             // ENH-14: downsample ngay lúc decode khi user đã chọn resize output (maxOutputLongEdge
             // != 0) — giảm peak memory khi vẽ watermark trên ảnh 12-48MP không cần thiết phải ở
             // full-res nếu output cuối cùng sẽ bị resize nhỏ lại. "Original" (0) giữ hành vi cũ.
@@ -290,15 +301,17 @@ class MainViewModel @Inject constructor(
                     reqWidth = WaterMarkImageView.calculateDrawLimitWidth(viewInfo.width, viewInfo.paddingLeft),
                     reqHeight = WaterMarkImageView.calculateDrawLimitHeight(viewInfo.height, viewInfo.paddingRight)
                 )
-                imageInfo.width = mutableBitmap.width
-                imageInfo.height = mutableBitmap.height
-                imageInfo.exifModel = rect.data?.exifModel
+                imageInfo = imageInfo.copy(
+                    width = mutableBitmap.width,
+                    height = mutableBitmap.height,
+                    exifModel = rect.data?.exifModel
+                )
                 val tmpConfig = waterMark.value ?: return@withContext Result.failure(
                     data = null,
                     code = "-1",
                     message = "config.value == null"
                 )
-                imageInfo.inSample = inSample
+                imageInfo = imageInfo.copy(inSample = inSample)
                 val canvas = Canvas(mutableBitmap)
                 // generate matrix of drawable
                 val imageMatrix = WaterMarkImageView.adjustMatrix(
@@ -323,8 +336,10 @@ class MainViewModel @Inject constructor(
                 )
                 // calculate the scale factor
                 imageMatrix.getValues(matrixValues)
-                imageInfo.scaleX = 1 / matrixValues[Matrix.MSCALE_X]
-                imageInfo.scaleY = 1 / matrixValues[Matrix.MSCALE_X]
+                imageInfo = imageInfo.copy(
+                    scaleX = 1 / matrixValues[Matrix.MSCALE_X],
+                    scaleY = 1 / matrixValues[Matrix.MSCALE_X]
+                )
                 val bitmapPaint = TextPaint().applyConfig(imageInfo, tmpConfig, isScale = false)
                 val layoutPaint = Paint()
                 val shader = when (waterMark.value?.markMode) {
@@ -1133,10 +1148,14 @@ class MainViewModel @Inject constructor(
 
     fun resetJobStatus() {
         saveResult.postValue(Result.success(null))
-        imageList.value?.first?.forEach {
-            it.jobState = JobState.Ready
-            saveProcess.value = it
+        // ENH-08: imageInfo bất biến — copy() thay vì mutate item đang sống trong repository list,
+        // đồng thời đẩy list mới về repository (trước đây mutate im lặng không qua updateImageList,
+        // StateFlow không bao giờ emit lại dù nội dung item đã đổi).
+        val updatedList = imageList.value?.first?.map { it.copy(jobState = JobState.Ready) } ?: return
+        launch {
+            waterMarkRepo.updateImageList(updatedList)
         }
+        updatedList.forEach { saveProcess.value = it }
     }
 
     fun clearData() {

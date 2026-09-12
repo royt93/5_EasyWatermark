@@ -46,7 +46,7 @@ class MainViewModelResolvePreviewTextRoboTest {
         )
     }
 
-    private fun imageInfo(uri: Uri, exif: ExifModel? = null) = ImageInfo(uri).apply { exifModel = exif }
+    private fun imageInfo(uri: Uri, exif: ExifModel? = null) = ImageInfo(uri, exifModel = exif)
 
     @Test
     fun noBraceToken_returnsTextUnchanged() = runBlocking {

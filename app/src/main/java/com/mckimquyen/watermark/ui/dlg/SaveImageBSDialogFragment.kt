@@ -308,8 +308,11 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             startActivity(intent)
         } catch (e: SecurityException) {
             e.printStackTrace()
-            Toast.makeText(requireContext(), "Share error with ${e.message}", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.share_error, e.message),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 

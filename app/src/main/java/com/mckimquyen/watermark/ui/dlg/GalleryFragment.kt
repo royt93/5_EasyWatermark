@@ -11,6 +11,8 @@ import android.view.*
 import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -36,7 +38,11 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
     // ── Memory Leak Fix: adapter created once, cleared in onDestroyView ──────
     private val galleryAdapter by lazy { GalleryAdapter() }
 
+    /** ENH-10: fallback ACTION_PICK cho thiết bị không hỗ trợ Android Photo Picker. */
     private lateinit var pickImageLauncher: ActivityResultLauncher<String>
+
+    /** ENH-10: Android Photo Picker — không cần quyền READ_MEDIA_IMAGES/READ_EXTERNAL_STORAGE. */
+    private lateinit var pickImageVisualMediaLauncher: ActivityResultLauncher<PickVisualMediaRequest>
 
     private var doOnDismiss: () -> Unit = {}
 
@@ -50,6 +56,10 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         pickImageLauncher =
             registerForActivityResult(MultiPickContract()) { uri: List<Uri?>? ->
                 handleActivityResult(uri)
+            }
+        pickImageVisualMediaLauncher =
+            registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris: List<Uri> ->
+                handleActivityResult(uris)
             }
         shareViewModel.query(requireContext().contentResolver)
         AppLog.d(LOG_TAG, "GalleryFragment querying media store...")
@@ -158,7 +168,14 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         rootView.topAppBar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.ivSysImage -> {
-                    pickImageLauncher.launch("image/*")
+                    // ENH-10: ưu tiên Android Photo Picker, fallback ACTION_PICK khi không hỗ trợ.
+                    if (ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(requireContext())) {
+                        pickImageVisualMediaLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    } else {
+                        pickImageLauncher.launch("image/*")
+                    }
                     return@setOnMenuItemClickListener true
                 }
             }
@@ -213,10 +230,11 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         galleryAdapter.selectedCount.observe(viewLifecycleOwner) { count ->
             AppLog.d(LOG_TAG, "GalleryFragment selectedCount changed -> $count")
             if (count > 0) {
-                val label = if (count == 1) "Select 1 photo" else "Select $count photos"
-                rootView.fab.text = label
+                // ENH-09: <plurals> thay vì if/else hardcode — chuẩn Android cho số nhiều, hỗ trợ
+                // đúng ngữ pháp khi có bản dịch ngôn ngữ khác (vd tiếng Ả Rập/Nga nhiều dạng số nhiều).
+                rootView.fab.text = resources.getQuantityString(R.plurals.gallery_select_photo_count, count, count)
                 rootView.tvSelectionHint?.apply {
-                    text = "$count selected"
+                    text = resources.getQuantityString(R.plurals.gallery_selected_count, count, count)
                     if (visibility != View.VISIBLE) {
                         visibility = View.VISIBLE
                         alpha = 0f

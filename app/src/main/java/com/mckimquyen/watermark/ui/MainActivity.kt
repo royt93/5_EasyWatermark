@@ -24,6 +24,8 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -90,7 +92,11 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
 
+    /** ENH-10: fallback ACTION_PICK cho thiết bị không hỗ trợ Android Photo Picker. */
     private lateinit var pickIconLauncher: ActivityResultLauncher<String>
+
+    /** ENH-10: Android Photo Picker — không cần quyền READ_MEDIA_IMAGES/READ_EXTERNAL_STORAGE. */
+    private lateinit var pickIconVisualMediaLauncher: ActivityResultLauncher<PickVisualMediaRequest>
     private lateinit var signatureLauncher: ActivityResultLauncher<Intent>
     private val viewModel: MainViewModel by viewModels()
 
@@ -111,7 +117,7 @@ class MainActivity : BaseActivity() {
             ),
             FuncTitleModel(
                 type = FuncTitleModel.FuncType.Signature,
-                title = "Signature",
+                title = getString(R.string.func_title_signature),
                 iconRes = R.drawable.ic_func_text
             ),
             FuncTitleModel(
@@ -121,7 +127,7 @@ class MainActivity : BaseActivity() {
             ),
             FuncTitleModel(
                 type = FuncTitleModel.FuncType.ExifBorder,
-                title = "Leica EXIF",
+                title = getString(R.string.func_title_leica_exif),
                 iconRes = R.drawable.ic_func_layout_vertical
             )
         )
@@ -278,8 +284,11 @@ class MainActivity : BaseActivity() {
         pickIconLauncher = registerForActivityResult(PickImageContract()) { uri: Uri? ->
             handleActivityResult(REQ_PICK_ICON, listOf(uri))
         }
+        pickIconVisualMediaLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
+            handleActivityResult(REQ_PICK_ICON, listOf(uri))
+        }
 
-        signatureLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
+        signatureLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             AppLog.d(LOG_TAG, "[MAIN] signatureLauncher callback: resultCode=${result.resultCode}")
             if (result.resultCode == android.app.Activity.RESULT_OK) {
                 val uriStr = result.data?.getStringExtra("signature_uri")
@@ -717,8 +726,14 @@ class MainActivity : BaseActivity() {
             }
 
             FuncTitleModel.FuncType.Icon -> {
-                preCheckStoragePermission {
+                // ENH-10: Photo Picker không cần quyền storage — chỉ gate quyền khi phải fallback
+                // về ACTION_PICK (thiết bị/Android version không hỗ trợ Photo Picker).
+                if (ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(this)) {
                     performFileSearch(REQ_PICK_ICON)
+                } else {
+                    preCheckStoragePermission {
+                        performFileSearch(REQ_PICK_ICON)
+                    }
                 }
             }
 
@@ -878,7 +893,15 @@ class MainActivity : BaseActivity() {
             val result = kotlin.runCatching {
                 when (requestCode) {
                     REQ_PICK_ICON -> {
-                        pickIconLauncher.launch(mime)
+                        // ENH-10: ưu tiên Android Photo Picker (không cần quyền storage), fallback
+                        // ACTION_PICK cho thiết bị/Android version không hỗ trợ.
+                        if (ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(this)) {
+                            pickIconVisualMediaLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        } else {
+                            pickIconLauncher.launch(mime)
+                        }
                     }
                 }
             }

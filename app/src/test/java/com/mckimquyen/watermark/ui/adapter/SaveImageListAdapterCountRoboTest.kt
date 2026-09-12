@@ -24,7 +24,7 @@ class SaveImageListAdapterCountRoboTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
 
     private fun imageInfo(name: String, jobState: JobState) =
-        ImageInfo(Uri.parse("content://media/$name")).apply { this.jobState = jobState }
+        ImageInfo(Uri.parse("content://media/$name"), jobState = jobState)
 
     private fun submit(adapter: SaveImageListAdapter, items: List<ImageInfo>) {
         adapter.submitList(items)
