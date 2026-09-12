@@ -30,6 +30,11 @@ data class ExifModel(
         val c = make.trim()
         if (m.isNotEmpty()) return m
         if (c.isNotEmpty()) return c
-        return "Unknown Device"
+        return UNKNOWN_DEVICE_FALLBACK
+    }
+
+    companion object {
+        /** ENH-18: hằng số chung — mọi nơi so sánh fallback này (vd `MainViewModel.buildMinimalExifBorder`) phải tham chiếu qua đây, không hardcode lại chuỗi. */
+        const val UNKNOWN_DEVICE_FALLBACK = "Unknown Device"
     }
 }

@@ -126,6 +126,14 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
+            // ponytail: >30 class Robolectric dồn chung 1 JVM fork mặc định (Xmx 512m) từng
+            // treo thật (không crash, không log lỗi — chỉ đứng im) khi chạy full suite nhiều
+            // lần trong phiên làm việc dài. Tăng heap + tách fork định kỳ để tránh tích luỹ
+            // SDK cache/GC pressure qua nhiều class. Nâng thêm nếu vẫn treo khi thêm test mới.
+            all {
+                it.maxHeapSize = "3g"
+                it.forkEvery = 25
+            }
         }
     }
 }

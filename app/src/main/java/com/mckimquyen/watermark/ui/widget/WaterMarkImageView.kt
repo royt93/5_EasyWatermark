@@ -24,6 +24,7 @@ import android.view.ScaleGestureDetector
 import androidx.core.animation.doOnEnd
 import androidx.core.graphics.withSave
 import androidx.palette.graphics.Palette
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ImageInfo
@@ -122,19 +123,19 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
 
     var config: WaterMark? = null
         set(value) {
-            Log.d(LOG_TAG, "[WMIV] config setter called: value?.markMode=${value?.markMode} iconUri=${value?.iconUri}")
+            AppLog.d(LOG_TAG, "[WMIV] config setter called: value?.markMode=${value?.markMode} iconUri=${value?.iconUri}")
             if (field == value) {
-                Log.d(LOG_TAG, "[WMIV] config setter: value == field, SKIP (no change)")
+                AppLog.d(LOG_TAG, "[WMIV] config setter: value == field, SKIP (no change)")
                 return
             }
             field = value
             val uriBlank = curImageInfo.uri.toString().isBlank()
-            Log.d(LOG_TAG, "[WMIV] config setter: curImageInfo.uri='${curImageInfo.uri}'  blank=$uriBlank")
+            AppLog.d(LOG_TAG, "[WMIV] config setter: curImageInfo.uri='${curImageInfo.uri}'  blank=$uriBlank")
             if (uriBlank) {
-                Log.d(LOG_TAG, "[WMIV] config setter: curImageInfo uri is BLANK → applyNewConfig skipped (no image loaded yet)")
+                AppLog.d(LOG_TAG, "[WMIV] config setter: curImageInfo uri is BLANK → applyNewConfig skipped (no image loaded yet)")
                 return
             }
-            Log.d(LOG_TAG, "[WMIV] config setter: calling applyNewConfig")
+            AppLog.d(LOG_TAG, "[WMIV] config setter: calling applyNewConfig")
             field?.let { applyNewConfig(false, it, curImageInfo) }
         }
 
@@ -154,12 +155,12 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         imageInfo: ImageInfo
     ) {
         val uri = imageInfo.uri
-        Log.d(LOG_TAG, "[WMIV] applyNewConfig: markMode=${newConfig.markMode} iconUri=${newConfig.iconUri} imageUri=$uri")
+        AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: markMode=${newConfig.markMode} iconUri=${newConfig.iconUri} imageUri=$uri")
         generateBitmapJob?.cancel()
         generateBitmapJob = launch(exceptionHandler) {
             // quick check is the same image
             if (decodedUri != uri) {
-                Log.d(LOG_TAG, "[WMIV] applyNewConfig: decodedUri($decodedUri) != uri($uri), decoding main image...")
+                AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: decodedUri($decodedUri) != uri($uri), decoding main image...")
                 // hide iv
                 this@WaterMarkImageView.drawable?.alpha = 0
                 drawableAlphaAnimator.cancel()
@@ -178,9 +179,9 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                     )
                 )
                 val bitmapValue = decodeResult.data
-                Log.d(LOG_TAG, "[WMIV] applyNewConfig: main image decode isFailure=${decodeResult.isFailure()} bitmapNull=${bitmapValue == null}")
+                AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: main image decode isFailure=${decodeResult.isFailure()} bitmapNull=${bitmapValue == null}")
                 if (decodeResult.isFailure() || bitmapValue == null) {
-                    Log.d(LOG_TAG, "[WMIV] applyNewConfig: main image decode FAILED → return")
+                    AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: main image decode FAILED → return")
                     return@launch
                 }
                 // setting the bitmap of image
@@ -219,12 +220,12 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 curImageInfo.height = drawableBounds.height().toInt()
                 decodedUri = uri
             } else {
-                Log.d(LOG_TAG, "[WMIV] applyNewConfig: decodedUri == uri, skip main image decode")
+                AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: decodedUri == uri, skip main image decode")
             }
             curImageInfo = imageInfo
             // apply new config to paint
             textPaint.applyConfig(curImageInfo, newConfig)
-            Log.d(LOG_TAG, "[WMIV] applyNewConfig: building shader for mode=${newConfig.markMode}")
+            AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: building shader for mode=${newConfig.markMode}")
             layoutShader = when (newConfig.markMode) {
                 WaterMarkRepository.MarkMode.Text -> {
                     generateBitmapMutex.withLock {
@@ -238,14 +239,14 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 }
 
                 WaterMarkRepository.MarkMode.Image -> {
-                    Log.d(LOG_TAG, "[WMIV] Image mode: iconUri=${newConfig.iconUri}  localIconUri=$localIconUri")
-                    Log.d(LOG_TAG, "[WMIV] Image mode: iconBitmap null=${iconBitmap == null}")
+                    AppLog.d(LOG_TAG, "[WMIV] Image mode: iconUri=${newConfig.iconUri}  localIconUri=$localIconUri")
+                    AppLog.d(LOG_TAG, "[WMIV] Image mode: iconBitmap null=${iconBitmap == null}")
                     // Check reuse-cache + decode + gán iconBitmap + build shader đều nằm trong
                     // CÙNG 1 mutex để tránh race giữa 2 job applyNewConfig chồng lấn (pinch nhanh
                     // liên tục) cùng đọc/ghi iconBitmap/localIconUri (BUG-06).
                     generateBitmapMutex.withLock {
                         if (iconBitmap == null || localIconUri != newConfig.iconUri) {
-                            Log.d(LOG_TAG, "[WMIV] Image mode: will decode icon bitmap from uri=${newConfig.iconUri}")
+                            AppLog.d(LOG_TAG, "[WMIV] Image mode: will decode icon bitmap from uri=${newConfig.iconUri}")
                             val iconBitmapRect = decodeSampledBitmapFromResource(
                                 context = context,
                                 resolver = context.contentResolver,
@@ -253,15 +254,15 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                                 reqWidth = measuredWidth,
                                 reqHeight = measuredHeight
                             )
-                            Log.d(LOG_TAG, "[WMIV] Image mode: icon decode isFailure=${iconBitmapRect.isFailure()} dataNull=${iconBitmapRect.data == null} bitmapNull=${iconBitmapRect.data?.bitmap == null}")
+                            AppLog.d(LOG_TAG, "[WMIV] Image mode: icon decode isFailure=${iconBitmapRect.isFailure()} dataNull=${iconBitmapRect.data == null} bitmapNull=${iconBitmapRect.data?.bitmap == null}")
                             if (iconBitmapRect.isFailure() || iconBitmapRect.data == null) {
-                                Log.d(LOG_TAG, "[WMIV] Image mode: icon decode FAILED → return (watermark will NOT render)")
+                                AppLog.d(LOG_TAG, "[WMIV] Image mode: icon decode FAILED → return (watermark will NOT render)")
                                 return@launch
                             }
                             iconBitmap = iconBitmapRect.data!!.bitmap
-                            Log.d(LOG_TAG, "[WMIV] Image mode: iconBitmap set: ${iconBitmap?.width}x${iconBitmap?.height}")
+                            AppLog.d(LOG_TAG, "[WMIV] Image mode: iconBitmap set: ${iconBitmap?.width}x${iconBitmap?.height}")
                         } else {
-                            Log.d(LOG_TAG, "[WMIV] Image mode: reusing cached iconBitmap")
+                            AppLog.d(LOG_TAG, "[WMIV] Image mode: reusing cached iconBitmap")
                         }
                         localIconUri = newConfig.iconUri
                         layoutPaint.shader = null
@@ -276,7 +277,7 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                     }
                 }
             }
-            Log.d(LOG_TAG, "[WMIV] applyNewConfig done: layoutShader null=${layoutShader == null}, calling postInvalidate")
+            AppLog.d(LOG_TAG, "[WMIV] applyNewConfig done: layoutShader null=${layoutShader == null}, calling postInvalidate")
             postInvalidate()
         }
     }
@@ -326,18 +327,18 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
             else -> null
         }
         if (skipReason != null) {
-            Log.d(LOG_TAG, "[WMIV] onDraw SKIP: $skipReason  mode=${currentConfig?.markMode}")
+            AppLog.d(LOG_TAG, "[WMIV] onDraw SKIP: $skipReason  mode=${currentConfig?.markMode}")
             return
         }
-        Log.d(LOG_TAG, "[WMIV] onDraw DRAWING: mode=${currentConfig?.markMode} shader=${layoutShader != null} tileMode=${curImageInfo.obtainTileMode()}")
-        Log.d(LOG_TAG, "[WMIV] onDraw: layoutShader sizes=${layoutShader?.width}x${layoutShader?.height} drawableBounds=$drawableBounds offsetX=${curImageInfo.offsetX} offsetY=${curImageInfo.offsetY}")
-        Log.d(LOG_TAG, "[WMIV] onDraw: layoutPaint alpha=${layoutPaint.alpha}")
+        AppLog.d(LOG_TAG, "[WMIV] onDraw DRAWING: mode=${currentConfig?.markMode} shader=${layoutShader != null} tileMode=${curImageInfo.obtainTileMode()}")
+        AppLog.d(LOG_TAG, "[WMIV] onDraw: layoutShader sizes=${layoutShader?.width}x${layoutShader?.height} drawableBounds=$drawableBounds offsetX=${curImageInfo.offsetX} offsetY=${curImageInfo.offsetY}")
+        AppLog.d(LOG_TAG, "[WMIV] onDraw: layoutPaint alpha=${layoutPaint.alpha}")
         layoutPaint.shader = layoutShader?.bitmapShader
         canvas?.withSave {
             if (curImageInfo.obtainTileMode() == Shader.TileMode.CLAMP) {
                 val dx = drawableBounds.left + curImageInfo.offsetX * drawableBounds.width()
                 val dy = drawableBounds.top + curImageInfo.offsetY * drawableBounds.height()
-                Log.d(LOG_TAG, "[WMIV] onDraw CLAMP: translate($dx, $dy)")
+                AppLog.d(LOG_TAG, "[WMIV] onDraw CLAMP: translate($dx, $dy)")
                 translate(
                     /* dx = */ dx,
                     /* dy = */ dy
@@ -350,7 +351,7 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                     /* paint = */ layoutPaint
                 )
             } else {
-                Log.d(LOG_TAG, "[WMIV] onDraw REPEAT: translate(${drawableBounds.left}, ${drawableBounds.top})")
+                AppLog.d(LOG_TAG, "[WMIV] onDraw REPEAT: translate(${drawableBounds.left}, ${drawableBounds.top})")
                 translate(drawableBounds.left, drawableBounds.top)
                 drawRect(
                     /* left = */ 0f,

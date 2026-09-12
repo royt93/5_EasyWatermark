@@ -3,7 +3,7 @@ package com.mckimquyen.watermark.ui.dlg
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.util.Log
+import com.mckimquyen.watermark.AppLog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -51,6 +51,26 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     private fun supportsQuality(format: Bitmap.CompressFormat): Boolean =
         format != Bitmap.CompressFormat.PNG
 
+    /**
+     * ENH-13: hiển thị rõ số ảnh lỗi khi có, giữ nguyên format "X/Y" cũ khi mọi ảnh đều thành
+     * công (không thêm nhiễu UI khi không cần).
+     */
+    private fun exportCountText(adapter: SaveImageListAdapter): String {
+        val successCount = adapter.finishCount
+        val failCount = adapter.failCount
+        val countArg = if (failCount > 0) {
+            getString(
+                R.string.dialog_save_export_count_with_failures,
+                successCount,
+                adapter.itemCount,
+                failCount
+            )
+        } else {
+            "$successCount/${adapter.itemCount}"
+        }
+        return getString(R.string.dialog_save_export_list_title, countArg)
+    }
+
     private fun labelOf(format: Bitmap.CompressFormat): String =
         popArray[formatByIndex.indexOf(format).coerceAtLeast(0)]
 
@@ -60,7 +80,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     ): DlgSaveFileBinding {
         val root = DlgSaveFileBinding.inflate(layoutInflater, container, false)
         val isSaving = shareViewModel.saveResult.value?.code == MainViewModel.TYPE_SAVING
-        Log.d(TAG, "bindView: isSaving $isSaving")
+        AppLog.d(TAG, "bindView: isSaving $isSaving")
         with(root) {
             btnSave.apply {
                 setOnClickListener {
@@ -159,10 +179,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
 
             tvQualityValue.text = compressLevel.toInt().toString()
 
-            tvResult.text = requireContext().getString(
-                R.string.dialog_save_export_list_title,
-                "${theAdapter.data.count { it.jobState is JobState.Success }}/${theAdapter.itemCount}"
-            )
+            tvResult.text = exportCountText(theAdapter)
 
             slideQuality.apply {
                 value = compressLevel
@@ -174,12 +191,8 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
 
             shareViewModel.saveProcess.observe(viewLifecycleOwner) {
                 theAdapter.updateJobState(it)
-                if (it?.jobState is JobState.Success) {
-                    val count = theAdapter.finishCount
-                    tvResult.text = requireContext().getString(
-                        R.string.dialog_save_export_list_title,
-                        "$count/${theAdapter.itemCount}"
-                    )
+                if (it?.jobState is JobState.Success || it?.jobState is JobState.Failure) {
+                    tvResult.text = exportCountText(theAdapter)
                 }
             }
 
@@ -244,10 +257,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 (dialog as BottomSheetDialog).behavior.isDraggable = true
                 isCancelable = true
                 val theAdapter = binding.rvResult.adapter as SaveImageListAdapter
-                binding.tvResult.text = requireContext().getString(
-                    R.string.dialog_save_export_list_title,
-                    "${theAdapter.data.count { it.jobState is JobState.Success }}/${theAdapter.itemCount}"
-                )
+                binding.tvResult.text = exportCountText(theAdapter)
             }
         }
     }

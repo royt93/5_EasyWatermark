@@ -4,7 +4,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.repo.SignatureModel
@@ -24,7 +24,9 @@ import com.mckimquyen.watermark.ui.adapter.ColorPreviewAdapter
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
 import com.mckimquyen.watermark.ui.widget.onItemClick
 import com.mckimquyen.watermark.utils.ktx.toast
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class SignatureHistoryAdapter(
     val data: MutableList<SignatureModel> = mutableListOf()
@@ -58,10 +60,13 @@ class SignatureHistoryAdapter(
     }
 }
 
+@AndroidEntryPoint
 class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
 
     private lateinit var binding: ActivitySignatureBinding
-    private lateinit var repo: SignatureRepository
+
+    @Inject
+    lateinit var repo: SignatureRepository
     private val historyAdapter = SignatureHistoryAdapter()
     private val colorAdapter by lazy {
         ColorPreviewAdapter(buildColorList(Color.WHITE))
@@ -83,8 +88,6 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
             view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, basePaddingBottom + systemBars.bottom)
             insets
         }
-
-        repo = SignatureRepository(this)
 
         initViews()
         loadHistory()
@@ -159,23 +162,23 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
 
         // Apply
         binding.btnApply.setOnClickListener {
-            Log.d(LOG_TAG, "[SIG] btnApply clicked")
+            AppLog.d(LOG_TAG, "[SIG] btnApply clicked")
             val bitmap = binding.signatureView.getSignatureBitmap()
             if (bitmap == null) {
-                Log.d(LOG_TAG, "[SIG] bitmap is NULL → draw empty, abort")
+                AppLog.d(LOG_TAG, "[SIG] bitmap is NULL → draw empty, abort")
                 toast(getString(R.string.draw_here))
                 return@setOnClickListener
             }
-            Log.d(LOG_TAG, "[SIG] bitmap OK: ${bitmap.width}x${bitmap.height}")
+            AppLog.d(LOG_TAG, "[SIG] bitmap OK: ${bitmap.width}x${bitmap.height}")
             lifecycleScope.launch {
                 val model = repo.saveSignature(bitmap)
                 if (model != null) {
-                    Log.d(LOG_TAG, "[SIG] saveSignature OK → uri=${model.uri}")
-                    Log.d(LOG_TAG, "[SIG] uri scheme=${model.uri.scheme} path=${model.uri.path}")
+                    AppLog.d(LOG_TAG, "[SIG] saveSignature OK → uri=${model.uri}")
+                    AppLog.d(LOG_TAG, "[SIG] uri scheme=${model.uri.scheme} path=${model.uri.path}")
                     toast("Signature Applied!")
                     returnResult(model.uri)
                 } else {
-                    Log.d(LOG_TAG, "[SIG] saveSignature FAILED → model is null")
+                    AppLog.d(LOG_TAG, "[SIG] saveSignature FAILED → model is null")
                     toast(getString(R.string.save_failed))
                 }
             }
@@ -197,13 +200,13 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
     }
 
     private fun returnResult(uri: Uri) {
-        Log.d(LOG_TAG, "[SIG] returnResult → uri=$uri")
+        AppLog.d(LOG_TAG, "[SIG] returnResult → uri=$uri")
         val intent = Intent()
         intent.putExtra("signature_uri", uri.toString())
         // Grant read access to the content:// URI for the calling activity
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         setResult(Activity.RESULT_OK, intent)
-        Log.d(LOG_TAG, "[SIG] setResult RESULT_OK done, calling finish()")
+        AppLog.d(LOG_TAG, "[SIG] setResult RESULT_OK done, calling finish()")
         finish()
     }
 

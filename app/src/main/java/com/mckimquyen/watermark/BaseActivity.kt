@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
-import android.util.Log
 import android.view.Display
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
@@ -38,7 +37,7 @@ open class BaseActivity : AppCompatActivity() {
      * - Icon tint: LIGHT icons on dark glass background
      */
     protected fun applyEdgeToEdge() {
-        Log.d(LOG_TAG, "BaseActivity applyEdgeToEdge")
+        AppLog.d(LOG_TAG, "BaseActivity applyEdgeToEdge")
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         window.statusBarColor = Color.TRANSPARENT

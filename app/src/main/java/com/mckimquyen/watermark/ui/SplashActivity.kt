@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.databinding.ActivitySplashBinding
 import com.roy.sdkadbmob.AdManager
@@ -25,7 +26,7 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(LOG_TAG, "onCreate")
+        AppLog.d(LOG_TAG, "onCreate")
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
         lifecycleScope.launch { runSplashFlow() }
@@ -35,7 +36,7 @@ class SplashActivity : AppCompatActivity() {
     private suspend fun runSplashFlow() {
         // Fast-path: không có mạng → vào app ngay, không chờ SDK.
         if (!hasNetwork()) {
-            Log.d(LOG_TAG, "No network — skip all ads, go to main immediately")
+            AppLog.d(LOG_TAG, "No network — skip all ads, go to main immediately")
             goToMain()
             return
         }
@@ -63,7 +64,7 @@ class SplashActivity : AppCompatActivity() {
             val success = withTimeoutOrNull(INIT_TIMEOUT_MS) {
                 suspendCancellableCoroutine { cont ->
                     AdManager.initialize(application) { ok, gaid ->
-                        Log.d(LOG_TAG, "AdManager init success=$ok, gaid=$gaid")
+                        AppLog.d(LOG_TAG, "AdManager init success=$ok, gaid=$gaid")
                         if (cont.isActive) cont.resume(ok)
                     }
                 }

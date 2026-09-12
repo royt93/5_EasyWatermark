@@ -17,9 +17,14 @@ import com.mckimquyen.watermark.ui.UiState
 import com.mckimquyen.watermark.ui.base.BaseBindFragment
 import com.mckimquyen.watermark.utils.TextTokenResolver
 import com.mckimquyen.watermark.utils.ktx.commitWithAnimation
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
+
+    /** ENH-02: debounce ghi DataStore khi gõ liên tục — huỷ job cũ mỗi ký tự, chỉ ghi thật sau khi dừng gõ. */
+    private var updateTextJob: Job? = null
 
     override fun bindView(
         layoutInflater: LayoutInflater,
@@ -50,7 +55,12 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
                     before: Int,
                     count: Int,
                 ) {
-                    shareViewModel.updateText(s?.toString() ?: "")
+                    val text = s?.toString() ?: ""
+                    updateTextJob?.cancel()
+                    updateTextJob = viewLifecycleOwner.lifecycleScope.launch {
+                        delay(TEXT_UPDATE_DEBOUNCE_MS)
+                        shareViewModel.updateText(text)
+                    }
                 }
             })
 
@@ -63,6 +73,7 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
         }
         binding?.btnConfirm?.apply {
             setOnClickListener {
+                updateTextJob?.cancel()
                 shareViewModel.updateText(binding?.etWaterText?.text?.toString() ?: "")
                 (requireParentFragment() as? DialogFragment)?.dismiss()
             }
@@ -92,6 +103,15 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
     }
 
 
+    override fun onDestroyView() {
+        // ENH-02: View có thể bị huỷ (back/rời màn hình) trước khi debounce kịp chạy — flush
+        // ngay giá trị cuối cùng để không mất ký tự vừa gõ (huỷ job debounce đang chờ, tránh ghi
+        // trùng ngay sau đó).
+        updateTextJob?.cancel()
+        binding?.etWaterText?.text?.toString()?.let { shareViewModel.updateText(it) }
+        super.onDestroyView()
+    }
+
     /** Chip nào bấm thì chèn "{token}" vào etWaterText tại vị trí con trỏ (thay thế phần đang bôi đen nếu có). */
     private fun setupTokenChips() {
         val group = binding?.cgTokens ?: return
@@ -113,6 +133,7 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
 
     companion object {
         const val TAG = "TextContentFragment"
+        private const val TEXT_UPDATE_DEBOUNCE_MS = 200L
 
         /** BUG-16: `null?.text.toString()` cho ra literal "null"; đây giữ ô nhập trống khi chưa có config. */
         internal fun initialText(text: String?): String = text.orEmpty()

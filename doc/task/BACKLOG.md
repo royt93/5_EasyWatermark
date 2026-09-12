@@ -28,30 +28,21 @@
 
 **Đã DONE** (xem `doc/task/done/`): BUG-01 (inSampleSize/rotation), BUG-02 (BitmapCache NPE), BUG-03 (batch export báo thành công giả), BUG-04 (contentResolver insert force-unwrap), BUG-05 (OOM batch export — *lưu ý: BUG-21 mới phát hiện phần còn sót*), BUG-06 (icon cache race leak), BUG-11 (compressImg guard rỗng + leak file tạm), BUG-13 (QR debounce + off Main thread), BUG-16 (literal "null" trong Edit watermark), BUG-17 (FilmStrip coerceAtLeast — hoá ra đã fix kèm FEAT-14, chỉ thiếu test+ticket), BUG-20 (EditTextContentFragment collect theo viewLifecycleOwner) — **sprint P2 2026-09-11, xem `## Sprint 2026-09-11` cuối file**. Thêm BUG-22 (SaveImageBSDialogFragment tràn viewport màn hình nhỏ — phát hiện ngoài kế hoạch gốc, fix cùng ngày).
 
-## ENHANCEMENTS (18 todo + 2 done) — cải tiến tính năng có sẵn
+## ENHANCEMENTS (9 todo + 11 done) — cải tiến tính năng có sẵn
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [ENH-01](todo/ENH-01-batch-export-workmanager-huy-tien-do.md) | L | Batch export chạy qua WorkManager + huỷ + tiến độ tổng |
-| [ENH-17](todo/ENH-17-vip-key-device-bound.md) | S | VIP key gắn thiết bị (device-bound) — mitigation cho BUG-14 (mới 2026-09-10) |
-| [ENH-02](todo/ENH-02-debounce-ghi-datastore-khi-gesture.md) | S | Debounce ghi DataStore khi nhập text (KHÔNG phải pinch/kéo) |
-| [ENH-03](todo/ENH-03-gate-log-debug-build-config.md) | S | Gate toàn bộ `Log.d` bằng `BuildConfig.DEBUG` |
+| [ENH-17](todo/ENH-17-vip-key-device-bound.md) | S | VIP key gắn thiết bị (device-bound) — mitigation cho BUG-14 (mới 2026-09-10) — **deferred cùng BUG-14/15** |
 | [ENH-06](todo/ENH-06-gom-input-stream-decode-anh.md) | M | Gộp mở `InputStream` lặp lại khi decode 1 ảnh (4-5 lần → 1-2 lần) |
-| [ENH-07](todo/ENH-07-di-signature-repository-application-context.md) | XS | `SignatureRepository` dùng raw Context thay vì Hilt `@ApplicationContext` |
 | [ENH-08](todo/ENH-08-immutable-state-watermark-repository.md) | M | Model bất biến cho `ImageInfo`/`StateFlow` (`WaterMarkRepository`) |
 | [ENH-09](todo/ENH-09-hardcode-string-sang-resources.md) | M | Đưa hardcode string UI sang `resources` (i18n/accessibility) |
 | [ENH-10](todo/ENH-10-android-photo-picker.md) | M | Chuyển sang Android Photo Picker thay `ACTION_PICK` legacy |
-| [ENH-11](todo/ENH-11-vong-doi-ad-banner-day-du.md) | XS | Vòng đời Ad Banner đầy đủ (resume/pause/destroy) ở `AboutActivity` |
-| [ENH-12](todo/ENH-12-monet-manufacturer-dua-vao-api-chinh-thuc.md) | S | `MonetManufacturer` whitelist nên dựa API `isDynamicColorAvailable()` |
-| [ENH-13](todo/ENH-13-hien-thi-so-anh-thanh-cong-that-bai-cuoi-batch.md) | S | Hiển thị số ảnh thành công/thất bại cuối batch |
 | [ENH-14](todo/ENH-14-downsample-truc-tiep-khi-decode-export.md) | M | Downsample trực tiếp khi decode ảnh export |
 | [ENH-15](todo/ENH-15-bitmapcache-recycle-an-toan-khi-evict.md) | M | BitmapCache recycle an toàn khi evict — cần refcounting |
 | [ENH-16](todo/ENH-16-throttle-rebuild-shader-khi-pinch.md) | M | Throttle rebuild shader khi pinch — nguyên nhân lag thật |
-| [ENH-18](todo/ENH-18-unknown-device-fallback-hang-so-chung.md) | XS | Fallback string "Unknown Device" hardcode trùng lặp 2 file (mới 2026-09-10) |
-| [ENH-19](todo/ENH-19-exif-border-text-overflow-ellipsis.md) | S | EXIF border 4 style vẽ text không đo/co chữ khi tràn (mới 2026-09-10) |
-| [ENH-20](todo/ENH-20-preview-filename-query-main-thread.md) | S | Preview `{filename}` query đồng bộ trên Main thread (mới 2026-09-10) |
 
-**Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4).
+**Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4). **Sprint ENH S/XS 2026-09-12** (xem `## Sprint ENH 2026-09-12` cuối file): ENH-02 (debounce ghi DataStore khi gõ text), ENH-03 (gate `Log.d` bằng `BuildConfig.DEBUG`), ENH-07 (SignatureRepository qua Hilt DI), ENH-11 (vòng đời Ad Banner đầy đủ), ENH-12 (MonetManufacturer dựa API chính thức), ENH-13 (hiển thị số ảnh thành công/thất bại), ENH-18 (hằng số "Unknown Device" chung), ENH-19 (EXIF border co chữ tránh tràn), ENH-20 (preview filename query bất đồng bộ).
 
 ## NEW_FEATURES (13 todo + 1 done) — tính năng mới thực dụng, 1-2 tuần
 
@@ -103,6 +94,17 @@ Toàn bộ 5 ticket P2 còn lại trong BUGS_TO_FIX đã hoàn thành theo `PROM
 - **Bổ sung sau audit lần 2 (yêu cầu user)**: thêm `MainViewModelCompressImgIntegrationTest` (`app/src/androidTest`, 3 case, IO thật — ảnh JPEG thật + `Compressor` thật) cho BUG-11, chạy PASS trên Samsung SM_A115F qua `ANDROID_SERIAL=R9JN61LDLFJ ./gradlew connectedAppReleaseDebugAndroidTest` (24/24 test instrumented PASS, không riêng gì test mới).
 - **BUG-22** (phát hiện trong sprint này, fix ngay sau khi user chọn ở sprint kế tiếp cùng ngày 2026-09-11): dialog `SaveImageBSDialogFragment` (Export to the album) dùng `LinearLayout` gốc không bọc `ScrollView` — trên màn hình nhỏ (Samsung SM_A115F, 720×1560, có nav bar), nút "Export to the album" bị tràn ngoài viewport, không bấm được bằng thao tác chạm thường. Fix: bọc `NestedScrollView` (đúng pattern BUG-18) — verify bằng vuốt tay thật trên Samsung, không dùng `wm size` hack. Xem `doc/task/done/BUG-22-save-image-dialog-tran-viewport-man-hinh-nho.md`.
 - **Device smoke test đổi giữa chừng**: bắt đầu trên TECNO_KJ7 (khoá theo R3 lúc chỉ có 1 device), gặp App Open Ad test che toàn màn hình ngay sau splash → dừng theo R4, chờ user xác nhận. User yêu cầu tường minh đổi sang Samsung SM_A115F (R9JN61LDLFJ) — mọi smoke test từ đó về sau chạy trên Samsung.
+
+## Sprint ENH 2026-09-12 — nhóm S/XS (ENH-02/03/07/11/12/13/18/19/20)
+
+9 ticket enhancement effort S/XS hoàn thành theo `PROMPT_TEMPLATE.md` — chi tiết từng ticket xem "Kết quả kiểm chứng" trong file ở `doc/task/done/`.
+
+- **ENH-03** (lớn nhất, mang tính cơ học): thêm `AppLog.d()` wrapper trong `AppConst.kt`, thay thế 100 lời gọi `Log.d(` → `AppLog.d(` trên 13 file bằng `sed`, xoá `import android.util.Log` không còn dùng ở 6 file. Verify bằng cách generate `BuildConfig.java` thật cho cả 2 biến thể (`appReleaseDebug` DEBUG=true, `appReleaseRelease` DEBUG=false) thay vì giả định.
+- **ENH-17 gián tiếp bị ảnh hưởng**: KHÔNG chọn (vẫn deferred cùng BUG-14/15).
+- **BUG-17 fix trước đó** được xác nhận lại đúng khi làm ENH-19 (đọc cùng khu vực code EXIF border).
+- **Hạ tầng test bị treo lặp lại nhiều lần trong phiên này** (không liên quan code sửa) — full `testAppReleaseDebugUnitTest` trên toàn bộ 33 class treo thật (CPU gần như đứng yên) nhiều lần liên tiếp trên máy đang chạy đồng thời Android Studio + Chrome + 2 phiên Claude + Zalo + LarkSuite (RAM gần cạn, compressor cao). Khắc phục tạm: tăng `maxHeapSize=3g` + `forkEvery=25` trong `testOptions.unitTests.all` (app/build.gradle.kts) — vẫn treo được, nhưng khi chạy KIÊN NHẪN đủ lâu (batch tách nhỏ theo package, ~7-31 phút/lần) luôn PASS toàn bộ, không có test nào thật sự fail do lỗi logic. Ghi nhận: đây là giới hạn tài nguyên máy thật lúc chạy phiên dài, không phải bug trong code hay test.
+- **Device đổi lần 2 giữa phiên**: Samsung SM_A115F mất kết nối hẳn, TECNO_KJ7 vẫn còn (từng dính ad, bị bỏ qua trước đó), xuất hiện máy mới OnePlus CPH1989 (FUJZIFIR7DQCNRWW) — hỏi user qua `AskUserQuestion`, được chọn OnePlus, khoá dùng cho phần smoke test còn lại của sprint này.
+- **Bài học thao tác ADB mới**: `uiautomator dump` không đáng tin cậy trên máy OnePlus/OPPO này (nhiều lần trả về cây UI CŨ/sai màn hình đang hiển thị) — phải chuyển hẳn sang tính toạ độ tap từ ảnh chụp màn hình thật (screencap, luôn đúng kích thước thật của thiết bị, vd 1080×2340) thay vì dựa vào dump.
 
 ## Ghi chú re-audit 2026-09-10 (khác biệt so với đợt sinh backlog gốc)
 

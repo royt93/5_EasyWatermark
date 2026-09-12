@@ -14,6 +14,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.FGalleryBinding
@@ -45,18 +46,18 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(LOG_TAG, "GalleryFragment onCreate")
+        AppLog.d(LOG_TAG, "GalleryFragment onCreate")
         pickImageLauncher =
             registerForActivityResult(MultiPickContract()) { uri: List<Uri?>? ->
                 handleActivityResult(uri)
             }
         shareViewModel.query(requireContext().contentResolver)
-        Log.d(LOG_TAG, "GalleryFragment querying media store...")
+        AppLog.d(LOG_TAG, "GalleryFragment querying media store...")
 
         val displayManager: DisplayManager =
             requireContext().applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         refreshRate = displayManager.displays?.getOrNull(0)?.refreshRate ?: 60F
-        Log.d(LOG_TAG, "GalleryFragment refreshRate=$refreshRate")
+        AppLog.d(LOG_TAG, "GalleryFragment refreshRate=$refreshRate")
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -78,7 +79,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
     override fun onStart() {
         super.onStart()
-        Log.d(LOG_TAG, "GalleryFragment onStart — expanding to match_parent")
+        AppLog.d(LOG_TAG, "GalleryFragment onStart — expanding to match_parent")
         val sheetContainer = requireView().parent as? ViewGroup ?: return
         sheetContainer.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
     }
@@ -92,7 +93,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
         // ── Navigation ───────────────────────────────────────────────────────
         rootView.topAppBar.setNavigationOnClickListener {
-            Log.d(LOG_TAG, "GalleryFragment navigation icon clicked — dismissing")
+            AppLog.d(LOG_TAG, "GalleryFragment navigation icon clicked — dismissing")
             dismissAllowingStateLoss()
         }
 
@@ -102,7 +103,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         // ── FAB click: spring-out → confirm selection ────────────────────────
         rootView.fab.setOnClickListener {
             val selected = galleryAdapter.getSelectedList()
-            Log.d(LOG_TAG, "GalleryFragment FAB clicked — selectedCount=${selected.size}")
+            AppLog.d(LOG_TAG, "GalleryFragment FAB clicked — selectedCount=${selected.size}")
             // Pop-Out animation before dismiss
             rootView.fab.animate()
                 .scaleX(1.15f).scaleY(1.15f)
@@ -142,7 +143,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
                     val verticalScrollRange = recyclerView.computeVerticalScrollRange()
                     val offset = recyclerView.computeVerticalScrollOffset()
-                    Log.d(LOG_TAG, "GalleryFragment scroll — offset=$offset range=$verticalScrollRange")
+                    AppLog.d(LOG_TAG, "GalleryFragment scroll — offset=$offset range=$verticalScrollRange")
 
                     rootView.sliderCard.translationY =
                         (
@@ -175,7 +176,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                     if (v == null) return false
                     val totalHeight = rootView.rvContent.bottom - rootView.rvContent.paddingBottom
                     val percent = binding.rvContent.computeVerticalScrollRange() / totalHeight
-                    Log.d(TAG, "ivSlider totalHeight=$totalHeight percent=$percent")
+                    AppLog.d(TAG, "ivSlider totalHeight=$totalHeight percent=$percent")
                     when (event?.actionMasked) {
                         MotionEvent.ACTION_DOWN -> {
                             startX = event.x
@@ -204,13 +205,13 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
         // ── Observe image list ───────────────────────────────────────────────
         shareViewModel.galleryPickedImageList.observe(viewLifecycleOwner) {
-            Log.d(LOG_TAG, "GalleryFragment galleryPickedImageList updated — count=${it?.size ?: 0}")
+            AppLog.d(LOG_TAG, "GalleryFragment galleryPickedImageList updated — count=${it?.size ?: 0}")
             galleryAdapter.submitList(it)
         }
 
         // ── Observe selection count → animate FAB + hint pill ────────────────
         galleryAdapter.selectedCount.observe(viewLifecycleOwner) { count ->
-            Log.d(LOG_TAG, "GalleryFragment selectedCount changed -> $count")
+            AppLog.d(LOG_TAG, "GalleryFragment selectedCount changed -> $count")
             if (count > 0) {
                 val label = if (count == 1) "Select 1 photo" else "Select $count photos"
                 rootView.fab.text = label
@@ -249,7 +250,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
      * This prevents Glide from holding references to destroyed ViewHolders.
      */
     override fun onDestroyView() {
-        Log.d(LOG_TAG, "GalleryFragment onDestroyView — clearing adapter to prevent leak")
+        AppLog.d(LOG_TAG, "GalleryFragment onDestroyView — clearing adapter to prevent leak")
         try {
             binding.rvContent.adapter = null
         } catch (e: Exception) {
@@ -260,27 +261,27 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        Log.d(LOG_TAG, "GalleryFragment onDismiss — resetting gallery data")
+        AppLog.d(LOG_TAG, "GalleryFragment onDismiss — resetting gallery data")
         doOnDismiss.invoke()
         shareViewModel.resetGalleryData()
     }
 
     private fun handleActivityResult(list: List<Uri?>?) {
-        Log.d(LOG_TAG, "GalleryFragment handleActivityResult — rawCount=${list?.size ?: 0}")
+        AppLog.d(LOG_TAG, "GalleryFragment handleActivityResult — rawCount=${list?.size ?: 0}")
         val finalList = list?.filterNotNull()?.filter {
             FileUtils.isImage(requireContext().contentResolver, it)
         } ?: emptyList()
-        Log.d(LOG_TAG, "GalleryFragment handleActivityResult — validImageCount=${finalList.size}")
+        AppLog.d(LOG_TAG, "GalleryFragment handleActivityResult — validImageCount=${finalList.size}")
         if (finalList.isEmpty()) {
             Toast.makeText(requireContext(), getString(R.string.tips_do_not_choose_image), Toast.LENGTH_SHORT).show()
             return
         }
         if (FileUtils.isImage(requireContext().contentResolver, finalList.first())) {
-            Log.d(LOG_TAG, "GalleryFragment handleActivityResult — updating image list from file picker")
+            AppLog.d(LOG_TAG, "GalleryFragment handleActivityResult — updating image list from file picker")
             shareViewModel.updateImageList(finalList)
             dismissAllowingStateLoss()
         } else {
-            Log.d(LOG_TAG, "GalleryFragment handleActivityResult — unsupported file type chosen")
+            AppLog.d(LOG_TAG, "GalleryFragment handleActivityResult — unsupported file type chosen")
             Toast.makeText(requireContext(), getString(R.string.tips_choose_other_file_type), Toast.LENGTH_SHORT).show()
         }
     }

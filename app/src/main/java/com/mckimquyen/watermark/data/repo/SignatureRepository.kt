@@ -5,10 +5,13 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.mckimquyen.watermark.BuildConfig
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import javax.inject.Inject
+import javax.inject.Singleton
 
 data class SignatureModel(
     val file: File,
@@ -16,7 +19,8 @@ data class SignatureModel(
     val dateModified: Long
 )
 
-class SignatureRepository(private val context: Context) {
+@Singleton
+class SignatureRepository @Inject constructor(@ApplicationContext private val context: Context) {
 
     private val signatureDir: File
         get() {

@@ -49,7 +49,7 @@ class MainViewModelResolvePreviewTextRoboTest {
     private fun imageInfo(uri: Uri, exif: ExifModel? = null) = ImageInfo(uri).apply { exifModel = exif }
 
     @Test
-    fun noBraceToken_returnsTextUnchanged() {
+    fun noBraceToken_returnsTextUnchanged() = runBlocking {
         val info = imageInfo(Uri.parse("content://media/1"))
 
         assertThat(viewModel.resolvePreviewText("plain text, no token", info))
@@ -57,30 +57,30 @@ class MainViewModelResolvePreviewTextRoboTest {
     }
 
     @Test
-    fun filenameToken_fallsBackToUriLastSegment_whenNoContentProvider() {
+    fun filenameToken_fallsBackToUriLastSegment_whenNoContentProvider() = runBlocking {
         val info = imageInfo(Uri.parse("content://media/external/images/media/IMG_042.jpg"))
 
         assertThat(viewModel.resolvePreviewText("{filename}", info)).isEqualTo("IMG_042")
     }
 
     @Test
-    fun seqToken_usesRealPositionInBatchList() {
+    fun seqToken_usesRealPositionInBatchList() = runBlocking {
         val infoA = imageInfo(Uri.parse("content://media/A"))
         val infoB = imageInfo(Uri.parse("content://media/B"))
-        runBlocking { waterMarkRepo.updateImageList(listOf(infoA, infoB)) }
+        waterMarkRepo.updateImageList(listOf(infoA, infoB))
 
         assertThat(viewModel.resolvePreviewText("#{seq}", infoB)).isEqualTo("#2")
     }
 
     @Test
-    fun seqToken_imageNotInList_fallsBackToOne() {
+    fun seqToken_imageNotInList_fallsBackToOne() = runBlocking {
         val info = imageInfo(Uri.parse("content://media/orphan"))
 
         assertThat(viewModel.resolvePreviewText("#{seq}", info)).isEqualTo("#1")
     }
 
     @Test
-    fun exifTokens_resolveFromImageInfoExifModel() {
+    fun exifTokens_resolveFromImageInfoExifModel() = runBlocking {
         val exif = ExifModel(make = "Canon", model = "EOS R5", iso = "100")
         val info = imageInfo(Uri.parse("content://media/1"), exif)
 
@@ -89,7 +89,7 @@ class MainViewModelResolvePreviewTextRoboTest {
     }
 
     @Test
-    fun dateToken_fallsBackToToday_whenExifDateTimeBlank() {
+    fun dateToken_fallsBackToToday_whenExifDateTimeBlank() = runBlocking {
         val info = imageInfo(Uri.parse("content://media/1"), ExifModel())
 
         val resolved = viewModel.resolvePreviewText("{date}", info)
@@ -99,11 +99,23 @@ class MainViewModelResolvePreviewTextRoboTest {
     }
 
     @Test
-    fun switchingImage_reResolvesFilenameForNewImage() {
+    fun switchingImage_reResolvesFilenameForNewImage() = runBlocking {
         val infoA = imageInfo(Uri.parse("content://media/external/images/media/first.jpg"))
         val infoB = imageInfo(Uri.parse("content://media/external/images/media/second.jpg"))
 
         assertThat(viewModel.resolvePreviewText("{filename}", infoA)).isEqualTo("first")
         assertThat(viewModel.resolvePreviewText("{filename}", infoB)).isEqualTo("second")
+    }
+
+    @Test
+    fun slowContentResolverQuery_doesNotBlockCallingThread_runsOnIoDispatcher() = runBlocking {
+        // ENH-20: bọc resolvePreviewText trong coroutine + withContext(Dispatchers.IO) — xác
+        // nhận hàm thực sự suspend (chạy được trong runBlocking, không cần thread Main thật) và
+        // không ném exception dù không có ContentProvider thật trả lời (URI giả lập "chậm").
+        val info = imageInfo(Uri.parse("content://slow.provider/media/1"))
+
+        val resolved = viewModel.resolvePreviewText("{filename}", info)
+
+        assertThat(resolved).isEqualTo("1")
     }
 }

@@ -124,6 +124,10 @@ class SaveImageListAdapter(
     val finishCount
         get() = data.count { it.jobState is JobState.Success }
 
+    /** ENH-13: đếm riêng số ảnh lỗi để UI hiển thị rõ thay vì chỉ báo 1 trạng thái tổng. */
+    val failCount
+        get() = data.count { it.jobState is JobState.Failure }
+
     fun updateJobState(it: ImageInfo?) {
         val index = data.indexOf(it).takeIf { it != -1 } ?: return
         Log.i("onBindViewHolder", "payloads, in $index")

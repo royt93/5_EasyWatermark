@@ -6,7 +6,7 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.provider.CalendarContract
 import android.util.AttributeSet
-import android.util.Log
+import com.mckimquyen.watermark.AppLog
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -516,7 +516,7 @@ class LaunchView : CustomViewGroup {
             .plus(fcFunctionDetail.measuredHeightWithMargins)
             .plus(rvPhotoList.measuredHeightWithMargins)
 
-        Log.d(
+        AppLog.d(
             TAG,
             "${toolbar.measuredHeight}, ${tabLayout.measuredHeightWithMargins}, ${rvPanel.measuredHeightWithMargins},  ${fcFunctionDetail.measuredHeightWithMargins},  ${rvPhotoList.measuredHeightWithMargins}"
         )

@@ -1,9 +1,9 @@
 package com.mckimquyen.watermark.ui.about
 import android.os.Bundle
-import android.util.Log
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.mckimquyen.watermark.BaseActivity
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.databinding.AOpenSourceBinding
 import com.mckimquyen.watermark.utils.ktx.inflate
@@ -15,7 +15,7 @@ class OpenSourceActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(LOG_TAG, "OpenSourceActivity onCreate")
+        AppLog.d(LOG_TAG, "OpenSourceActivity onCreate")
         setContentView(binding.root)
         // Insets: push toolbar down below the status bar, and add bottom padding for nav bar
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { root, insets ->
@@ -25,7 +25,7 @@ class OpenSourceActivity : BaseActivity() {
         }
         ViewCompat.setOnApplyWindowInsetsListener(binding.myToolbar) { view, insets ->
             val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            Log.d(LOG_TAG, "OpenSourceActivity insets — statusBarTop=$top")
+            AppLog.d(LOG_TAG, "OpenSourceActivity insets — statusBarTop=$top")
             view.setPadding(0, top, 0, 0)
             view.layoutParams.height = resources.getDimensionPixelSize(
                 com.google.android.material.R.dimen.m3_appbar_size_compact

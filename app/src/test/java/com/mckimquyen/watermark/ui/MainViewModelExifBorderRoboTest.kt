@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import androidx.datastore.preferences.core.edit
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -224,5 +225,46 @@ class MainViewModelExifBorderRoboTest {
         )
 
         assertThat(result.height).isGreaterThan(2)
+    }
+
+    // ══ ENH-19 — co chữ bằng "…" khi vượt quá vùng khung, tránh vẽ tràn khỏi canvas ══
+
+    @Test
+    fun fitTextForCanvas_shortText_returnsUnchanged() {
+        val paint = Paint().apply { textSize = 20f }
+
+        val result = viewModel.fitTextForCanvas(paint, "Canon EOS R5", maxWidth = 1000f)
+
+        assertThat(result).isEqualTo("Canon EOS R5")
+    }
+
+    @Test
+    fun fitTextForCanvas_veryLongText_getsEllipsized_andFitsWithinMaxWidth() {
+        val paint = Paint().apply { textSize = 20f }
+        val longText = "A".repeat(200)
+
+        val result = viewModel.fitTextForCanvas(paint, longText, maxWidth = 100f)
+
+        assertThat(result).endsWith("…")
+        assertThat(result.length).isLessThan(longText.length)
+        assertThat(paint.measureText(result)).isAtMost(100f)
+    }
+
+    @Test
+    fun fitTextForCanvas_emptyText_returnsEmpty() {
+        val paint = Paint().apply { textSize = 20f }
+
+        assertThat(viewModel.fitTextForCanvas(paint, "", maxWidth = 100f)).isEmpty()
+    }
+
+    @Test
+    fun buildExifBorderBitmap_veryLongCameraModel_doesNotCrash_forEveryStyle() {
+        // Model EXIF thật hiếm khi dài vậy, nhưng vẫn phải an toàn nếu gặp thiết bị/dữ liệu lạ.
+        val longExif = ExifModel(model = "X".repeat(100), make = "Y".repeat(50))
+
+        ExifFrameStyle.entries.forEach { style ->
+            val result = viewModel.buildExifBorderBitmap(redSource(200, 200), longExif, style)
+            assertThat(result.config).isEqualTo(Bitmap.Config.ARGB_8888)
+        }
     }
 }

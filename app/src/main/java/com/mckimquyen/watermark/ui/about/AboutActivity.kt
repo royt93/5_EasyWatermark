@@ -1,7 +1,6 @@
 package com.mckimquyen.watermark.ui.about
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -12,6 +11,7 @@ import com.jakewharton.processphoenix.ProcessPhoenix
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.BuildConfig
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.AAboutBinding
@@ -32,7 +32,7 @@ class AboutActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(LOG_TAG, "AboutActivity onCreate")
+        AppLog.d(LOG_TAG, "AboutActivity onCreate")
         initView()
         // Edge-to-edge is handled globally by BaseActivity.applyEdgeToEdge()
         // Add inset listener so AppBarLayout starts BELOW the status bar, and root handles bottom nav bar
@@ -46,12 +46,12 @@ class AboutActivity : BaseActivity() {
             view.setPadding(0, statusBarHeight, 0, 0)
             insets
         }
-        Log.d(LOG_TAG, "AboutActivity onCreate complete — adManager set")
+        AppLog.d(LOG_TAG, "AboutActivity onCreate complete — adManager set")
     }
 
     private fun initView() {
         with(binding) {
-            Log.d(LOG_TAG, "AboutActivity initView — versionName=${BuildConfig.VERSION_NAME}")
+            AppLog.d(LOG_TAG, "AboutActivity initView — versionName=${BuildConfig.VERSION_NAME}")
 
             // Version display
             tvVersionValue.text = "v${BuildConfig.VERSION_NAME}"
@@ -59,20 +59,20 @@ class AboutActivity : BaseActivity() {
 
             // Back navigation via CollapsingToolbar's nav icon
             topAppBar.setNavigationOnClickListener {
-                Log.d(LOG_TAG, "AboutActivity back button clicked via topAppBar")
+                AppLog.d(LOG_TAG, "AboutActivity back button clicked via topAppBar")
                 finish()
             }
 
             tvRating.setOnClickListener {
-                Log.d(LOG_TAG, "AboutActivity tvRating clicked — opening Play Store")
+                AppLog.d(LOG_TAG, "AboutActivity tvRating clicked — opening Play Store")
                 openLink(Uri.parse("https://play.google.com/store/apps/details?id=${it.context.packageName}"))
             }
             tvMoreApp.setOnClickListener {
-                Log.d(LOG_TAG, "AboutActivity tvMoreApp clicked — opening developer page")
+                AppLog.d(LOG_TAG, "AboutActivity tvMoreApp clicked — opening developer page")
                 openLink("https://play.google.com/store/apps/developer?id=SAIGON PHANTOM LABS")
             }
             tvShareApp.setOnClickListener {
-                Log.d(LOG_TAG, "AboutActivity tvShareApp clicked — opening share sheet")
+                AppLog.d(LOG_TAG, "AboutActivity tvShareApp clicked — opening share sheet")
                 val message = getString(
                     R.string.share_app_message,
                     getString(R.string.app_name),
@@ -101,7 +101,7 @@ class AboutActivity : BaseActivity() {
 //                openLink(Uri.parse("https://github.com/rosuH/EasyWatermark/blob/master/PrivacyPolicy_zh-CN.md"))
 //            }
             tvPrivacyEng.setOnClickListener {
-                Log.d(LOG_TAG, "AboutActivity tvPrivacyEng clicked — opening privacy policy")
+                AppLog.d(LOG_TAG, "AboutActivity tvPrivacyEng clicked — opening privacy policy")
                 openLink(Uri.parse(BuildConfig.PRIVACY_POLICY_URL))
             }
             rowVip.setOnClickListener {
@@ -109,15 +109,15 @@ class AboutActivity : BaseActivity() {
             }
 
             switchDebug.setOnCheckedChangeListener { _, isChecked ->
-                Log.d(LOG_TAG, "AboutActivity switchDebug changed -> isChecked=$isChecked")
+                AppLog.d(LOG_TAG, "AboutActivity switchDebug changed -> isChecked=$isChecked")
                 viewModel.toggleBounds(isChecked)
             }
 
             switchDynamicColor.isChecked = CMonet.isDynamicColorAvailable()
-            Log.d(LOG_TAG, "AboutActivity dynamicColor available=${CMonet.isDynamicColorAvailable()}")
+            AppLog.d(LOG_TAG, "AboutActivity dynamicColor available=${CMonet.isDynamicColorAvailable()}")
 
             switchDynamicColor.setOnCheckedChangeListener { _, isChecked ->
-                Log.d(LOG_TAG, "AboutActivity switchDynamicColor changed -> isChecked=$isChecked — triggering rebirth")
+                AppLog.d(LOG_TAG, "AboutActivity switchDynamicColor changed -> isChecked=$isChecked — triggering rebirth")
                 viewModel.toggleSupportDynamicColor(isChecked)
                 Toast.makeText(
                     /* context = */ this@AboutActivity,
@@ -129,7 +129,7 @@ class AboutActivity : BaseActivity() {
 
             viewModel.waterMark.observe(this@AboutActivity) {
                 val boundsEnabled = viewModel.waterMark.value?.enableBounds ?: false
-                Log.d(LOG_TAG, "AboutActivity waterMark observed — enableBounds=$boundsEnabled")
+                AppLog.d(LOG_TAG, "AboutActivity waterMark observed — enableBounds=$boundsEnabled")
                 switchDebug.isChecked = boundsEnabled
             }
 
@@ -148,6 +148,9 @@ class AboutActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        // ENH-11: khôi phục auto-refresh banner đã tạm dừng ở onPause (null-safe/idempotent
+        // nếu bannerAdView đã bị destroy — xem AdManager.bannerResume).
+        AdManager.bannerResume(bannerAdView)
         // Người dùng có thể vừa kích hoạt VIP ở VipManagementActivity rồi quay lại đây.
         // Activity này chỉ resume (không recreate) nên banner đã load từ trước vẫn còn hiển thị
         // → gỡ ngay để tôn trọng trạng thái VIP.
@@ -157,6 +160,20 @@ class AboutActivity : BaseActivity() {
             binding.layoutAdBanner.bannerContainer.isVisible = false
             binding.layoutAdBanner.tvLabelAd.isVisible = false
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // ENH-11: dừng auto-refresh banner khi Activity không còn ở foreground (tiết kiệm pin,
+        // tránh impression ảo) — không destroy hẳn vì user có thể quay lại (xem onResume).
+        AdManager.bannerPause(bannerAdView)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // ENH-11: destroy hẳn khi Activity bị huỷ thật (không chỉ pause) — idempotent, an toàn
+        // nếu đã bị destroy sớm hơn ở nhánh VIP trong onResume.
+        AdManager.bannerDestroy(bannerAdView)
     }
 
     private var isFinishingInternal = false
@@ -169,9 +186,9 @@ class AboutActivity : BaseActivity() {
         isFinishingInternal = true
         AdManager.showInterstitial(this) { success ->
             if (success) {
-                Log.d(LOG_TAG, "Ad đã hiển thị và đóng thành công")
+                AppLog.d(LOG_TAG, "Ad đã hiển thị và đóng thành công")
             } else {
-                Log.d(LOG_TAG, "Ad không hiển thị được hoặc có lỗi")
+                AppLog.d(LOG_TAG, "Ad không hiển thị được hoặc có lỗi")
             }
             finish()
         }

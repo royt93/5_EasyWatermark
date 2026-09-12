@@ -40,6 +40,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.BuildConfig
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R
@@ -279,32 +280,32 @@ class MainActivity : BaseActivity() {
         }
 
         signatureLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
-            Log.d(LOG_TAG, "[MAIN] signatureLauncher callback: resultCode=${result.resultCode}")
+            AppLog.d(LOG_TAG, "[MAIN] signatureLauncher callback: resultCode=${result.resultCode}")
             if (result.resultCode == android.app.Activity.RESULT_OK) {
                 val uriStr = result.data?.getStringExtra("signature_uri")
-                Log.d(LOG_TAG, "[MAIN] signature_uri string from intent: $uriStr")
+                AppLog.d(LOG_TAG, "[MAIN] signature_uri string from intent: $uriStr")
                 if (uriStr != null) {
                     val signatureUri = android.net.Uri.parse(uriStr)
-                    Log.d(LOG_TAG, "[MAIN] parsed Uri: $signatureUri  scheme=${signatureUri.scheme}")
+                    AppLog.d(LOG_TAG, "[MAIN] parsed Uri: $signatureUri  scheme=${signatureUri.scheme}")
                     // Grant read permission so ContentResolver can open this FileProvider URI
                     try {
                         contentResolver.takePersistableUriPermission(
                             signatureUri,
                             android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
                         )
-                        Log.d(LOG_TAG, "[MAIN] takePersistableUriPermission OK")
+                        AppLog.d(LOG_TAG, "[MAIN] takePersistableUriPermission OK")
                     } catch (se: SecurityException) {
                         // FileProvider URIs don't support persistable grants – that's fine,
                         // the URI is already readable within this process lifetime.
-                        Log.d(LOG_TAG, "[MAIN] takePersistableUriPermission SKIPPED (expected for FileProvider): ${se.message}")
+                        AppLog.d(LOG_TAG, "[MAIN] takePersistableUriPermission SKIPPED (expected for FileProvider): ${se.message}")
                     }
-                    Log.d(LOG_TAG, "[MAIN] calling viewModel.updateIcon(uri)")
+                    AppLog.d(LOG_TAG, "[MAIN] calling viewModel.updateIcon(uri)")
                     viewModel.updateIcon(signatureUri)
                 } else {
-                    Log.d(LOG_TAG, "[MAIN] uriStr is NULL → nothing to update")
+                    AppLog.d(LOG_TAG, "[MAIN] uriStr is NULL → nothing to update")
                 }
             } else {
-                Log.d(LOG_TAG, "[MAIN] resultCode is NOT RESULT_OK → ignored")
+                AppLog.d(LOG_TAG, "[MAIN] resultCode is NOT RESULT_OK → ignored")
             }
         }
     }
@@ -401,23 +402,30 @@ class MainActivity : BaseActivity() {
         }
         viewModel.waterMark.observe(this) {
             if (it == null) {
-                Log.d(LOG_TAG, "[MAIN] waterMark observer: value is NULL, skip")
+                AppLog.d(LOG_TAG, "[MAIN] waterMark observer: value is NULL, skip")
                 return@observe
             }
-            Log.d(LOG_TAG, "[MAIN] waterMark observer: markMode=${it.markMode}, iconUri=${it.iconUri}, text='${it.text}'")
+            AppLog.d(LOG_TAG, "[MAIN] waterMark observer: markMode=${it.markMode}, iconUri=${it.iconUri}, text='${it.text}'")
             // Preview cần render giá trị token thật ({filename}/{date}/{exif}...) thay vì hiển thị
             // nguyên văn "{filename}" — resolve theo ảnh đang chọn, KHÔNG ghi ngược vào repo nên
             // dialog sửa text (đọc từ viewModel.waterMark.value) vẫn thấy đúng token gốc để sửa tiếp.
-            val previewConfig = viewModel.selectedImage.value?.let { info ->
-                val resolvedText = viewModel.resolvePreviewText(it.text, info)
-                if (resolvedText != it.text) it.copy(text = resolvedText) else it
-            } ?: it
-            launchView.post {
-                Log.d(LOG_TAG, "[MAIN] launchView.post → setting ivPhoto.config")
-                launchView.ivPhoto.config = previewConfig
+            // ENH-20: resolvePreviewText giờ suspend (query filename lần đầu chạy trên
+            // Dispatchers.IO) — resolve trong coroutine thay vì đồng bộ trên Main thread.
+            val selectedImageInfo = viewModel.selectedImage.value
+            lifecycleScope.launch {
+                val previewConfig = if (selectedImageInfo != null) {
+                    val resolvedText = viewModel.resolvePreviewText(it.text, selectedImageInfo)
+                    if (resolvedText != it.text) it.copy(text = resolvedText) else it
+                } else {
+                    it
+                }
+                launchView.post {
+                    AppLog.d(LOG_TAG, "[MAIN] launchView.post → setting ivPhoto.config")
+                    launchView.ivPhoto.config = previewConfig
+                }
             }
             if (it.markMode == WaterMarkRepository.MarkMode.Image && launchView.tabLayout.selectedTabPosition == 0) {
-                Log.d(LOG_TAG, "[MAIN] markMode=Image → hideDetailPanel()")
+                AppLog.d(LOG_TAG, "[MAIN] markMode=Image → hideDetailPanel()")
                 hideDetailPanel()
             }
             viewModel.resetJobStatus()
@@ -429,9 +437,14 @@ class MainActivity : BaseActivity() {
             try {
                 // Đổi ảnh chọn cũng phải re-resolve token ({filename}/{exif}...) theo ảnh MỚI trước
                 // khi updateUri() render, tránh preview giữ giá trị token của ảnh cũ một nhịp.
+                // ENH-20: resolve trong coroutine (không block Main thread) — không ảnh hưởng
+                // toEditorMode()/updateUri() bên dưới vì chúng chỉ phụ thuộc ImageInfo, không
+                // phụ thuộc text đã resolve.
                 viewModel.waterMark.value?.let { config ->
-                    val resolvedText = viewModel.resolvePreviewText(config.text, it)
-                    launchView.ivPhoto.config = config.copy(text = resolvedText)
+                    lifecycleScope.launch {
+                        val resolvedText = viewModel.resolvePreviewText(config.text, it)
+                        launchView.ivPhoto.config = config.copy(text = resolvedText)
+                    }
                 }
                 val isAnimating = launchView.toEditorMode()
                 if (isAnimating) {
@@ -895,9 +908,9 @@ class MainActivity : BaseActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        Log.d(LOG_TAG, "onRequestPermissionsResult requestCode $requestCode")
-        Log.d(LOG_TAG, "onRequestPermissionsResult permissions $permissions")
-        Log.d(LOG_TAG, "onRequestPermissionsResult grantResults $grantResults")
+        AppLog.d(LOG_TAG, "onRequestPermissionsResult requestCode $requestCode")
+        AppLog.d(LOG_TAG, "onRequestPermissionsResult permissions $permissions")
+        AppLog.d(LOG_TAG, "onRequestPermissionsResult grantResults $grantResults")
         when (requestCode) {
             REQ_CODE_REQ_WRITE_PERMISSION -> {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
@@ -907,13 +920,13 @@ class MainActivity : BaseActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
-                    Log.d(LOG_TAG, "onRequestPermissionsResult REQ_CODE_REQ_WRITE_PERMISSION")
+                    AppLog.d(LOG_TAG, "onRequestPermissionsResult REQ_CODE_REQ_WRITE_PERMISSION")
                     launchView.ivSelectedPhotoTips.performClick()
                 }
             }
 
             REQ_CODE_PICK_IMAGE -> {
-                Log.d(LOG_TAG, "onRequestPermissionsResult REQ_CODE_PICK_IMAGE")
+                AppLog.d(LOG_TAG, "onRequestPermissionsResult REQ_CODE_PICK_IMAGE")
             }
         }
     }
@@ -947,13 +960,13 @@ class MainActivity : BaseActivity() {
         }
         when (requestCode) {
             REQ_CODE_PICK_IMAGE -> {
-                Log.d(LOG_TAG, "requestCode REQ_CODE_PICK_IMAGE")
-                Log.d(LOG_TAG, finalList.toTypedArray().contentToString())
+                AppLog.d(LOG_TAG, "requestCode REQ_CODE_PICK_IMAGE")
+                AppLog.d(LOG_TAG, finalList.toTypedArray().contentToString())
                 dealWithImage(finalList)
             }
 
             REQ_PICK_ICON -> {
-                Log.d(LOG_TAG, "requestCode REQ_CODE_PICK_IMAGE")
+                AppLog.d(LOG_TAG, "requestCode REQ_CODE_PICK_IMAGE")
                 viewModel.updateIcon(finalList.first())
             }
         }

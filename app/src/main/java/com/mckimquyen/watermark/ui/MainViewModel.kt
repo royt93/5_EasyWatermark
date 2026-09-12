@@ -29,6 +29,7 @@ import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
 import com.mckimquyen.watermark.BuildConfig
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.Anchor
@@ -567,11 +568,18 @@ class MainViewModel @Inject constructor(
      * [resolveTextTokens], nhưng lấy index từ vị trí thật của ảnh trong danh sách batch và
      * `appContext.contentResolver` thay vì contentResolver truyền từ export flow.
      * No-op khi text không chứa '{' (fast path, không query filename mỗi lần gõ phím).
+     *
+     * ENH-20: `suspend` + `withContext(Dispatchers.IO)` — lần đầu resolve `{filename}` cho 1 ảnh
+     * (chưa có trong cache của [queryDisplayName]) gọi `ContentResolver.query()` đồng bộ; với URI
+     * chậm (SAF thư mục mạng/cloud provider) việc này có thể khựng UI nếu chạy trên Main thread.
+     * Hành vi cache theo uri không đổi (vẫn nằm trong [queryDisplayName]).
      */
-    fun resolvePreviewText(text: String, imageInfo: ImageInfo): String {
+    suspend fun resolvePreviewText(text: String, imageInfo: ImageInfo): String {
         if (!text.contains('{')) return text
         val index = waterMarkRepo.imageInfoList.indexOfFirst { it.uri == imageInfo.uri }.coerceAtLeast(0)
-        return resolveTextTokens(text, imageInfo, appContext.contentResolver, index)
+        return withContext(Dispatchers.IO) {
+            resolveTextTokens(text, imageInfo, appContext.contentResolver, index)
+        }
     }
 
     private var lastDisplayName: Pair<Uri, String>? = null
@@ -749,14 +757,14 @@ class MainViewModel @Inject constructor(
     }
 
     fun updateIcon(iconUri: Uri) {
-        Log.d(LOG_TAG, "[VM] updateIcon called: uri=$iconUri  empty=${iconUri.toString().isEmpty()}")
+        AppLog.d(LOG_TAG, "[VM] updateIcon called: uri=$iconUri  empty=${iconUri.toString().isEmpty()}")
         launch {
             if (iconUri.toString().isNotEmpty()) {
-                Log.d(LOG_TAG, "[VM] waterMarkRepo.updateIcon() \u2192 uri=$iconUri")
+                AppLog.d(LOG_TAG, "[VM] waterMarkRepo.updateIcon() \u2192 uri=$iconUri")
                 waterMarkRepo.updateIcon(iconUri)
-                Log.d(LOG_TAG, "[VM] waterMarkRepo.updateIcon() done")
+                AppLog.d(LOG_TAG, "[VM] waterMarkRepo.updateIcon() done")
             } else {
-                Log.d(LOG_TAG, "[VM] updateIcon: uri is EMPTY, skip")
+                AppLog.d(LOG_TAG, "[VM] updateIcon: uri is EMPTY, skip")
             }
         }
     }
@@ -785,6 +793,22 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * ENH-19: co [text] bằng dấu "…" nếu vượt quá [maxWidth] theo [paint] hiện tại — tránh vẽ
+     * tràn khỏi canvas khi model máy/copyright dài bất thường. Text bình thường (không vượt
+     * quá) trả về y nguyên, không đổi hành vi hiện có.
+     */
+    internal fun fitTextForCanvas(paint: Paint, text: String, maxWidth: Float): String {
+        if (text.isEmpty() || maxWidth <= 0f || paint.measureText(text) <= maxWidth) return text
+        val ellipsis = "…"
+        val ellipsisWidth = paint.measureText(ellipsis)
+        var end = text.length
+        while (end > 0 && paint.measureText(text, 0, end) + ellipsisWidth > maxWidth) {
+            end--
+        }
+        return if (end <= 0) ellipsis else text.substring(0, end) + ellipsis
+    }
+
     /** null → font mặc định của style (không bold); true → serif; false → sans-serif ép buộc. */
     private fun captionTypefaceBase(useSerifCaption: Boolean?, styleDefault: Typeface): Typeface = when (useSerifCaption) {
         true -> Typeface.SERIF
@@ -811,16 +835,17 @@ class MainViewModel @Inject constructor(
             textAlign = Paint.Align.LEFT
             typeface = Typeface.create(captionTypefaceBase(useSerifCaption, Typeface.DEFAULT), Typeface.BOLD)
         }
-        canvas.drawText(eModel.getCameraName(), source.width * 0.05f, source.height + borderHeight * 0.5f, textPaint)
+        val maxTextWidth = source.width * 0.9f
+        canvas.drawText(fitTextForCanvas(textPaint, eModel.getCameraName(), maxTextWidth), source.width * 0.05f, source.height + borderHeight * 0.5f, textPaint)
 
         textPaint.textSize = borderHeight * 0.22f
         textPaint.textAlign = Paint.Align.RIGHT
         textPaint.typeface = Typeface.DEFAULT
-        canvas.drawText(eModel.getFormattedExif(), source.width * 0.95f, source.height + borderHeight * 0.45f, textPaint)
+        canvas.drawText(fitTextForCanvas(textPaint, eModel.getFormattedExif(), maxTextWidth), source.width * 0.95f, source.height + borderHeight * 0.45f, textPaint)
 
         textPaint.textSize = borderHeight * 0.18f
         textPaint.color = Color.DKGRAY
-        canvas.drawText(eModel.dateTime, source.width * 0.95f, source.height + borderHeight * 0.75f, textPaint)
+        canvas.drawText(fitTextForCanvas(textPaint, eModel.dateTime, maxTextWidth), source.width * 0.95f, source.height + borderHeight * 0.75f, textPaint)
         return expanded
     }
 
@@ -847,8 +872,9 @@ class MainViewModel @Inject constructor(
             // Polaroid mặc định VỐN đã là serif — captionTypefaceBase(null) trả về styleDefault = SERIF.
             typeface = Typeface.create(captionTypefaceBase(useSerifCaption, Typeface.SERIF), Typeface.NORMAL)
         }
+        val maxTextWidth = totalWidth * 0.9f
         textPaint.textSize = bottomBorder * 0.32f
-        canvas.drawText(eModel.getCameraName(), totalWidth / 2f, source.height + sideBorder + bottomBorder * 0.55f, textPaint)
+        canvas.drawText(fitTextForCanvas(textPaint, eModel.getCameraName(), maxTextWidth), totalWidth / 2f, source.height + sideBorder + bottomBorder * 0.55f, textPaint)
 
         textPaint.textSize = bottomBorder * 0.2f
         textPaint.color = Color.DKGRAY
@@ -856,7 +882,7 @@ class MainViewModel @Inject constructor(
             eModel.getFormattedExif().takeIf { it.isNotEmpty() },
             eModel.dateTime.takeIf { it.isNotEmpty() }
         ).joinToString("   ·   ")
-        canvas.drawText(detail, totalWidth / 2f, source.height + sideBorder + bottomBorder * 0.85f, textPaint)
+        canvas.drawText(fitTextForCanvas(textPaint, detail, maxTextWidth), totalWidth / 2f, source.height + sideBorder + bottomBorder * 0.85f, textPaint)
         return expanded
     }
 
@@ -915,14 +941,15 @@ class MainViewModel @Inject constructor(
             typeface = Typeface.create(captionTypefaceBase(useSerifCaption, Typeface.DEFAULT), Typeface.BOLD)
             textSize = bandHeight * 0.34f
         }
-        canvas.drawText(eModel.getCameraName(), source.width * 0.04f, bandHeight + source.height - scrimHeight * 0.45f, textPaint)
+        val maxTextWidth = source.width * 0.92f
+        canvas.drawText(fitTextForCanvas(textPaint, eModel.getCameraName(), maxTextWidth), source.width * 0.04f, bandHeight + source.height - scrimHeight * 0.45f, textPaint)
         textPaint.textSize = bandHeight * 0.22f
         textPaint.typeface = Typeface.DEFAULT
         val detail = listOfNotNull(
             eModel.getFormattedExif().takeIf { it.isNotEmpty() },
             eModel.dateTime.takeIf { it.isNotEmpty() }
         ).joinToString("  ·  ")
-        canvas.drawText(detail, source.width * 0.04f, bandHeight + source.height - scrimHeight * 0.15f, textPaint)
+        canvas.drawText(fitTextForCanvas(textPaint, detail, maxTextWidth), source.width * 0.04f, bandHeight + source.height - scrimHeight * 0.15f, textPaint)
         return expanded
     }
 
@@ -956,11 +983,11 @@ class MainViewModel @Inject constructor(
             typeface = captionTypefaceBase(useSerifCaption, Typeface.DEFAULT)
         }
         val line = listOfNotNull(
-            eModel.getCameraName().takeIf { it.isNotEmpty() && it != "Unknown Device" },
+            eModel.getCameraName().takeIf { it.isNotEmpty() && it != ExifModel.UNKNOWN_DEVICE_FALLBACK },
             eModel.getFormattedExif().takeIf { it.isNotEmpty() },
             eModel.dateTime.takeIf { it.isNotEmpty() }
         ).joinToString("   ")
-        canvas.drawText(line, source.width * 0.03f, source.height + borderHeight * 0.65f, textPaint)
+        canvas.drawText(fitTextForCanvas(textPaint, line, source.width * 0.94f), source.width * 0.03f, source.height + borderHeight * 0.65f, textPaint)
         return expanded
     }
 
