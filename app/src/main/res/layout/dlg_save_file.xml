@@ -140,13 +140,14 @@
         app:boxBackgroundColor="@android:color/transparent"
         app:boxStrokeWidth="0dp"
         app:boxStrokeWidthFocused="0dp"
-        app:hintTextColor="@color/glass_text_hint">
+        app:hintTextColor="@color/glass_text_hint"
+        app:placeholderText="@string/dialog_save_config_name_pattern_hint"
+        app:placeholderTextColor="@color/glass_text_hint">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etOutputName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/dialog_save_config_name_pattern_hint"
             android:imeOptions="actionDone"
             android:inputType="text"
             android:maxLines="1"
@@ -169,13 +170,14 @@
         app:boxBackgroundColor="@android:color/transparent"
         app:boxStrokeWidth="0dp"
         app:boxStrokeWidthFocused="0dp"
-        app:hintTextColor="@color/glass_text_hint">
+        app:hintTextColor="@color/glass_text_hint"
+        app:placeholderText="@string/dialog_save_config_copyright_hint"
+        app:placeholderTextColor="@color/glass_text_hint">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etCopyright"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/dialog_save_config_copyright_hint"
             android:imeOptions="actionDone"
             android:inputType="textShortMessage"
             android:maxLines="1"

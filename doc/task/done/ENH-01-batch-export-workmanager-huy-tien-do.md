@@ -8,6 +8,7 @@ files:
   - app/src/main/java/com/mckimquyen/watermark/export/BatchExportEngine.kt
   - app/src/main/java/com/mckimquyen/watermark/export/BatchExportWorker.kt
   - app/src/main/java/com/mckimquyen/watermark/export/ExportNaming.kt
+  - app/src/main/res/layout/dlg_save_file.xml
 verified: true
 ---
 
@@ -46,6 +47,13 @@ Logic export thật (`generateImage`/`generateList`, verbatim từ `MainViewMode
 - **Verify lại trên chính Samsung SM-S928B sau fix**: xoá recovery-mode flag (`pm clear`), export batch 2 ảnh thật (chọn qua Photo Picker, ENH-10) — cả 2 ảnh export thành công, watermark "DO NOT REDISTRIBUTE" áp đúng, dialog chuyển state "Share"/"View in gallery" đúng, `adb pull` file thật về kiểm tra bằng mắt xác nhận đúng nội dung + watermark. `logcat` xác nhận KHÔNG còn `FATAL EXCEPTION` sau thời điểm fix (so sánh timestamp trước/sau).
 - **Gap đã biết**: đây là lỗi cấu hình manifest/OS-level mà Robolectric (JVM) KHÔNG mô phỏng (không validate `foregroundServiceType` thật) — 17 unit test ENH-01 đều pass trước khi phát hiện bug này bằng smoke test thật. Ghi nhận làm bài học: bất kỳ `setForeground()`/`ForegroundInfo` với type cụ thể nào thêm sau này BẮT BUỘC phải verify bằng real-device smoke test, không thể tin JVM test.
 - **Chưa verify được qua smoke test thủ công** (giới hạn thời gian/công cụ điều khiển device qua adb, không phải do nghi ngờ đúng sai code): tiến độ % hiển thị trên notification khi export nhiều ảnh lớn chạy đủ lâu để quan sát (batch test thực tế 2 ảnh nhỏ hoàn tất dưới 1 giây, không kịp chụp được notification giữa chừng), và bấm Cancel thật giữa batch đang chạy. Cả 2 hành vi đã có unit test xác nhận đúng logic (`BatchExportWorkerRoboTest`, `MainViewModelSaveImageImmutabilityRoboTest.cancelSaveImage_...`, `BatchExportEngineCancellationRoboTest`) — chỉ riêng phần hiển thị notification/tương tác vật lý trên UI hệ thống chưa có ảnh chụp trực tiếp.
+
+### Re-audit vòng 2 trên Pixel 7 Pro (2B051FDH3006MU) — theo yêu cầu audit sâu hơn của user
+
+- **Xác nhận crash fix ổn định trên device thứ 3** (khác kiến trúc/OEM so với Samsung SM-S928B đã fix trước đó): export nhiều lần (1 ảnh, rồi 8 ảnh) trên Pixel 7 Pro (Android AOSP gần chuẩn Google nhất) — không crash, `dumpsys notification` xác nhận notification `batch_export` (channel đúng, cờ `ONGOING_EVENT|FOREGROUND_SERVICE`, 1 action Cancel) thực sự tồn tại khi Worker chạy.
+- **1 bug UI thật phát hiện qua smoke test, KHÔNG thuộc ENH-01 nhưng nằm trong cùng dialog Export**: field "File name pattern" và "Copyright (EXIF)" trong `dlg_save_file.xml` bị đè chữ — label nổi (`TextInputLayout.hint`) và ví dụ gợi ý (đặt qua `android:hint` trên `TextInputEditText` con) vẽ chồng lên nhau khi ô trống/chưa focus, vì đây là 2 cơ chế hint độc lập không tự loại trừ nhau (khác với 2 dropdown Format/Resize phía trên vốn "vô tình đúng" vì label và hint con là CÙNG 1 chuỗi). User được hỏi qua `AskUserQuestion`, chọn phương án dùng đúng API Material `app:placeholderText` (thay vì chuyển ví dụ xuống `helperText` hoặc xoá hẳn ví dụ). Fix: bỏ `android:hint` trên 2 `TextInputEditText` con (`etOutputName`, `etCopyright`), thêm `app:placeholderText`/`app:placeholderTextColor` trên `TextInputLayout` cha tương ứng. Verify lại trên chính Pixel 7 Pro: 2 field hiện tách bạch rõ ràng, không còn đè chữ.
+- Test mới: `DlgSaveFileLayoutRoboTest.outputNameField_exampleUsesPlaceholderText_notChildHint_soItDoesNotOverlapFloatingLabel`, `copyrightField_...` (verify `EditText.hint` đồng bộ đúng với `TextInputLayout.hint` — hành vi bình thường của Material, không phải bug — và ví dụ dài nằm ở `placeholderText`, không còn là hint riêng của EditText).
+- **Giới hạn còn lại xác nhận lần 2**: mọi ảnh test có sẵn trên Pixel 7 Pro (ảnh chụp màn hình UI, không có ảnh camera thật) export xong dưới 1 giây kể cả batch 8 ảnh — không đủ cửa sổ thời gian để chụp bắt notification % giữa chừng hay bấm Cancel thật qua adb (độ trễ round-trip adb ~50-100ms/lệnh còn chậm hơn cả thời gian xử lý). Không phải nghi ngờ logic sai — unit test đã cover đúng hành vi này; chỉ là giới hạn công cụ, giữ nguyên như đã ghi nhận ở lần audit đầu.
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-01`, file ticket = `todo/ENH-01-batch-export-workmanager-huy-tien-do.md`.
