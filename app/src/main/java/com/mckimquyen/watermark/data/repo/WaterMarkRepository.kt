@@ -74,6 +74,9 @@ class WaterMarkRepository @Inject constructor(
         val KEY_EXIF_BAND_COLOR = intPreferencesKey(SP_KEY_EXIF_BAND_COLOR)
         val KEY_EXIF_BAND_THICKNESS = floatPreferencesKey(SP_KEY_EXIF_BAND_THICKNESS)
         val KEY_EXIF_SERIF_CAPTION = booleanPreferencesKey(SP_KEY_EXIF_SERIF_CAPTION)
+        val KEY_TEXT_EFFECT_STROKE = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_STROKE)
+        val KEY_TEXT_EFFECT_SHADOW = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_SHADOW)
+        val KEY_TEXT_EFFECT_PILL_BACKGROUND = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_PILL_BACKGROUND)
 //        val KEY_TILE_MODE = intPreferencesKey(SP_KEY_TILE_MODEL)
 //        val KEY_OFFSET_X = floatPreferencesKey(SP_KEY_OFFSET_X)
 //        val KEY_OFFSET_Y = floatPreferencesKey(SP_KEY_OFFSET_Y)
@@ -111,7 +114,10 @@ class WaterMarkRepository @Inject constructor(
                 marginPercent = it[PreferenceKeys.KEY_MARGIN] ?: DEFAULT_MARGIN_PERCENT,
                 exifBandColor = it[PreferenceKeys.KEY_EXIF_BAND_COLOR],
                 exifBandThicknessPercent = it[PreferenceKeys.KEY_EXIF_BAND_THICKNESS],
-                exifUseSerifCaption = it[PreferenceKeys.KEY_EXIF_SERIF_CAPTION]
+                exifUseSerifCaption = it[PreferenceKeys.KEY_EXIF_SERIF_CAPTION],
+                textEffectStroke = it[PreferenceKeys.KEY_TEXT_EFFECT_STROKE] ?: false,
+                textEffectShadow = it[PreferenceKeys.KEY_TEXT_EFFECT_SHADOW] ?: false,
+                textEffectPillBackground = it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] ?: false
             )
         }
 
@@ -264,6 +270,21 @@ class WaterMarkRepository @Inject constructor(
         }
     }
 
+    /** FEAT-11 — bật/tắt viền tương phản cho text watermark, độc lập với shadow/pill. */
+    suspend fun updateTextEffectStroke(enable: Boolean) {
+        dataStore.edit { it[PreferenceKeys.KEY_TEXT_EFFECT_STROKE] = enable }
+    }
+
+    /** FEAT-11 — bật/tắt đổ bóng cho text watermark, độc lập với stroke/pill. */
+    suspend fun updateTextEffectShadow(enable: Boolean) {
+        dataStore.edit { it[PreferenceKeys.KEY_TEXT_EFFECT_SHADOW] = enable }
+    }
+
+    /** FEAT-11 — bật/tắt nền pill cho text watermark, độc lập với stroke/shadow. */
+    suspend fun updateTextEffectPillBackground(enable: Boolean) {
+        dataStore.edit { it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] = enable }
+    }
+
     /** FEAT-14 — xoá cả 3 override cùng lúc (nút "Reset" trong UI). */
     suspend fun resetExifCustomization() {
         dataStore.edit {
@@ -317,6 +338,9 @@ class WaterMarkRepository @Inject constructor(
         const val SP_KEY_EXIF_BAND_COLOR = "${SP_NAME}_key_exif_band_color"
         const val SP_KEY_EXIF_BAND_THICKNESS = "${SP_NAME}_key_exif_band_thickness"
         const val SP_KEY_EXIF_SERIF_CAPTION = "${SP_NAME}_key_exif_serif_caption"
+        const val SP_KEY_TEXT_EFFECT_STROKE = "${SP_NAME}_key_text_effect_stroke"
+        const val SP_KEY_TEXT_EFFECT_SHADOW = "${SP_NAME}_key_text_effect_shadow"
+        const val SP_KEY_TEXT_EFFECT_PILL_BACKGROUND = "${SP_NAME}_key_text_effect_pill_background"
         const val MIN_EXIF_BAND_THICKNESS_PERCENT = 0.04f
         const val MAX_EXIF_BAND_THICKNESS_PERCENT = 0.30f
         const val MAX_TEXT_SIZE = 100f

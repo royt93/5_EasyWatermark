@@ -35,6 +35,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository.Companion.DEFAULT_
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.Companion.MAX_TEXT_SIZE
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.Companion.MIN_TEXT_SIZE
 import com.mckimquyen.watermark.ui.widget.utils.WaterMarkShader
+import com.mckimquyen.watermark.utils.TextEffectRenderer
 import com.mckimquyen.watermark.utils.bitmap.BitmapCache
 import com.mckimquyen.watermark.utils.bitmap.decodeSampledBitmapFromResource
 import com.mckimquyen.watermark.utils.ktx.applyConfig
@@ -884,8 +885,12 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
             val fixWidth = textWidth * cos(radians) + textHeight * sin(radians)
             val fixHeight = textWidth * sin(radians) + textHeight * cos(radians)
 
-            val finalWidth = adjustHorizontalGap(config, fixWidth.toInt()).coerceAtLeast(1)
-            val finalHeight = adjustVerticalGap(config, fixHeight.toInt()).coerceAtLeast(1)
+            // FEAT-11: viền/bóng/nền pill vẽ RA NGOÀI biên chữ gốc — cộng thêm biên SAU khi đã
+            // nhân hệ số hGap/vGap (không phải trước) để không bị co lại theo tỉ lệ khi user đặt
+            // gap âm; effect tắt hết (mặc định) thì +0, không đổi hành vi cũ.
+            val effectMarginPx = (TextEffectRenderer.marginPx(config) * 2).toInt()
+            val finalWidth = (adjustHorizontalGap(config, fixWidth.toInt()) + effectMarginPx).coerceAtLeast(1)
+            val finalHeight = (adjustVerticalGap(config, fixHeight.toInt()) + effectMarginPx).coerceAtLeast(1)
             val bitmap = Bitmap.createBitmap(finalWidth, finalHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             if (showDebugRect) {
@@ -909,6 +914,19 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                     ((finalWidth) / 2).toFloat(),
                     ((finalHeight - staticLayout.height) / 2).toFloat()
                 )
+                // FEAT-11: pill nền + viền vẽ TRƯỚC chữ chính (layer dưới cùng), cùng gốc toạ độ
+                // (0,0)-(staticLayout.width, staticLayout.height) mà staticLayout.draw() dùng.
+                if (config.textEffectPillBackground) {
+                    TextEffectRenderer.drawPillBackground(
+                        canvas,
+                        config,
+                        staticLayout.width.toFloat(),
+                        staticLayout.height.toFloat()
+                    )
+                }
+                if (config.textEffectStroke) {
+                    TextEffectRenderer.drawStrokeOutline(canvas, config, textPaint, maxLineWidth)
+                }
                 staticLayout.draw(canvas)
             }
 

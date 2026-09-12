@@ -25,5 +25,9 @@ data class WaterMark(
     /** FEAT-14 Custom Frame Builder — null = dùng màu/tỉ lệ/font mặc định của style đang chọn. */
     val exifBandColor: Int? = null,
     val exifBandThicknessPercent: Float? = null,
-    val exifUseSerifCaption: Boolean? = null
+    val exifUseSerifCaption: Boolean? = null,
+    /** FEAT-11 — viền/bóng/nền pill cho text watermark, độc lập, kết hợp tự do. */
+    val textEffectStroke: Boolean = false,
+    val textEffectShadow: Boolean = false,
+    val textEffectPillBackground: Boolean = false
 )

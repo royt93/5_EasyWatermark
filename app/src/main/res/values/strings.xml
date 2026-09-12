@@ -66,6 +66,10 @@
     <!--    -->
     <string name="text_paint_fill">Fill</string>
     <string name="text_paint_stroke">Stroke</string>
+    <!-- FEAT-11: viền/bóng/nền pill cho text watermark, độc lập kết hợp được. -->
+    <string name="text_effect_stroke">Outline</string>
+    <string name="text_effect_shadow">Shadow</string>
+    <string name="text_effect_pill">Pill BG</string>
     <string name="text_typeface_normal">Normal</string>
     <string name="text_typeface_bold">Bold</string>
     <string name="text_typeface_italic">Italic</string>

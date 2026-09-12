@@ -28,16 +28,12 @@
 
 **Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4). **Sprint ENH S/XS 2026-09-12** (xem `## Sprint ENH 2026-09-12` cuối file): ENH-02 (debounce ghi DataStore khi gõ text), ENH-03 (gate `Log.d` bằng `BuildConfig.DEBUG`), ENH-07 (SignatureRepository qua Hilt DI), ENH-11 (vòng đời Ad Banner đầy đủ), ENH-12 (MonetManufacturer dựa API chính thức), ENH-13 (hiển thị số ảnh thành công/thất bại), ENH-18 (hằng số "Unknown Device" chung), ENH-19 (EXIF border co chữ tránh tràn), ENH-20 (preview filename query bất đồng bộ). **Sprint ENH hiệu năng M 2026-09-12** (xem `## Sprint ENH hiệu năng M 2026-09-12` cuối file): ENH-06 (gộp mở InputStream decode), ENH-15 (BitmapCache reference counting an toàn khi evict), ENH-16 (throttle rebuild shader khi pinch), ENH-14 (downsample trực tiếp khi decode export — làm với AC hạ chuẩn, user quyết định 2026-09-12). **Sprint ENH-08/09/10 2026-09-12** (xem `## Sprint ENH-08/09/10 2026-09-12` cuối file): ENH-08 (ImageInfo bất biến hoàn toàn), ENH-09 (hardcode string sang resources + plurals), ENH-10 (Android Photo Picker thay ACTION_PICK legacy). **ENH-01 2026-09-12** (xem `## ENH-01 2026-09-12` cuối file): batch export qua WorkManager + huỷ + tiến độ notification — phát hiện + fix crash `foregroundServiceType` thật qua smoke test Samsung SM-S928B.
 
-## NEW_FEATURES (13 todo + 1 done) — tính năng mới thực dụng, 1-2 tuần
+## NEW_FEATURES (9 todo + 5 done) — tính năng mới thực dụng, 1-2 tuần
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
-| [FEAT-02](todo/FEAT-02-naming-template-file-xuat.md) | S | Naming template cho file xuất (tái dùng token có sẵn) |
-| [FEAT-09](todo/FEAT-09-preset-resize-theo-nen-tang.md) | XS | Preset resize theo nền tảng (Instagram/Facebook/Zalo) |
 | [FEAT-08](todo/FEAT-08-chon-thu-muc-saf-batch.md) | S | Chọn cả thư mục (SAF tree) để batch |
-| [FEAT-11](todo/FEAT-11-hieu-ung-vien-bong-text.md) | S | Hiệu ứng viền/bóng/nền pill cho text watermark |
 | [FEAT-10](todo/FEAT-10-frame-preset-nhan-dien-hang-may.md) | S | Tự nhận diện hãng máy để gợi ý style khung EXIF (scope thu hẹp sau audit — phần style đã xong) |
-| [FEAT-14](todo/FEAT-14-custom-frame-builder-tham-so-hoa.md) | S | Custom Frame Builder — tham số hoá 4 EXIF frame style đã có (mới 2026-09-10) |
 | [FEAT-04](todo/FEAT-04-lich-su-batch-gan-day.md) | M | Lịch sử batch export gần đây |
 | [FEAT-05](todo/FEAT-05-backup-restore-template-signature.md) | M | Xuất/nhập Template + Signature (backup/restore) |
 | [FEAT-06](todo/FEAT-06-watermark-profile-day-du.md) | M | Watermark profile đầy đủ |
@@ -46,7 +42,7 @@
 | [FEAT-13](todo/FEAT-13-caption-rieng-tung-anh-batch.md) | M | Nhập caption/text riêng theo từng ảnh trong batch (CSV) |
 | [FEAT-03](todo/FEAT-03-multi-layer-watermark.md) | L | Watermark đa lớp (chồng text + logo/QR cùng lúc) |
 
-**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7).
+**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark.
 
 ## UNIQUE_IDEAS (10) — tính năng độc quyền/đột phá, effort cao
 
@@ -124,6 +120,15 @@ Ticket effort L, chi tiết đầy đủ xem "Kết quả kiểm chứng" trong 
 - 2 bug thật tự phát hiện qua tự audit code trước khi build: observer `observeForever` rò rỉ (không gỡ ở `onCleared()`), và ViewModel mới sau process death không tự bắt lại trạng thái batch đang chạy nền (sửa bằng `reattachExportWorkIfRunning()` gọi từ `SaveImageBSDialogFragment.onViewCreated()` thay vì đặt trong `init{}` của ViewModel — tránh ép 12+ test file không liên quan phải bootstrap WorkManager).
 - **Bug thật phát hiện qua smoke test trên Samsung SM-S928B (Galaxy S24 Ultra)**: crash 100% khi bấm Export — `IllegalArgumentException: foregroundServiceType 0x00000001 is not a subset of foregroundServiceType attribute 0x00000000 in service element of manifest file`. Nguyên nhân: `setForeground()` promote với `FOREGROUND_SERVICE_TYPE_DATA_SYNC` (API 34+) nhưng chỉ khai `<uses-permission>` là chưa đủ — phải override tường minh `android:foregroundServiceType="dataSync"` trên `<service>` `SystemForegroundService` của chính thư viện WorkManager qua manifest merge. Crash lặp lại khiến app tự vào Recovery Mode (cơ chế crash-guard sẵn có). 17 unit test ENH-01 đều pass TRƯỚC KHI phát hiện bug này — Robolectric không validate `foregroundServiceType` thật ở OS-level, đây là lớp lỗi CHỈ smoke test thật trên device mới bắt được. Verify lại sau fix: export batch 2 ảnh thật qua Photo Picker, cả 2 thành công, watermark đúng, `logcat` sạch không còn `FATAL EXCEPTION`.
 - Chưa verify được qua thao tác tay: tiến độ % trên notification khi export đủ lâu để quan sát (batch test 2 ảnh nhỏ hoàn tất dưới 1 giây), và bấm Cancel thật giữa batch đang chạy — cả 2 đã có unit test xác nhận đúng logic, chỉ thiếu ảnh chụp thao tác vật lý trên UI hệ thống.
+
+## FEAT-11 2026-09-12 — hiệu ứng viền/bóng/nền pill cho text watermark
+
+Ticket effort S, chi tiết đầy đủ xem "Kết quả kiểm chứng" trong `doc/task/done/FEAT-11-hieu-ung-vien-bong-text.md`.
+
+- 3 hiệu ứng (Outline/Shadow/Pill BG) thêm vào `WaterMark` dạng `Boolean` độc lập (không phải sealed class như `TextPaintStyle` — vì phải kết hợp tự do, không loại trừ nhau). Màu tương phản B/W tự tính theo luminance màu chữ, không thêm color picker riêng (ngoài phạm vi AC).
+- Export dùng chung 100% code path với preview (`WaterMarkImageView.buildTextBitmapShader` + `PainKtx.applyConfig`) — không cần sửa gì thêm ở `BatchExportEngine`, verify bằng smoke test thật (export file, zoom kiểm tra bằng mắt khớp preview).
+- Smoke test trên Pixel 7 Pro xác nhận chip UI toggle độc lập đúng (3 chip active đồng thời), Material You dynamic color áp dụng đúng cho trạng thái checked (`?attr/colorPrimary`, không hardcode hex).
+- Nhân tiện dọn `BACKLOG.md`: bảng NEW_FEATURES liệt kê nhầm FEAT-02/FEAT-09/FEAT-14 là "todo" trong khi cả 3 đã xong từ trước (nằm ở `done/`) — sửa lại đúng trạng thái.
 
 ## Ghi chú re-audit 2026-09-10 (khác biệt so với đợt sinh backlog gốc)
 

@@ -28,7 +28,14 @@ class WaterMarkImageViewTextShaderRoboTest {
 
     private fun imageInfo() = ImageInfo(Uri.parse("content://media/1"))
 
-    private fun config(text: String, hGap: Int = 0, vGap: Int = 0) = WaterMark(
+    private fun config(
+        text: String,
+        hGap: Int = 0,
+        vGap: Int = 0,
+        stroke: Boolean = false,
+        shadow: Boolean = false,
+        pill: Boolean = false
+    ) = WaterMark(
         text = text,
         textSize = 40f,
         textColor = Color.WHITE,
@@ -40,7 +47,10 @@ class WaterMarkImageViewTextShaderRoboTest {
         vGap = vGap,
         iconUri = Uri.EMPTY,
         markMode = WaterMarkRepository.MarkMode.Text,
-        enableBounds = false
+        enableBounds = false,
+        textEffectStroke = stroke,
+        textEffectShadow = shadow,
+        textEffectPillBackground = pill
     )
 
     private fun textPaint(info: ImageInfo, cfg: WaterMark) = TextPaint().applyConfig(info, cfg, isScale = false)
@@ -121,5 +131,77 @@ class WaterMarkImageViewTextShaderRoboTest {
         )
 
         assertThat(shader).isNull()
+    }
+
+    /**
+     * FEAT-11: mỗi hiệu ứng (viền/bóng/nền pill) cộng thêm biên quanh chữ để không bị cắt — hệ quả
+     * đo được: bitmap lớn hơn hẳn so với tắt hết hiệu ứng, dù nội dung/text size giữ nguyên.
+     */
+    @Test
+    fun textEffectStroke_enabled_growsShaderBeyondBaseline() = runBlocking {
+        val info = imageInfo()
+        val baseline = config(text = "AAAA")
+        val withStroke = config(text = "AAAA", stroke = true)
+
+        val baselineShader = WaterMarkImageView.buildTextBitmapShader(info, baseline, textPaint(info, baseline), Dispatchers.Unconfined)
+        val strokeShader = WaterMarkImageView.buildTextBitmapShader(info, withStroke, textPaint(info, withStroke), Dispatchers.Unconfined)
+
+        assertThat(strokeShader).isNotNull()
+        assertThat(strokeShader!!.width).isGreaterThan(baselineShader!!.width)
+        assertThat(strokeShader.height).isGreaterThan(baselineShader.height)
+    }
+
+    @Test
+    fun textEffectShadow_enabled_growsShaderBeyondBaseline() = runBlocking {
+        val info = imageInfo()
+        val baseline = config(text = "AAAA")
+        val withShadow = config(text = "AAAA", shadow = true)
+
+        val baselineShader = WaterMarkImageView.buildTextBitmapShader(info, baseline, textPaint(info, baseline), Dispatchers.Unconfined)
+        val shadowShader = WaterMarkImageView.buildTextBitmapShader(info, withShadow, textPaint(info, withShadow), Dispatchers.Unconfined)
+
+        assertThat(shadowShader).isNotNull()
+        assertThat(shadowShader!!.width).isGreaterThan(baselineShader!!.width)
+        assertThat(shadowShader.height).isGreaterThan(baselineShader.height)
+    }
+
+    @Test
+    fun textEffectPillBackground_enabled_growsShaderBeyondBaseline() = runBlocking {
+        val info = imageInfo()
+        val baseline = config(text = "AAAA")
+        val withPill = config(text = "AAAA", pill = true)
+
+        val baselineShader = WaterMarkImageView.buildTextBitmapShader(info, baseline, textPaint(info, baseline), Dispatchers.Unconfined)
+        val pillShader = WaterMarkImageView.buildTextBitmapShader(info, withPill, textPaint(info, withPill), Dispatchers.Unconfined)
+
+        assertThat(pillShader).isNotNull()
+        assertThat(pillShader!!.width).isGreaterThan(baselineShader!!.width)
+        assertThat(pillShader.height).isGreaterThan(baselineShader.height)
+    }
+
+    /** AC FEAT-11: cả 3 hiệu ứng phải kết hợp được đồng thời, không loại trừ nhau. */
+    @Test
+    fun allThreeTextEffects_combinedTogether_doesNotThrow_returnsValidShader() = runBlocking {
+        val info = imageInfo()
+        val cfg = config(text = "Watermark", stroke = true, shadow = true, pill = true)
+
+        val shader = WaterMarkImageView.buildTextBitmapShader(info, cfg, textPaint(info, cfg), Dispatchers.Unconfined)
+
+        assertThat(shader).isNotNull()
+        assertThat(shader!!.width).isGreaterThan(0)
+        assertThat(shader.height).isGreaterThan(0)
+    }
+
+    @Test
+    fun textEffectsAllDisabled_shaderDimensionsUnchangedFromBeforeFeature() = runBlocking {
+        // Đảm bảo hành vi mặc định (mọi hiệu ứng tắt) không đổi so với trước FEAT-11 — không phá
+        // vỡ các test BUG-07 khác đang giả định kích thước không cộng thêm biên.
+        val info = imageInfo()
+        val cfg = config(text = "AAAA")
+
+        val shader = WaterMarkImageView.buildTextBitmapShader(info, cfg, textPaint(info, cfg), Dispatchers.Unconfined)
+
+        assertThat(shader).isNotNull()
+        assertThat(shader!!.width).isGreaterThan(0)
     }
 }

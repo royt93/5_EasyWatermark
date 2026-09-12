@@ -470,6 +470,19 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /** FEAT-11 — viền/bóng/nền pill cho text watermark, mỗi hiệu ứng bật/tắt độc lập. */
+    fun updateTextEffectStroke(enable: Boolean) {
+        launch { waterMarkRepo.updateTextEffectStroke(enable) }
+    }
+
+    fun updateTextEffectShadow(enable: Boolean) {
+        launch { waterMarkRepo.updateTextEffectShadow(enable) }
+    }
+
+    fun updateTextEffectPillBackground(enable: Boolean) {
+        launch { waterMarkRepo.updateTextEffectPillBackground(enable) }
+    }
+
     fun updateTileMode(imageInfo: ImageInfo, tileMode: Shader.TileMode) {
         launch {
             autoScroll = false

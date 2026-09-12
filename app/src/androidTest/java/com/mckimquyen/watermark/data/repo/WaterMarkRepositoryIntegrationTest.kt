@@ -186,4 +186,50 @@ class WaterMarkRepositoryIntegrationTest {
         assertThat(waterMark.exifBandColor).isEqualTo(android.graphics.Color.GREEN)
         assertThat(waterMark.exifFrameStyle).isEqualTo(ExifFrameStyle.MINIMAL.ordinal)
     }
+
+    /** FEAT-11 — 3 hiệu ứng text watermark (viền/bóng/pill), mặc định tắt, bật/tắt độc lập. */
+    @Test
+    fun waterMark_emptyDataStore_textEffectsDefaultToFalse() = runBlocking {
+        val waterMark = repo.waterMark.first()
+
+        assertThat(waterMark.textEffectStroke).isFalse()
+        assertThat(waterMark.textEffectShadow).isFalse()
+        assertThat(waterMark.textEffectPillBackground).isFalse()
+    }
+
+    @Test
+    fun updateTextEffectStroke_thenReadWaterMark_reflectsNewValue_roundTrip() = runBlocking {
+        repo.updateTextEffectStroke(true)
+
+        assertThat(repo.waterMark.first().textEffectStroke).isTrue()
+
+        repo.updateTextEffectStroke(false)
+
+        assertThat(repo.waterMark.first().textEffectStroke).isFalse()
+    }
+
+    @Test
+    fun updateTextEffectShadow_thenReadWaterMark_reflectsNewValue_roundTrip() = runBlocking {
+        repo.updateTextEffectShadow(true)
+
+        assertThat(repo.waterMark.first().textEffectShadow).isTrue()
+    }
+
+    @Test
+    fun updateTextEffectPillBackground_thenReadWaterMark_reflectsNewValue_roundTrip() = runBlocking {
+        repo.updateTextEffectPillBackground(true)
+
+        assertThat(repo.waterMark.first().textEffectPillBackground).isTrue()
+    }
+
+    @Test
+    fun textEffects_areIndependent_enablingOneDoesNotAffectOthers() = runBlocking {
+        repo.updateTextEffectShadow(true)
+
+        val waterMark = repo.waterMark.first()
+
+        assertThat(waterMark.textEffectShadow).isTrue()
+        assertThat(waterMark.textEffectStroke).isFalse()
+        assertThat(waterMark.textEffectPillBackground).isFalse()
+    }
 }
