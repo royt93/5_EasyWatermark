@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="splash_window_bg">@color/md_theme_dark_surface</color>
+    <color name="splash_circle_bg">#2C2A24</color>
+    <color name="splash_circle_border">#4B4739</color>
+    <color name="color_swatch_border">#969080</color>
+</resources>

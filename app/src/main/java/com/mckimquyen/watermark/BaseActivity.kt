@@ -47,12 +47,14 @@ open class BaseActivity : AppCompatActivity() {
             window.navigationBarDividerColor = Color.TRANSPARENT
         }
 
-        // Light-on-dark: white icons in status bar (dark purple bg)
+        // Material You Day/Night: adapt status and nav bar icon contrast to theme
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 
+        val isNight = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
         val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-        insetsController.isAppearanceLightStatusBars = false // ensures white icons
+        insetsController.isAppearanceLightStatusBars = !isNight
+        insetsController.isAppearanceLightNavigationBars = !isNight
     }
 
     override fun onResume() {
@@ -63,17 +65,17 @@ open class BaseActivity : AppCompatActivity() {
     }
 
     private fun enableAdaptiveRefreshRate() {
-        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        val display: Display? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            display
-        } else {
-            @Suppress("DEPRECATION")
-            wm.defaultDisplay
-        }
+        runCatching {
+            val wm = getSystemService(WINDOW_SERVICE) as? WindowManager
+            val currentDisplay: Display? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                runCatching { display }.getOrNull()
+            } else {
+                @Suppress("DEPRECATION")
+                wm?.defaultDisplay
+            }
 
-        if (display != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val supportedModes = display.supportedModes
+            if (currentDisplay != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val supportedModes = currentDisplay.supportedModes
                 val highestRefreshRateMode = supportedModes.maxByOrNull { it.refreshRate }
                 if (highestRefreshRateMode != null) {
                     window.attributes = window.attributes.apply {

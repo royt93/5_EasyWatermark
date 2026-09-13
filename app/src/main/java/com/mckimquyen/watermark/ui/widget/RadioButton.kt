@@ -11,6 +11,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.utils.ktx.colorOnSurface
+import com.mckimquyen.watermark.utils.ktx.colorPrimary
 import com.mckimquyen.watermark.utils.ktx.dp
 
 /**
@@ -40,8 +41,8 @@ class RadioButton : View {
     private val strokeWidthNormal = 1.5f.dp.toFloat()
 
     // ── Selected state ────────────────────────────────────────────────────────
-    // iOS vivid blue fill — unmissable selection indicator
-    private val bgColorSelected = Color.parseColor("#FF007AFF")       // iOS Blue
+    // Material You dynamic primary color fill
+    private val bgColorSelected: Int by lazy { context.colorPrimary }
     private val strokeWidthSelected = 0f
 
     private val iconRes: Int = R.drawable.ic_gallery_radio_button

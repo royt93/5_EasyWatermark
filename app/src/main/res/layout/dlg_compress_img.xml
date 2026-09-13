@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/tips_tip_title"
-        android:textColor="@color/glass_text_primary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -47,7 +47,7 @@
         android:lineSpacingExtra="4dp"
         android:text="@string/tips_need_compress_img"
         android:textAlignment="center"
-        android:textColor="@color/glass_text_secondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="13sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -56,18 +56,15 @@
     <!-- Primary CTA -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCompress"
+        style="@style/Widget.Material3.Button.FilledButton"
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_marginTop="16dp"
-        android:backgroundTint="@color/glass_cta_bg"
         android:text="@string/tips_compress_images"
-        android:textColor="@color/glass_cta_text"
         android:textStyle="bold"
-        app:cornerRadius="45dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvCompressTips"
-        app:strokeWidth="0dp" />
+        app:layout_constraintTop_toBottomOf="@id/tvCompressTips" />
 
     <!-- Cancel -->
     <com.google.android.material.button.MaterialButton
@@ -77,7 +74,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="@string/tips_cancel_output"
-        android:textColor="@color/glass_text_secondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnCompress" />

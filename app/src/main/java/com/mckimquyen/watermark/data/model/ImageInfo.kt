@@ -29,6 +29,7 @@ data class ImageInfo(
     @FloatRange(from = 0.0, to = 1.0) val offsetX: Float = 0.5f,
     @FloatRange(from = 0.0, to = 1.0) val offsetY: Float = 0.5f,
     val exifModel: ExifModel? = null,
+    val caption: String? = null,
 ) {
     val shareUri: Uri?
         get() = result?.data as? Uri?
@@ -68,7 +69,8 @@ data class ImageInfo(
                 tileMode = Shader.TileMode.REPEAT.ordinal,
                 offsetX = 0.5f,
                 offsetY = 0.5f,
-                exifModel = null
+                exifModel = null,
+                caption = null
             )
         }
     }

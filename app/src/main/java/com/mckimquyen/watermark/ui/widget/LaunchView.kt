@@ -2,10 +2,12 @@ package com.mckimquyen.watermark.ui.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.provider.CalendarContract
 import android.util.AttributeSet
+import com.google.android.material.color.MaterialColors
 import com.mckimquyen.watermark.AppLog
 import android.view.Gravity
 import android.view.MotionEvent
@@ -26,6 +28,10 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.shape.ShapeAppearanceModel
 import com.google.android.material.tabs.TabLayout
+import android.graphics.Typeface
+import android.widget.TextView
+import com.google.android.material.textview.MaterialTextView
+import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.ui.widget.utils.BounceEdgeEffectFactory
 import com.mckimquyen.watermark.utils.ktx.dp
@@ -65,146 +71,102 @@ class LaunchView : CustomViewGroup {
     //endregion
 
     //region 2 children components
-    // Floating circles animation in background
-    private val floatingCircles: List<View> by lazy {
-        listOf(
-            // Large circle 1
-            View(context).apply {
-                layoutParams = MarginLayoutParams(400.dp, 400.dp)
-                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
-                alpha = 0.4f
-            },
-            // Large circle 2
-            View(context).apply {
-                layoutParams = MarginLayoutParams(500.dp, 500.dp)
-                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
-                alpha = 0.35f
-            },
-            // Medium circle 1
-            View(context).apply {
-                layoutParams = MarginLayoutParams(300.dp, 300.dp)
-                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
-                alpha = 0.45f
-            },
-            // Medium circle 2
-            View(context).apply {
-                layoutParams = MarginLayoutParams(360.dp, 360.dp)
-                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
-                alpha = 0.4f
-            },
-            // Small circle 1
-            View(context).apply {
-                layoutParams = MarginLayoutParams(240.dp, 240.dp)
-                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
-                alpha = 0.5f
-            },
-            // Small circle 2
-            View(context).apply {
-                layoutParams = MarginLayoutParams(280.dp, 280.dp)
-                background = ContextCompat.getDrawable(context, R.drawable.bg_floating_circle)
-            clipToOutline = true
-                alpha = 0.45f
-            }
-        )
-    }
-
-    // Logo container with glow rings
+    // Logo container with clean M3 rounded logo
     private val logoContainer: android.widget.FrameLayout by lazy {
         android.widget.FrameLayout(context).apply {
             layoutParams = MarginLayoutParams(
-                300.dp,
-                300.dp
+                160.dp,
+                160.dp
             ).also {
                 it.setMargins(0, 0, 0, 16.dp)
             }
 
-            // Outer glow ring
-            addView(View(context).apply {
-                layoutParams = android.widget.FrameLayout.LayoutParams(300.dp, 300.dp).apply {
+            addView(ShapeableImageView(context).apply {
+                layoutParams = android.widget.FrameLayout.LayoutParams(140.dp, 140.dp).apply {
                     gravity = Gravity.CENTER
                 }
-                background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
-            clipToOutline = true
-                alpha = 0.15f
-            })
-
-            // Middle glow ring
-            addView(View(context).apply {
-                layoutParams = android.widget.FrameLayout.LayoutParams(270.dp, 270.dp).apply {
-                    gravity = Gravity.CENTER
-                }
-                background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
-            clipToOutline = true
-                alpha = 0.25f
-            })
-
-            // Inner glow ring
-            addView(View(context).apply {
-                layoutParams = android.widget.FrameLayout.LayoutParams(240.dp, 240.dp).apply {
-                    gravity = Gravity.CENTER
-                }
-                background = ContextCompat.getDrawable(context, R.drawable.bg_glass_shimmer)
-            clipToOutline = true
-                alpha = 0.35f
-            })
-
-            // Logo
-            addView(ImageFilterView(context).apply {
-                layoutParams = android.widget.FrameLayout.LayoutParams(210.dp, 210.dp).apply {
-                    gravity = Gravity.CENTER
-                }
-                roundPercent = 1.0f
+                shapeAppearanceModel = ShapeAppearanceModel.Builder()
+                    .setAllCornerSizes(36.dp.toFloat())
+                    .build()
                 setImageResource(R.drawable.ic_launcher)
             })
         }
     }
 
-    private val logoView: ImageView
-        get() = logoContainer.children.last() as ImageView
+    val tvAppBrand: TextView by lazy {
+        MaterialTextView(context).apply {
+            layoutParams = MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+            text = context.getString(R.string.app_name)
+            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_HeadlineMedium)
+            typeface = Typeface.DEFAULT_BOLD
+            val onSurfaceColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurface, Color.BLACK)
+            setTextColor(onSurfaceColor)
+            gravity = Gravity.CENTER
+            textAlignment = TEXT_ALIGNMENT_CENTER
+        }
+    }
+
+    val tvAppTagline: TextView by lazy {
+        MaterialTextView(context).apply {
+            layoutParams = MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+            text = "Fast • Elegant • Offline Protection"
+            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
+            val onSurfaceVariant = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.DKGRAY)
+            setTextColor(onSurfaceVariant)
+            gravity = Gravity.CENTER
+            textAlignment = TEXT_ALIGNMENT_CENTER
+        }
+    }
+
+    val tvVersionCopyright: TextView by lazy {
+        MaterialTextView(context).apply {
+            layoutParams = MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+            text = "v${BuildConfig.VERSION_NAME} • © 2026 McKim Quyen"
+            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_LabelSmall)
+            val textColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.DKGRAY)
+            setTextColor(textColor)
+            gravity = Gravity.CENTER
+            textAlignment = TEXT_ALIGNMENT_CENTER
+        }
+    }
 
     val ivSelectedPhotoTips: MaterialButton by lazy {
         MaterialButton(context).apply {
             layoutParams = MarginLayoutParams(
                 LayoutParams.WRAP_CONTENT,
-                64.dp
+                56.dp
             ).also {
-                it.setMargins(0, 0, 0, 24.dp)
+                it.setMargins(0, 0, 0, 16.dp)
             }
 
-            // Glass button style
-            minHeight = 64.dp
+            minHeight = 56.dp
             minWidth = 240.dp
             textAlignment = TEXT_ALIGNMENT_CENTER
             gravity = Gravity.CENTER
 
-            // Glass colors
-            setBackgroundColor(ContextCompat.getColor(context, R.color.glass_surface))
-            setTextColor(ContextCompat.getColor(context, R.color.glass_text_primary))
+            val primaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorPrimary, Color.BLACK)
+            val onPrimaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnPrimary, Color.WHITE)
 
-            // Text
+            setBackgroundColor(primaryColor)
+            setTextColor(onPrimaryColor)
+
             text = context.getString(R.string.tips_pick_image)
-            textSize = 18f
-            letterSpacing = 0.05f
+            textSize = 16f
+            letterSpacing = 0.02f
 
-            // Rounded corners
+            icon = ContextCompat.getDrawable(context, R.drawable.ic_picker_image)
+            iconTint = ColorStateList.valueOf(onPrimaryColor)
+            iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
+            iconPadding = 10.dp
+            iconSize = 22.dp
+
             shapeAppearanceModel = ShapeAppearanceModel.Builder()
-                .setAllCornerSizes(32f)
+                .setAllCornerSizes(28.dp.toFloat())
                 .build()
 
-            // Stroke for glass effect
-            strokeWidth = 2.dp
-            strokeColor = ContextCompat.getColorStateList(context, R.color.glass_border)
-
-            // Elevation
-            elevation = 8f
-
-            // Padding horizontal for text
-            setPadding(48.dp, paddingTop, 48.dp, paddingBottom)
+            strokeWidth = 0
+            elevation = 2.dp.toFloat()
+            setPadding(32.dp, paddingTop, 32.dp, paddingBottom)
         }
     }
 
@@ -212,47 +174,39 @@ class LaunchView : CustomViewGroup {
         MaterialButton(context).apply {
             layoutParams = MarginLayoutParams(
                 LayoutParams.WRAP_CONTENT,
-                64.dp
+                56.dp
             ).also {
-                it.setMargins(0, 0, 0, 48.dp)
+                it.setMargins(0, 0, 0, 40.dp)
             }
 
-            // Glass button style - same as Choose Images
-            minHeight = 64.dp
+            minHeight = 56.dp
             minWidth = 240.dp
             textAlignment = TEXT_ALIGNMENT_CENTER
             gravity = Gravity.CENTER
 
-            // Glass colors
-            setBackgroundColor(ContextCompat.getColor(context, R.color.glass_surface))
-            setTextColor(ContextCompat.getColor(context, R.color.glass_text_primary))
+            val secContainerColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorSecondaryContainer, Color.LTGRAY)
+            val onSecContainerColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSecondaryContainer, Color.BLACK)
 
-            // Text with icon
+            setBackgroundColor(secContainerColor)
+            setTextColor(onSecContainerColor)
+
             text = context.getString(R.string.about_title_info)
-            textSize = 18f
-            letterSpacing = 0.05f
+            textSize = 16f
+            letterSpacing = 0.02f
 
-            // Add settings icon to the left of text
             icon = ContextCompat.getDrawable(context, R.drawable.ic_settings_glass)
-            iconTint = ContextCompat.getColorStateList(context, R.color.glass_text_primary)
-            iconGravity = MaterialButton.ICON_GRAVITY_START
-            iconPadding = 12.dp
-            iconSize = 24.dp
+            iconTint = ColorStateList.valueOf(onSecContainerColor)
+            iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
+            iconPadding = 10.dp
+            iconSize = 22.dp
 
-            // Rounded corners
             shapeAppearanceModel = ShapeAppearanceModel.Builder()
-                .setAllCornerSizes(32f)
+                .setAllCornerSizes(28.dp.toFloat())
                 .build()
 
-            // Stroke for glass effect
-            strokeWidth = 2.dp
-            strokeColor = ContextCompat.getColorStateList(context, R.color.glass_border)
-
-            // Elevation
-            elevation = 8f
-
-            // Padding horizontal for text
-            setPadding(32.dp, paddingTop, 32.dp, paddingBottom)
+            strokeWidth = 0
+            elevation = 0f
+            setPadding(28.dp, paddingTop, 28.dp, paddingBottom)
         }
     }
 
@@ -296,6 +250,10 @@ class LaunchView : CustomViewGroup {
             tabGravity = TabLayout.GRAVITY_FILL
             tabIndicatorAnimationMode = TabLayout.INDICATOR_ANIMATION_MODE_ELASTIC
             setBackgroundColor(Color.TRANSPARENT)
+            val primaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorPrimary, Color.BLACK)
+            val onSurfaceVariant = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.DKGRAY)
+            setSelectedTabIndicatorColor(primaryColor)
+            setTabTextColors(onSurfaceVariant, primaryColor)
             val contentTab = newTab().also {
                 it.text = context.getString(R.string.title_content)
             }
@@ -335,8 +293,15 @@ class LaunchView : CustomViewGroup {
             ).apply {
                 setMargins(16.dp, 0, 16.dp, 0)
             }
-            setPadding(8.dp, 0, 8.dp, 0)
-            background = ContextCompat.getDrawable(context, R.drawable.bg_floating_pill)
+            setPadding(8.dp, 4.dp, 8.dp, 4.dp)
+            val surfaceColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorSurfaceContainerHigh, Color.DKGRAY)
+            val pill = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 28.dp.toFloat()
+                setColor(surfaceColor)
+            }
+            background = pill
+            elevation = 3.dp.toFloat()
             clipToOutline = true
             clipChildren = false
             clipToPadding = false
@@ -363,7 +328,7 @@ class LaunchView : CustomViewGroup {
 
     //region 3 private field
     private val launchViews by lazy {
-        listOf(logoContainer, ivSelectedPhotoTips, ivGoAboutPage)
+        listOf(logoContainer, tvAppBrand, tvAppTagline, ivSelectedPhotoTips, ivGoAboutPage, tvVersionCopyright)
     }
 
     private val editorViews by lazy {
@@ -414,20 +379,9 @@ class LaunchView : CustomViewGroup {
     init {
         clipChildren = false
         clipToPadding = false
-//        setBackgroundColor(ContextCompat.getColor(context, R.color.md_theme_dark_background))
 
-        // Apply glass gradient background
-        val bgDrawable = ContextCompat.getDrawable(
-            /* context = */ context,
-            /* id = */ R.drawable.bg_glass_gradient
-        )
-        background = bgDrawable
-
-        // Add floating circles first (behind everything)
-        floatingCircles.forEach {
-            it.isVisible = true
-            addView(it)
-        }
+        val surfaceColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorSurface, Color.BLACK)
+        setBackgroundColor(surfaceColor)
 
         launchViews.forEach {
             it.isVisible = false
@@ -444,63 +398,9 @@ class LaunchView : CustomViewGroup {
             if (mode == ViewMode.LaunchMode) {
                 launchModeAppearAnimationList.forEach { it.start() }
             }
-            startFloatingAnimation()
         }
     }
     //endregion
-
-    // List to keep track of active background animators for proper cleanup
-    private val activeAnimators = mutableListOf<android.animation.Animator>()
-    private val floatingRunnables = mutableListOf<Runnable>()
-
-    private fun startFloatingAnimation() {
-        floatingCircles.forEachIndexed { index, circle ->
-            val runnable = Runnable { wanderCircle(circle) }
-            floatingRunnables.add(runnable)
-            postDelayed(runnable, index * 500L)
-        }
-    }
-
-    private fun wanderCircle(circle: View) {
-        if (!circle.isAttachedToWindow) return
-
-        val currentX = circle.translationX
-        val currentY = circle.translationY
-
-        // We want the circles to drift gently within a bounded radius from their original layout positions.
-        // translation is offset from the layout.
-        val targetX = ((-300..300).random()).toFloat()
-        val targetY = ((-300..300).random()).toFloat()
-
-        val animX = android.animation.ObjectAnimator.ofFloat(circle, "translationX", currentX, targetX)
-        val animY = android.animation.ObjectAnimator.ofFloat(circle, "translationY", currentY, targetY)
-
-        // Random organic speed
-        val duration = (8000L..12000L).random()
-        animX.duration = duration
-        animY.duration = duration
-
-        animX.interpolator = android.view.animation.AccelerateDecelerateInterpolator()
-        animY.interpolator = android.view.animation.AccelerateDecelerateInterpolator()
-
-        animX.addListener(object : android.animation.AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: android.animation.Animator) {
-                activeAnimators.remove(animX)
-                activeAnimators.remove(animY)
-                if (circle.isAttachedToWindow) {
-                    // Recursively call for continuous random wandering! (1-to-1 ratio, NO RAM exponential growth)
-                    wanderCircle(circle)
-                }
-            }
-        })
-
-        // Track active animations for cleanup
-        activeAnimators.add(animX)
-        activeAnimators.add(animY)
-
-        animX.start()
-        animY.start()
-    }
 
     //region 4 override view rendering
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -534,26 +434,39 @@ class LaunchView : CustomViewGroup {
         }
     }
 
-    private fun layoutLaunch() {
-        // Layout floating circles (scattered around)
-        floatingCircles.forEachIndexed { index, circle ->
-            // Position circles at different locations
-            when (index) {
-                0 -> circle.layout(100, 150) // Top left
-                1 -> circle.layout(measuredWidth - 200, 100) // Top right
-                2 -> circle.layout(50, measuredHeight / 2) // Middle left
-                3 -> circle.layout(measuredWidth - 150, measuredHeight / 2 + 100) // Middle right
-                4 -> circle.layout(120, measuredHeight - 300) // Bottom left
-                5 -> circle.layout(measuredWidth - 120, measuredHeight - 400) // Bottom right
-            }
-        }
+    private fun View.layoutHorizontallyCentered(topY: Int) {
+        val startX = (this@LaunchView.measuredWidth - this.measuredWidth) / 2
+        layout(startX, topY, startX + this.measuredWidth, topY + this.measuredHeight)
+    }
 
-        logoContainer.layoutCenterHorizontal(appendY = (measuredHeight * 0.2f).toInt())
-        ivSelectedPhotoTips.layoutCenterHorizontal(appendY = (measuredHeight * 0.6f).toInt())
-        ivGoAboutPage.let {
-            val yOffset = (measuredHeight * 0.6f).toInt() + ivSelectedPhotoTips.measuredHeightWithMargins + 16.dp
-            it.layoutCenterHorizontal(appendY = yOffset)
-        }
+    private fun layoutLaunch() {
+        val usableTop = paddingTop
+        val usableBottom = measuredHeight - paddingBottom
+        val usableHeight = (usableBottom - usableTop).coerceAtLeast(1)
+
+        // 1. Logo container placed proportionally in top-middle area
+        val logoY = usableTop + (usableHeight * 0.08f).toInt()
+        logoContainer.layoutHorizontallyCentered(logoY)
+
+        // 2. App Name directly below logo
+        val titleY = logoContainer.bottom + 16.dp
+        tvAppBrand.layoutHorizontallyCentered(titleY)
+
+        // 3. Tagline directly below App Name
+        val subtitleY = tvAppBrand.bottom + 8.dp
+        tvAppTagline.layoutHorizontallyCentered(subtitleY)
+
+        // 4. "Choose Images" primary CTA
+        val ctaY = tvAppTagline.bottom + 48.dp
+        ivSelectedPhotoTips.layoutHorizontallyCentered(ctaY)
+
+        // 5. "Information & Settings" secondary button
+        val aboutY = ivSelectedPhotoTips.bottom + 16.dp
+        ivGoAboutPage.layoutHorizontallyCentered(aboutY)
+
+        // 6. Version & Copyright footer safely placed above navigation bar inset
+        val footerY = usableBottom - tvVersionCopyright.measuredHeight - 20.dp
+        tvVersionCopyright.layoutHorizontallyCentered(footerY)
     }
 
     private fun layoutEditor() {
@@ -679,15 +592,6 @@ class LaunchView : CustomViewGroup {
         // Cancel animations to prevent memory leak
         dragYAnimation.cancel()
         dragXAnimation.cancel()
-        
-        // Remove all pending Runnables
-        floatingRunnables.forEach { removeCallbacks(it) }
-        floatingRunnables.clear()
-        
-        // Cancel all currently running background animators
-        activeAnimators.toList().forEach { it.cancel() }
-        activeAnimators.clear()
-
         launchViewListener = null
     }
     //endregion

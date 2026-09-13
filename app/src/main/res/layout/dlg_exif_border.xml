@@ -16,32 +16,35 @@
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_glass_gradient_sheet"
+    android:background="?attr/colorSurfaceContainerLow"
     android:orientation="vertical"
     android:padding="24dp">
 
     <View
         android:id="@+id/vHandle"
-        android:layout_width="45dp"
+        android:layout_width="32dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="24dp"
-        android:background="#2E2E2E"
+        android:background="?attr/colorOutlineVariant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <FrameLayout
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Material3.CardView.Filled"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_glass_card"
-        android:padding="20dp">
+        app:cardBackgroundColor="?attr/colorSurfaceContainer"
+        app:cardCornerRadius="16dp"
+        app:strokeWidth="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="16dp">
 
             <FrameLayout
                 android:layout_width="48dp"
@@ -69,7 +72,7 @@
                     android:text="@string/leica_exif_border"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="@color/white" />
+                    android:textColor="?attr/colorOnSurface" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -77,24 +80,18 @@
                     android:layout_marginTop="4dp"
                     android:text="@string/leica_exif_border_desc"
                     android:textSize="13sp"
-                    android:textColor="#A0A0A0" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
 
-            <androidx.appcompat.widget.SwitchCompat
+            <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/swExif"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                app:thumbTint="@null"
-                app:trackTint="@null"
-                app:switchMinWidth="50dp"
-                android:background="@null"
-                android:thumb="@drawable/bg_ios_switch_thumb"
-                app:track="@drawable/bg_ios_switch_track" />
+                android:layout_marginStart="16dp" />
 
         </LinearLayout>
-    </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout
         android:id="@+id/groupFrameStyle"
@@ -109,7 +106,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:text="@string/exif_frame_style_label"
-            android:textColor="#A0A0A0"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp" />
 
         <HorizontalScrollView
@@ -128,12 +125,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:layout_marginEnd="8dp"
-                    android:backgroundTint="@color/glass_overlay_medium"
+                    android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_classic"
-                    android:textColor="@color/glass_text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
-                    app:cornerRadius="45dp"
-                    app:strokeColor="@color/glass_border"
+                    app:cornerRadius="20dp"
+                    app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -142,12 +139,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:layout_marginEnd="8dp"
-                    android:backgroundTint="@color/glass_overlay_medium"
+                    android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_polaroid"
-                    android:textColor="@color/glass_text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
-                    app:cornerRadius="45dp"
-                    app:strokeColor="@color/glass_border"
+                    app:cornerRadius="20dp"
+                    app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -156,12 +153,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:layout_marginEnd="8dp"
-                    android:backgroundTint="@color/glass_overlay_medium"
+                    android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_film_strip"
-                    android:textColor="@color/glass_text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
-                    app:cornerRadius="45dp"
-                    app:strokeColor="@color/glass_border"
+                    app:cornerRadius="20dp"
+                    app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -169,12 +166,12 @@
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
-                    android:backgroundTint="@color/glass_overlay_medium"
+                    android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_minimal"
-                    android:textColor="@color/glass_text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
-                    app:cornerRadius="45dp"
-                    app:strokeColor="@color/glass_border"
+                    app:cornerRadius="20dp"
+                    app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp" />
 
             </LinearLayout>
@@ -203,7 +200,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/exif_customize_label"
-                android:textColor="#A0A0A0"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="13sp" />
 
             <TextView
@@ -229,7 +226,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/exif_customize_band_color"
-                android:textColor="@color/glass_text_primary"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp" />
 
             <View
@@ -252,14 +249,14 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/exif_customize_band_thickness"
-                android:textColor="@color/glass_text_primary"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/tvExifBandThicknessValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/glass_text_secondary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="13sp"
                 tools:text="12%" />
 
@@ -288,19 +285,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/exif_customize_serif_caption"
-                android:textColor="@color/glass_text_primary"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp" />
 
-            <androidx.appcompat.widget.SwitchCompat
+            <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/swExifSerifCaption"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:thumbTint="@null"
-                app:trackTint="@null"
-                app:switchMinWidth="50dp"
-                android:background="@null"
-                android:thumb="@drawable/bg_ios_switch_thumb"
-                app:track="@drawable/bg_ios_switch_track" />
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
 

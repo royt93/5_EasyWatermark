@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- iOS Liquid Glass: dlg_edit_text_template_list — template list sheet -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_glass_gradient_sheet">
+    android:background="?attr/colorSurfaceContainerLow">
 
     <!-- Handle pill -->
     <View
         android:id="@+id/vHandle"
-        android:layout_width="40dp"
+        android:layout_width="32dp"
         android:layout_height="4dp"
         android:layout_marginTop="12dp"
-        android:alpha="0.6"
-        android:background="@color/glass_border"
+        android:background="?attr/colorOutlineVariant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -29,7 +27,7 @@
         android:layout_marginTop="8dp"
         android:contentDescription="@string/back"
         android:src="@drawable/baseline_cancel_24"
-        app:tint="@color/glass_text_primary"
+        app:tint="?attr/colorOnSurface"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/vHandle" />
 
@@ -41,7 +39,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
         android:text="@string/dialog_title_template_title"
-        android:textColor="@color/glass_text_primary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/ivBack"
@@ -56,7 +54,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/tips_list_empty"
-        android:textColor="@color/glass_text_secondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         app:layout_constraintBottom_toBottomOf="@id/rvTemplate"
         app:layout_constraintEnd_toEndOf="@id/rvTemplate"
         app:layout_constraintStart_toStartOf="@id/rvTemplate"
@@ -84,21 +82,17 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAdd"
+        style="@style/Widget.Material3.Button.FilledButton"
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:backgroundTint="@color/glass_cta_bg"
         android:text="@string/dialog_button_add_template"
         android:textAllCaps="false"
-        android:textColor="@color/glass_cta_text"
         android:textStyle="bold"
-        app:cornerRadius="45dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:strokeColor="#FFFFFF"
-        app:strokeWidth="1dp" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

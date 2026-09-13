@@ -9,7 +9,6 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0.3"
-        android:background="@color/glass_border" />
+        android:background="?attr/colorOutlineVariant" />
 
 </FrameLayout>

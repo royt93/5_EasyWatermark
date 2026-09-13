@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_glassmorphism_panel"
+    android:background="?attr/colorSurfaceContainerLow"
     android:paddingStart="16dp"
     android:paddingTop="12dp"
     android:paddingEnd="16dp"
@@ -13,10 +13,9 @@
     <!-- Handle -->
     <View
         android:id="@+id/vHandle"
-        android:layout_width="36dp"
+        android:layout_width="32dp"
         android:layout_height="4dp"
-        android:alpha="0.4"
-        android:background="#FFFFFF"
+        android:background="?attr/colorOutlineVariant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -28,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
         android:text="@string/position_anchor_title"
-        android:textColor="@color/glass_text_primary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -60,7 +59,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="14dp"
-                app:strokeColor="@color/glass_text_hint" />
+                app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAnchorTopCenter"
@@ -72,7 +71,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="14dp"
-                app:strokeColor="@color/glass_text_hint" />
+                app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAnchorTopRight"
@@ -84,7 +83,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="14dp"
-                app:strokeColor="@color/glass_text_hint" />
+                app:strokeColor="?attr/colorOutlineVariant" />
 
         </LinearLayout>
 
@@ -103,7 +102,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="14dp"
-                app:strokeColor="@color/glass_text_hint" />
+                app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAnchorCenter"
@@ -115,7 +114,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="14dp"
-                app:strokeColor="@color/glass_text_hint" />
+                app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAnchorCenterRight"
@@ -127,7 +126,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="14dp"
-                app:strokeColor="@color/glass_text_hint" />
+                app:strokeColor="?attr/colorOutlineVariant" />
 
         </LinearLayout>
 
@@ -146,7 +145,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="14dp"
-                app:strokeColor="@color/glass_text_hint" />
+                app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAnchorBottomCenter"
@@ -158,7 +157,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="14dp"
-                app:strokeColor="@color/glass_text_hint" />
+                app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAnchorBottomRight"
@@ -170,7 +169,7 @@
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="14dp"
-                app:strokeColor="@color/glass_text_hint" />
+                app:strokeColor="?attr/colorOutlineVariant" />
 
         </LinearLayout>
 
@@ -183,7 +182,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="@string/position_anchor_margin"
-        android:textColor="@color/glass_text_primary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@id/tvMarginValue"
         app:layout_constraintStart_toStartOf="parent"
@@ -194,7 +193,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:textColor="@color/glass_text_primary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/glAnchor"

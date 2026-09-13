@@ -89,6 +89,12 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
             insets
         }
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.llTopBar) { view, insets ->
+            val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.setPadding(view.paddingLeft, statusBars.top + 8, view.paddingRight, view.paddingBottom)
+            insets
+        }
+
         initViews()
         loadHistory()
     }

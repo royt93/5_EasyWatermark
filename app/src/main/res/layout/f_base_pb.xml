@@ -39,7 +39,7 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:textAlignment="center"
-        android:textColor="@color/glass_text_primary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="11sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"

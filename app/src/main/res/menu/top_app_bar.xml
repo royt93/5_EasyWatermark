@@ -6,13 +6,13 @@
         android:id="@+id/ivSysImage"
         android:icon="@drawable/sharp_content_paste_search_24"
         android:title="@string/pick_via_system"
-        app:iconTint="@color/glass_text_primary"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/ivPickFolder"
         android:icon="@drawable/ic_folder_24"
         android:title="@string/pick_folder"
-        app:iconTint="@color/glass_text_primary"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="always" />
 </menu>

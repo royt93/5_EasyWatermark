@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_glassmorphism_panel"
+    android:background="?attr/colorSurfaceContainerLow"
     android:paddingStart="16dp"
     android:paddingTop="12dp"
     android:paddingEnd="16dp"
@@ -12,10 +12,10 @@
     <!-- Handle -->
     <View
         android:id="@+id/vHandle"
-        android:layout_width="36dp"
+        android:layout_width="32dp"
         android:layout_height="4dp"
         android:alpha="0.4"
-        android:background="#FFFFFF"
+        android:background="?attr/colorOnSurfaceVariant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
         android:text="Draw Signature"
-        android:textColor="#FFFFFF"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,35 +39,31 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Clear"
-        android:textColor="#FF3B30"
+        android:textColor="?attr/colorError"
         app:layout_constraintBottom_toBottomOf="@id/tvTitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tvTitle" />
 
-    <!-- Canvas Container -->
-    <FrameLayout
+    <!-- Canvas Container in MaterialCardView -->
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/flCanvasContainer"
         android:layout_width="match_parent"
         android:layout_height="250dp"
         android:layout_marginTop="16dp"
-        android:background="@drawable/bg_floating_pill"
-        android:padding="2dp"
+        app:cardBackgroundColor="?attr/colorSurfaceContainer"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeColor="?attr/colorOutlineVariant"
+        app:strokeWidth="1dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTitle">
-
-        <!-- Solid white background for drawing so user can see what they write -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/bg_glassmorphism_panel"
-            android:alpha="0.5"/>
 
         <com.mckimquyen.watermark.ui.widget.SignatureView
             android:id="@+id/signatureView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Save Button -->
     <com.google.android.material.button.MaterialButton
@@ -75,13 +71,16 @@
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginTop="16dp"
-        android:backgroundTint="#007AFF"
+        app:backgroundTint="?attr/colorPrimary"
         android:text="Use Signature"
         android:textAllCaps="false"
-        android:textColor="#FFFFFF"
+        android:textColor="?attr/colorOnPrimary"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:cornerRadius="45dp"
+        app:cornerRadius="16dp"
+        app:elevation="2dp"
+        app:rippleColor="?attr/colorOnPrimary"
+        app:strokeWidth="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

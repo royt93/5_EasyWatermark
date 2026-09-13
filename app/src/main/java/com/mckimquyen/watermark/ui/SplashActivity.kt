@@ -19,8 +19,13 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 
+import com.mckimquyen.watermark.BaseActivity
+import com.mckimquyen.watermark.BuildConfig
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+
 @SuppressLint("CustomSplashScreen")
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySplashBinding
 
@@ -29,14 +34,29 @@ class SplashActivity : AppCompatActivity() {
         AppLog.d(LOG_TAG, "onCreate")
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.root.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        binding.tvVersion.text = "v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+        binding.tvCopyright.text = "© 2026 McKim Quyen • All Rights Reserved"
+
         lifecycleScope.launch { runSplashFlow() }
     }
 
     @OptIn(ExperimentalAdApi::class)
     private suspend fun runSplashFlow() {
-        // Fast-path: không có mạng → vào app ngay, không chờ SDK.
+        val startTime = System.currentTimeMillis()
+        // Fast-path: không có mạng → vào app ngay sau khi hiện thương hiệu đủ thời gian.
         if (!hasNetwork()) {
-            AppLog.d(LOG_TAG, "No network — skip all ads, go to main immediately")
+            AppLog.d(LOG_TAG, "No network — skip all ads, go to main")
+            val elapsed = System.currentTimeMillis() - startTime
+            if (elapsed < MIN_SPLASH_DURATION_MS) {
+                kotlinx.coroutines.delay(MIN_SPLASH_DURATION_MS - elapsed)
+            }
             goToMain()
             return
         }
@@ -55,6 +75,10 @@ class SplashActivity : AppCompatActivity() {
         }
 
         if (!canRequestAds) {
+            val elapsed = System.currentTimeMillis() - startTime
+            if (elapsed < MIN_SPLASH_DURATION_MS) {
+                kotlinx.coroutines.delay(MIN_SPLASH_DURATION_MS - elapsed)
+            }
             goToMain()
             return
         }
@@ -82,6 +106,11 @@ class SplashActivity : AppCompatActivity() {
             Log.w(LOG_TAG, "awaitSplashComplete failed, continuing to main", it)
         }
 
+        val elapsed = System.currentTimeMillis() - startTime
+        if (elapsed < MIN_SPLASH_DURATION_MS) {
+            kotlinx.coroutines.delay(MIN_SPLASH_DURATION_MS - elapsed)
+        }
+
         goToMain()
     }
 
@@ -104,6 +133,7 @@ class SplashActivity : AppCompatActivity() {
         @Volatile
         private var isAdInitialized = false
 
+        private const val MIN_SPLASH_DURATION_MS = 1_500L
         private const val CONSENT_TIMEOUT_MS = 6_000L
         private const val INIT_TIMEOUT_MS = 8_000L
     }

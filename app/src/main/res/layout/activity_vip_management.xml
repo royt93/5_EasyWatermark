@@ -5,7 +5,7 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_glass_gradient">
+    android:background="?attr/colorSurface">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -30,9 +30,9 @@
                 android:layout_height="64dp"
                 android:background="@android:color/transparent"
                 app:navigationIcon="@drawable/ic_arrow_back"
-                app:navigationIconTint="@color/glass_text_primary"
+                app:navigationIconTint="?attr/colorOnSurface"
                 app:title="@string/vip_title"
-                app:titleTextColor="@color/glass_text_primary" />
+                app:titleTextColor="?attr/colorOnSurface" />
 
             <!-- #1 Status header / hero card -->
             <LinearLayout
@@ -57,7 +57,7 @@
                         android:background="@drawable/bg_glass_button"
                         android:padding="10dp"
                         android:src="@drawable/ic_workspace_premium"
-                        app:tint="@color/glass_text_primary"
+                        app:tint="@color/vip_gold"
                         tools:ignore="ContentDescription" />
                 </com.facebook.shimmer.ShimmerFrameLayout>
 
@@ -72,7 +72,7 @@
                         android:id="@+id/tvVipStatus"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/glass_text_primary"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="22sp"
                         android:textStyle="bold"
                         tools:text="VIP Active" />
@@ -82,7 +82,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:textColor="@color/glass_text_primary"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp"
                         tools:text="First install gift" />
 
@@ -92,7 +92,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:textColor="@color/glass_text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="13sp"
                         tools:text="Expires Jun 15, 2026" />
                 </LinearLayout>
@@ -114,7 +114,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/vip_time_left"
-                    android:textColor="@color/glass_text_secondary"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="13sp" />
 
                 <TextView
@@ -123,7 +123,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:fontFamily="monospace"
-                    android:textColor="@color/glass_text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="26sp"
                     android:textStyle="bold"
                     tools:text="12d 03h 24m 15s" />
@@ -134,7 +134,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     app:indicatorColor="@color/vip_gold"
-                    app:trackColor="@color/glass_overlay_light"
+                    app:trackColor="?attr/colorSurfaceContainerHighest"
                     app:trackCornerRadius="4dp"
                     app:trackThickness="8dp" />
 
@@ -143,7 +143,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:textColor="@color/glass_text_secondary"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="12sp"
                     tools:text="Activated: Jun 14, 2026 10:00" />
             </LinearLayout>
@@ -161,21 +161,20 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/vip_redeem_title"
-                    android:textColor="@color/glass_text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilVipKey"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:hint="@string/vip_key_hint"
-                    app:boxBackgroundColor="@color/glass_overlay_light"
-                    app:boxStrokeColor="@color/glass_border"
                     app:endIconMode="clear_text"
-                    app:hintTextColor="@color/glass_text_secondary"
                     app:startIconDrawable="@drawable/ic_confirmation_number"
-                    app:startIconTint="@color/glass_text_secondary">
+                    app:startIconTint="?attr/colorPrimary">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtVipKey"
@@ -183,23 +182,21 @@
                         android:layout_height="wrap_content"
                         android:inputType="textVisiblePassword"
                         android:singleLine="true"
-                        android:textColor="@color/glass_text_primary"
-                        android:textColorHint="@color/glass_text_hint" />
+                        android:textColor="?attr/colorOnSurface"
+                        android:textColorHint="?attr/colorOnSurfaceVariant" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRedeemKey"
+                    style="@style/Widget.Material3.Button.FilledButton"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
                     android:layout_marginTop="14dp"
                     android:enabled="false"
                     android:text="@string/vip_redeem_button"
-                    android:textColor="@color/vip_redeem_btn_fg"
-                    app:backgroundTint="@color/vip_redeem_btn_bg"
                     app:cornerRadius="14dp"
                     app:icon="@drawable/ic_workspace_premium"
-                    app:iconGravity="textStart"
-                    app:iconTint="@color/vip_redeem_btn_fg" />
+                    app:iconGravity="textStart" />
             </LinearLayout>
 
             <!-- #7 watch rewarded -->
@@ -218,7 +215,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/vip_reward_title"
-                    android:textColor="@color/glass_text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -227,7 +224,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:text="@string/vip_reward_desc"
-                    android:textColor="@color/glass_text_secondary"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="14sp" />
 
                 <com.facebook.shimmer.ShimmerFrameLayout
@@ -274,7 +271,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/vip_active_card_title"
-                    android:textColor="@color/glass_text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -283,7 +280,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="@color/glass_text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="15sp"
                     tools:text="🎁 First install gift" />
 
@@ -292,7 +289,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="@color/glass_text_secondary"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="13sp"
                     tools:text="Expires Jun 15, 2026" />
 
@@ -303,11 +300,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:text="@string/vip_revoke_button"
-                    android:textColor="@color/glass_text_primary"
+                    android:textColor="?attr/colorError"
                     app:icon="@drawable/ic_restore"
                     app:iconGravity="textStart"
-                    app:iconTint="@color/glass_text_primary"
-                    app:strokeColor="@color/glass_border" />
+                    app:iconTint="?attr/colorError"
+                    app:strokeColor="?attr/colorError" />
             </LinearLayout>
 
             <!-- #8-11 Buy VIP + #13 Restore (disabled placeholders) -->
@@ -323,7 +320,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/vip_buy_title"
-                    android:textColor="@color/glass_text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -385,7 +382,7 @@
                 android:layout_marginTop="18dp"
                 android:gravity="center"
                 android:text="@string/vip_privacy_footer"
-                android:textColor="@color/glass_text_secondary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

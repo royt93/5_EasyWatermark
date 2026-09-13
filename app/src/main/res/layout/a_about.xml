@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    a_about — Rich About / Info screen
-    iOS Liquid Glass v2: deep purple gradient, dark frosted cards,
-    white text on dark = perfectly readable
+    a_about — Material 3 Rich About / Info screen
+    Material Design 3 (Material You):
+    - ColorSurface background, MaterialCardViews with colorSurfaceContainer
+    - Tonal and Filled buttons with dynamic colors
 -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_glass_gradient">
+    android:background="?attr/colorSurface">
 
     <!-- ─── Collapsing hero header ─── -->
     <com.google.android.material.appbar.AppBarLayout
@@ -24,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
-            app:collapsedTitleTextColor="@color/glass_text_primary"
+            app:collapsedTitleTextColor="?attr/colorOnSurface"
             app:contentScrim="@android:color/transparent"
             app:expandedTitleGravity="bottom|center_horizontal"
             app:expandedTitleMarginBottom="16dp"
@@ -32,7 +33,7 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:titleCollapseMode="scale">
 
-            <!-- Hero: glow + app icon -->
+            <!-- Hero: app icon -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -42,28 +43,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:paddingBottom="48dp">
-
-                    <!-- Glow aura outer -->
-                    <View
-                        android:layout_width="128dp"
-                        android:layout_height="128dp"
-                        android:alpha="0.2"
-                        android:background="@drawable/bg_glass_shimmer"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <!-- Glow aura inner -->
-                    <View
-                        android:layout_width="96dp"
-                        android:layout_height="96dp"
-                        android:alpha="0.3"
-                        android:background="@drawable/bg_glass_shimmer"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
 
                     <!-- App icon -->
                     <com.google.android.material.imageview.ShapeableImageView
@@ -90,10 +69,10 @@
                 android:background="@android:color/transparent"
                 app:layout_collapseMode="pin"
                 app:navigationIcon="@drawable/baseline_cancel_24"
-                app:navigationIconTint="@color/glass_text_primary"
+                app:navigationIconTint="?attr/colorOnSurface"
                 app:title="@string/about_title_info"
                 app:titleCentered="true"
-                app:titleTextColor="@color/glass_text_primary" />
+                app:titleTextColor="?attr/colorOnSurface" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
@@ -121,17 +100,17 @@
                 android:layout_marginBottom="8dp" />
 
             <!-- ─── Identity card: app name + version + action pills ─── -->
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
-                app:cardBackgroundColor="#B2000000"
+                app:cardBackgroundColor="?attr/colorSurfaceContainer"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
-                app:strokeColor="@color/glass_border"
-                app:strokeWidth="0.5dp">
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -147,7 +126,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/app_name"
-                        android:textColor="@color/glass_text_primary"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="22sp"
                         android:textStyle="bold" />
 
@@ -156,7 +135,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:textColor="@color/glass_text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="13sp"
                         tools:text="v2.6.0" />
 
@@ -172,51 +151,49 @@
                             android:layout_height="wrap_content"
                             android:orientation="horizontal">
 
-                            <!-- Rate: white pill dark text -->
+                            <!-- Rate button -->
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/tvRating"
-                                style="@style/Widget.Material3.Button.TonalButton"
+                                style="@style/Widget.Material3.Button"
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="8dp"
-                                android:backgroundTint="@color/glass_cta_bg"
+                                app:backgroundTint="?attr/colorPrimary"
                                 android:text="⭐  Rate Us"
-                                android:textColor="@color/glass_cta_text"
+                                android:textColor="?attr/colorOnPrimary"
                                 android:textSize="13sp"
                                 android:textStyle="bold"
-                                app:cornerRadius="45dp"
+                                app:cornerRadius="20dp"
                                 app:strokeWidth="0dp" />
 
-                            <!-- More apps: dark frosted pill white text -->
+                            <!-- More apps button -->
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/tvMoreApp"
                                 style="@style/Widget.Material3.Button.TonalButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="8dp"
-                                android:backgroundTint="@color/glass_overlay_medium"
+                                app:backgroundTint="?attr/colorSecondaryContainer"
                                 android:text="🛍  More Apps"
-                                android:textColor="@color/glass_text_primary"
+                                android:textColor="?attr/colorOnSecondaryContainer"
                                 android:textSize="13sp"
                                 android:textStyle="bold"
-                                app:cornerRadius="45dp"
-                                app:strokeColor="@color/glass_border"
-                                app:strokeWidth="0.5dp" />
+                                app:cornerRadius="20dp"
+                                app:strokeWidth="0dp" />
 
-                            <!-- Share app: dark frosted pill white text -->
+                            <!-- Share app button -->
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/tvShareApp"
                                 style="@style/Widget.Material3.Button.TonalButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
-                                android:backgroundTint="@color/glass_overlay_medium"
+                                app:backgroundTint="?attr/colorSecondaryContainer"
                                 android:text="📤  Share App"
-                                android:textColor="@color/glass_text_primary"
+                                android:textColor="?attr/colorOnSecondaryContainer"
                                 android:textSize="13sp"
                                 android:textStyle="bold"
-                                app:cornerRadius="45dp"
-                                app:strokeColor="@color/glass_border"
-                                app:strokeWidth="0.5dp" />
+                                app:cornerRadius="20dp"
+                                app:strokeWidth="0dp" />
 
                         </LinearLayout>
 
@@ -224,7 +201,7 @@
 
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- ─── Section label ─── -->
             <TextView
@@ -238,21 +215,21 @@
                 android:letterSpacing="0.12"
                 android:text="APP INFO"
                 android:textAllCaps="true"
-                android:textColor="@color/glass_text_secondary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
-            <!-- ─── Info rows: dark frosted grouped card ─── -->
-            <androidx.cardview.widget.CardView
+            <!-- ─── Info rows: MaterialCardView grouped card ─── -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                app:cardBackgroundColor="#B2000000"
+                app:cardBackgroundColor="?attr/colorSurfaceContainer"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
-                app:strokeColor="@color/glass_border"
-                app:strokeWidth="0.5dp">
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -274,7 +251,7 @@
                             android:layout_height="20dp"
                             android:alpha="0.8"
                             android:src="@drawable/baseline_error_24"
-                            app:tint="@color/glass_text_primary"
+                            app:tint="?attr/colorOnSurface"
                             tools:ignore="ContentDescription" />
 
                         <TextView
@@ -283,14 +260,14 @@
                             android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:text="@string/about_title_version"
-                            android:textColor="@color/glass_text_primary"
+                            android:textColor="?attr/colorOnSurface"
                             android:textSize="15sp" />
 
                         <TextView
                             android:id="@+id/tvVersion2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/glass_text_secondary"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="13sp"
                             tools:text="2.6.0" />
 
@@ -299,9 +276,9 @@
                     <!-- Separator -->
                     <View
                         android:layout_width="match_parent"
-                        android:layout_height="0.5dp"
+                        android:layout_height="1dp"
                         android:layout_marginStart="48dp"
-                        android:background="@color/glass_border" />
+                        android:background="?attr/colorOutlineVariant" />
 
                     <!-- VIP row -->
                     <LinearLayout
@@ -318,7 +295,7 @@
                             android:layout_height="20dp"
                             android:alpha="0.9"
                             android:src="@drawable/ic_workspace_premium"
-                            app:tint="@color/glass_text_primary"
+                            app:tint="?attr/colorOnSurface"
                             tools:ignore="ContentDescription" />
 
                         <TextView
@@ -327,7 +304,7 @@
                             android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:text="@string/vip_title"
-                            android:textColor="@color/glass_text_primary"
+                            android:textColor="?attr/colorOnSurface"
                             android:textSize="15sp" />
 
                         <ImageView
@@ -336,16 +313,16 @@
                             android:alpha="0.5"
                             android:rotation="45"
                             android:src="@drawable/baseline_cancel_24"
-                            app:tint="@color/glass_text_secondary"
+                            app:tint="?attr/colorOnSurfaceVariant"
                             tools:ignore="ContentDescription" />
 
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
-                        android:layout_height="0.5dp"
+                        android:layout_height="1dp"
                         android:layout_marginStart="48dp"
-                        android:background="@color/glass_border" />
+                        android:background="?attr/colorOutlineVariant" />
 
                     <!-- Privacy row -->
                     <LinearLayout
@@ -362,7 +339,7 @@
                             android:layout_height="20dp"
                             android:alpha="0.8"
                             android:src="@drawable/baseline_gpp_good_24"
-                            app:tint="@color/glass_text_primary"
+                            app:tint="?attr/colorOnSurface"
                             tools:ignore="ContentDescription" />
 
                         <TextView
@@ -371,7 +348,7 @@
                             android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:text="@string/about_title_privacy_statement"
-                            android:textColor="@color/glass_text_primary"
+                            android:textColor="?attr/colorOnSurface"
                             android:textSize="15sp" />
 
                         <ImageView
@@ -380,14 +357,14 @@
                             android:alpha="0.5"
                             android:rotation="45"
                             android:src="@drawable/baseline_cancel_24"
-                            app:tint="@color/glass_text_secondary"
+                            app:tint="?attr/colorOnSurfaceVariant"
                             tools:ignore="ContentDescription" />
 
                     </LinearLayout>
 
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- ─── Section label: Debug (hidden) ─── -->
             <TextView
@@ -401,24 +378,24 @@
                 android:letterSpacing="0.12"
                 android:text="DEBUG"
                 android:textAllCaps="true"
-                android:textColor="@color/glass_text_secondary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:visibility="gone"
                 tools:visibility="visible" />
 
             <!-- ─── Debug toggles (hidden) ─── -->
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:visibility="gone"
-                app:cardBackgroundColor="#B2000000"
+                app:cardBackgroundColor="?attr/colorSurfaceContainer"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
-                app:strokeColor="@color/glass_border"
-                app:strokeWidth="0.5dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:strokeWidth="1dp"
                 tools:visibility="visible">
 
                 <LinearLayout
@@ -433,16 +410,16 @@
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
                         android:text="@string/force_open_dynamic_color_support"
-                        android:textColor="@color/glass_text_primary"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp"
                         android:visibility="gone"
                         tools:visibility="visible" />
 
                     <View
                         android:layout_width="match_parent"
-                        android:layout_height="0.5dp"
+                        android:layout_height="1dp"
                         android:layout_marginStart="16dp"
-                        android:background="@color/glass_border"
+                        android:background="?attr/colorOutlineVariant"
                         android:visibility="gone"
                         tools:visibility="visible" />
 
@@ -453,14 +430,14 @@
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
                         android:text="@string/show_bounds"
-                        android:textColor="@color/glass_text_primary"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp"
                         android:visibility="gone"
                         tools:visibility="visible" />
 
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- ─── Hidden compat views for binding ─── -->
             <com.google.android.material.textview.MaterialTextView
@@ -499,106 +476,126 @@
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp">
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
+                    <com.google.android.material.card.MaterialCardView
                         android:id="@+id/clDevContainer"
                         android:layout_width="260dp"
                         android:layout_height="180dp"
                         android:layout_marginEnd="12dp"
-                        android:background="@drawable/bg_glass_card">
+                        app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="?attr/colorOutlineVariant"
+                        app:strokeWidth="1dp">
 
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvTitle"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:layout_marginTop="20dp"
-                            android:layout_marginEnd="20dp"
-                            android:ellipsize="end"
-                            android:singleLine="true"
-                            android:text="@string/developed_with_by_rosu"
-                            android:textColor="@color/glass_text_primary"
-                            android:textStyle="bold"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
 
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvSubTitle"
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
-                            android:layout_marginStart="20dp"
-                            android:layout_marginTop="8dp"
-                            android:layout_marginEnd="20dp"
-                            android:ellipsize="end"
-                            android:text="@string/dev_comment"
-                            android:textColor="@color/glass_text_secondary"
-                            android:textSize="12sp"
-                            app:layout_constraintBottom_toTopOf="@id/civAvatar"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tvTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="20dp"
+                                android:layout_marginTop="20dp"
+                                android:layout_marginEnd="20dp"
+                                android:ellipsize="end"
+                                android:singleLine="true"
+                                android:text="@string/developed_with_by_rosu"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textStyle="bold"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
 
-                        <com.mckimquyen.watermark.ui.widget.CircleImageView
-                            android:id="@+id/civAvatar"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:layout_marginBottom="16dp"
-                            android:src="@drawable/ic_launcher"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent" />
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tvSubTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:layout_marginStart="20dp"
+                                android:layout_marginTop="8dp"
+                                android:layout_marginEnd="20dp"
+                                android:ellipsize="end"
+                                android:text="@string/dev_comment"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="12sp"
+                                app:layout_constraintBottom_toTopOf="@id/civAvatar"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/tvTitle" />
 
-                    </androidx.constraintlayout.widget.ConstraintLayout>
+                            <com.mckimquyen.watermark.ui.widget.CircleImageView
+                                android:id="@+id/civAvatar"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:layout_marginBottom="16dp"
+                                android:src="@drawable/ic_launcher"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent" />
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
                         android:id="@+id/clDesignerContainer"
                         android:layout_width="260dp"
                         android:layout_height="180dp"
-                        android:background="@drawable/bg_glass_card">
+                        app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="?attr/colorOutlineVariant"
+                        app:strokeWidth="1dp">
 
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvTitleDesigner"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:layout_marginTop="20dp"
-                            android:layout_marginEnd="20dp"
-                            android:ellipsize="end"
-                            android:singleLine="true"
-                            android:text="Designed with ♥ by tovi"
-                            android:textColor="@color/glass_text_primary"
-                            android:textStyle="bold"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
 
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tvSubTitleDesigner"
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
-                            android:layout_marginStart="20dp"
-                            android:layout_marginTop="8dp"
-                            android:layout_marginEnd="20dp"
-                            android:text="A Designer."
-                            android:textColor="@color/glass_text_secondary"
-                            android:textSize="12sp"
-                            app:layout_constraintBottom_toTopOf="@id/civAvatarDesigner"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/tvTitleDesigner"
-                            tools:text="Designer" />
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tvTitleDesigner"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="20dp"
+                                android:layout_marginTop="20dp"
+                                android:layout_marginEnd="20dp"
+                                android:ellipsize="end"
+                                android:singleLine="true"
+                                android:text="Designed with ♥ by tovi"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textStyle="bold"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
 
-                        <com.mckimquyen.watermark.ui.widget.CircleImageView
-                            android:id="@+id/civAvatarDesigner"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:layout_marginBottom="16dp"
-                            android:src="@drawable/ic_launcher"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent" />
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tvSubTitleDesigner"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:layout_marginStart="20dp"
+                                android:layout_marginTop="8dp"
+                                android:layout_marginEnd="20dp"
+                                android:text="A Designer."
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="12sp"
+                                app:layout_constraintBottom_toTopOf="@id/civAvatarDesigner"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/tvTitleDesigner"
+                                tools:text="Designer" />
 
-                    </androidx.constraintlayout.widget.ConstraintLayout>
+                            <com.mckimquyen.watermark.ui.widget.CircleImageView
+                                android:id="@+id/civAvatarDesigner"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:layout_marginBottom="16dp"
+                                android:src="@drawable/ic_launcher"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
 

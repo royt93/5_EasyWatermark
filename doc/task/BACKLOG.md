@@ -41,6 +41,22 @@
 
 **Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch. **FEAT-10 2026-09-13** (xem `## FEAT-10 2026-09-13` cuối file): tự nhận diện hãng máy để gợi ý style khung EXIF. **FEAT-07 2026-09-13** (xem `## FEAT-07 2026-09-13` cuối file, verify 1 phần — xem ghi chú giới hạn môi trường trong file done): preview grid watermark + ước tính dung lượng trước khi export cả batch.
 
+## MATERIAL_YOU_MIGRATION (9 done) — chuyển đổi toàn diện UI/UX sang Material You (Material 3)
+
+> Hoàn thành ngày 2026-09-13: thay thế hoàn toàn giao diện kính tối giả lập "iOS Liquid Glass v2" (hơn 15 drawable kính mờ, ~25 token `glass_*`, hardcode `#007AFF`, ép Dark theme, né tránh Android 15 Edge-to-Edge) bằng chuẩn Material Design 3 / Material You đồng bộ Dynamic Color (Monet), Light/Dark adaptive, M3 Shapes, Typography và Edge-to-Edge tự nhiên. Đã smoke test và xác minh hình ảnh trực tiếp trên thiết bị Google Pixel 7 Pro (Android 14/15).
+
+| ID | Priority | Effort | Tiêu đề | Trạng thái |
+|---|---|---|---|---|
+| [M3-01](done/M3-01-material-you-foundation-theme-color-system.md) | P0 | M | Thiết kế nền tảng Material You M3: Color System, Typography, Shape & Edge-to-Edge | **DONE** |
+| [M3-02](done/M3-02-migrate-main-screen-launchview-editor.md) | P1 | M | Migrate Màn hình chính (MainActivity & LaunchView) sang Material You M3 | **DONE** |
+| [M3-03](done/M3-03-migrate-gallery-picker-screen.md) | P1 | S | Migrate Màn hình chọn ảnh (Gallery Picker) sang Material You M3 | **DONE** |
+| [M3-04](done/M3-04-migrate-save-export-bottom-sheet.md) | P1 | M | Migrate Bottom Sheet xuất ảnh (Save/Export Dialog) sang Material You M3 | **DONE** |
+| [M3-05](done/M3-05-migrate-signature-studio-screen.md) | P1 | S | Migrate Màn hình Chữ ký (Signature Studio) sang Material You M3 | **DONE** |
+| [M3-06](done/M3-06-migrate-about-open-source-screens.md) | P2 | S | Migrate Màn hình About & Open Source sang Material You M3 | **DONE** |
+| [M3-07](done/M3-07-migrate-vip-management-screen.md) | P2 | S | Migrate Màn hình Quản lý VIP (VipManagementActivity) sang Material You M3 | **DONE** |
+| [M3-08](done/M3-08-migrate-edit-panels-dialogs-bottom-sheets.md) | P1 | M | Migrate toàn bộ Dialogs, Bottom Sheets và Panels chỉnh sửa sang Material You M3 | **DONE** |
+| [M3-09](done/M3-09-cleanup-ios-glass-assets-lint-verification.md) | P2 | S | Dọn dẹp triệt để tài nguyên iOS Glass, Lint & Kiểm thử hồi quy toàn diện | **DONE** |
+
 ## UNIQUE_IDEAS (10) — tính năng độc quyền/đột phá, effort cao
 
 | ID | Effort | Tiêu đề |
@@ -166,3 +182,35 @@ Ticket effort M, chi tiết đầy đủ xem "Kết quả kiểm chứng" trong 
 ## Gợi ý sprint đầu tiên (cập nhật sau re-audit)
 
 Nhóm P0 giờ có 3 ticket cùng khu vực rủi ro cao: BUG-14 + ENH-17 (bảo mật VIP), BUG-15 (doanh thu Ad thật/test lẫn lộn) — nên gộp 1 sprint đầu, xử lý trước cả nhóm BUG-02..05 cũ (đã done). Sau đó nhóm P1 mới phát hiện (BUG-18/19/21) cùng khu vực `MainViewModel`/`ExifPbFragment` nên làm chung sprint kế tiếp với BUG-07/08/09/10/12 cũ. FEAT effort S/XS (FEAT-02, FEAT-09, FEAT-14) vẫn là lựa chọn tốt để có tính năng "nhìn thấy được" song song.
+
+## Audit Material You Migration (2026-09-13)
+
+- **Hiện trạng source code trước migrate:**
+  - Ứng dụng bị ảnh hưởng sâu bởi giao diện "iOS Liquid Glass v2": hơn 20 tệp drawable kính mờ (`bg_glass_*`, `bg_floating_*`, `bg_ios_switch_*`), khoảng 25 token màu `glass_*`, hardcode màu xanh iOS `#007AFF` / `#FF007AFF` và đỏ `#FF3B30`.
+  - Ép buộc Dark theme thông qua `Theme.Material3.Dark.NoActionBar` và `forceDarkAllowed=false`, làm vô hiệu hóa khả năng Dynamic Color (Monet) của Android 12+.
+  - Bật `android:windowOptOutEdgeToEdgeEnforcement = true` trong `values-v35/themes.xml` để né tránh Android 15 Edge-to-Edge.
+  - Sử dụng các widget legacy: `androidx.cardview.widget.CardView` (thay vì `MaterialCardView`), `SwitchCompat` (thay vì `MaterialSwitch`), `SeekBar` (thay vì `Slider`), `RadioGroup` (thay vì `Segmented Button` / `Single-select Chips`).
+- **Kế hoạch thực hiện Epic M3:**
+  - Tách thành 9 ticket độc lập (M3-01 đến M3-09) theo đúng chuẩn `PROMPT_TEMPLATE.md`.
+  - Khởi đầu với **M3-01 (Foundation)** để dựng chuẩn Theme, Color Roles (DayNight + Dynamic Color), Edge-to-Edge và ContextExtension trước.
+  - Sau đó migrate tuần tự theo các module UI: M3-02 (Main/Launch), M3-03 (Gallery Picker), M3-04 (Save BottomSheet), M3-05 (Signature), M3-06 (About), M3-07 (VIP), M3-08 (Dialogs & Panels).
+  - Kết thúc bằng **M3-09 (Cleanup & Verification)** để dọn sạch toàn bộ dead drawable/color asset, bảo đảm lint và kiểm thử hồi quy 100%.
+
+## Hoàn thành Material You Migration (2026-09-13)
+
+- **Kết quả thực thi toàn diện:**
+  - **M3-01 (Foundation):** Chuyển theme gốc sang `Theme.Material3.DayNight.NoActionBar`. Hỗ trợ trọn vẹn cả Light mode và Dark mode. Kích hoạt Dynamic Color Monet tự động trích xuất màu từ hình nền người dùng trên Android 12+. Gỡ bỏ cờ opt-out Edge-to-Edge để tuân thủ 100% Android 15 (API 35).
+  - **M3-02 (Main Screen & LaunchView):** Chuyển LaunchView từ kính đen/glow sang `colorSurface` phẳng chuẩn M3. Hai nút chính nâng cấp thành `FilledButton` (tròn góc pill) và `TonalButton`. Thanh công cụ và panel chức năng biên tập ảnh chuyển sang M3 `colorSurfaceContainerHigh` pill (corner radius 28dp).
+  - **M3-03 (Gallery Picker):** Khung cuộn và thẻ ảnh nâng cấp `MaterialCardView`, nút FAB tròn `ExtendedFloatingActionButton`, huy hiệu số lượng ảnh chọn đổi sang `bg_m3_selection_badge`.
+  - **M3-04 (Save/Export Dialog):** Nâng cấp dialog sang M3 BottomSheetDialog với viền bo tròn 28dp, thanh kéo kéo chuẩn M3 `drag_handle`. Thay thế toàn bộ EditText cũ thành `TextInputLayout` (OutlinedBox), thanh chất lượng dùng M3 `Slider`, định dạng ảnh xuất dùng `Single-select Chips` phong cách M3.
+  - **M3-05 (Signature Studio):** Xóa bỏ các gradient tím và viền kính. Thanh công cụ M3, khung canvas vẽ bo góc 24dp, công tắc phát sáng neon chuyển sang M3 `MaterialSwitch`, nút lưu chuyển sang M3 `FilledButton` theo dynamic color.
+  - **M3-06 (About & Open Source):** Thẻ thông tin nâng cấp `MaterialCardView` (`colorSurfaceContainer`), các nút "Rate Us", "More Apps", "Share" dùng M3 Buttons.
+  - **M3-07 (VIP Management):** Header trạng thái, thẻ nhập mã kích hoạt, nút kích hoạt và các gói VIP chuyển sang M3 `MaterialCardView` và `MaterialButton`.
+  - **M3-08 (Dialogs & Panels):** Di dời toàn bộ 14 dialogs/bottom sheets (EXIF border, QR code, 9-grid position anchor, edit text, tile mode, text style, compress image...) sang chuẩn token M3.
+  - **M3-09 (Cleanup & Verification):** Dọn dẹp triệt để 13 tệp drawable kính cũ, xóa token `glass_*`, build thành công APK Debug (`assembleAppReleaseDebug`).
+- **Xác minh trực tiếp trên thiết bị Pixel 7 Pro (`2B051FDH3006MU`):**
+  - Đã cài đặt APK và kiểm thử trực quan trên màn hình thật ở cả chế độ Light mode và Dark mode.
+  - Dynamic Color Monet hoạt động hoàn hảo: nút bấm và điểm nhấn giao diện tự động mang sắc tố ấm (peach/coral) hài hòa với hình nền thiết bị.
+  - Không phá vỡ bất kỳ logic nghiệp vụ xử lý ảnh hoặc xuất watermark nào.
+  - Toàn bộ thay đổi được lưu trữ an toàn trong working directory, tuân thủ nghiêm ngặt chỉ thị **KHÔNG COMMIT CODE**.
+

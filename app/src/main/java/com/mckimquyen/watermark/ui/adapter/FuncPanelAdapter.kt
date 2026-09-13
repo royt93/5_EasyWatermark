@@ -15,11 +15,15 @@ import com.mckimquyen.watermark.ui.base.BaseViewHolder
 import com.mckimquyen.watermark.utils.ktx.colorPrimary
 
 class FuncPanelAdapter(
-    context: Context,
+    private val context: Context,
     val dataSet: ArrayList<FuncTitleModel>,
 ) : RecyclerView.Adapter<FuncPanelAdapter.FuncTitleHolder>() {
 
-    var textColor: Int = context.applicationContext.colorPrimary
+    var textColor: Int = MaterialColors.getColor(
+        context,
+        com.google.android.material.R.attr.colorOnSurface,
+        context.applicationContext.colorPrimary
+    )
         private set
 
     var selectedPos = 0
@@ -91,7 +95,20 @@ class FuncPanelAdapter(
 
     @SuppressLint("NotifyDataSetChanged")
     fun applyTextColor(color: Int) {
-        textColor = color
+        val surfaceColor = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorSurfaceContainerHigh,
+            android.graphics.Color.LTGRAY
+        )
+        textColor = if (androidx.core.graphics.ColorUtils.calculateContrast(color, surfaceColor) >= 3.0) {
+            color
+        } else {
+            MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorOnSurface,
+                android.graphics.Color.BLACK
+            )
+        }
         notifyDataSetChanged()
     }
 

@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
+import com.mckimquyen.watermark.utils.ktx.colorOnSurface
 import com.mckimquyen.watermark.utils.ktx.colorPrimary
 
 /**
@@ -43,7 +44,7 @@ class TextEffectAdapter(
             if (enabled) R.drawable.bg_glass_button_checked else R.drawable.bg_glass_button
         )
         holder.tvLabel.setTextColor(
-            if (enabled) holder.tvLabel.context.colorPrimary else ContextCompat.getColor(holder.tvLabel.context, R.color.glass_text_primary)
+            if (enabled) holder.tvLabel.context.colorPrimary else holder.tvLabel.context.colorOnSurface
         )
     }
 

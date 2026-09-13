@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- iOS Liquid Glass: a_recovery — crash recovery screen -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootRecovery"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_glass_gradient">
+    android:background="?attr/colorSurface">
 
     <!-- Inner container to maintain 16dp horizontal margin safely without being overridden by WindowInsets padding -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -23,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="48dp"
             android:text="@string/recovery_title"
-            android:textColor="@color/glass_text_primary"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -39,28 +38,27 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:text="@string/recovery_mode_tips"
-            android:textColor="@color/glass_text_secondary"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
 
-        <!-- Crash log card (Dark frosted glass) -->
-        <androidx.cardview.widget.CardView
+        <!-- Crash log card -->
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardCrashInfo"
+            style="@style/Widget.Material3.CardView.Filled"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="#B2000000"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
             app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
             app:layout_constraintBottom_toTopOf="@id/btnCopy"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvInfoTitle"
-            app:strokeColor="@color/glass_border"
-            app:strokeWidth="0.5dp">
+            app:layout_constraintTop_toBottomOf="@id/tvInfoTitle">
 
             <ScrollView
                 android:id="@+id/svInfo"
@@ -74,31 +72,27 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
                     android:padding="16dp"
-                    android:textColor="#E0FFFFFF"
+                    android:textColor="?attr/colorOnSurface"
                     android:textIsSelectable="true"
                     android:textSize="12sp"
                     tools:text="java.lang.NullPointerException: Attempt to invoke..." />
             </ScrollView>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Copy Actions -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCopy"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginBottom="16dp"
-            android:backgroundTint="#33FFFFFF"
             android:text="@string/copy"
-            android:textColor="@color/glass_text_primary"
             android:textSize="16sp"
             android:textStyle="bold"
             app:cornerRadius="16dp"
-            app:elevation="0dp"
             app:layout_constraintBottom_toTopOf="@id/llShareButtons"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:strokeColor="@color/glass_border"
-            app:strokeWidth="0.5dp" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <!-- Share button row (Ghost buttons, without Telegram) -->
         <LinearLayout
@@ -118,7 +112,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/send_email"
-                android:textColor="@color/glass_text_secondary" />
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnStore"
@@ -127,26 +121,25 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/jump_to_store"
-                android:textColor="@color/glass_text_secondary" />
+                android:textColor="?attr/colorOnSurfaceVariant" />
         </LinearLayout>
 
-        <!-- Close recovery CTA (iOS Vivid Red for destructive/stop action) -->
+        <!-- Close recovery CTA -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCloseRecoveryMode"
+            style="@style/Widget.Material3.Button.FilledButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginBottom="32dp"
-            android:backgroundTint="#FF3B30"
+            android:backgroundTint="?attr/colorError"
             android:text="@string/turn_off_recovery_mode"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/colorOnError"
             android:textSize="17sp"
             android:textStyle="bold"
-            app:cornerRadius="45dp"
-            app:elevation="8dp"
+            app:cornerRadius="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:strokeWidth="0dp" />
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

@@ -1,29 +1,31 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+    <style name="SplashTheme" parent="Theme.MyApp">
         <item name="android:windowIsTranslucent">false</item>
-        <item name="android:windowBackground">@drawable/startup</item>
+        <item name="android:windowBackground">?attr/colorSurface</item>
     </style>
 
     <style name="ShapeAppearance.App.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">45dp</item>
+        <item name="cornerSize">8dp</item>
     </style>
 
     <style name="ShapeAppearance.App.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">45dp</item>
+        <item name="cornerSize">12dp</item>
     </style>
 
     <style name="ShapeAppearance.App.LargeComponent" parent="ShapeAppearance.Material3.LargeComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">45dp</item>
+        <item name="cornerSize">28dp</item>
     </style>
 
     <style name="ShapeAppearance.App.FloatActionButton" parent="ShapeAppearanceOverlay.Material3.FloatingActionButton">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">45dp</item>
+        <item name="cornerSize">16dp</item>
     </style>
+
+    <style name="Widget.Material3.Button.FilledButton" parent="Widget.Material3.Button" />
 
     <style name="WindowAnimationTransition" parent="Animation.MaterialComponents.BottomSheetDialog">
         <item name="android:activityOpenEnterAnimation">@anim/a_open_in</item>
@@ -41,12 +43,12 @@
         <item name="thumbRadius">10dp</item>
         <item name="thumbStrokeColor">@android:color/transparent</item>
         <item name="tickColor">@android:color/transparent</item>
-        <item name="trackHeight">2dp</item>
+        <item name="trackHeight">4dp</item>
     </style>
 
     <style name="TextInputLayoutStyle" parent="Widget.Material3.TextInputLayout.OutlinedBox">
-        <item name="boxStrokeWidth">0dp</item>
-        <item name="boxStrokeWidthFocused">0dp</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
     </style>
 
     <style name="ProgressBarStyle" parent="Widget.AppCompat.ProgressBar">
@@ -56,42 +58,44 @@
     <style name="AboutPageTextViewStyle" parent="TextAppearance.Material3.TitleLarge">
         <item name="android:paddingStart">28dp</item>
         <item name="android:paddingEnd">28dp</item>
-        <item name="android:textColor">@color/glass_text_primary</item>
-        <item name="android:drawableTint">@color/glass_text_primary</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:drawableTint">?attr/colorOnSurface</item>
     </style>
 
     <style name="SaveDialogTextViewStyle" parent="Widget.MaterialComponents.BottomSheet.Modal">
-        <item name="android:textColor">@color/md_theme_dark_onSurface</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:paddingStart">0dp</item>
         <item name="android:paddingEnd">0dp</item>
     </style>
 
     <style name="SaveDialogExposedDropdownMenu" parent="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
-        <item name="boxBackgroundColor">@android:color/transparent</item>
-        <item name="boxStrokeColor">@android:color/transparent</item>
-        <item name="boxStrokeWidth">0dp</item>
-        <item name="boxStrokeWidthFocused">0dp</item>
+        <item name="boxBackgroundColor">?attr/colorSurfaceContainerHigh</item>
+        <item name="boxStrokeColor">?attr/colorOutline</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
         <item name="shapeAppearance">@style/ShapeAppearance.App.SmallComponent</item>
-        <item name="hintTextColor">@color/glass_text_secondary</item>
-        <item name="endIconTint">@color/glass_text_primary</item>
-        <item name="android:textColor">@color/glass_text_primary</item>
-        <item name="android:textColorHint">@color/glass_text_secondary</item>
+        <item name="hintTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="endIconTint">?attr/colorOnSurface</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:textColorHint">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <style name="SaveDialogAutoCompleteTextView">
-        <item name="hintTextColor">@color/md_theme_dark_onSurface</item>
-        <item name="android:textColor">@color/md_theme_dark_onSurface</item>
-        <item name="android:textColorHint">@color/md_theme_dark_onSurface</item>
+        <item name="hintTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:textColorHint">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <style name="BottomSheetDialog.App" parent="Widget.Material3.BottomSheet.Modal">
-        <item name="shapeAppearance">@style/ShapeAppearance.App.SmallComponent</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.App.LargeComponent</item>
         <item name="shapeAppearanceOverlay">@null</item>
+        <item name="backgroundTint">?attr/colorSurfaceContainerLow</item>
     </style>
 
     <style name="MaterialAlertDialog.App" parent="MaterialAlertDialog.Material3">
-        <item name="shapeAppearance">@style/ShapeAppearance.App.SmallComponent</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.App.LargeComponent</item>
         <item name="shapeAppearanceOverlay">@null</item>
+        <item name="backgroundTint">?attr/colorSurfaceContainerHigh</item>
     </style>
 
     <style name="MaterialAlertDialog.App.Title.Text" parent="MaterialAlertDialog.Material3.Title.Text" />
@@ -107,17 +111,14 @@
     </style>
 
     <style name="Widget.App.Button" parent="Widget.Material3.Button">
-        <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.None</item>
         <item name="materialThemeOverlay">@style/ThemeOverlay.Material3.Button</item>
     </style>
 
     <style name="Widget.App.Button.TextButton" parent="Widget.Material3.Button.TextButton">
-        <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.None</item>
         <item name="materialThemeOverlay">@style/ThemeOverlay.Material3.Button.TextButton</item>
     </style>
 
     <style name="Widget.App.AlertDialog.Button" parent="Widget.Material3.Button.TextButton.Dialog">
-        <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.None</item>
         <item name="materialThemeOverlay">@style/ThemeOverlay.Material3.Button.TextButton</item>
     </style>
 

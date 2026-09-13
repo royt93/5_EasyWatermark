@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_glass_gradient">
+    android:background="?attr/colorSurface">
 
     <!-- Top App Bar -->
     <LinearLayout
@@ -16,6 +16,7 @@
         android:paddingBottom="16dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
+        android:background="?attr/colorSurface"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
@@ -24,7 +25,7 @@
             android:layout_height="32dp"
             android:padding="4dp"
             android:src="@drawable/ic_arrow_back"
-            android:tint="#FFFFFF" />
+            app:tint="?attr/colorOnSurface" />
         
         <TextView
             android:layout_width="0dp"
@@ -32,7 +33,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/signature_studio"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -42,7 +43,7 @@
             android:layout_height="32dp"
             android:padding="4dp"
             android:src="@drawable/ic_undo"
-            android:tint="#FFB800"
+            app:tint="?attr/colorTertiary"
             android:layout_marginEnd="8dp" />
 
         <ImageView
@@ -51,16 +52,19 @@
             android:layout_height="32dp"
             android:padding="4dp"
             android:src="@drawable/ic_clear_draw"
-            android:tint="#FF5252" />
+            app:tint="?attr/colorError" />
     </LinearLayout>
 
-    <FrameLayout
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/flCanvasContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="16dp"
-        android:background="#242424"
-        android:clipToOutline="true"
+        app:cardBackgroundColor="?attr/colorSurfaceContainer"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeColor="?attr/colorOutlineVariant"
+        app:strokeWidth="1dp"
         app:layout_constraintBottom_toTopOf="@id/llBottomControls"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -72,7 +76,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/draw_here"
-            android:textColor="#555555"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="24sp"
             android:textStyle="italic" />
 
@@ -80,14 +84,14 @@
             android:id="@+id/signatureView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Bottom Controls -->
     <LinearLayout
         android:id="@+id/llBottomControls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_glassmorphism_panel"
+        android:background="?attr/colorSurfaceContainerLow"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -105,7 +109,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
                 android:text="Saved Signatures  (tap to load · ✕ to delete)"
-                android:textColor="#AAFFFFFF"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp" />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -130,7 +134,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/size"
-                android:textColor="#FFFFFF" />
+                android:textColor="?attr/colorOnSurface" />
 
             <SeekBar
                 android:id="@+id/sbSize"
@@ -145,20 +149,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:text="@string/neon_glow"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp" />
 
-            <androidx.appcompat.widget.SwitchCompat
+            <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/swGlow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                app:thumbTint="@null"
-                app:trackTint="@null"
-                app:switchMinWidth="50dp"
-                android:background="@null"
-                android:thumb="@drawable/bg_ios_switch_thumb"
-                app:track="@drawable/bg_ios_switch_track" />
+                android:layout_marginStart="16dp" />
         </LinearLayout>
 
         <!-- Color List (Re-using generic view) -->
@@ -176,15 +174,15 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="8dp"
-            android:backgroundTint="#FF007AFF"
+            app:backgroundTint="?attr/colorPrimary"
             android:fontFamily="sans-serif-medium"
             android:text="@string/apply_signature"
-            android:textColor="#FFFFFF"
-            android:textSize="17sp"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="16sp"
             android:textStyle="bold"
-            app:cornerRadius="45dp"
-            app:elevation="8dp"
-            app:rippleColor="#33FFFFFF"
+            app:cornerRadius="16dp"
+            app:elevation="2dp"
+            app:rippleColor="?attr/colorOnPrimary"
             app:strokeWidth="0dp" />
     </LinearLayout>
 

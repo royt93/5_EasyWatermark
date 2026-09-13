@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    item_func_panel — Function icon cell (bottom strip)
-    Dark frosted micro-card per icon, white icon + white label with shadow
--->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,11 +10,11 @@
     android:paddingStart="8dp"
     android:paddingEnd="8dp">
 
-    <!-- Icon with dark frosted circle bg -->
+    <!-- Icon with M3 tonal container -->
     <FrameLayout
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:background="@drawable/bg_glass_button">
+        android:background="@drawable/bg_m3_item_func">
 
         <ImageView
             android:id="@+id/ivIcon"
@@ -26,26 +22,22 @@
             android:layout_height="18dp"
             android:layout_gravity="center"
             android:scaleType="centerInside"
-            app:tint="@color/glass_text_primary"
+            app:tint="?attr/colorOnSurface"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_func_size" />
 
     </FrameLayout>
 
-    <!-- Label: white with subtle shadow for readability -->
+    <!-- Label: M3 onSurface typography -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:gravity="center"
-        android:shadowColor="#80000000"
-        android:shadowDx="0"
-        android:shadowDy="1"
-        android:shadowRadius="2"
         android:textAlignment="center"
-        android:textColor="@color/glass_text_primary"
-        android:textSize="9sp"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="10sp"
         tools:text="Size" />
 
 </LinearLayout>

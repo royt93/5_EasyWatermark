@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_glassmorphism_panel"
+    android:background="?attr/colorSurfaceContainerLow"
     android:paddingStart="16dp"
     android:paddingTop="12dp"
     android:paddingEnd="16dp"
@@ -12,10 +12,9 @@
     <!-- Handle -->
     <View
         android:id="@+id/vHandle"
-        android:layout_width="36dp"
+        android:layout_width="32dp"
         android:layout_height="4dp"
-        android:alpha="0.4"
-        android:background="#FFFFFF"
+        android:background="?attr/colorOutlineVariant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -27,7 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
         android:text="@string/qr_code_title"
-        android:textColor="#FFFFFF"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -36,12 +35,11 @@
     <!-- Input -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilContent"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:hint="@string/qr_code_hint"
-        app:boxBackgroundColor="@android:color/transparent"
-        app:hintTextColor="@color/glass_text_hint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTitle">
@@ -52,17 +50,19 @@
             android:layout_height="wrap_content"
             android:inputType="textUri|textMultiLine"
             android:maxLines="3"
-            android:textColor="@color/glass_text_primary" />
+            android:textColor="?attr/colorOnSurface" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Preview -->
-    <FrameLayout
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/flPreview"
+        style="@style/Widget.Material3.CardView.Filled"
         android:layout_width="180dp"
         android:layout_height="180dp"
         android:layout_marginTop="16dp"
-        android:background="@drawable/bg_floating_pill"
-        android:padding="12dp"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+        app:cardCornerRadius="16dp"
+        app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tilContent">
@@ -71,23 +71,22 @@
             android:id="@+id/ivPreview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_margin="12dp"
             android:contentDescription="@string/qr_code_title"
             android:scaleType="fitCenter" />
-    </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Apply -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnUseQrCode"
+        style="@style/Widget.Material3.Button.FilledButton"
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginTop="16dp"
-        android:backgroundTint="#007AFF"
         android:text="@string/qr_code_use"
         android:textAllCaps="false"
-        android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:cornerRadius="45dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

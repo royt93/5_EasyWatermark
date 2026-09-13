@@ -258,6 +258,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                 // ENH-09: <plurals> thay vì if/else hardcode — chuẩn Android cho số nhiều, hỗ trợ
                 // đúng ngữ pháp khi có bản dịch ngôn ngữ khác (vd tiếng Ả Rập/Nga nhiều dạng số nhiều).
                 rootView.fab.text = resources.getQuantityString(R.plurals.gallery_select_photo_count, count, count)
+                rootView.fab.extend()
                 rootView.tvSelectionHint?.apply {
                     text = resources.getQuantityString(R.plurals.gallery_selected_count, count, count)
                     if (visibility != View.VISIBLE) {

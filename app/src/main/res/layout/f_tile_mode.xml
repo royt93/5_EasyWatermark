@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="24dp"
             android:text="@string/tile_mode_title_repeat"
-            android:textColor="@color/glass_text_primary"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="14sp" />
 
         <com.google.android.material.radiobutton.MaterialRadioButton
@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:text="@string/tile_mode_title_decal"
-            android:textColor="@color/glass_text_primary"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="14sp" />
 
     </RadioGroup>
@@ -56,7 +56,7 @@
         android:paddingEnd="8dp"
         android:text="@string/position_anchor_button"
         android:textAllCaps="false"
-        android:textColor="@color/glass_text_primary"
+        android:textColor="?attr/colorPrimary"
         android:textSize="13sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -21,9 +21,23 @@ fun Palette?.bgColor(context: Context): Int {
 }
 
 fun Palette?.titleTextColor(context: Context): Int {
+    val surfaceColor = MaterialColors.getColor(
+        context,
+        com.google.android.material.R.attr.colorSurfaceContainerHigh,
+        context.colorSurfaceVariant
+    )
+    val defaultOnSurface = MaterialColors.getColor(
+        context,
+        com.google.android.material.R.attr.colorOnSurface,
+        context.colorOnSurfaceVariant
+    )
     if (this == null) {
-        return context.colorOnSurfaceVariant
+        return defaultOnSurface
     }
-    return (this.darkMutedSwatch?.titleTextColor ?: this.mutedSwatch?.titleTextColor)
-        ?: context.colorOnSurfaceVariant
+    val candidate = (this.darkMutedSwatch?.titleTextColor ?: this.mutedSwatch?.titleTextColor)
+    if (candidate != null && androidx.core.graphics.ColorUtils.calculateContrast(candidate, surfaceColor) >= 4.5) {
+        return candidate
+    }
+    return defaultOnSurface
 }
+

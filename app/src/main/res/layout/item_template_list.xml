@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- iOS Liquid Glass: item_template_list — template row with action icons -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -18,7 +17,7 @@
         android:id="@+id/tvContent"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textColor="@color/glass_text_primary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/ivEdit"
@@ -32,7 +31,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         app:icon="@drawable/ic_template_list_item_edit"
-        app:iconTint="@color/glass_text_secondary"
+        app:iconTint="?attr/colorOnSurfaceVariant"
         app:layout_constraintBottom_toBottomOf="@id/tvContent"
         app:layout_constraintEnd_toStartOf="@id/ivDelete"
         app:layout_constraintStart_toEndOf="@id/tvContent"
@@ -44,7 +43,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         app:icon="@drawable/ic_template_list_item_remove"
-        app:iconTint="@color/glass_text_secondary"
+        app:iconTint="?attr/colorError"
         app:layout_constraintBottom_toBottomOf="@id/tvContent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/ivEdit"

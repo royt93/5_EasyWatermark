@@ -113,4 +113,10 @@
     <color name="vip_gold_dark">#FFB8860B</color>
     <color name="vip_on_gold">#1A1300</color>
 
+    <!-- Splash & Component Tokens -->
+    <color name="splash_window_bg">@color/md_theme_light_surface</color>
+    <color name="splash_circle_bg">#F6F0E7</color>
+    <color name="splash_circle_border">#E9E2D0</color>
+    <color name="color_swatch_border">#7C7767</color>
+
 </resources>

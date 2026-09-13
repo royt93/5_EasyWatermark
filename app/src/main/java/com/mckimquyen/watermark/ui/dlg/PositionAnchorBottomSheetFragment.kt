@@ -80,8 +80,18 @@ class PositionAnchorBottomSheetFragment : BaseBindBSDFragment<FPositionAnchorBot
     }
 
     private fun setSelected(button: MaterialButton, selected: Boolean) {
-        val strokeColorRes = if (selected) R.color.glass_text_primary else R.color.glass_text_hint
-        button.strokeColor = ContextCompat.getColorStateList(requireContext(), strokeColorRes)
+        val strokeColor = if (selected) {
+            com.google.android.material.color.MaterialColors.getColor(button, com.google.android.material.R.attr.colorPrimary)
+        } else {
+            com.google.android.material.color.MaterialColors.getColor(button, com.google.android.material.R.attr.colorOutlineVariant)
+        }
+        val bgColor = if (selected) {
+            com.google.android.material.color.MaterialColors.getColor(button, com.google.android.material.R.attr.colorPrimaryContainer)
+        } else {
+            android.graphics.Color.TRANSPARENT
+        }
+        button.strokeColor = android.content.res.ColorStateList.valueOf(strokeColor)
+        button.backgroundTintList = android.content.res.ColorStateList.valueOf(bgColor)
         button.strokeWidth = ((if (selected) 2f else 1f) * resources.displayMetrics.density).toInt()
     }
 

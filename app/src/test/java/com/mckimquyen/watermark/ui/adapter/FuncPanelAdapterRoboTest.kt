@@ -19,6 +19,11 @@ class FuncPanelAdapterRoboTest {
 
     private val context = ApplicationProvider.getApplicationContext<android.content.Context>()
 
+    @org.junit.Before
+    fun setUp() {
+        context.setTheme(R.style.Theme_MyApp)
+    }
+
     private fun dataSet() = arrayListOf(
         FuncTitleModel(FuncTitleModel.FuncType.Text, "Text", R.drawable.ic_func_text),
         FuncTitleModel(FuncTitleModel.FuncType.Alpha, "Alpha", R.drawable.ic_func_text)

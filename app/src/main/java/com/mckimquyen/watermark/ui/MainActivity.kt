@@ -38,6 +38,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.badge.ExperimentalBadgeUtils
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.mckimquyen.watermark.BaseActivity
@@ -1041,17 +1042,18 @@ class MainActivity : BaseActivity() {
     }
 
     private fun doApplyBgChanged(
-        color: Int = ContextCompat.getColor(
+        color: Int = MaterialColors.getColor(
             this,
-            R.color.md_theme_dark_background
+            com.google.android.material.R.attr.colorSurface,
+            Color.TRANSPARENT
         )
     ) {
         (launchView.parent as? View?)?.setBackgroundColor(color)
-        window?.navigationBarColor = Color.BLACK
+        launchView.setBackgroundColor(color)
+        window?.navigationBarColor = Color.TRANSPARENT
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window?.navigationBarDividerColor = Color.TRANSPARENT
         }
-//        setStatusBarColor(Color.BLACK, true)
     }
 
     private fun selectTab(index: Int) {

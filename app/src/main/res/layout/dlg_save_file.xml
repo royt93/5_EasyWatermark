@@ -1,21 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     dlg_save_file — Export / Save Bottom Sheet
-    iOS Liquid Glass v2:
-    - Dark purple gradient background (matches rest of app)
-    - Section labels: 11sp uppercase gray, 16dp left margin
-    - Cards: dark frosted (#B2000000) rounded 16dp
+    Material Design 3 (Material You):
+    - Background: ?attr/colorSurfaceContainerLow
+    - Section labels: 11sp uppercase onSurfaceVariant
+    - Cards: MaterialCardView rounded 16dp (?attr/colorSurfaceContainer)
     - 8dp gap between items within a group
     - 16dp gap between section groups
     - 24dp gap before primary CTA
-    - CTA btn: iOS Blue (#007AFF) + white bold text  ← VIVID, no way to miss
-    - Secondary: white text ghost button
+    - CTA btn: FilledButton (?attr/colorPrimary)
+    - Secondary: TextButton (?attr/colorPrimary)
 -->
-<!-- BUG-22: nội dung (format/resize/name pattern/copyright/quality/export list + 2 nút CTA)
-     có thể cao hơn chiều cao khả dụng trên màn hình nhỏ (đã xác nhận trên Samsung SM_A115F
-     720x1560) — trước đây root là LinearLayout match_parent trực tiếp nên btnSave/btnOpenGallery
-     bị đẩy ra ngoài viewport, không bấm được. Bọc NestedScrollView, đúng pattern đã dùng ở
-     dlg_exif_border.xml (BUG-18) cho cùng họ lỗi. -->
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -28,21 +23,21 @@
     android:id="@+id/llContainer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_glass_gradient"
+    android:background="?attr/colorSurfaceContainerLow"
     android:orientation="vertical"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:paddingBottom="24dp">
 
-    <!-- Handle pill -->
+    <!-- Material 3 Handle pill -->
     <View
-        android:layout_width="36dp"
+        android:layout_width="32dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="12dp"
         android:layout_marginBottom="20dp"
         android:alpha="0.4"
-        android:background="@color/white" />
+        android:background="?attr/colorOnSurfaceVariant" />
 
     <!-- ══ SHEET TITLE ══════════════════════════════════════════════════════ -->
     <TextView
@@ -50,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         android:text="@string/dialog_export_to_gallery"
-        android:textColor="@color/glass_text_primary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="20sp"
         android:textStyle="bold"
         tools:text="Export to Album" />
@@ -63,7 +58,7 @@
         android:letterSpacing="0.1"
         android:text="@string/about_title_output"
         android:textAllCaps="true"
-        android:textColor="@color/glass_text_secondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="11sp"
         android:textStyle="bold" />
 
@@ -72,28 +67,27 @@
         android:id="@+id/menuFormat"
         style="@style/SaveDialogExposedDropdownMenu"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_glassmorphism_panel"
         android:hint="@string/dialog_save_config_format"
-        app:boxBackgroundColor="@android:color/transparent"
-        app:boxStrokeWidth="0dp"
-        app:boxStrokeWidthFocused="0dp"
-        app:hintTextColor="@color/glass_text_hint">
+        app:boxStrokeColor="?attr/colorOutline"
+        app:boxStrokeWidth="1dp"
+        app:boxStrokeWidthFocused="2dp"
+        app:hintTextColor="?attr/colorOnSurfaceVariant">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/atvFormat"
             style="@style/SaveDialogAutoCompleteTextView"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="@drawable/ic_trans"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
             android:hint="@string/dialog_save_config_format"
             android:inputType="none"
             android:labelFor="@id/menuFormat"
             android:minWidth="120dp"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="@color/glass_text_primary"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="15sp" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -103,28 +97,27 @@
         android:id="@+id/menuResize"
         style="@style/SaveDialogExposedDropdownMenu"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_glassmorphism_panel"
         android:hint="@string/dialog_save_config_resize"
-        app:boxBackgroundColor="@android:color/transparent"
-        app:boxStrokeWidth="0dp"
-        app:boxStrokeWidthFocused="0dp"
-        app:hintTextColor="@color/glass_text_hint">
+        app:boxStrokeColor="?attr/colorOutline"
+        app:boxStrokeWidth="1dp"
+        app:boxStrokeWidthFocused="2dp"
+        app:hintTextColor="?attr/colorOnSurfaceVariant">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/atvResize"
             style="@style/SaveDialogAutoCompleteTextView"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="@drawable/ic_trans"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
             android:hint="@string/dialog_save_config_resize"
             android:inputType="none"
             android:labelFor="@id/menuResize"
             android:minWidth="120dp"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="@color/glass_text_primary"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="15sp" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -132,17 +125,17 @@
     <!-- ══ SECTION: FILE NAME PATTERN ═══════════════════════════════════════ -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilOutputName"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_glassmorphism_panel"
         android:hint="@string/dialog_save_config_name_pattern"
-        app:boxBackgroundColor="@android:color/transparent"
-        app:boxStrokeWidth="0dp"
-        app:boxStrokeWidthFocused="0dp"
-        app:hintTextColor="@color/glass_text_hint"
+        app:boxStrokeColor="?attr/colorOutline"
+        app:boxStrokeWidth="1dp"
+        app:boxStrokeWidthFocused="2dp"
+        app:hintTextColor="?attr/colorOnSurfaceVariant"
         app:placeholderText="@string/dialog_save_config_name_pattern_hint"
-        app:placeholderTextColor="@color/glass_text_hint">
+        app:placeholderTextColor="?attr/colorOnSurfaceVariant">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etOutputName"
@@ -153,8 +146,8 @@
             android:maxLines="1"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="@color/glass_text_primary"
-            android:textColorHint="@color/glass_text_hint"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant"
             android:textSize="15sp" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -162,17 +155,17 @@
     <!-- ══ SECTION: COPYRIGHT (EXIF) ════════════════════════════════════════ -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilCopyright"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_glassmorphism_panel"
         android:hint="@string/dialog_save_config_copyright"
-        app:boxBackgroundColor="@android:color/transparent"
-        app:boxStrokeWidth="0dp"
-        app:boxStrokeWidthFocused="0dp"
-        app:hintTextColor="@color/glass_text_hint"
+        app:boxStrokeColor="?attr/colorOutline"
+        app:boxStrokeWidth="1dp"
+        app:boxStrokeWidthFocused="2dp"
+        app:hintTextColor="?attr/colorOnSurfaceVariant"
         app:placeholderText="@string/dialog_save_config_copyright_hint"
-        app:placeholderTextColor="@color/glass_text_hint">
+        app:placeholderTextColor="?attr/colorOnSurfaceVariant">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etCopyright"
@@ -183,8 +176,8 @@
             android:maxLines="1"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="@color/glass_text_primary"
-            android:textColorHint="@color/glass_text_hint"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant"
             android:textSize="15sp" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -202,7 +195,7 @@
             android:letterSpacing="0.1"
             android:text="@string/dialog_save_config_quality"
             android:textAllCaps="true"
-            android:textColor="@color/glass_text_secondary"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="11sp"
             android:textStyle="bold" />
 
@@ -211,23 +204,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end"
-            android:textColor="@color/glass_text_primary"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="12sp"
             android:textStyle="bold"
             tools:text="80" />
 
     </FrameLayout>
 
-    <!-- Slider in a dark frosted card -->
-    <androidx.cardview.widget.CardView
+    <!-- Slider in MaterialCardView -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="#B2000000"
+        app:cardBackgroundColor="?attr/colorSurfaceContainer"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
-        app:strokeColor="@color/glass_border"
-        app:strokeWidth="0.5dp">
+        app:strokeColor="?attr/colorOutlineVariant"
+        app:strokeWidth="1dp">
 
         <com.google.android.material.slider.Slider
             android:id="@+id/slideQuality"
@@ -243,7 +236,7 @@
             app:labelBehavior="floating"
             tools:value="80" />
 
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- ══ SECTION: EXPORT LIST ═════════════════════════════════════════════ -->
     <TextView
@@ -253,21 +246,21 @@
         android:layout_marginBottom="8dp"
         android:letterSpacing="0.1"
         android:textAllCaps="true"
-        android:textColor="@color/glass_text_secondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="11sp"
         android:textStyle="bold"
         tools:text="EXPORT LIST 0/3" />
 
     <!-- Image preview grid -->
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        app:cardBackgroundColor="#B2000000"
+        app:cardBackgroundColor="?attr/colorSurfaceContainer"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
-        app:strokeColor="@color/glass_border"
-        app:strokeWidth="0.5dp">
+        app:strokeColor="?attr/colorOutlineVariant"
+        app:strokeWidth="1dp">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvResult"
@@ -277,22 +270,22 @@
             android:paddingEnd="4dp"
             android:scrollbars="none" />
 
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
-    <!-- ══ PRIMARY CTA: iOS Blue "Export" button ════════════════════════════ -->
+    <!-- ══ PRIMARY CTA: Material You FilledButton ════════════════════════════ -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSave"
         android:layout_width="match_parent"
         android:layout_height="52dp"
-        android:backgroundTint="#FF007AFF"
+        app:backgroundTint="?attr/colorPrimary"
         android:fontFamily="sans-serif-medium"
         android:text="@string/dialog_export_to_gallery"
-        android:textColor="#FFFFFF"
-        android:textSize="17sp"
+        android:textColor="?attr/colorOnPrimary"
+        android:textSize="16sp"
         android:textStyle="bold"
-        app:cornerRadius="45dp"
-        app:elevation="8dp"
-        app:rippleColor="#33FFFFFF"
+        app:cornerRadius="16dp"
+        app:elevation="2dp"
+        app:rippleColor="?attr/colorOnPrimary"
         app:strokeWidth="0dp" />
 
     <!-- ══ SECONDARY: Open in gallery ══════════════════════════════════════ -->
@@ -305,7 +298,7 @@
         android:layout_marginTop="4dp"
         android:backgroundTint="@android:color/transparent"
         android:text="@string/dialog_open_in_gallery"
-        android:textColor="@color/glass_text_secondary" />
+        android:textColor="?attr/colorPrimary" />
 
 </LinearLayout>
 
