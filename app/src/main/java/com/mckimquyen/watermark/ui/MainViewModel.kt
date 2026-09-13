@@ -66,7 +66,9 @@ class MainViewModel @Inject constructor(
     private val waterMarkRepo: WaterMarkRepository,
     private val memorySettingRepo: MemorySettingRepo,
     private val templateRepo: TemplateRepository,
-    private val exportNaming: com.mckimquyen.watermark.export.ExportNaming = com.mckimquyen.watermark.export.ExportNaming()
+    private val exportNaming: com.mckimquyen.watermark.export.ExportNaming = com.mckimquyen.watermark.export.ExportNaming(),
+    private val batchExportEngine: com.mckimquyen.watermark.export.BatchExportEngine =
+        com.mckimquyen.watermark.export.BatchExportEngine(appContext, exportNaming)
 ) : ViewModel() {
 
     var nextSelectedPos: Int = 0
@@ -193,6 +195,40 @@ class MainViewModel @Inject constructor(
     /** ENH-01 AC2: huỷ batch export giữa chừng. */
     fun cancelSaveImage() {
         BatchExportWorker.cancel(appContext)
+    }
+
+    /**
+     * FEAT-07: render preview watermark NHẸ (không ghi MediaStore) cho 1 ảnh trong grid xem trước
+     * batch — dùng cấu hình watermark hiện tại ([waterMark]). `null` nếu chưa có cấu hình hoặc
+     * decode lỗi (adapter tự fallback hiển thị ảnh gốc khi nhận `null`, xem `SaveImageListAdapter`).
+     */
+    suspend fun generateExportPreview(
+        contentResolver: ContentResolver,
+        imageInfo: ImageInfo,
+        index: Int
+    ): com.mckimquyen.watermark.export.BatchExportEngine.PreviewResult? {
+        val config = waterMark.value ?: return null
+        return batchExportEngine.generatePreviewBitmap(contentResolver, imageInfo, config, index)
+    }
+
+    /**
+     * FEAT-07: ước tính (kích thước px, dung lượng bytes) output theo cấu hình resize/format/quality
+     * ĐANG chọn trong dialog Export — [approxOriginalWidth]/[approxOriginalHeight] lấy từ
+     * [BatchExportEngine.PreviewResult] (ước lượng lại từ inSampleSize lúc decode preview).
+     */
+    fun estimateExportOutput(approxOriginalWidth: Int, approxOriginalHeight: Int): Pair<Pair<Int, Int>, Long> {
+        val targetDimensions = com.mckimquyen.watermark.utils.bitmap.OutputImageUtils.targetDimensions(
+            approxOriginalWidth,
+            approxOriginalHeight,
+            maxOutputLongEdge
+        )
+        val bytes = com.mckimquyen.watermark.utils.bitmap.OutputImageUtils.estimateOutputBytes(
+            targetDimensions.first,
+            targetDimensions.second,
+            outputFormat,
+            compressLevel
+        )
+        return targetDimensions to bytes
     }
 
     /**

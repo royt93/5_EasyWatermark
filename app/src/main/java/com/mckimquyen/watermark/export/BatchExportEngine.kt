@@ -423,4 +423,128 @@ class BatchExportEngine @Inject constructor(
                 bitmapGuard.recycleIfOwned()
             }
         }
+
+    /** FEAT-07: kết quả preview NHẸ cho 1 ảnh trong grid xem trước batch. */
+    data class PreviewResult(
+        val bitmap: Bitmap,
+        /** Kích thước ảnh gốc ước lượng lại từ inSampleSize (bitmap đã decode ở size nhỏ hơn). */
+        val approxOriginalWidth: Int,
+        val approxOriginalHeight: Int
+    )
+
+    /**
+     * FEAT-07: render watermark preview NHẸ cho grid xem trước cả batch — KHÔNG ghi MediaStore,
+     * KHÔNG expand khung EXIF (giữ đúng quy ước "khung EXIF không hiện trong preview để tối ưu
+     * hiệu năng" đã áp dụng cho live editor, xem `ExifPbFragment`/`dlg_exif_border.xml`).
+     *
+     * Decode ảnh ở kích thước NHỎ ([PREVIEW_MAX_SIZE], qua `decodeSampledBitmapFromResource` đã
+     * cache theo (uri, reqW, reqH)) rồi vẽ watermark trực tiếp lên canvas CÙNG kích thước đã decode
+     * — giống cách `WaterMarkImageView.onDraw()` vẽ preview on-screen (`applyConfig(isScale=true)`
+     * mặc định), KHÔNG dùng `adjustMatrix`/`scaleX` như [generateImage] (vốn tính cho canvas full-res
+     * khác kích thước view — không áp dụng khi canvas preview chính là bitmap đã decode).
+     */
+    suspend fun generatePreviewBitmap(
+        contentResolver: ContentResolver,
+        imageInfo: ImageInfo,
+        config: WaterMark,
+        index: Int
+    ): PreviewResult? = withContext(Dispatchers.IO) {
+        val decodeResult = decodeSampledBitmapFromResource(
+            appContext,
+            contentResolver,
+            imageInfo.uri,
+            PREVIEW_MAX_SIZE,
+            PREVIEW_MAX_SIZE
+        )
+        val bitmapValue = decodeResult.data ?: return@withContext null
+        bitmapValue.retain()
+        try {
+            val srcBitmap = bitmapValue.bitmap ?: return@withContext null
+            val mutableBitmap = srcBitmap.copy(Bitmap.Config.ARGB_8888, true) ?: return@withContext null
+            val approxOriginalWidth = mutableBitmap.width * bitmapValue.inSampleSize
+            val approxOriginalHeight = mutableBitmap.height * bitmapValue.inSampleSize
+
+            if (config.markMode == WaterMarkRepository.MarkMode.Text && config.text.isBlank()) {
+                return@withContext PreviewResult(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
+            }
+
+            val previewInfo = imageInfo.copy(
+                width = mutableBitmap.width,
+                height = mutableBitmap.height,
+                inSample = bitmapValue.inSampleSize,
+                exifModel = bitmapValue.exifModel
+            )
+            val textPaint = TextPaint().applyConfig(previewInfo, config)
+            val shader = when (config.markMode) {
+                WaterMarkRepository.MarkMode.Text -> {
+                    val resolvedText = exportNaming.resolveTextTokens(config.text, previewInfo, contentResolver, index)
+                    WaterMarkImageView.buildTextBitmapShader(
+                        imageInfo = previewInfo,
+                        config = config.copy(text = resolvedText),
+                        textPaint = textPaint,
+                        coroutineContext = Dispatchers.IO
+                    )
+                }
+
+                WaterMarkRepository.MarkMode.Image -> {
+                    val iconResult = decodeSampledBitmapFromResource(
+                        appContext,
+                        contentResolver,
+                        config.iconUri,
+                        mutableBitmap.width,
+                        mutableBitmap.height
+                    )
+                    val iconValue = iconResult.data
+                    val iconBitmap = iconValue?.bitmap
+                    if (iconValue == null || iconBitmap == null) {
+                        return@withContext PreviewResult(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
+                    }
+                    iconValue.retain()
+                    try {
+                        WaterMarkImageView.buildIconBitmapShader(
+                            imageInfo = previewInfo,
+                            srcBitmap = iconBitmap,
+                            config = config,
+                            textPaint = textPaint,
+                            scale = false,
+                            coroutineContext = Dispatchers.IO
+                        )
+                    } finally {
+                        iconValue.release()
+                    }
+                }
+            }
+
+            val layoutPaint = Paint().apply { this.shader = shader?.bitmapShader }
+            val canvas = Canvas(mutableBitmap)
+            if (previewInfo.obtainTileMode() == Shader.TileMode.CLAMP) {
+                canvas.translate(
+                    previewInfo.offsetX * mutableBitmap.width,
+                    previewInfo.offsetY * mutableBitmap.height
+                )
+                canvas.drawRect(
+                    0f,
+                    0f,
+                    (shader?.width ?: 0).toFloat(),
+                    (shader?.height ?: 0).toFloat(),
+                    layoutPaint
+                )
+            } else {
+                canvas.drawRect(0f, 0f, mutableBitmap.width.toFloat(), mutableBitmap.height.toFloat(), layoutPaint)
+            }
+            PreviewResult(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        } finally {
+            bitmapValue.release()
+        }
+    }
+
+    companion object {
+        /** FEAT-07: cạnh dài tối đa (px) khi decode cho grid preview — đủ nét cho thumbnail, rẻ hơn nhiều so với full-res. */
+        const val PREVIEW_MAX_SIZE = 480
+    }
 }

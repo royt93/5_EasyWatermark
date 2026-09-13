@@ -29,4 +29,23 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- FEAT-07: ước tính kích thước/dung lượng output — chỉ hiện khi preview đã render xong. -->
+    <TextView
+        android:id="@+id/tvPreviewInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/glass_surface"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:paddingVertical="2dp"
+        android:textColor="@color/glass_text_primary"
+        android:textSize="9sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="1080×1350 · ~180 KB"
+        tools:visibility="visible" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

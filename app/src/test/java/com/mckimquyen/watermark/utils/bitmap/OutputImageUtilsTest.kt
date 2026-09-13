@@ -1,5 +1,6 @@
 package com.mckimquyen.watermark.utils.bitmap
 
+import android.graphics.Bitmap
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
@@ -74,5 +75,44 @@ class OutputImageUtilsTest {
             val resultRatio = w.toDouble() / h.toDouble()
             assertThat(resultRatio).isWithin(0.01).of(originalRatio)
         }
+    }
+
+    // ── FEAT-07: estimateOutputBytes() — ước tính dung lượng output (heuristic) ────────────
+
+    @Test
+    fun estimateOutputBytes_higherQuality_producesLargerEstimate() {
+        val low = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.JPEG, 30)
+        val high = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.JPEG, 95)
+        assertThat(high).isGreaterThan(low)
+    }
+
+    @Test
+    fun estimateOutputBytes_largerDimensions_producesLargerEstimate() {
+        val small = OutputImageUtils.estimateOutputBytes(720, 1280, Bitmap.CompressFormat.JPEG, 80)
+        val large = OutputImageUtils.estimateOutputBytes(2160, 3840, Bitmap.CompressFormat.JPEG, 80)
+        assertThat(large).isGreaterThan(small)
+    }
+
+    @Test
+    fun estimateOutputBytes_png_ignoresQuality() {
+        val q30 = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.PNG, 30)
+        val q100 = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.PNG, 100)
+        assertThat(q30).isEqualTo(q100)
+    }
+
+    @Test
+    fun estimateOutputBytes_qualityOutOfRange_isClamped() {
+        val negative = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.JPEG, -50)
+        val zero = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.JPEG, 0)
+        assertThat(negative).isEqualTo(zero)
+
+        val over100 = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.JPEG, 200)
+        val hundred = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.JPEG, 100)
+        assertThat(over100).isEqualTo(hundred)
+    }
+
+    @Test
+    fun estimateOutputBytes_zeroDimensions_neverReturnsBelowFloor() {
+        assertThat(OutputImageUtils.estimateOutputBytes(0, 0, Bitmap.CompressFormat.JPEG, 80)).isAtLeast(1024L)
     }
 }

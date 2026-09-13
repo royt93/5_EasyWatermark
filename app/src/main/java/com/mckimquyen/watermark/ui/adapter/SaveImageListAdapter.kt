@@ -2,11 +2,13 @@ package com.mckimquyen.watermark.ui.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.text.format.Formatter
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -17,13 +19,24 @@ import com.bumptech.glide.Glide
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
+import com.mckimquyen.watermark.export.BatchExportEngine
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
 import com.mckimquyen.watermark.ui.widget.ProgressImageView
 import com.mckimquyen.watermark.utils.ktx.appear
 import com.mckimquyen.watermark.utils.ktx.disappear
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
+/**
+ * FEAT-07: [generatePreview]/[estimateOutput] cho phép adapter hiển thị grid xem trước batch với
+ * watermark áp sẵn + ước tính kích thước/dung lượng, tách khỏi [com.mckimquyen.watermark.ui.MainViewModel]
+ * qua lambda thay vì phụ thuộc trực tiếp ViewModel (adapter dễ test độc lập hơn).
+ */
 class SaveImageListAdapter(
     private val context: Context,
+    private val scope: CoroutineScope,
+    private val generatePreview: suspend (ImageInfo, Int) -> BatchExportEngine.PreviewResult?,
+    private val estimateOutput: (Int, Int) -> Pair<Pair<Int, Int>, Long>
 ) : RecyclerView.Adapter<SaveImageListAdapter.ImageHolder>() {
 
     val data: List<ImageInfo>
@@ -83,7 +96,7 @@ class SaveImageListAdapter(
     override fun onBindViewHolder(
         holder: ImageHolder,
         position: Int,
-        payloads: MutableList<Any>,
+        payloads: MutableList<Any>
     ) {
         processUI(holder, position, isPayLoad = payloads.isNotEmpty())
     }
@@ -96,27 +109,47 @@ class SaveImageListAdapter(
         if (position < 0 || position >= differ.currentList.size) {
             return
         }
-        with(differ.currentList[position]) {
-            when (this.jobState) {
-                JobState.Ready -> {
-                    holder.ready()
-                }
-
-                JobState.Ing -> {
-                    holder.start()
-                }
-
-                is JobState.Failure -> {
-                    holder.failed()
-                }
-
-                is JobState.Success -> {
-                    holder.success(isPayLoad)
-                }
+        val info = differ.currentList[position]
+        when (info.jobState) {
+            JobState.Ready -> {
+                holder.ready()
             }
-            Glide.with(context)
-                .load(this.uri)
-                .into(holder.ivIcon)
+
+            JobState.Ing -> {
+                holder.start()
+            }
+
+            is JobState.Failure -> {
+                holder.failed()
+            }
+
+            is JobState.Success -> {
+                holder.success(isPayLoad)
+            }
+        }
+        // FEAT-07: chỉ render preview watermark 1 LẦN cho mỗi uri — payload "state" (đổi jobState
+        // lúc export chạy) rebind CÙNG uri liên tục (Ready→Ing→Success), không cần build lại canvas
+        // + shader tốn kém mỗi lần. `itemView.tag` vừa là khoá "đã render/đang render uri nào" vừa
+        // là guard chống set nhầm bitmap vào ViewHolder đã bị RecyclerView tái dùng cho item khác.
+        if (holder.itemView.tag == info.uri) return
+        Glide.with(context)
+            .load(info.uri)
+            .into(holder.ivIcon)
+        holder.itemView.tag = info.uri
+        holder.showPreviewInfo(null)
+        scope.launch {
+            val result = generatePreview(info, position)
+            if (holder.itemView.tag != info.uri || result == null) return@launch
+            holder.ivIcon.setImageBitmap(result.bitmap)
+            val (dimensions, bytes) = estimateOutput(result.approxOriginalWidth, result.approxOriginalHeight)
+            holder.showPreviewInfo(
+                context.getString(
+                    R.string.dialog_save_export_estimate,
+                    dimensions.first,
+                    dimensions.second,
+                    Formatter.formatShortFileSize(context, bytes)
+                )
+            )
         }
     }
 
@@ -184,7 +217,14 @@ class SaveImageListAdapter(
             ivDone.disappear()
         }
 
+        /** FEAT-07: `null` ẩn overlay (chưa render xong preview) — tránh hiện text ước tính của item cũ bị tái sử dụng. */
+        fun showPreviewInfo(text: String?) {
+            tvPreviewInfo.isVisible = text != null
+            tvPreviewInfo.text = text.orEmpty()
+        }
+
         val ivIcon: ProgressImageView = itemView.findViewById(R.id.ivIcon)
         private val ivDone: ImageView = itemView.findViewById(R.id.ivDone)
+        private val tvPreviewInfo: TextView = itemView.findViewById(R.id.tvPreviewInfo)
     }
 }

@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
@@ -161,7 +162,16 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             slideQuality.isVisible = supportsQuality(shareViewModel.outputFormat)
 
             rvResult.apply {
-                adapter = SaveImageListAdapter(requireContext()).also {
+                adapter = SaveImageListAdapter(
+                    context = requireContext(),
+                    scope = viewLifecycleOwner.lifecycleScope,
+                    generatePreview = { imageInfo, index ->
+                        shareViewModel.generateExportPreview(requireActivity().contentResolver, imageInfo, index)
+                    },
+                    estimateOutput = { width, height ->
+                        shareViewModel.estimateExportOutput(width, height)
+                    }
+                ).also {
                     it.submitList(imageList)
                 }
                 itemAnimator = null

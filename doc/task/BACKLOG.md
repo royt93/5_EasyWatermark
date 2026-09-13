@@ -28,19 +28,18 @@
 
 **Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4). **Sprint ENH S/XS 2026-09-12** (xem `## Sprint ENH 2026-09-12` cuối file): ENH-02 (debounce ghi DataStore khi gõ text), ENH-03 (gate `Log.d` bằng `BuildConfig.DEBUG`), ENH-07 (SignatureRepository qua Hilt DI), ENH-11 (vòng đời Ad Banner đầy đủ), ENH-12 (MonetManufacturer dựa API chính thức), ENH-13 (hiển thị số ảnh thành công/thất bại), ENH-18 (hằng số "Unknown Device" chung), ENH-19 (EXIF border co chữ tránh tràn), ENH-20 (preview filename query bất đồng bộ). **Sprint ENH hiệu năng M 2026-09-12** (xem `## Sprint ENH hiệu năng M 2026-09-12` cuối file): ENH-06 (gộp mở InputStream decode), ENH-15 (BitmapCache reference counting an toàn khi evict), ENH-16 (throttle rebuild shader khi pinch), ENH-14 (downsample trực tiếp khi decode export — làm với AC hạ chuẩn, user quyết định 2026-09-12). **Sprint ENH-08/09/10 2026-09-12** (xem `## Sprint ENH-08/09/10 2026-09-12` cuối file): ENH-08 (ImageInfo bất biến hoàn toàn), ENH-09 (hardcode string sang resources + plurals), ENH-10 (Android Photo Picker thay ACTION_PICK legacy). **ENH-01 2026-09-12** (xem `## ENH-01 2026-09-12` cuối file): batch export qua WorkManager + huỷ + tiến độ notification — phát hiện + fix crash `foregroundServiceType` thật qua smoke test Samsung SM-S928B.
 
-## NEW_FEATURES (7 todo + 7 done) — tính năng mới thực dụng, 1-2 tuần
+## NEW_FEATURES (6 todo + 8 done) — tính năng mới thực dụng, 1-2 tuần
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [FEAT-04](todo/FEAT-04-lich-su-batch-gan-day.md) | M | Lịch sử batch export gần đây |
 | [FEAT-05](todo/FEAT-05-backup-restore-template-signature.md) | M | Xuất/nhập Template + Signature (backup/restore) |
 | [FEAT-06](todo/FEAT-06-watermark-profile-day-du.md) | M | Watermark profile đầy đủ |
-| [FEAT-07](todo/FEAT-07-preview-grid-truoc-khi-export.md) | M | Preview grid trước khi export cả batch |
 | [FEAT-12](todo/FEAT-12-undo-redo-editor.md) | M | Undo/Redo chỉnh sửa watermark trong editor |
 | [FEAT-13](todo/FEAT-13-caption-rieng-tung-anh-batch.md) | M | Nhập caption/text riêng theo từng ảnh trong batch (CSV) |
 | [FEAT-03](todo/FEAT-03-multi-layer-watermark.md) | L | Watermark đa lớp (chồng text + logo/QR cùng lúc) |
 
-**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch. **FEAT-10 2026-09-13** (xem `## FEAT-10 2026-09-13` cuối file): tự nhận diện hãng máy để gợi ý style khung EXIF.
+**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch. **FEAT-10 2026-09-13** (xem `## FEAT-10 2026-09-13` cuối file): tự nhận diện hãng máy để gợi ý style khung EXIF. **FEAT-07 2026-09-13** (xem `## FEAT-07 2026-09-13` cuối file, verify 1 phần — xem ghi chú giới hạn môi trường trong file done): preview grid watermark + ước tính dung lượng trước khi export cả batch.
 
 ## UNIQUE_IDEAS (10) — tính năng độc quyền/đột phá, effort cao
 
@@ -145,6 +144,16 @@ Ticket effort S, chi tiết đầy đủ xem "Kết quả kiểm chứng" trong 
 - Theo dõi "ảnh nào user đã tự tay đổi style" bằng `MutableSet<Uri>` session-scoped trên `MainViewModel` (không persist DataStore) — tránh thêm state per-ảnh mới cho ticket effort S, chấp nhận reset khi app restart vì chỉ là gợi ý UX.
 - Test race timing của DataStore-Flow-backed LiveData bằng polling helper (`awaitExifFrameStyle`) thay vì 1 lần `idle()`, theo đúng pattern `awaitJobFinished` đã dùng ở ENH-01.
 - Smoke test thật trên Pixel 7 Pro: ảnh test không có EXIF Make → tự động khoanh chọn đúng "Minimal". Nhánh hãng máy cụ thể (Fujifilm/Leica/Canon...) dùng unit test JVM làm bằng chứng chính do máy thật không có ảnh với EXIF hãng tương ứng.
+
+## FEAT-07 2026-09-13 — preview grid watermark + ước tính dung lượng trước khi export cả batch
+
+Ticket effort M, chi tiết đầy đủ xem "Kết quả kiểm chứng" trong `doc/task/done/FEAT-07-preview-grid-truoc-khi-export.md`. **Lưu ý: verify 1 phần** — máy bị nghẽn tài nguyên nghiêm trọng suốt phiên (swap tới 7.85/8.19GB) khiến bộ test Robolectric không chạy được tới kết quả cuối cùng và smoke test trên device không hoàn tất do thao tác chạm qua adb bị lệch bất thường; user đã được thông báo và trực tiếp quyết định đẩy code lên với giới hạn này, cần verify lại đầy đủ ở phiên sau.
+
+- Không xây màn hình mới — nâng cấp grid `SaveImageListAdapter`/`rvResult` đã có sẵn trong `SaveImageBSDialogFragment` (hiện TRƯỚC khi user bấm export thật) từ hiển thị ảnh gốc sang hiển thị bitmap đã áp watermark + text ước tính kích thước/dung lượng.
+- `BatchExportEngine.generatePreviewBitmap()` (hàm mới) — decode ảnh nhỏ (480px, cache sẵn) rồi vẽ watermark trực tiếp, tái dùng nguyên vẹn `buildTextBitmapShader`/`buildIconBitmapShader`/`applyConfig` (không viết lại logic render). Cố ý không vẽ khung EXIF border trong preview — khớp quy ước sản phẩm đã có cho live editor.
+- `OutputImageUtils.estimateOutputBytes()` (hàm thuần mới) — ước tính dung lượng bằng heuristic bits-per-pixel theo quality, không nén thử thật (ghi rõ là ước tính tương đối, không chính xác tuyệt đối).
+- Trong lúc viết `BatchExportEnginePreviewRoboTest`, phát hiện + sửa 1 giả định sai: Robolectric shadow `BitmapFactory` decode MỌI uri (kể cả không tồn tại) thành bitmap giả 100x100 thay vì trả lỗi — tận dụng luôn để test thẳng nhánh render watermark thật.
+- Phụ: 1 lần chạy nhầm `:app:ktlintFormat` (sửa lỗi trailing-comma) format lại toàn bộ main source set rồi phải revert — việc đổi mtime hàng loạt làm lộ ra 265 vi phạm ktlint tồn tại từ trước trên ~60 file không liên quan (nợ kỹ thuật có sẵn của dự án, không phải do FEAT-07 — 13 file FEAT-07 sạch 100%). Đáng làm ticket dọn dẹp riêng.
 
 ## Ghi chú re-audit 2026-09-10 (khác biệt so với đợt sinh backlog gốc)
 

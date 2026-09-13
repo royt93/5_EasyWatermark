@@ -46,7 +46,7 @@ class SaveImageListAdapterUpdateJobStateRoboTest {
 
     @Test
     fun updateJobState_withImmutableCopy_findsItemByUriAndUpdatesCounts() {
-        val adapter = SaveImageListAdapter(context)
+        val adapter = testAdapter(context)
         val a = imageInfo("a", JobState.Ready)
         val b = imageInfo("b", JobState.Ready)
         adapter.submitList(listOf(a, b))
@@ -67,7 +67,7 @@ class SaveImageListAdapterUpdateJobStateRoboTest {
 
     @Test
     fun updateJobState_unknownUri_doesNothing() {
-        val adapter = SaveImageListAdapter(context)
+        val adapter = testAdapter(context)
         adapter.submitList(listOf(imageInfo("a", JobState.Ready)))
         idle()
 
@@ -80,7 +80,7 @@ class SaveImageListAdapterUpdateJobStateRoboTest {
 
     @Test
     fun updateJobState_null_doesNothing() {
-        val adapter = SaveImageListAdapter(context)
+        val adapter = testAdapter(context)
         adapter.submitList(listOf(imageInfo("a", JobState.Ready)))
         idle()
 
@@ -107,7 +107,7 @@ class SaveImageListAdapterUpdateJobStateRoboTest {
      */
     @Test
     fun updateJobState_rapidSuccessiveCallsForDifferentItems_noUpdateLost() {
-        val adapter = SaveImageListAdapter(context)
+        val adapter = testAdapter(context)
         val a = imageInfo("a", JobState.Ready)
         val b = imageInfo("b", JobState.Ready)
         adapter.submitList(listOf(a, b))

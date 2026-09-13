@@ -26,7 +26,7 @@ object OutputImageUtils {
         ResizePreset("4096", 4096),
         ResizePreset("Instagram (1080)", 1080),
         ResizePreset("Facebook (2048)", 2048),
-        ResizePreset("Zalo (1600)", 1600),
+        ResizePreset("Zalo (1600)", 1600)
     )
 
     /** Phần đuôi file theo định dạng nén. */
@@ -69,4 +69,30 @@ object OutputImageUtils {
         }
         return Bitmap.createScaledBitmap(bitmap, targetW, targetH, true)
     }
+
+    /**
+     * FEAT-07: ước tính DUNG LƯỢNG output theo heuristic bits-per-pixel tuyến tính theo quality —
+     * KHÔNG chính xác tuyệt đối (phụ thuộc nội dung ảnh thật, không nén thử thật sự), chỉ đủ để
+     * user có khái niệm tương đối trước khi export cả batch lớn. Hàm thuần — test trực tiếp trên JVM.
+     */
+    fun estimateOutputBytes(width: Int, height: Int, format: Bitmap.CompressFormat, quality: Int): Long {
+        val pixels = width.toLong() * height.toLong()
+        val bitsPerPixel = if (format == Bitmap.CompressFormat.PNG) {
+            PNG_ESTIMATED_BITS_PER_PIXEL
+        } else {
+            JPEG_MIN_BITS_PER_PIXEL + (quality.coerceIn(0, 100) / 100.0) * JPEG_QUALITY_BITS_PER_PIXEL_RANGE
+        }
+        return (pixels * bitsPerPixel / 8.0).toLong().coerceAtLeast(MIN_ESTIMATED_BYTES)
+    }
+
+    /** PNG lossless — ước lượng trung bình cho ảnh chụp thường (không phải icon/flat color). */
+    private const val PNG_ESTIMATED_BITS_PER_PIXEL = 8.0
+
+    /** JPEG/WEBP quality 0 → khoảng 0.1 bit/pixel (nén rất mạnh, vỡ hạt). */
+    private const val JPEG_MIN_BITS_PER_PIXEL = 0.1
+
+    /** JPEG/WEBP quality 0..100 trải trên khoảng 0.1..2.0 bit/pixel. */
+    private const val JPEG_QUALITY_BITS_PER_PIXEL_RANGE = 1.9
+
+    private const val MIN_ESTIMATED_BYTES = 1024L
 }

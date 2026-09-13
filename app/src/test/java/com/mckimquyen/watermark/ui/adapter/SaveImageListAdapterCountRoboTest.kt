@@ -8,10 +8,23 @@ import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
 import com.mckimquyen.watermark.data.model.Result
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+
+/**
+ * FEAT-07: `SaveImageListAdapter` giờ cần `scope`/`generatePreview`/`estimateOutput` để render
+ * preview watermark — test đếm/state không quan tâm preview thật, dùng no-op/giá trị giả cố định.
+ */
+fun testAdapter(context: Context) = SaveImageListAdapter(
+    context = context,
+    scope = CoroutineScope(Dispatchers.Unconfined),
+    generatePreview = { _, _ -> null },
+    estimateOutput = { w, h -> (w to h) to 0L }
+)
 
 /**
  * ENH-13: `SaveImageListAdapter.finishCount`/`failCount` phải đếm đúng riêng từng loại
@@ -33,7 +46,7 @@ class SaveImageListAdapterCountRoboTest {
 
     @Test
     fun allSuccess_finishCountEqualsTotal_failCountZero() {
-        val adapter = SaveImageListAdapter(context)
+        val adapter = testAdapter(context)
         submit(
             adapter,
             listOf(
@@ -48,7 +61,7 @@ class SaveImageListAdapterCountRoboTest {
 
     @Test
     fun mixedSuccessAndFailure_countsEachIndependently() {
-        val adapter = SaveImageListAdapter(context)
+        val adapter = testAdapter(context)
         submit(
             adapter,
             listOf(
@@ -66,7 +79,7 @@ class SaveImageListAdapterCountRoboTest {
 
     @Test
     fun noneFinishedYet_bothCountsZero() {
-        val adapter = SaveImageListAdapter(context)
+        val adapter = testAdapter(context)
         submit(adapter, listOf(imageInfo("a", JobState.Ready), imageInfo("b", JobState.Ing)))
 
         assertThat(adapter.finishCount).isEqualTo(0)
