@@ -46,6 +46,10 @@ class ExifPbFragment : BaseBindBSDFragment<DlgExifBorderBinding>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // FEAT-10: gợi ý style khung theo hãng máy đọc từ EXIF của ảnh đang chọn — chỉ áp dụng nếu
+        // user chưa từng tự tay đổi style cho đúng ảnh này (xem MainViewModel.suggestExifFrameStyleIfNeeded).
+        shareViewModel.suggestExifFrameStyleIfNeeded()
+
         styleButtons.forEach { (style, button) ->
             button.setOnClickListener {
                 shareViewModel.selectExifFrameStyle(style)

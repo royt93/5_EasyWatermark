@@ -436,9 +436,27 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /** FEAT-10: ảnh này user đã tự tay chọn style — không tự gợi ý đè lên nữa (session, không cần persist). */
+    private val manuallyChosenExifStyleUris = mutableSetOf<Uri>()
+
     fun selectExifFrameStyle(style: ExifFrameStyle) {
+        selectedImage.value?.uri?.let { manuallyChosenExifStyleUris.add(it) }
         launch {
             waterMarkRepo.updateExifFrameStyle(style)
+        }
+    }
+
+    /**
+     * FEAT-10: gợi ý style khung theo hãng máy đọc từ EXIF của ảnh đang chọn — chỉ set khi user
+     * CHƯA từng tự tay đổi style cho đúng ảnh này (gọi mỗi lần mở [com.mckimquyen.watermark.ui.dlg.ExifPbFragment],
+     * không ép nếu user đã chọn tay trước đó).
+     */
+    fun suggestExifFrameStyleIfNeeded() {
+        val image = selectedImage.value ?: return
+        if (manuallyChosenExifStyleUris.contains(image.uri)) return
+        val suggested = ExifFrameStyle.suggestFor(image.exifModel?.make.orEmpty())
+        launch {
+            waterMarkRepo.updateExifFrameStyle(suggested)
         }
     }
 

@@ -28,11 +28,10 @@
 
 **Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4). **Sprint ENH S/XS 2026-09-12** (xem `## Sprint ENH 2026-09-12` cuối file): ENH-02 (debounce ghi DataStore khi gõ text), ENH-03 (gate `Log.d` bằng `BuildConfig.DEBUG`), ENH-07 (SignatureRepository qua Hilt DI), ENH-11 (vòng đời Ad Banner đầy đủ), ENH-12 (MonetManufacturer dựa API chính thức), ENH-13 (hiển thị số ảnh thành công/thất bại), ENH-18 (hằng số "Unknown Device" chung), ENH-19 (EXIF border co chữ tránh tràn), ENH-20 (preview filename query bất đồng bộ). **Sprint ENH hiệu năng M 2026-09-12** (xem `## Sprint ENH hiệu năng M 2026-09-12` cuối file): ENH-06 (gộp mở InputStream decode), ENH-15 (BitmapCache reference counting an toàn khi evict), ENH-16 (throttle rebuild shader khi pinch), ENH-14 (downsample trực tiếp khi decode export — làm với AC hạ chuẩn, user quyết định 2026-09-12). **Sprint ENH-08/09/10 2026-09-12** (xem `## Sprint ENH-08/09/10 2026-09-12` cuối file): ENH-08 (ImageInfo bất biến hoàn toàn), ENH-09 (hardcode string sang resources + plurals), ENH-10 (Android Photo Picker thay ACTION_PICK legacy). **ENH-01 2026-09-12** (xem `## ENH-01 2026-09-12` cuối file): batch export qua WorkManager + huỷ + tiến độ notification — phát hiện + fix crash `foregroundServiceType` thật qua smoke test Samsung SM-S928B.
 
-## NEW_FEATURES (8 todo + 6 done) — tính năng mới thực dụng, 1-2 tuần
+## NEW_FEATURES (7 todo + 7 done) — tính năng mới thực dụng, 1-2 tuần
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
-| [FEAT-10](todo/FEAT-10-frame-preset-nhan-dien-hang-may.md) | S | Tự nhận diện hãng máy để gợi ý style khung EXIF (scope thu hẹp sau audit — phần style đã xong) |
 | [FEAT-04](todo/FEAT-04-lich-su-batch-gan-day.md) | M | Lịch sử batch export gần đây |
 | [FEAT-05](todo/FEAT-05-backup-restore-template-signature.md) | M | Xuất/nhập Template + Signature (backup/restore) |
 | [FEAT-06](todo/FEAT-06-watermark-profile-day-du.md) | M | Watermark profile đầy đủ |
@@ -41,7 +40,7 @@
 | [FEAT-13](todo/FEAT-13-caption-rieng-tung-anh-batch.md) | M | Nhập caption/text riêng theo từng ảnh trong batch (CSV) |
 | [FEAT-03](todo/FEAT-03-multi-layer-watermark.md) | L | Watermark đa lớp (chồng text + logo/QR cùng lúc) |
 
-**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch.
+**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch. **FEAT-10 2026-09-13** (xem `## FEAT-10 2026-09-13` cuối file): tự nhận diện hãng máy để gợi ý style khung EXIF.
 
 ## UNIQUE_IDEAS (10) — tính năng độc quyền/đột phá, effort cao
 
@@ -138,10 +137,19 @@ Ticket effort S, chi tiết đầy đủ xem "Kết quả kiểm chứng" trong 
 - Kết quả đẩy thẳng qua `handleActivityResult()` đã có sẵn cho multi-pick — không viết code riêng cho đường dẫn mới, giảm rủi ro hồi quy.
 - Smoke test thật trên Pixel 7 Pro qua đúng picker SAF hệ thống: chọn thư mục `Pictures` (có sẵn cả ảnh trực tiếp lẫn nhiều subfolder) — xác nhận chỉ ảnh trực tiếp được đưa vào batch, subfolder không bị đệ quy, không crash.
 
+## FEAT-10 2026-09-13 — tự nhận diện hãng máy để gợi ý style khung EXIF
+
+Ticket effort S, chi tiết đầy đủ xem "Kết quả kiểm chứng" trong `doc/task/done/FEAT-10-frame-preset-nhan-dien-hang-may.md`.
+
+- `ExifFrameStyle.suggestFor(make)` — hàm thuần map chuỗi hãng máy (từ `TAG_MAKE` EXIF) sang 1 trong 4 style có sẵn (Classic/Polaroid/Film Strip/Minimal), khớp đúng ví dụ AC gốc.
+- Theo dõi "ảnh nào user đã tự tay đổi style" bằng `MutableSet<Uri>` session-scoped trên `MainViewModel` (không persist DataStore) — tránh thêm state per-ảnh mới cho ticket effort S, chấp nhận reset khi app restart vì chỉ là gợi ý UX.
+- Test race timing của DataStore-Flow-backed LiveData bằng polling helper (`awaitExifFrameStyle`) thay vì 1 lần `idle()`, theo đúng pattern `awaitJobFinished` đã dùng ở ENH-01.
+- Smoke test thật trên Pixel 7 Pro: ảnh test không có EXIF Make → tự động khoanh chọn đúng "Minimal". Nhánh hãng máy cụ thể (Fujifilm/Leica/Canon...) dùng unit test JVM làm bằng chứng chính do máy thật không có ảnh với EXIF hãng tương ứng.
+
 ## Ghi chú re-audit 2026-09-10 (khác biệt so với đợt sinh backlog gốc)
 
 - **FEAT-01, ENH-05** đã triển khai xong ngoài luồng backlog — move sang `done/`, không phải làm lại.
-- **FEAT-10** chỉ done 1 phần (4 style khung — xong; tự nhận diện hãng máy — chưa) — đã tách lại scope trong file ticket.
+- **FEAT-10** chỉ done 1 phần lúc re-audit (4 style khung — xong; tự nhận diện hãng máy — chưa) — đã tách lại scope trong file ticket, hoàn thành 2026-09-13 (xem `## FEAT-10 2026-09-13` phía trên).
 - **BUG-14** mở rộng đáng kể phạm vi (3 vị trí lặp secret + 1 secret thứ 2 chưa ticket hoá + cả package `feature/vip/` chưa từng audit) — nâng ưu tiên lên **P0**.
 - **BUG-05 (đã done)** vẫn còn sót: `generateImage()` có nhánh early-return không recycle bitmap ở đường lỗi (không phải đường thành công) — theo dõi tiếp ở BUG-21 mới, không mở lại BUG-05.
 - 2 ý kiến độc lập lệch nhau về hướng fix BUG-14: `claude -p` + fork nội bộ khuyến nghị **native NDK/JNI** (app chưa có hạ tầng network, effort thấp hơn); `codex exec` khuyến nghị **server-side verify** (trust boundary thật, thu hồi/giới hạn được key) — đã hỏi user quyết định qua AskUserQuestion trong phiên này.
