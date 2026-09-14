@@ -518,16 +518,37 @@ class MainActivity : BaseActivity() {
                     doApplyBgChanged()
                 }
             }
+
+            val isDarkBg = androidx.core.graphics.ColorUtils.calculateLuminance(bgColor) <= 0.5
+            val editorOnBgText = if (isDarkBg) {
+                ContextCompat.getColor(this, R.color.md_theme_dark_onSurfaceVariant)
+            } else {
+                MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.DKGRAY)
+            }
+            val editorOnBgSelected = if (isDarkBg) {
+                Color.WHITE
+            } else {
+                this.colorPrimary
+            }
+            val editorOnBgIcon = if (isDarkBg) {
+                Color.WHITE
+            } else {
+                MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface, Color.BLACK)
+            }
+
             funcAdapter.textColor.toColor(titleTextColor) {
                 val c = it.animatedValue as Int
                 funcAdapter.applyTextColor(c)
-                launchView.tabLayout.setTabTextColors(c, this.colorPrimary)
-                launchView.toolbar.menu.forEach { menuItem ->
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        menuItem.iconTintList = ColorStateList.valueOf(c)
-                    } else {
-                        menuItem.icon?.setTint(c)
-                    }
+            }
+
+            launchView.tabLayout.setSelectedTabIndicatorColor(editorOnBgSelected)
+            launchView.tabLayout.setTabTextColors(editorOnBgText, editorOnBgSelected)
+            launchView.toolbar.navigationIcon?.setTint(editorOnBgIcon)
+            launchView.toolbar.menu.forEach { menuItem ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    menuItem.iconTintList = ColorStateList.valueOf(editorOnBgIcon)
+                } else {
+                    menuItem.icon?.setTint(editorOnBgIcon)
                 }
             }
         }
@@ -1054,6 +1075,10 @@ class MainActivity : BaseActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window?.navigationBarDividerColor = Color.TRANSPARENT
         }
+        val isLightBg = androidx.core.graphics.ColorUtils.calculateLuminance(color) > 0.5
+        val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+        insetsController.isAppearanceLightStatusBars = isLightBg
+        insetsController.isAppearanceLightNavigationBars = isLightBg
     }
 
     private fun selectTab(index: Int) {

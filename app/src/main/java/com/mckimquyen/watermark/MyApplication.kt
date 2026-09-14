@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.core.content.edit
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.google.android.material.color.DynamicColors
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.roy.sdkadbmob.AdManager
@@ -66,6 +67,7 @@ class MyApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        DynamicColors.applyToActivitiesIfAvailable(this)
         setupAdmob()
         if (checkRecoveryMode()) {
             return

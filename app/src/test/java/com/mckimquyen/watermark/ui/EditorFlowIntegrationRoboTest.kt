@@ -56,4 +56,28 @@ class EditorFlowIntegrationRoboTest {
         val contrast = ColorUtils.calculateContrast(adapter.textColor, surfaceContainer)
         assertThat(contrast).isAtLeast(3.0)
     }
+
+    @Test
+    fun statusBarAndNavBarTint_adaptsToBackgroundLuminance() {
+        val activity = Robolectric.buildActivity(MainActivity::class.java).create().start().get()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val insetsController = androidx.core.view.WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+
+        // Reflection to call private doApplyBgChanged
+        val method = MainActivity::class.java.getDeclaredMethod("doApplyBgChanged", Int::class.javaPrimitiveType)
+        method.isAccessible = true
+
+        // Apply dark background (e.g. #322F38)
+        val darkBg = Color.rgb(50, 47, 56)
+        method.invoke(activity, darkBg)
+        assertThat(insetsController.isAppearanceLightStatusBars).isFalse()
+        assertThat(insetsController.isAppearanceLightNavigationBars).isFalse()
+
+        // Apply light background (e.g. #FFF8F8)
+        val lightBg = Color.rgb(255, 248, 248)
+        method.invoke(activity, lightBg)
+        assertThat(insetsController.isAppearanceLightStatusBars).isTrue()
+        assertThat(insetsController.isAppearanceLightNavigationBars).isTrue()
+    }
 }

@@ -20,8 +20,9 @@ import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import androidx.core.view.marginStart
 import androidx.core.view.marginBottom
-import androidx.dynamicanimation.animation.SpringAnimation
-import androidx.dynamicanimation.animation.SpringForce
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.transition.TransitionManager
+import com.google.android.material.transition.MaterialFadeThrough
 import androidx.fragment.app.FragmentContainerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
@@ -36,7 +37,6 @@ import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.ui.widget.utils.BounceEdgeEffectFactory
 import com.mckimquyen.watermark.utils.ktx.dp
 import com.mckimquyen.watermark.utils.ktx.generateAppearAnimationList
-import com.mckimquyen.watermark.utils.ktx.generateDisappearAnimationList
 import kotlin.math.abs
 
 /**
@@ -339,10 +339,6 @@ class LaunchView : CustomViewGroup {
         generateAppearAnimationList(launchViews)
     }
 
-    private val editorModeDisappearAnimationList by lazy {
-        generateDisappearAnimationList(editorViews)
-    }
-
     var mode: ViewMode = ViewMode.LaunchMode
         private set(value) {
             if (field == value) return
@@ -353,27 +349,6 @@ class LaunchView : CustomViewGroup {
 
     private var launchViewListener: LaunchViewListener? = null
 
-    private var startX = 0f
-
-    private var startY = 0f
-
-    private val dragYAnimation by lazy {
-        SpringAnimation(this, SpringAnimation.TRANSLATION_Y).apply {
-            spring = SpringForce()
-                .setFinalPosition(0f)
-                .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
-                .setStiffness(SpringForce.STIFFNESS_LOW)
-        }
-    }
-
-    private val dragXAnimation by lazy {
-        SpringAnimation(this, SpringAnimation.TRANSLATION_X).apply {
-            spring = SpringForce()
-                .setFinalPosition(0f)
-                .setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
-                .setStiffness(SpringForce.STIFFNESS_LOW)
-        }
-    }
     //endregion
 
     init {
@@ -507,12 +482,15 @@ class LaunchView : CustomViewGroup {
      * @date 2021/8/12
      */
     private fun transformLayout(oldMode: ViewMode, toMode: ViewMode) {
+        val transition = MaterialFadeThrough().apply {
+            duration = 300L
+            interpolator = FastOutSlowInInterpolator()
+        }
+        TransitionManager.beginDelayedTransition(this, transition)
         when (toMode) {
             ViewMode.Editor -> {
                 launchViews.forEach {
-                    // Cancel any in-flight appear animation so it can't re-show the view after we hide it.
                     it.animate().cancel()
-                    it.alpha = 0f
                     it.isVisible = false
                 }
                 editorViews.forEach {
@@ -523,50 +501,17 @@ class LaunchView : CustomViewGroup {
             }
 
             ViewMode.LaunchMode -> {
-                editorModeDisappearAnimationList.forEach {
-                    it.start()
+                editorViews.forEach {
+                    it.isVisible = false
                 }
-                launchModeAppearAnimationList.forEach {
-                    it.start()
+                launchViews.forEach {
+                    it.alpha = 1f
+                    it.translationY = 0f
+                    it.isVisible = true
                 }
             }
         }
         launchViewListener?.onModeChange(oldMode, toMode)
-    }
-
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (mode != ViewMode.LaunchMode) {
-            return super.onTouchEvent(event)
-        }
-        when (event?.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                dragYAnimation.cancel()
-                dragXAnimation.cancel()
-                startX = event.rawX
-                startY = event.rawY
-                return true
-            }
-
-            MotionEvent.ACTION_MOVE -> {
-                val dx = (event.rawX - startX)
-                val dy = (event.rawY - startY)
-
-                var percentX = (1 - abs(this.translationX) / measuredWidth).coerceAtMost(1f) / 4
-                if (percentX <= 0.2) percentX = 0f
-                var percentY = (1 - abs(this.translationY) / measuredHeight).coerceAtMost(1f) / 4
-                if (percentY <= 0.2) percentY = 0f
-                this.translationX += dx * percentX
-                this.translationY += dy * percentY
-                startY = event.rawY
-                startX = event.rawX
-            }
-
-            MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
-                dragYAnimation.start()
-                dragXAnimation.start()
-            }
-        }
-        return super.onTouchEvent(event)
     }
     //endregion
 
@@ -589,9 +534,6 @@ class LaunchView : CustomViewGroup {
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        // Cancel animations to prevent memory leak
-        dragYAnimation.cancel()
-        dragXAnimation.cancel()
         launchViewListener = null
     }
     //endregion
