@@ -11,31 +11,71 @@
 - `sources`: agent nào tìm ra/đồng thuận — độ đồng thuận cao = độ tin cậy cao.
 - **Prompt loop:** mỗi ticket trong `todo/` có section "## Prompt loop" trỏ tới [PROMPT_TEMPLATE.md](PROMPT_TEMPLATE.md) — Definition of Done dùng chung (audit >9/10 + unit/widget/integration test đủ mọi case + smoke test thật trên device đã khoá → mới được move `done/` + push).
 
-## BUGS_TO_FIX (2 todo, cả 2 deferred + 20 done) — ưu tiên P0 trước
+## BUGS_TO_FIX (15 todo, 2 deferred + 20 done) — ưu tiên P0 trước
+
+> **Re-audit 2026-09-16** (xem `## Re-audit 2026-09-16` cuối file) tìm thêm 1 finding P0 thật NGOÀI danh sách dưới — **`app/keystore.jks` + `gradle.properties` (chứa password ký release plaintext) đang commit vào git, cả 2 remote GitHub đều PUBLIC** — user đã xác nhận biết và sẽ tự xử lý riêng (không phải task thường, không tạo ticket .md — đây là sự cố bảo mật cần quyết định business, không phải code fix qua `/loop`).
 
 | ID | Priority | Effort | Tiêu đề |
 |---|---|---|---|
 | [BUG-14](todo/BUG-14-vip-secret-hardcode-trong-apk.md) | P0 | M | VIP secret hardcode base64, lặp 3 chỗ + 1 secret thứ 2 chưa từng ticket hoá (mở rộng 2026-09-10) — **deferred, xem ghi chú cuối file** |
 | [BUG-15](todo/BUG-15-admob-rewarded-release-dung-test-id.md) | P0 | XS | `ADMOB_REWARDED_ID` build release vẫn dùng ID test — mất doanh thu, vi phạm chính sách AdMob — **deferred, xem ghi chú cuối file** |
+| [BUG-23](todo/BUG-23-cmonet-chua-init-khi-app-o-recovery-mode-crash-khi-vao-about.md) | P1 | XS | CMonet chưa init khi app ở Recovery Mode, crash khi vào About |
+| [BUG-24](todo/BUG-24-edittemplatecontentfragmentsafetyshow-ep-kieu-sai-lop-guard.md) | P1 | XS | `EditTemplateContentFragment.safetyShow()` ép kiểu sai lớp, guard chống trùng dialog vô hiệu |
+| [BUG-25](todo/BUG-25-watermarkrepositorywatermark-flow-catch-khong-bat-exception.md) | P1 | S | `WaterMarkRepository.waterMark` Flow: `.catch` không bắt exception từ `obtainSealedClass` trong `.map` |
+| [BUG-26](todo/BUG-26-room-asset-db-loi-luc-query-dau-khong-phai-luc-build-khong-d.md) | P1 | S | Room asset DB lỗi lúc query đầu (không phải lúc `build()`) không được try/catch bảo vệ |
+| [BUG-31](todo/BUG-31-restore-backup-doc-nguyen-tung-zip-entry-vao-ram-khong-gioi.md) | P1 | M | Restore backup đọc nguyên từng zip entry vào RAM, không giới hạn — rủi ro OOM/zip-bomb |
+| [BUG-27](todo/BUG-27-saveimagelistadapteroncreateviewholder-tinh-maxlineheight-tu.md) | P2 | S | `SaveImageListAdapter.onCreateViewHolder` tính `maxLineHeight` từ `parent.height` lúc RecyclerView chưa layout xong |
+| [BUG-28](todo/BUG-28-watermarkimageviewreset-khong-release-bitmap-refcount-nhu-on.md) | P2 | S | `WaterMarkImageView.reset()` không release bitmap refcount như `onDetachedFromWindow()` |
+| [BUG-29](todo/BUG-29-slider-tuy-bien-cuon-gallery-chia-intint-mat-phan-thap-phan.md) | P2 | XS | Slider tuỳ biến cuộn gallery: chia Int/Int mất phần thập phân, cuộn sai |
+| [BUG-30](todo/BUG-30-nut-more-apps-mo-link-play-store-hong-do-khoang-trang-chua-e.md) | P2 | XS | Nút "More Apps" mở link Play Store hỏng do khoảng trắng chưa encode + sai định dạng id |
+| [BUG-32](todo/BUG-32-ten-file-export-vua-go-co-the-chua-duoc-luu-neu-bam-export-n.md) | P2 | XS | Tên file export vừa gõ có thể chưa được lưu nếu bấm Export ngay khi ô tên còn đang focus |
+| [BUG-33](todo/BUG-33-nut-mo-galleryshare-sau-batch-xu-ly-sai-khi-co-anh-loi-trong.md) | P2 | S | Nút mở Gallery/Share sau batch xử lý sai khi có ảnh lỗi trong danh sách |
+| [BUG-34](todo/BUG-34-savesignature-bao-thanh-cong-du-bitmapcompress-that-bai.md) | P2 | XS | `saveSignature()` báo thành công dù `Bitmap.compress()` thất bại |
+| [BUG-35](todo/BUG-35-chon-thu-muc-saf-co-the-crash-neu-he-thong-tu-choi-persist-p.md) | P2 | XS | Chọn thư mục SAF có thể crash nếu hệ thống từ chối persist permission |
 
 **Đã DONE** (xem `doc/task/done/`): BUG-01 (inSampleSize/rotation), BUG-02 (BitmapCache NPE), BUG-03 (batch export báo thành công giả), BUG-04 (contentResolver insert force-unwrap), BUG-05 (OOM batch export — *lưu ý: BUG-21 phát hiện phần còn sót*), BUG-06 (icon cache race leak), BUG-07 (text shader indexOf + kích thước âm), BUG-08 (postDelayed interstitial không huỷ), BUG-09 (ACTION_SEND thiếu EXTRA_STREAM), BUG-10 (GalleryFragment observe sai lifecycle), BUG-11 (compressImg guard rỗng + leak file tạm), BUG-12 (removeImage crash IndexOutOfBounds), BUG-13 (QR debounce + off Main thread), BUG-16 (literal "null" trong Edit watermark), BUG-17 (FilmStrip coerceAtLeast — hoá ra đã fix kèm FEAT-14, chỉ thiếu test+ticket), BUG-18 (ExifPbFragment lazy button leak), BUG-19 (MediaStore ghi thất bại không guard), BUG-20 (EditTextContentFragment collect theo viewLifecycleOwner), BUG-21 (generateImage early-return không recycle) — **sprint P2 2026-09-11, xem `## Sprint 2026-09-11` cuối file**. Thêm BUG-22 (SaveImageBSDialogFragment tràn viewport màn hình nhỏ — phát hiện ngoài kế hoạch gốc, fix cùng ngày).
 
-## ENHANCEMENTS (1 todo, deferred + 19 done) — cải tiến tính năng có sẵn
+## ENHANCEMENTS (16 todo, 1 deferred + 19 done) — cải tiến tính năng có sẵn
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [ENH-17](todo/ENH-17-vip-key-device-bound.md) | S | VIP key gắn thiết bị (device-bound) — mitigation cho BUG-14 (mới 2026-09-10) — **deferred cùng BUG-14/15** |
+| [ENH-21](todo/ENH-21-cmonetsimplesp-log-khong-gate-debug-ro-log-setting-monet-moi.md) | XS | `cmonet/SimpleSp` log không gate DEBUG, rò log setting Monet mọi lần đọc/ghi ở bản release |
+| [ENH-22](todo/ENH-22-applovinkt-167-dong-dead-code-toan-bo-bi-comment-nen-xoa.md) | XS | `Applovin.kt` 167 dòng dead code, toàn bộ bị comment — nên xoá |
+| [ENH-23](todo/ENH-23-repositorymoduleprovidememorysettingrepository-gan-nham-name.md) | XS | `RepositoryModule.provideMemorySettingRepository()` gắn nhầm `@Named("WaterMarkPreferences")` |
+| [ENH-24](todo/ENH-24-userconfigrepository-ghi-datastore-vo-ich-moi-lan-mo-app-cho.md) | XS | `UserConfigRepository` ghi DataStore vô ích mỗi lần mở app cho tính năng đã gỡ (changelog) |
+| [ENH-28](todo/ENH-28-signaturebottomsheetfragmentsavebitmaptocache-leak-file-desc.md) | XS | `SignatureBottomSheetFragment.saveBitmapToCache()` leak file descriptor khi `compress()` ném exception |
+| [ENH-29](todo/ENH-29-khong-don-file-cache-tam-qrsignature-cu-tich-luy-rac-khong-g.md) | XS | Không dọn file cache tạm QR/signature cũ, tích luỹ rác không giới hạn |
+| [ENH-30](todo/ENH-30-textwatermarkbsdfragmentet-field-khong-bao-gio-duoc-gan-auto.md) | XS | `TextWatermarkBSDFragment.et` field không bao giờ được gán, auto-focus không hoạt động |
+| [ENH-25](todo/ENH-25-cmonet-compilesdk-lech-voi-app-qua-appstargetsdk-gan-nhu-dea.md) | S | `cmonet` compileSdk lệch với `:app` qua `Apps.targetSdk` gần như dead object |
+| [ENH-26](todo/ENH-26-productflavors-apptestapprelease-rong-khong-khac-biet-gi-nha.md) | S | `productFlavors` `appTest`/`appRelease` rỗng, không khác biệt gì, nhân đôi build variant vô ích |
+| [ENH-27](todo/ENH-27-mainviewmodelremoveimage-tinh-sai-selectedpos-khi-xoa-anh-cu.md) | S | `MainViewModel.removeImage()` tính sai `selectedPos` khi xoá ảnh CUỐI danh sách |
+| [ENH-34](todo/ENH-34-chuan-hoa-lua-chon-webp-theo-api-moi-webplossywebplossless.md) | S | Chuẩn hoá lựa chọn WEBP theo API mới (`WEBP_LOSSY`/`WEBP_LOSSLESS`) |
+| [ENH-35](todo/ENH-35-preview-export-nen-phan-anh-ro-anh-loikhong-doc-duoc-ngay-tr.md) | S | Preview export nên phản ánh rõ ảnh lỗi/không đọc được ngay trong grid (trước khi export thật) |
+| [ENH-31](todo/ENH-31-restore-backup-nen-validate-signature-la-anh-that-truoc-khi.md) | M | Restore backup nên validate signature là ảnh thật trước khi ghi ra đĩa |
+| [ENH-32](todo/ENH-32-preview-export-nen-huy-job-va-recycle-bitmap-khi-viewholder.md) | M | Preview export nên huỷ job và recycle bitmap khi ViewHolder bị tái sử dụng (RecyclerView recycle) |
+| [ENH-33](todo/ENH-33-ho-tro-quet-thu-muc-saf-de-quy-co-gioi-han-tuy-chon-include.md) | M | Hỗ trợ quét thư mục SAF đệ quy có giới hạn (tuỳ chọn "Include subfolders") |
 
 **Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4). **Sprint ENH S/XS 2026-09-12** (xem `## Sprint ENH 2026-09-12` cuối file): ENH-02 (debounce ghi DataStore khi gõ text), ENH-03 (gate `Log.d` bằng `BuildConfig.DEBUG`), ENH-07 (SignatureRepository qua Hilt DI), ENH-11 (vòng đời Ad Banner đầy đủ), ENH-12 (MonetManufacturer dựa API chính thức), ENH-13 (hiển thị số ảnh thành công/thất bại), ENH-18 (hằng số "Unknown Device" chung), ENH-19 (EXIF border co chữ tránh tràn), ENH-20 (preview filename query bất đồng bộ). **Sprint ENH hiệu năng M 2026-09-12** (xem `## Sprint ENH hiệu năng M 2026-09-12` cuối file): ENH-06 (gộp mở InputStream decode), ENH-15 (BitmapCache reference counting an toàn khi evict), ENH-16 (throttle rebuild shader khi pinch), ENH-14 (downsample trực tiếp khi decode export — làm với AC hạ chuẩn, user quyết định 2026-09-12). **Sprint ENH-08/09/10 2026-09-12** (xem `## Sprint ENH-08/09/10 2026-09-12` cuối file): ENH-08 (ImageInfo bất biến hoàn toàn), ENH-09 (hardcode string sang resources + plurals), ENH-10 (Android Photo Picker thay ACTION_PICK legacy). **ENH-01 2026-09-12** (xem `## ENH-01 2026-09-12` cuối file): batch export qua WorkManager + huỷ + tiến độ notification — phát hiện + fix crash `foregroundServiceType` thật qua smoke test Samsung SM-S928B.
 
-## NEW_FEATURES (4 todo + 1 inprogress + 10 done) — tính năng mới thực dụng, 1-2 tuần
+## NEW_FEATURES (14 todo + 1 inprogress + 10 done) — tính năng mới thực dụng, 1-2 tuần
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [FEAT-04](todo/FEAT-04-lich-su-batch-gan-day.md) | M | Lịch sử batch export gần đây |
 | [FEAT-06](todo/FEAT-06-watermark-profile-day-du.md) | M | Watermark profile đầy đủ |
 | [FEAT-12](todo/FEAT-12-undo-redo-editor.md) | M | Undo/Redo chỉnh sửa watermark trong editor |
+| [FEAT-19](todo/FEAT-19-chinh-sach-xu-ly-trung-ten-file-khi-export-lai-cung-batchnam.md) | S | Chính sách xử lý trùng tên file khi export lại cùng batch/naming pattern |
+| [FEAT-21](todo/FEAT-21-dan-anh-tu-clipboard-de-watermark-nhanh.md) | S | Dán ảnh từ Clipboard để watermark nhanh |
+| [FEAT-22](todo/FEAT-22-chup-anh-truc-tiep-tu-camera-roi-watermark-ngay.md) | S | Chụp ảnh trực tiếp từ Camera rồi watermark ngay |
+| [FEAT-24](todo/FEAT-24-danh-sach-iconlogo-gan-day-dung-nhanh-mru-quick-pick.md) | S | Danh sách icon/logo gần đây dùng nhanh (MRU quick-pick) |
+| [FEAT-15](todo/FEAT-15-chon-thu-muc-xuat-anh-bang-saf-khac-feat-08-chon-thu-muc-ngu.md) | M | Chọn thư mục XUẤT ảnh bằng SAF (khác FEAT-08 — chọn thư mục NGUỒN ảnh vào batch) |
+| [FEAT-17](todo/FEAT-17-bo-qua-skip-1-anh-trong-batch-ngay-tai-man-export-preview-kh.md) | M | Bỏ qua (skip) 1 ảnh trong batch ngay tại màn export preview |
+| [FEAT-18](todo/FEAT-18-so-sanh-truocsau-bang-slider-beforeafter-compare-ca-trong-ed.md) | M | So sánh trước/sau bằng slider (before/after compare) — editor lẫn preview batch |
+| [FEAT-20](todo/FEAT-20-chia-se-ngay-cac-anh-vua-export-xong-share-sheetgoi-zip.md) | M | Chia sẻ ngay các ảnh vừa export xong (share sheet/gói ZIP) |
+| [FEAT-23](todo/FEAT-23-ghi-nho-vi-tri-watermark-rieng-theo-ti-le-khung-anh-portrait.md) | M | Ghi nhớ vị trí watermark riêng theo tỉ lệ khung ảnh (portrait/landscape) |
 | [FEAT-03](todo/FEAT-03-multi-layer-watermark.md) | L | Watermark đa lớp (chồng text + logo/QR cùng lúc) |
+| [FEAT-16](todo/FEAT-16-cropstraighten-nhanh-truoc-khi-watermark.md) | L | Crop/straighten nhanh trước khi watermark |
 
 **Đang làm** (`inprogress/`): FEAT-13 (caption riêng theo ảnh trong batch — code + unit test xong, **thiếu smoke test thật riêng cho ticket này**, xem `## FEAT-13/FEAT-05 2026-09-16` cuối file).
 
@@ -57,7 +97,7 @@
 | [M3-08](done/M3-08-migrate-edit-panels-dialogs-bottom-sheets.md) | P1 | M | Migrate toàn bộ Dialogs, Bottom Sheets và Panels chỉnh sửa sang Material You M3 | **DONE** |
 | [M3-09](done/M3-09-cleanup-ios-glass-assets-lint-verification.md) | P2 | S | Dọn dẹp triệt để tài nguyên iOS Glass, Lint & Kiểm thử hồi quy toàn diện | **DONE** |
 
-## UNIQUE_IDEAS (10) — tính năng độc quyền/đột phá, effort cao
+## UNIQUE_IDEAS (18) — tính năng độc quyền/đột phá, effort cao
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
@@ -68,9 +108,17 @@
 | [IDEA-03](todo/IDEA-03-content-authenticity-stamp-c2pa.md) | L | Content authenticity stamp kiểu C2PA |
 | [IDEA-09](todo/IDEA-09-watermark-survivability-preview.md) | L | Watermark Survivability Preview — mô phỏng crop/recompress mạng xã hội (mới 2026-09-10) |
 | [IDEA-10](todo/IDEA-10-recipient-fingerprint-batch.md) | L | Recipient Fingerprint Batch — watermark riêng theo người nhận, truy nguồn rò rỉ (mới 2026-09-10) |
+| [IDEA-15](todo/IDEA-15-brand-compliance-scoring-cham-diem-moi-anh-theo-rule-thuong.md) | L | Brand Compliance Scoring — chấm điểm mỗi ảnh theo rule thương hiệu trước khi export (mới 2026-09-16) |
+| [IDEA-16](todo/IDEA-16-watermark-tu-sinh-noi-dung-theo-gps-thoi-tiet-luc-chup.md) | L | Watermark tự sinh nội dung theo GPS + thời tiết lúc chụp (mới 2026-09-16) |
+| [IDEA-17](todo/IDEA-17-voice-to-text-caption-khi-batch-nhieu-anh-mo-rong-feat-13.md) | L | Voice-to-text caption khi batch nhiều ảnh, mở rộng FEAT-13 (mới 2026-09-16) |
 | [IDEA-02](todo/IDEA-02-invisible-watermark-steganography.md) | XL | Invisible watermark / steganography chống xoá |
 | [IDEA-04](todo/IDEA-04-cloud-sync-brand-kit.md) | XL | Cloud sync Brand Kit đa thiết bị |
 | [IDEA-05](todo/IDEA-05-cho-template-cong-dong.md) | XL | Chợ template cộng đồng (network effect) |
+| [IDEA-11](todo/IDEA-11-live-camera-watermark-ar-preview-xem-watermark-ngay-tren-vie.md) | XL | Live Camera Watermark / AR preview — watermark ngay trên viewfinder trước khi chụp (mới 2026-09-16, 2 nguồn đồng thuận) |
+| [IDEA-12](todo/IDEA-12-on-device-style-coach-goi-y-fontmauopacityvi-tri-theo-phong.md) | XL | On-device Style Coach — gợi ý font/màu/opacity/vị trí theo phong cách ảnh cá nhân (mới 2026-09-16) |
+| [IDEA-13](todo/IDEA-13-client-proofing-mode-xuat-album-proof-cho-khach-chon-anh-dan.md) | XL | Client Proofing Mode — album proof cho khách chọn ảnh, dành cho photographer (mới 2026-09-16) |
+| [IDEA-14](todo/IDEA-14-smart-redaction-watermark-tu-phat-hien-thong-tin-nhay-cam-tr.md) | XL | Smart Redaction + Watermark — tự phát hiện thông tin nhạy cảm trước khi đóng dấu (mới 2026-09-16) |
+| [IDEA-18](todo/IDEA-18-bo-sinh-khung-exif-border-moi-theo-bang-mau-anh-khong-gioi-h.md) | XL | Bộ sinh khung EXIF border mới theo bảng màu ảnh, không giới hạn 4 style cố định (mới 2026-09-16) |
 
 ## ⏸️ Deferred theo quyết định user (2026-09-10)
 
@@ -182,6 +230,17 @@ Ticket effort M, chi tiết đầy đủ xem "Kết quả kiểm chứng" trong 
 ## Gợi ý sprint đầu tiên (cập nhật sau re-audit)
 
 Nhóm P0 giờ có 3 ticket cùng khu vực rủi ro cao: BUG-14 + ENH-17 (bảo mật VIP), BUG-15 (doanh thu Ad thật/test lẫn lộn) — nên gộp 1 sprint đầu, xử lý trước cả nhóm BUG-02..05 cũ (đã done). Sau đó nhóm P1 mới phát hiện (BUG-18/19/21) cùng khu vực `MainViewModel`/`ExifPbFragment` nên làm chung sprint kế tiếp với BUG-07/08/09/10/12 cũ. FEAT effort S/XS (FEAT-02, FEAT-09, FEAT-14) vẫn là lựa chọn tốt để có tính năng "nhìn thấy được" song song.
+
+## Re-audit 2026-09-16 — toàn bộ source code, 4 nguồn độc lập
+
+Re-audit toàn diện theo yêu cầu user ("đọc toàn bộ source code, rã task như scrum master"), đối chiếu với ~75 ticket đã có để tránh trùng lặp. 4 nguồn độc lập: **Claude fork nội bộ** (đọc trực tiếp, phạm vi VIP/Ad/cmonet — vùng chưa từng audit sâu), **codex exec --sandbox read-only** (đọc toàn bộ `app/src/main` + `cmonet/src/main`), **claude --dangerously-skip-permissions -p** (session riêng, allowlist Read/Grep/Glob, đọc toàn bộ), **agy --dangerously-skip-permissions -p** — timeout/không có output (giống tiền lệ đợt re-audit 2026-09-10), bỏ qua, 3/4 nguồn còn lại đủ đồng thuận.
+
+**Kết quả: 46 ticket mới** (BUG-23..35, ENH-21..35, FEAT-15..24, IDEA-11..18) — đã ghi vào `doc/task/todo/`, cập nhật đủ 4 bảng ở trên.
+
+- **Phát hiện khẩn cấp ngoài kế hoạch (claude, đã verify trực tiếp)**: `app/keystore.jks` + `gradle.properties` (chứa `KEY_PASSWORD`/`STORE_PASSWORD` plaintext) đang **commit vào git**, và **cả 2 remote GitHub (`royt93/5_EasyWatermark`, `tplloi/EasyWatermark`) đều PUBLIC** (đã verify qua `gh repo view`) — keystore ký release + password lộ công khai. Báo ngay user qua `AskUserQuestion` (không tự ý xử lý — rewrite git history/rotate key là quyết định business/bảo mật nghiêm trọng, không phải code fix qua `/loop` thường). **User quyết định: bỏ qua, tự xử lý riêng sau** — không tạo ticket `.md`, không đụng file này trong `/loop`.
+- **1 finding của codex bị loại bỏ sau verify (không tạo ticket)**: "Hilt module tạo binding `DataStore` thiếu qualifier" (P0 theo codex) — verify trực tiếp: `UserConfigRepository`/`WaterMarkRepository` có `@Inject constructor` riêng, injection site (`MainViewModel`) chỉ request type KHÔNG qualifier — Dagger resolve qua constructor injection, KHÔNG qua `@Provides` method có `@Named` trong `RepositoryModule` (những method đó unreachable trong graph thật). Code đã compile thành công liên tục trong toàn bộ phiên (nhiều lần `kapt`/build) — claim "P0 crash" của codex sai, đây chỉ là dead code (đã ghi nhận riêng ở **ENH-23**, mức độ thấp hơn hẳn, không phải bug build-breaking). Bài học: **luôn verify trực tiếp trước khi tin AI, đặc biệt claim P0/crash** (đúng tinh thần README dòng đầu file này).
+- Nhiều finding trùng lặp giữa 2 nguồn (codex + claude) đã gộp thành 1 ticket duy nhất thay vì tạo 2 bản gần giống nhau: ENH-29 (dọn cache QR/signature), FEAT-18 (before/after slider), FEAT-20 (share sau export), IDEA-11 (live camera watermark).
+- **Chưa verify sâu từng finding còn lại bằng cách chạy code thật** (chỉ đọc source + vài lần grep xác nhận trọng điểm) — khi bắt đầu implement 1 ticket bất kỳ trong 46 file này, bước đầu tiên của `/loop` (đọc file + audit) PHẢI re-confirm lại finding còn đúng, không mặc định tin 100%.
 
 ## FEAT-13/FEAT-05 2026-09-16 — caption riêng batch + backup/restore + code review round
 
