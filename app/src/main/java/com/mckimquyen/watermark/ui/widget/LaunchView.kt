@@ -118,7 +118,7 @@ class LaunchView : CustomViewGroup {
     val tvVersionCopyright: TextView by lazy {
         MaterialTextView(context).apply {
             layoutParams = MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-            text = "v${BuildConfig.VERSION_NAME} • © 2026 McKim Quyen"
+            text = "v${BuildConfig.VERSION_NAME} • ${context.getString(com.mckimquyen.watermark.R.string.app_copyright)}"
             setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_LabelSmall)
             val textColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.DKGRAY)
             setTextColor(textColor)

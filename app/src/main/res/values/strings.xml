@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Watermark Creator</string>
+    <string name="app_copyright">© SAIGON PHANTOM LABS</string>
     <string name="action_pick">Choose picture</string>
     <string name="action_save">Save</string>
     <string name="action_settings">About</string>

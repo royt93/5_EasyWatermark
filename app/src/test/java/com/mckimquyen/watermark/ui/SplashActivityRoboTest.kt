@@ -37,7 +37,7 @@ class SplashActivityRoboTest {
         assertThat(tvVersion.text.toString()).contains(BuildConfig.VERSION_NAME)
 
         assertThat(tvCopyright).isNotNull()
-        assertThat(tvCopyright.text.toString()).contains("© 2026 McKim Quyen")
+        assertThat(tvCopyright.text.toString()).contains(activity.getString(R.string.app_copyright))
 
         controller.pause().stop().destroy()
     }

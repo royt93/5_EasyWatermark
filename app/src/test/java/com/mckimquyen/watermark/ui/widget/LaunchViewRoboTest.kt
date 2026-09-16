@@ -29,7 +29,7 @@ class LaunchViewRoboTest {
         assertThat(launchView.tvAppBrand.text.toString()).isEqualTo(context.getString(R.string.app_name))
         assertThat(launchView.tvAppTagline.text.toString()).contains("Offline Protection")
         assertThat(launchView.tvVersionCopyright.text.toString()).contains(BuildConfig.VERSION_NAME)
-        assertThat(launchView.tvVersionCopyright.text.toString()).contains("© 2026 McKim Quyen")
+        assertThat(launchView.tvVersionCopyright.text.toString()).contains(context.getString(R.string.app_copyright))
     }
 
     @Test

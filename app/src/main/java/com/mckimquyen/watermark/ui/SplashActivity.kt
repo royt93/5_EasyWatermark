@@ -13,6 +13,7 @@ import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.LOG_TAG
+import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.ActivitySplashBinding
 import com.roy.sdkadbmob.AdManager
 import com.roy.sdkadbmob.ExperimentalAdApi
@@ -40,7 +41,7 @@ class SplashActivity : BaseActivity() {
         }
 
         binding.tvVersion.text = "v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
-        binding.tvCopyright.text = "© 2026 McKim Quyen • All Rights Reserved"
+        binding.tvCopyright.text = "${getString(R.string.app_copyright)} • All Rights Reserved"
 
         lifecycleScope.launch { runSplashFlow() }
     }
