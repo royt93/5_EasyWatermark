@@ -77,4 +77,29 @@ class SignatureRepository @Inject constructor(@ApplicationContext private val co
             false
         }
     }
+
+    /**
+     * Đề xuất F: ghi lại 1 signature từ backup (`BackupRestoreEngine`) — nếu trùng tên file với
+     * signature đang có (restore lần 2, hoặc trùng tên do đồng bộ trước ENH), thêm hậu tố số thay
+     * vì ghi đè, tránh mất signature cũ.
+     */
+    suspend fun importSignatureBytes(fileName: String, bytes: ByteArray): SignatureModel? = withContext(Dispatchers.IO) {
+        try {
+            var target = File(signatureDir, fileName)
+            var suffix = 1
+            while (target.exists()) {
+                target = File(signatureDir, "${fileName.substringBeforeLast('.')}_$suffix.${fileName.substringAfterLast('.')}")
+                suffix++
+            }
+            target.writeBytes(bytes)
+            return@withContext SignatureModel(
+                file = target,
+                uri = fileToContentUri(target),
+                dateModified = target.lastModified()
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext null
+        }
+    }
 }

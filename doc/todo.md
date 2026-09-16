@@ -4,7 +4,8 @@
 
 ## Tính năng cần triển khai
 
-- [ ] Tích hợp Firebase (vẫn còn `//TODO firebase` trong `MyApplication.kt`)
+- [ ] Tích hợp Firebase (vẫn còn `//TODO firebase` trong `MyApplication.kt`) — không còn là điều kiện tiên quyết cho Backup/Restore (xem dòng dưới), vẫn treo riêng.
+- [x] ~~Backup/Restore Template & Signature~~ — ĐÃ XONG (2026-09-16, đề xuất F): local-only qua SAF + zip, không cần Firebase. Chi tiết xem `doc/feat.md` mục #21.
 - [x] ~~Thêm tính năng chọn màu (Color)~~ — ĐÃ XONG (`FuncTitleModel.Color` → `ColorFragment`)
 - [x] ~~Thêm tính năng chia sẻ ứng dụng (Share App)~~ — ĐÃ XONG (2026-09-06): pill "Share App" trong `AboutActivity` (`a_about.xml` id `tvShareApp`, bọc trong `HorizontalScrollView` cùng Rate/More Apps) mở `Intent.ACTION_SEND` text kèm link Play Store (`R.string.share_app_message`). Verify trên emulator: chooser "Sharing text" hiện đúng nội dung `Check out Watermark Creator-Debug: https://play.google.com/store/apps/details?id=com.mckimquyen.watermark`.
 - [x] ~~QR Code watermark~~ — ĐÃ XONG (`QrCodeGenerator` + `QrCodeBottomSheetFragment`, reuse luồng Image watermark).

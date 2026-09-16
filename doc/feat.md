@@ -103,10 +103,15 @@ Chuyển toàn bộ giao diện sang Material 3 tokens & dynamic palette, xử l
 `BatchCaptionBSDialogFragment` nhập/dán danh sách caption nhiều dòng (1 dòng/ảnh, đúng thứ tự batch) — mỗi caption ghi đè watermark text chung chỉ cho đúng ảnh tương ứng lúc export/preview; để trống = xoá hết, quay lại dùng text chung.
 - **Phát hiện phụ trong lúc làm:** DataStore singleton (`context.waterMarkDataStore`/`userDataStore`) bị share ngầm giữa các test method Robolectric trong cùng 1 JVM fork → deadlock khi chạy full suite không filter `--tests`. Đã fix bằng DataStore cô lập per-test (`app/src/test/.../testutil/TestDataStores.kt`), áp dụng cho 18 file test — xem `doc/todo.md`.
 
+### 21. Backup/Restore Template & Signature (2026-09-16, đề xuất F)
+Xuất/nhập Template (Room) + Signature (`.webp`) qua 1 file zip, chọn đường dẫn bằng SAF (không cần Firebase — local-only, đơn giản hơn hẳn đề xuất ban đầu).
+- `data/backup/BackupRestoreEngine.kt` — serialize thuần `java.util.zip` (không thư viện JSON): mỗi Template thành 1 file text riêng trong `templates/` (2 dòng đầu = epoch millis creation/lastModified, phần còn lại = content nguyên văn, tránh escape ký tự đặc biệt); signature copy nguyên file vào `signatures/`. Pure JVM, test bằng JUnit thường (`BackupRestoreEngineTest`), không cần Robolectric.
+- `data/repo/BackupRestoreRepository.kt` — nối `BackupRestoreEngine` với `TemplateRepository`/`SignatureRepository` qua `ContentResolver` (đọc/ghi Uri SAF). `SignatureRepository.importSignatureBytes()` tự thêm hậu tố số nếu trùng tên file, tránh ghi đè signature cũ.
+- `AboutActivity` — 2 pill "💾 Backup"/"📥 Restore" cạnh Share App, dùng `ActivityResultContracts.CreateDocument`/`OpenDocument`. Restore luôn insert Template với `id=0` (Room tự autoGenerate PK mới), không đè lên dữ liệu có sẵn trên máy đích.
+- **Test:** `BackupRestoreEngineTest` (round-trip zip, JUnit thường) + `BackupRestoreRepositoryRoboTest` (end-to-end Room in-memory + file thật, Robolectric).
+
 ---
 
 ## 💭 Đề xuất tính năng mới (chưa làm)
 
-### F. Backup/Restore Template & Signature
-**Mô tả:** Xuất/nhập template (Room) và chữ ký để chuyển máy.
-**Triển khai:** Serialize `Template` (Room) + thư mục signature → zip; cân nhắc tích hợp Firebase (đang là TODO trong `todo.md`).
+(Chưa có đề xuất nào đang chờ — xem lịch sử git/PR để đề xuất tính năng mới.)

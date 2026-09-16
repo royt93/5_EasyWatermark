@@ -3,15 +3,16 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.jakewharton.processphoenix.ProcessPhoenix
 import com.mckimquyen.cmonet.CMonet
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.BuildConfig
-import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.AAboutBinding
@@ -27,6 +28,22 @@ class AboutActivity : BaseActivity() {
     private val binding by inflate<AAboutBinding>()
 
     private val viewModel: AboutViewModel by viewModels()
+
+    // Đề xuất F: backup/restore Template + Signature qua SAF — launcher phải đăng ký trước
+    // STARTED (property khởi tạo ngay khi Activity tạo), không được gọi trong onClick.
+    private val backupLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
+        if (uri == null) return@registerForActivityResult
+        viewModel.backupTo(uri) { success ->
+            Toast.makeText(this, getString(if (success) R.string.backup_success else R.string.backup_failed), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val restoreLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@registerForActivityResult
+        viewModel.restoreFrom(uri) { success ->
+            Toast.makeText(this, getString(if (success) R.string.restore_success else R.string.restore_failed), Toast.LENGTH_SHORT).show()
+        }
+    }
 
 //    private lateinit var bgDrawable: GradientDrawable
 
@@ -76,13 +93,21 @@ class AboutActivity : BaseActivity() {
                 val message = getString(
                     R.string.share_app_message,
                     getString(R.string.app_name),
-                    packageName,
+                    packageName
                 )
                 val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
                     type = "text/plain"
                     putExtra(android.content.Intent.EXTRA_TEXT, message)
                 }
                 startActivity(android.content.Intent.createChooser(sendIntent, getString(R.string.share_app)))
+            }
+            tvBackupData.setOnClickListener {
+                AppLog.d(LOG_TAG, "AboutActivity tvBackupData clicked — opening SAF create-document")
+                backupLauncher.launch(getString(R.string.backup_file_name))
+            }
+            tvRestoreData.setOnClickListener {
+                AppLog.d(LOG_TAG, "AboutActivity tvRestoreData clicked — opening SAF open-document")
+                restoreLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
             }
 //            tvChangeLog.setOnClickListener {
 //                openLink("https://github.com/rosuH/EasyWatermark/releases/")
@@ -137,7 +162,7 @@ class AboutActivity : BaseActivity() {
                 context = this@AboutActivity,
                 container = binding.layoutAdBanner.bannerContainer,
                 tvLabelAd = binding.layoutAdBanner.tvLabelAd,
-                adSize = AdManager.getAdaptiveBannerSize(this@AboutActivity),
+                adSize = AdManager.getAdaptiveBannerSize(this@AboutActivity)
             )
             AdManager.loadInterstitial(this@AboutActivity)
         }
@@ -193,5 +218,4 @@ class AboutActivity : BaseActivity() {
             finish()
         }
     }
-
 }
