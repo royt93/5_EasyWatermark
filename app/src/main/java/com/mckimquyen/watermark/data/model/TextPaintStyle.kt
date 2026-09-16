@@ -40,11 +40,14 @@ sealed class TextPaintStyle : SerializableSealClass<Int> {
     }
 
     companion object {
+        // BUG-25: ordinal ngoài range (DataStore hỏng/restore từ version khác) fallback về Fill
+        // thay vì throw — Flow.catch() phía trên trong WaterMarkRepository.waterMark không bắt
+        // được exception ném ra từ đây vì nó nằm SAU catch trong chain (.map chạy sau .catch).
         fun obtainSealedClass(key: Int): TextPaintStyle {
             return when (key) {
                 0 -> Fill
                 1 -> Stroke
-                else -> throw IllegalArgumentException("No such key for TextPaintStyle")
+                else -> Fill
             }
         }
     }
