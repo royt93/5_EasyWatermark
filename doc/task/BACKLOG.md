@@ -28,18 +28,18 @@
 
 **Đã DONE**: ENH-04 (pinch-to-resize), ENH-05 (preview token khớp export — xác nhận đã triển khai 2026-09-06, xem `doc/feat.md` mục 4). **Sprint ENH S/XS 2026-09-12** (xem `## Sprint ENH 2026-09-12` cuối file): ENH-02 (debounce ghi DataStore khi gõ text), ENH-03 (gate `Log.d` bằng `BuildConfig.DEBUG`), ENH-07 (SignatureRepository qua Hilt DI), ENH-11 (vòng đời Ad Banner đầy đủ), ENH-12 (MonetManufacturer dựa API chính thức), ENH-13 (hiển thị số ảnh thành công/thất bại), ENH-18 (hằng số "Unknown Device" chung), ENH-19 (EXIF border co chữ tránh tràn), ENH-20 (preview filename query bất đồng bộ). **Sprint ENH hiệu năng M 2026-09-12** (xem `## Sprint ENH hiệu năng M 2026-09-12` cuối file): ENH-06 (gộp mở InputStream decode), ENH-15 (BitmapCache reference counting an toàn khi evict), ENH-16 (throttle rebuild shader khi pinch), ENH-14 (downsample trực tiếp khi decode export — làm với AC hạ chuẩn, user quyết định 2026-09-12). **Sprint ENH-08/09/10 2026-09-12** (xem `## Sprint ENH-08/09/10 2026-09-12` cuối file): ENH-08 (ImageInfo bất biến hoàn toàn), ENH-09 (hardcode string sang resources + plurals), ENH-10 (Android Photo Picker thay ACTION_PICK legacy). **ENH-01 2026-09-12** (xem `## ENH-01 2026-09-12` cuối file): batch export qua WorkManager + huỷ + tiến độ notification — phát hiện + fix crash `foregroundServiceType` thật qua smoke test Samsung SM-S928B.
 
-## NEW_FEATURES (6 todo + 8 done) — tính năng mới thực dụng, 1-2 tuần
+## NEW_FEATURES (4 todo + 1 inprogress + 10 done) — tính năng mới thực dụng, 1-2 tuần
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [FEAT-04](todo/FEAT-04-lich-su-batch-gan-day.md) | M | Lịch sử batch export gần đây |
-| [FEAT-05](todo/FEAT-05-backup-restore-template-signature.md) | M | Xuất/nhập Template + Signature (backup/restore) |
 | [FEAT-06](todo/FEAT-06-watermark-profile-day-du.md) | M | Watermark profile đầy đủ |
 | [FEAT-12](todo/FEAT-12-undo-redo-editor.md) | M | Undo/Redo chỉnh sửa watermark trong editor |
-| [FEAT-13](todo/FEAT-13-caption-rieng-tung-anh-batch.md) | M | Nhập caption/text riêng theo từng ảnh trong batch (CSV) |
 | [FEAT-03](todo/FEAT-03-multi-layer-watermark.md) | L | Watermark đa lớp (chồng text + logo/QR cùng lúc) |
 
-**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch. **FEAT-10 2026-09-13** (xem `## FEAT-10 2026-09-13` cuối file): tự nhận diện hãng máy để gợi ý style khung EXIF. **FEAT-07 2026-09-13** (xem `## FEAT-07 2026-09-13` cuối file, verify 1 phần — xem ghi chú giới hạn môi trường trong file done): preview grid watermark + ước tính dung lượng trước khi export cả batch.
+**Đang làm** (`inprogress/`): FEAT-13 (caption riêng theo ảnh trong batch — code + unit test xong, **thiếu smoke test thật riêng cho ticket này**, xem `## FEAT-13/FEAT-05 2026-09-16` cuối file).
+
+**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch. **FEAT-10 2026-09-13** (xem `## FEAT-10 2026-09-13` cuối file): tự nhận diện hãng máy để gợi ý style khung EXIF. **FEAT-07 2026-09-13** (xem `## FEAT-07 2026-09-13` cuối file, verify 1 phần — xem ghi chú giới hạn môi trường trong file done): preview grid watermark + ước tính dung lượng trước khi export cả batch. **FEAT-05 2026-09-16** (xem `## FEAT-13/FEAT-05 2026-09-16` cuối file): xuất/nhập Template + Signature (backup/restore) qua SAF + zip, smoke test thật đầy đủ trên TECNO KJ7.
 
 ## MATERIAL_YOU_MIGRATION (9 done) — chuyển đổi toàn diện UI/UX sang Material You (Material 3)
 
@@ -182,6 +182,18 @@ Ticket effort M, chi tiết đầy đủ xem "Kết quả kiểm chứng" trong 
 ## Gợi ý sprint đầu tiên (cập nhật sau re-audit)
 
 Nhóm P0 giờ có 3 ticket cùng khu vực rủi ro cao: BUG-14 + ENH-17 (bảo mật VIP), BUG-15 (doanh thu Ad thật/test lẫn lộn) — nên gộp 1 sprint đầu, xử lý trước cả nhóm BUG-02..05 cũ (đã done). Sau đó nhóm P1 mới phát hiện (BUG-18/19/21) cùng khu vực `MainViewModel`/`ExifPbFragment` nên làm chung sprint kế tiếp với BUG-07/08/09/10/12 cũ. FEAT effort S/XS (FEAT-02, FEAT-09, FEAT-14) vẫn là lựa chọn tốt để có tính năng "nhìn thấy được" song song.
+
+## FEAT-13/FEAT-05 2026-09-16 — caption riêng batch + backup/restore + code review round
+
+Cả 2 ticket implement độc lập ngoài luồng `/loop` chuẩn (session khác, sau đó reconcile lại backlog) — chi tiết đầy đủ xem "Kết quả kiểm chứng"/"Tiến độ" trong file tương ứng.
+
+- **FEAT-13**: xong code + unit test (`BatchExportEngineCaptionRoboTest` mới regression), nhưng CHƯA smoke test thật riêng — còn ở `inprogress/`, không tự ý move `done/` dù điểm tự-audit code 9/10, đúng nguyên tắc PROMPT_TEMPLATE.md không hạ chuẩn Definition of Done.
+- **FEAT-05**: xong đủ cả 3 điều kiện, move `done/`. Triển khai khác nhẹ đề xuất gốc (zip thuần thay JSON, tránh thêm dependency).
+- **`/code-review master..dev high`** (agent riêng, review toàn bộ diff so với `master`) tìm 6 phát hiện trên code 2 ticket này — đã fix hết, quan trọng nhất:
+  1. **Bug nghiêm trọng** (FEAT-13): caption rỗng không skip vẽ ở export thật (khác preview) → ảnh xuất ra bị tô đen kín. Preview code path và export code path độc lập tự suy diễn cùng 1 rule rồi lệch nhau — bài học: rule dùng ở 2 nơi phải extract hàm chung ngay từ đầu, không đợi review phát hiện.
+  2. **Lỗ bảo mật zip-slip** (FEAT-05): tên file trong zip backup (input không tin cậy từ SAF) không sanitize trước khi ghi đĩa.
+  3. Phát hiện phụ khi viết test cho fix #2: `FileProvider.getUriForFile()` cache `PathStrategy` theo authority ở static field AndroidX, sống sót qua ranh giới Application/Context của từng `@Test` dưới Robolectric — CÙNG LỚP BUG với deadlock DataStore đã gặp trước đó trong session (`context.xDataStore` singleton). Bài học lặp lại: bất kỳ API nào cache theo authority/key toàn cục (không theo Context instance) đều có nguy cơ y hệt dưới Robolectric multi-test-trong-1-JVM — cần kiểm tra trước khi viết test mới đụng `FileProvider`/tương tự.
+- Full unit test 271/271 PASS sau mọi vòng fix. Commit: `32229a8`, `0d9b891`, `cb43eda`, `c40f0b4`, `9648623`, `8624f1c`, `569707b`, `c3af54a`, `0a94828` — đã push `origin/dev`.
 
 ## Audit Material You Migration (2026-09-13)
 
