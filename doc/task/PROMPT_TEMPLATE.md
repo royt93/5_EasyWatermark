@@ -9,6 +9,8 @@ Task chỉ được coi là xong khi ĐỦ CẢ 3 điều kiện:
 2. **Có test cho mọi case đã sửa**: unit test (`app/src/test`) bắt buộc; widget/Robolectric test nếu đụng UI; integration test (`app/src/androidTest`) nếu đụng Room/DataStore/IO thật. Toàn bộ `./gradlew testAppReleaseDebugUnitTest` phải xanh.
 3. **Smoke test thật trên device đã khoá của session** (theo CLAUDE.md R3 — tuyệt đối không tự đổi device khi user đã khoá) — cài bản debug, thao tác đúng luồng vừa sửa, xác nhận không crash/regression qua logcat + quan sát UI thật.
 
+**Nếu ticket đụng bất kỳ layout/view/style nào**: bắt buộc check khớp chuẩn Material You M3 đã migrate xong toàn app (xem `## Hoàn thành Material You Migration` trong BACKLOG.md, M3-01..09) — dùng `MaterialCardView`/`MaterialButton`/`MaterialSwitch`/`Slider`/`TextInputLayout` (không quay lại widget legacy `CardView`/`SwitchCompat`/`SeekBar`/`RadioGroup`), màu qua token `?attr/colorXxx` (không hardcode hex), không tái tạo lại style "iOS Liquid Glass" đã dọn sạch ở M3-09. UI mới thêm phải nhất quán với phần đã migrate, không tạo ốc đảo style riêng.
+
 ## Prompt mẫu (điền `<ID>` / `<FILE>`)
 
 ```
