@@ -2,12 +2,11 @@ package com.mckimquyen.watermark.export
 
 import android.net.Uri
 import android.os.Looper
-import androidx.datastore.preferences.core.edit
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
-import com.mckimquyen.watermark.di.waterMarkDataStore
+import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
@@ -31,8 +30,7 @@ class BatchExportEnginePreviewRoboTest {
     private val context = ApplicationProvider.getApplicationContext<android.content.Context>()
 
     private fun newRepo(): WaterMarkRepository {
-        runBlocking { context.waterMarkDataStore.edit { it.clear() } }
-        return WaterMarkRepository(context, context.waterMarkDataStore)
+        return WaterMarkRepository(context, newTestWaterMarkDataStore(context))
     }
 
     @Test
@@ -59,6 +57,7 @@ class BatchExportEnginePreviewRoboTest {
     fun generatePreviewBitmap_textModeBlankText_returnsRawBitmapWithoutBuildingShader() {
         val waterMarkRepo = newRepo()
         runBlocking { waterMarkRepo.updateText("") }
+        shadowOf(Looper.getMainLooper()).idle()
         val engine = BatchExportEngine(context, ExportNaming())
         val imageInfo = ImageInfo(Uri.parse("content://media/1.jpg"))
 
@@ -72,6 +71,44 @@ class BatchExportEnginePreviewRoboTest {
         // liệu kích thước hợp lệ để hiển thị ước tính.
         assertThat(result).isNotNull()
         assertThat(result!!.approxOriginalWidth).isEqualTo(100)
+    }
+
+    @Test
+    fun generatePreviewBitmap_imageInfoHasCaption_capionOverridesSharedText() {
+        // FEAT-13: caption riêng ("") coi như "cố ý không watermark ảnh này" — phải trả bitmap
+        // GỐC (không build shader), dù watermark text CHUNG không rỗng.
+        val waterMarkRepo = newRepo()
+        runBlocking { waterMarkRepo.updateText("shared text") }
+        shadowOf(Looper.getMainLooper()).idle()
+        val engine = BatchExportEngine(context, ExportNaming())
+        val imageInfo = ImageInfo(Uri.parse("content://media/1.jpg"), caption = "")
+
+        val result = runBlocking {
+            val config = waterMarkRepo.waterMark.first()
+            engine.generatePreviewBitmap(context.contentResolver, imageInfo, config, index = 0)
+        }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.approxOriginalWidth).isEqualTo(100)
+    }
+
+    @Test
+    fun generatePreviewBitmap_imageInfoCaptionNull_fallsBackToSharedText() {
+        // caption == null (chưa nhập riêng cho ảnh này) — vẫn dùng watermark text chung như cũ.
+        val waterMarkRepo = newRepo()
+        runBlocking { waterMarkRepo.updateText("shared text") }
+        shadowOf(Looper.getMainLooper()).idle()
+        val engine = BatchExportEngine(context, ExportNaming())
+        val imageInfo = ImageInfo(Uri.parse("content://media/1.jpg"), caption = null)
+
+        val result = runBlocking {
+            val config = waterMarkRepo.waterMark.first()
+            engine.generatePreviewBitmap(context.contentResolver, imageInfo, config, index = 0)
+        }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(result).isNotNull()
     }
 
     @Test

@@ -110,6 +110,10 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 }
             }
 
+            btnBatchCaptions.setOnClickListener {
+                BatchCaptionBSDialogFragment.safetyShow(childFragmentManager)
+            }
+
             atvFormat.also {
                 val adapter = ArrayAdapter(
                     /* context = */ requireContext(),

@@ -210,8 +210,12 @@ class BatchExportEngine @Inject constructor(
                 val layoutPaint = Paint()
                 val shader = when (tmpConfig.markMode) {
                     WaterMarkRepository.MarkMode.Text -> {
+                        // FEAT-13: imageInfo.caption (nếu user đã nhập riêng cho ảnh này) ghi đè
+                        // watermark text chung — "" hợp lệ (cố ý không watermark ảnh đó), null = dùng
+                        // chung tmpConfig.text như cũ (xem BatchCaptionParser).
+                        val baseText = imageInfo.caption ?: tmpConfig.text
                         // Resolve dynamic text tokens (e.g. {date}, {filename}, {iso}) per image at export time.
-                        val resolvedText = exportNaming.resolveTextTokens(tmpConfig.text, imageInfo, contentResolver, index)
+                        val resolvedText = exportNaming.resolveTextTokens(baseText, imageInfo, contentResolver, index)
                         WaterMarkImageView.buildTextBitmapShader(
                             imageInfo = imageInfo,
                             config = tmpConfig.copy(text = resolvedText),
@@ -464,7 +468,10 @@ class BatchExportEngine @Inject constructor(
             val approxOriginalWidth = mutableBitmap.width * bitmapValue.inSampleSize
             val approxOriginalHeight = mutableBitmap.height * bitmapValue.inSampleSize
 
-            if (config.markMode == WaterMarkRepository.MarkMode.Text && config.text.isBlank()) {
+            // FEAT-13: preview phải khớp đúng những gì export thật sẽ vẽ — caption riêng (nếu có)
+            // ghi đè watermark text chung, giống hệt BatchExportEngine.generateImage().
+            val baseText = imageInfo.caption ?: config.text
+            if (config.markMode == WaterMarkRepository.MarkMode.Text && baseText.isBlank()) {
                 return@withContext PreviewResult(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
             }
 
@@ -477,7 +484,7 @@ class BatchExportEngine @Inject constructor(
             val textPaint = TextPaint().applyConfig(previewInfo, config)
             val shader = when (config.markMode) {
                 WaterMarkRepository.MarkMode.Text -> {
-                    val resolvedText = exportNaming.resolveTextTokens(config.text, previewInfo, contentResolver, index)
+                    val resolvedText = exportNaming.resolveTextTokens(baseText, previewInfo, contentResolver, index)
                     WaterMarkImageView.buildTextBitmapShader(
                         imageInfo = previewInfo,
                         config = config.copy(text = resolvedText),

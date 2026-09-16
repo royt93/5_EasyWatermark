@@ -13,8 +13,8 @@ import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
-import com.mckimquyen.watermark.di.userDataStore
-import com.mckimquyen.watermark.di.waterMarkDataStore
+import com.mckimquyen.watermark.testutil.newTestUserDataStore
+import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import com.mckimquyen.watermark.ui.MainViewModel
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -60,17 +60,19 @@ class GalleryFragmentLifecycleRoboTest {
     }
 
     private val context: Context = ApplicationProvider.getApplicationContext()
+    private val waterMarkDataStore = newTestWaterMarkDataStore(context)
+    private val userDataStore = newTestUserDataStore(context)
     private lateinit var viewModel: MainViewModel
 
     @Before
     fun setUp() {
         runBlocking {
-            context.waterMarkDataStore.edit { it.clear() }
+            waterMarkDataStore.edit { it.clear() }
         }
         viewModel = MainViewModel(
             appContext = context,
-            userRepo = UserConfigRepository(context.userDataStore),
-            waterMarkRepo = WaterMarkRepository(context, context.waterMarkDataStore),
+            userRepo = UserConfigRepository(userDataStore),
+            waterMarkRepo = WaterMarkRepository(context, waterMarkDataStore),
             memorySettingRepo = MemorySettingRepo(),
             templateRepo = TemplateRepository(null)
         )

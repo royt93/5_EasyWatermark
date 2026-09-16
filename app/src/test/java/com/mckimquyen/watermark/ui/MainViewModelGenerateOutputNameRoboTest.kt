@@ -11,8 +11,8 @@ import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
-import com.mckimquyen.watermark.di.userDataStore
-import com.mckimquyen.watermark.di.waterMarkDataStore
+import com.mckimquyen.watermark.testutil.newTestUserDataStore
+import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -28,12 +28,14 @@ import org.robolectric.Shadows.shadowOf
 class MainViewModelGenerateOutputNameRoboTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
+    private val waterMarkDataStore = newTestWaterMarkDataStore(context)
+    private val userDataStore = newTestUserDataStore(context)
 
     @Before
     fun setUp() {
         runBlocking {
-            context.userDataStore.edit { it.clear() }
-            context.waterMarkDataStore.edit { it.clear() }
+            userDataStore.edit { it.clear() }
+            waterMarkDataStore.edit { it.clear() }
         }
     }
 
@@ -41,8 +43,8 @@ class MainViewModelGenerateOutputNameRoboTest {
     private fun freshViewModel(): MainViewModel {
         val viewModel = MainViewModel(
             appContext = context,
-            userRepo = UserConfigRepository(context.userDataStore),
-            waterMarkRepo = WaterMarkRepository(context, context.waterMarkDataStore),
+            userRepo = UserConfigRepository(userDataStore),
+            waterMarkRepo = WaterMarkRepository(context, waterMarkDataStore),
             memorySettingRepo = MemorySettingRepo(),
             templateRepo = TemplateRepository(null)
         )
@@ -64,7 +66,7 @@ class MainViewModelGenerateOutputNameRoboTest {
 
     @Test
     fun blankPatternWithOnlyWhitespace_treatedAsEmpty() {
-        runBlocking { UserConfigRepository(context.userDataStore).updateOutputNamePattern("   ") }
+        runBlocking { UserConfigRepository(userDataStore).updateOutputNamePattern("   ") }
         val viewModel = freshViewModel()
         val info = imageInfo(Uri.parse("content://media/1"))
 
@@ -75,7 +77,7 @@ class MainViewModelGenerateOutputNameRoboTest {
 
     @Test
     fun patternWithTokens_resolvesPerImageAndAppendsExtension() {
-        runBlocking { UserConfigRepository(context.userDataStore).updateOutputNamePattern("{filename}_wm_{seq}") }
+        runBlocking { UserConfigRepository(userDataStore).updateOutputNamePattern("{filename}_wm_{seq}") }
         val viewModel = freshViewModel()
         val info = imageInfo(Uri.parse("content://media/external/images/media/holiday.jpg"))
 
@@ -87,7 +89,7 @@ class MainViewModelGenerateOutputNameRoboTest {
 
     @Test
     fun patternWithoutTokens_staticNameStillGetsExtension() {
-        runBlocking { UserConfigRepository(context.userDataStore).updateOutputNamePattern("brand_export") }
+        runBlocking { UserConfigRepository(userDataStore).updateOutputNamePattern("brand_export") }
         val viewModel = freshViewModel()
         val info = imageInfo(Uri.parse("content://media/1"))
 
@@ -98,7 +100,7 @@ class MainViewModelGenerateOutputNameRoboTest {
 
     @Test
     fun differentImages_sameBatchPattern_produceDifferentNames_whenSeqUsed() {
-        runBlocking { UserConfigRepository(context.userDataStore).updateOutputNamePattern("IMG_{seq}") }
+        runBlocking { UserConfigRepository(userDataStore).updateOutputNamePattern("IMG_{seq}") }
         val viewModel = freshViewModel()
         val infoA = imageInfo(Uri.parse("content://media/A"))
         val infoB = imageInfo(Uri.parse("content://media/B"))

@@ -209,4 +209,16 @@
     <string name="export_notification_title">Exporting watermark images…</string>
     <string name="export_notification_progress">%1$d/%2$d done</string>
     <string name="dialog_save_cancel">Cancel</string>
+
+    <!-- FEAT-13: caption riêng theo từng ảnh trong batch (CSV multi-line). -->
+    <string name="batch_caption_entry">Batch captions</string>
+    <string name="batch_caption_title">Batch captions</string>
+    <string name="batch_caption_hint">One caption per line, matching image order…</string>
+    <string name="batch_caption_apply">Apply</string>
+    <plurals name="batch_caption_subtitle">
+        <item quantity="one">One line per image, same order (%1$d image)</item>
+        <item quantity="other">One line per image, same order (%1$d images)</item>
+    </plurals>
+    <string name="batch_caption_count_mismatch">%1$d lines entered but %2$d images in batch — fix before applying</string>
+    <string name="batch_caption_invalid_csv">Unclosed quote on line %1$d</string>
 </resources>

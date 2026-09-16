@@ -136,6 +136,16 @@ class WaterMarkRepository @Inject constructor(
         _imageMapFlow.emit(imageList)
     }
 
+    /**
+     * FEAT-13: gán caption riêng cho từng ảnh theo ĐÚNG thứ tự hiện tại của batch (`captions[i]`
+     * ứng với ảnh thứ i trong [imageInfoList]) — nguồn từ [com.mckimquyen.watermark.data.model.BatchCaptionParser].
+     * `null` tại vị trí nào xoá caption riêng của ảnh đó (dùng lại watermark text chung khi export).
+     */
+    suspend fun updateImageCaptions(captions: List<String?>) {
+        val list = imageInfoList.mapIndexed { index, info -> info.copy(caption = captions.getOrNull(index)) }
+        updateImageList(list)
+    }
+
     suspend fun updateText(text: String) {
         dataStore.edit {
             it[KEY_MODE] = MarkMode.Text.value

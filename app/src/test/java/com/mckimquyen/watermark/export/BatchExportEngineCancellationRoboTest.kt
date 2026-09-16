@@ -3,13 +3,12 @@ package com.mckimquyen.watermark.export
 import android.graphics.Matrix
 import android.net.Uri
 import android.widget.ImageView
-import androidx.datastore.preferences.core.edit
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
-import com.mckimquyen.watermark.di.waterMarkDataStore
+import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
@@ -31,8 +30,7 @@ class BatchExportEngineCancellationRoboTest {
     @Test
     fun generateList_jobCancelledMidBatch_rethrowsCancellationException_stopsRemainingImages() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
-        runBlocking { context.waterMarkDataStore.edit { it.clear() } }
-        val waterMarkRepo = WaterMarkRepository(context, context.waterMarkDataStore)
+        val waterMarkRepo = WaterMarkRepository(context, newTestWaterMarkDataStore(context))
         val engine = BatchExportEngine(context, ExportNaming())
         val infoList = listOf(
             ImageInfo(Uri.parse("content://does.not.exist/1.jpg")),

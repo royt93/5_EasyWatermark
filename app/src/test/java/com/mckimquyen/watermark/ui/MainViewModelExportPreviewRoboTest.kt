@@ -12,8 +12,8 @@ import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
-import com.mckimquyen.watermark.di.userDataStore
-import com.mckimquyen.watermark.di.waterMarkDataStore
+import com.mckimquyen.watermark.testutil.newTestUserDataStore
+import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -33,13 +33,15 @@ import org.robolectric.Shadows.shadowOf
 class MainViewModelExportPreviewRoboTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
+    private val waterMarkDataStore = newTestWaterMarkDataStore(context)
+    private val userDataStore = newTestUserDataStore(context)
 
     private fun newViewModel(): MainViewModel {
-        runBlocking { context.waterMarkDataStore.edit { it.clear() } }
+        runBlocking { waterMarkDataStore.edit { it.clear() } }
         return MainViewModel(
             appContext = context,
-            userRepo = UserConfigRepository(context.userDataStore),
-            waterMarkRepo = WaterMarkRepository(context, context.waterMarkDataStore),
+            userRepo = UserConfigRepository(userDataStore),
+            waterMarkRepo = WaterMarkRepository(context, waterMarkDataStore),
             memorySettingRepo = MemorySettingRepo(),
             templateRepo = TemplateRepository(null)
         )
@@ -47,7 +49,7 @@ class MainViewModelExportPreviewRoboTest {
 
     @Before
     fun setUp() {
-        runBlocking { context.waterMarkDataStore.edit { it.clear() } }
+        runBlocking { waterMarkDataStore.edit { it.clear() } }
     }
 
     @Test

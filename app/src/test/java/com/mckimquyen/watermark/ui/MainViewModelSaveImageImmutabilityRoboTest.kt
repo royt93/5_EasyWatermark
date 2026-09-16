@@ -21,11 +21,11 @@ import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
-import com.mckimquyen.watermark.di.userDataStore
-import com.mckimquyen.watermark.di.waterMarkDataStore
 import com.mckimquyen.watermark.export.BatchExportEngine
 import com.mckimquyen.watermark.export.BatchExportWorker
 import com.mckimquyen.watermark.export.ExportNaming
+import com.mckimquyen.watermark.testutil.newTestUserDataStore
+import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -49,16 +49,18 @@ import org.robolectric.Shadows.shadowOf
 class MainViewModelSaveImageImmutabilityRoboTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
+    private val waterMarkDataStore = newTestWaterMarkDataStore(context)
+    private val userDataStore = newTestUserDataStore(context)
     private lateinit var waterMarkRepo: WaterMarkRepository
     private lateinit var viewModel: MainViewModel
 
     @Before
     fun setUp() {
         runBlocking {
-            context.waterMarkDataStore.edit { it.clear() }
+            waterMarkDataStore.edit { it.clear() }
         }
-        waterMarkRepo = WaterMarkRepository(context, context.waterMarkDataStore)
-        val userRepo = UserConfigRepository(context.userDataStore)
+        waterMarkRepo = WaterMarkRepository(context, waterMarkDataStore)
+        val userRepo = UserConfigRepository(userDataStore)
         viewModel = MainViewModel(
             appContext = context,
             userRepo = userRepo,
@@ -188,7 +190,7 @@ class MainViewModelSaveImageImmutabilityRoboTest {
 
         val freshViewModel = MainViewModel(
             appContext = context,
-            userRepo = UserConfigRepository(context.userDataStore),
+            userRepo = UserConfigRepository(userDataStore),
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
             templateRepo = TemplateRepository(null)

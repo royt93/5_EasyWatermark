@@ -101,4 +101,15 @@ class DlgSaveFileLayoutRoboTest {
         assertThat(editText.hint.toString()).isEqualTo(til.hint.toString())
         assertThat(til.placeholderText).isEqualTo(root.context.getString(R.string.dialog_save_config_copyright_hint))
     }
+
+    /** FEAT-13: entry point mở màn hình nhập caption riêng theo từng ảnh trong batch. */
+    @Test
+    fun batchCaptionsButton_existsInLayout_beforeExportList() {
+        val root = inflateRoot() as ViewGroup
+
+        val btn = root.findViewById<View>(R.id.btnBatchCaptions)
+        assertThat(btn).isNotNull()
+        assertThat((btn as com.google.android.material.button.MaterialButton).text.toString())
+            .isEqualTo(root.context.getString(R.string.batch_caption_entry))
+    }
 }

@@ -591,6 +591,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /** FEAT-13: áp danh sách caption riêng theo thứ tự batch — `null` xoá caption của ảnh đó. */
+    fun updateBatchCaptions(captions: List<String?>) {
+        launch { waterMarkRepo.updateImageCaptions(captions) }
+    }
+
     fun removeImage(
         imageInfo: ImageInfo?,
         curSelectedPos: Int
