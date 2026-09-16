@@ -1,6 +1,7 @@
 # Tính Năng EasyWatermark
 
-> Cập nhật: 2026-06-14. File theo dõi trạng thái tính năng (✅ đã làm / 💭 đề xuất).
+> Cập nhật: 2026-09-16. File theo dõi trạng thái tính năng (✅ đã làm / 💭 đề xuất).
+> Chi tiết từng bugfix/cải tiến nhỏ (BUG-XX, ENH-XX) không lặp lại ở đây — xem `git log --oneline | grep -E "BUG-|ENH-"`, message commit đã đủ mô tả.
 
 ## ✅ Đã triển khai
 
@@ -70,6 +71,37 @@ Token trong nội dung text watermark được thay theo từng ảnh khi xuất
 - **`SignatureActivity`** — kế thừa `BaseActivity` (đã có `applyEdgeToEdge()`) nhưng thiếu insets listener riêng như `AboutActivity`/`MainActivity`; `llBottomControls` (chứa nút "Apply Signature") chỉ có padding cố định 16dp. Thêm `ViewCompat.setOnApplyWindowInsetsListener` cộng `systemBars.bottom` vào padding gốc (capture 1 lần trước khi đăng ký listener — tránh cộng dồn vô hạn nếu listener chạy lại).
 - **`BaseBSDFragment`** (base chung mọi `BottomSheetDialogFragment`: `ExifPbFragment`, `PositionAnchorBottomSheetFragment`, `SignatureBottomSheetFragment`, `SaveImageBSDialogFragment`, `QrCodeBottomSheetFragment`, `TextWatermarkBSDFragment`, `EditTemplateContentFragment`, `GalleryFragment`) — dialog window không tự inset trên OEM Transsion/TECNO. Thêm `WindowCompat.setDecorFitsSystemWindows(window, false)` + padding insets áp lên chính view `design_bottom_sheet` (nơi `BottomSheetBehavior` thật sự đo/định vị, không phải content root bên trong).
 - **Đã verify trên thiết bị thật (TECNO KJ7):** "Apply Signature" hết bị che; dialog Leica EXIF Border có khoảng cách rõ ràng với nav bar.
+
+### 11. Naming template cho file xuất (2026-09-10, FEAT-02)
+`UserPreferences.outputNamePattern` (DataStore, mặc định rỗng = giữ hành vi cũ `ewm_{timestamp}`) — user tự đặt pattern tên file (vd `{filename}-wm-{seq}`). `MainViewModel.generateOutputName()` tái dùng thẳng `resolveTextTokens()` sẵn có.
+
+### 12. Preset resize theo nền tảng mạng xã hội (2026-09-10, FEAT-09)
+`OutputImageUtils.resizePresets` thêm 3 preset đặt tên theo Instagram/Facebook/Zalo cạnh preset px hiện có, tái dùng nguyên cơ chế resize theo cạnh dài (không crop, giữ tỉ lệ gốc).
+
+### 13. Tham số hoá EXIF frame style (2026-09-10, FEAT-14)
+Cho phép tuỳ chỉnh band color/thickness + serif caption trên 4 style EXIF border (Classic/Polaroid/Film Strip/Minimal) thay vì preset cứng; giá trị mặc định giữ nguyên 100% khi không đổi gì.
+
+### 14. Tự nhận diện hãng máy để gợi ý style EXIF (2026-09-13, FEAT-10)
+`ExifFrameStyle.suggestFor(make)` map `TAG_MAKE` sang 1 trong 4 style có sẵn, gọi tự động khi mở `ExifPbFragment`; theo dõi ảnh nào user đã tự tay đổi style để không ghi đè lựa chọn thủ công.
+
+### 15. Chọn cả thư mục ảnh vào batch (2026-09-12, FEAT-08)
+Nút "Choose folder" trong `GalleryFragment` dùng `ACTION_OPEN_DOCUMENT_TREE` (SAF) liệt kê ảnh trực tiếp trong thư mục (không đệ quy subfolder) qua `DocumentFile`, cạnh nút pick-via-system có sẵn.
+
+### 16. Hiệu ứng viền/bóng/nền pill cho text watermark (2026-09-12, FEAT-11)
+3 hiệu ứng độc lập, kết hợp tự do (Outline/Shadow/Pill BG) giúp chữ đọc rõ trên ảnh nền phức tạp — màu tương phản B/W tự tính theo luminance (`TextEffectRenderer`), không cần color picker riêng.
+
+### 17. Preview grid + ước tính dung lượng trước batch export (2026-09-13, FEAT-07)
+Grid preview trong `SaveImageBSDialogFragment` (trước khi export thật) nâng từ ảnh gốc sang bitmap đã áp watermark + text ước tính kích thước/dung lượng, qua `BatchExportEngine.generatePreviewBitmap()`.
+
+### 18. Batch export qua WorkManager + sprint ENH/BUG lớn (2026-09-11 → 2026-09-12)
+`BatchExportWorker` (WorkManager, huỷ giữa chừng, notification tiến độ — ENH-01) thay luồng export cũ. Kèm 1 sprint dọn ~20 bug (crash/lifecycle/leak) và ~15 cải tiến hiệu năng (downsample decode, refcount `BitmapCache`, throttle shader lúc pinch, debounce...) — chi tiết xem `git log` các commit `BUG-01`…`BUG-22`, `ENH-01`…`ENH-20`.
+
+### 19. Migrate UI/UX sang Material You M3 (2026-09-13 → 2026-09-14)
+Chuyển toàn bộ giao diện sang Material 3 tokens & dynamic palette, xử lý triệt để edge-to-edge insets (không để 3-button nav che nội dung), tối ưu tương phản WCAG AA (≥4.5:1 text, ≥3.0:1 UI), status bar/nav bar icon tint động theo theme.
+
+### 20. Caption riêng từng ảnh trong batch export (2026-09-16, FEAT-13)
+`BatchCaptionBSDialogFragment` nhập/dán danh sách caption nhiều dòng (1 dòng/ảnh, đúng thứ tự batch) — mỗi caption ghi đè watermark text chung chỉ cho đúng ảnh tương ứng lúc export/preview; để trống = xoá hết, quay lại dùng text chung.
+- **Phát hiện phụ trong lúc làm:** DataStore singleton (`context.waterMarkDataStore`/`userDataStore`) bị share ngầm giữa các test method Robolectric trong cùng 1 JVM fork → deadlock khi chạy full suite không filter `--tests`. Đã fix bằng DataStore cô lập per-test (`app/src/test/.../testutil/TestDataStores.kt`), áp dụng cho 18 file test — xem `doc/todo.md`.
 
 ---
 
