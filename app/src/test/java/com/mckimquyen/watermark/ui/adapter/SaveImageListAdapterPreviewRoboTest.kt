@@ -3,6 +3,7 @@ package com.mckimquyen.watermark.ui.adapter
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import android.view.ContextThemeWrapper
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.test.core.app.ApplicationProvider
@@ -25,7 +26,10 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class SaveImageListAdapterPreviewRoboTest {
 
-    private val context: Context = ApplicationProvider.getApplicationContext()
+    // M3 migration: ProgressImageView đọc ?attr/colorTertiary, ?attr/colorError — theme mặc định
+    // Robolectric không có attr M3 nên phải bọc ContextThemeWrapper(R.style.Theme_MyApp), giống
+    // pattern DlgSaveFileLayoutRoboTest/BatchCaptionLayoutRoboTest.
+    private val context: Context = ContextThemeWrapper(ApplicationProvider.getApplicationContext(), R.style.Theme_MyApp)
 
     private fun previewBitmap() = Bitmap.createBitmap(4, 4, Bitmap.Config.ARGB_8888)
 
