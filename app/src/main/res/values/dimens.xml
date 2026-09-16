@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- BUG-27: chiều cao hàng thumbnail trong dlg_save_file.xml (RecyclerView rvResult) — dùng
+         chung 1 nguồn với SaveImageListAdapter.onCreateViewHolder() thay vì đọc parent.height lúc
+         runtime (có thể = 0 nếu RecyclerView chưa layout xong khi ViewHolder đầu tiên được tạo). -->
+    <dimen name="save_result_row_height">144dp</dimen>
+</resources>

@@ -42,8 +42,6 @@ class SaveImageListAdapter(
     val data: List<ImageInfo>
         get() = differ.currentList
 
-    private var maxLineHeight = 0
-
     // ENH-08 (bug phát hiện qua smoke test thật, batch 2 ảnh trên TECNO BG6): nguồn "sự thật"
     // đồng bộ để build update kế tiếp trong updateJobState() — KHÔNG được dùng differ.currentList
     // (chỉ đổi SAU KHI AsyncListDiffer tính xong diff trên background thread, bất đồng bộ). Nếu
@@ -80,16 +78,17 @@ class SaveImageListAdapter(
         val rootView = LayoutInflater.from(context).inflate(R.layout.item_saving_image, parent, false)
 
         val holder = ImageHolder(rootView)
-        (rootView as ConstraintLayout).apply {
-            val h = (parent.height - parent.paddingTop - parent.paddingBottom)
-            maxLineHeight = if (itemCount >= 5) h / 2 else h
-            maxHeight = maxLineHeight
-        }
-        (holder.ivIcon).apply {
-            updateLayoutParams {
-                height = maxLineHeight
-            }
-        }
+        // BUG-27: trước đây tính height từ `parent.height` (RecyclerView `rvResult`) ngay lúc tạo
+        // ViewHolder — `parent.height` có thể = 0 nếu đây là ViewHolder ĐẦU TIÊN được tạo trước khi
+        // RecyclerView hoàn tất layout (vd BottomSheetDialog vừa show), khiến thumbnail đầu danh
+        // sách co về 0dp vĩnh viễn (không lần bind nào tính lại). `rvResult` có chiều cao CỐ ĐỊNH
+        // (`R.dimen.save_result_row_height`, xem `dlg_save_file.xml`) nên dùng thẳng giá trị đã
+        // biết trước từ resource thay vì phụ thuộc kết quả đo layout tại runtime — loại bỏ hẳn race
+        // condition thay vì chỉ trì hoãn nó.
+        val rowHeight = context.resources.getDimensionPixelSize(R.dimen.save_result_row_height)
+        val lineHeight = if (itemCount >= 5) rowHeight / 2 else rowHeight
+        (rootView as ConstraintLayout).maxHeight = lineHeight
+        holder.ivIcon.updateLayoutParams { height = lineHeight }
         return holder
     }
 

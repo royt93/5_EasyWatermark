@@ -278,7 +278,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvResult"
             android:layout_width="match_parent"
-            android:layout_height="144dp"
+            android:layout_height="@dimen/save_result_row_height"
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:scrollbars="none" />
