@@ -8,6 +8,8 @@ import org.junit.rules.TemporaryFolder
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.Date
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * Đề xuất F (`doc/feat.md`): round-trip zip serialize thuần `java.util.zip` — JUnit thường, không
@@ -65,5 +67,49 @@ class BackupRestoreEngineTest {
 
         assertThat(restored.templates.single().content).isEmpty()
         assertThat(restored.templates.single().creationDate).isNull()
+    }
+
+    /**
+     * BUG-31: file zip đến từ SAF (input không tin cậy) có thể chứa entry nén nhỏ nhưng giải nén
+     * ra khổng lồ (zip-bomb) — `readBackup()` phải từ chối entry vượt ngưỡng thay vì `readBytes()`
+     * đọc hết vào RAM. Dùng nội dung lặp lại (rất dễ nén) nên entry "giả 100MB" vẫn nhỏ gọn trong
+     * file zip test, nhưng giải nén ra đúng 100MB — mô phỏng trung thực hành vi zip-bomb thật.
+     */
+    @Test
+    fun readBackup_oversizedEntry_isSkipped_validEntriesStillRestored() {
+        val hugeContent = ByteArray(100 * 1024 * 1024) { 0 } // 100MB toàn số 0 — nén cực nhỏ
+
+        val output = ByteArrayOutputStream()
+        ZipOutputStream(output).use { zip ->
+            zip.putNextEntry(ZipEntry("signatures/huge.bin"))
+            zip.write(hugeContent)
+            zip.closeEntry()
+
+            zip.putNextEntry(ZipEntry("templates/0.txt"))
+            zip.write("1000\n2000\nvalid template".toByteArray(Charsets.UTF_8))
+            zip.closeEntry()
+        }
+
+        val restored = BackupRestoreEngine.readBackup(ByteArrayInputStream(output.toByteArray()))
+
+        assertThat(restored.signatureFiles).isEmpty()
+        assertThat(restored.templates).hasSize(1)
+        assertThat(restored.templates.single().content).isEqualTo("valid template")
+    }
+
+    @Test
+    fun readBackup_entryCountExceedsLimit_stopsWithoutCrashing() {
+        val output = ByteArrayOutputStream()
+        ZipOutputStream(output).use { zip ->
+            repeat(510) { index ->
+                zip.putNextEntry(ZipEntry("templates/$index.txt"))
+                zip.write("0\n0\ncontent$index".toByteArray(Charsets.UTF_8))
+                zip.closeEntry()
+            }
+        }
+
+        val restored = BackupRestoreEngine.readBackup(ByteArrayInputStream(output.toByteArray()))
+
+        assertThat(restored.templates.size).isAtMost(500)
     }
 }

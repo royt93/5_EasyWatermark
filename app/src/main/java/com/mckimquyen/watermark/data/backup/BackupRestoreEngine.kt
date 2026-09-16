@@ -27,6 +27,13 @@ object BackupRestoreEngine {
     private const val TEMPLATES_DIR = "templates/"
     private const val SIGNATURES_DIR = "signatures/"
 
+    /** BUG-31: file backup đến từ SAF (input không tin cậy) — giới hạn kích thước/entry và tổng
+     * số entry để chặn OOM/zip-bomb (entry nén nhỏ nhưng giải nén ra khổng lồ). 20MB đủ cho chữ
+     * ký lớn nhất hợp lý; 500 entry đủ cho vài trăm template/signature thật, chặn tấn công dạng
+     * hàng chục nghìn entry rỗng. */
+    private const val MAX_ENTRY_SIZE_BYTES = 20L * 1024 * 1024
+    private const val MAX_ENTRY_COUNT = 500
+
     fun writeBackup(output: OutputStream, templates: List<Template>, signatureFiles: List<File>) {
         ZipOutputStream(output).use { zip ->
             templates.forEachIndexed { index, template ->
@@ -49,18 +56,46 @@ object BackupRestoreEngine {
         val signatures = mutableListOf<Pair<String, ByteArray>>()
         ZipInputStream(input).use { zip ->
             var entry: ZipEntry? = zip.nextEntry
+            var entryCount = 0
             while (entry != null) {
+                entryCount++
+                if (entryCount > MAX_ENTRY_COUNT) {
+                    zip.closeEntry()
+                    break
+                }
                 val name = entry.name
-                val bytes = zip.readBytes()
-                when {
-                    name.startsWith(TEMPLATES_DIR) -> parseTemplateEntry(bytes)?.let { templates += it }
-                    name.startsWith(SIGNATURES_DIR) -> signatures += name.removePrefix(SIGNATURES_DIR) to bytes
+                val bytes = readEntryBounded(zip, MAX_ENTRY_SIZE_BYTES)
+                if (bytes != null) {
+                    when {
+                        name.startsWith(TEMPLATES_DIR) -> parseTemplateEntry(bytes)?.let { templates += it }
+                        name.startsWith(SIGNATURES_DIR) -> signatures += name.removePrefix(SIGNATURES_DIR) to bytes
+                    }
                 }
                 zip.closeEntry()
                 entry = zip.nextEntry
             }
         }
         return RestoredBackup(templates, signatures)
+    }
+
+    /**
+     * Đọc toàn bộ entry hiện tại của [zip] theo từng chunk nhỏ — dừng ngay và trả `null` (bỏ qua
+     * entry, KHÔNG giữ phần đã đọc) ngay khi vượt [maxBytes], thay vì gọi `readBytes()` vốn cấp
+     * phát bộ nhớ không giới hạn theo dữ liệu ĐÃ GIẢI NÉN (không theo kích thước nén trong header
+     * — đây là lý do zip-bomb khai thác được `readBytes()` gốc).
+     */
+    private fun readEntryBounded(zip: ZipInputStream, maxBytes: Long): ByteArray? {
+        val buffer = java.io.ByteArrayOutputStream()
+        val chunk = ByteArray(DEFAULT_BUFFER_SIZE)
+        var total = 0L
+        while (true) {
+            val read = zip.read(chunk)
+            if (read == -1) break
+            total += read
+            if (total > maxBytes) return null
+            buffer.write(chunk, 0, read)
+        }
+        return buffer.toByteArray()
     }
 
     private fun parseTemplateEntry(bytes: ByteArray): Template? {
