@@ -8,7 +8,7 @@ import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
 
 class DividerAdapter(
-    private val dividerSize: Int = 1,
+    private val dividerSize: Int = 1
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

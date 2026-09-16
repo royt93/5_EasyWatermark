@@ -24,7 +24,7 @@ suspend fun decodeBitmapWithExif(
     context: Context,
     uri: Uri,
     inputStream: InputStream,
-    options: BitmapFactory.Options? = null,
+    options: BitmapFactory.Options? = null
 ): Result<BitmapCache.BitmapValue> =
     withContext(Dispatchers.IO) {
         val (rotation, exifModel) = readExifOrientationAndModel(context, uri)
@@ -40,7 +40,7 @@ fun decodeBitmapWithExifSync(
     inputStream: InputStream,
     options: BitmapFactory.Options?,
     rotation: Float,
-    exifModel: com.mckimquyen.watermark.data.model.ExifModel,
+    exifModel: com.mckimquyen.watermark.data.model.ExifModel
 ): Result<BitmapCache.BitmapValue> {
     val bitmap = BitmapFactory.decodeStream(inputStream, null, options)
         ?: return Result.failure(null, "-1", "Generate Bitmap failed.")
@@ -77,7 +77,7 @@ fun decodeBitmapWithExifSync(
  */
 private fun readExifOrientationAndModel(
     context: Context,
-    uri: Uri,
+    uri: Uri
 ): Pair<Float, com.mckimquyen.watermark.data.model.ExifModel> {
     context.contentResolver.openInputStream(uri).use { input ->
         if (input == null) {
@@ -114,13 +114,17 @@ private fun buildExifModel(exif: ExifInterface?): com.mckimquyen.watermark.data.
         fNumber = if (fNumber.isNotEmpty()) "f/$fNumber" else "",
         exposureTime = if (exposureTime.isNotEmpty()) {
             val d = exposureTime.toDoubleOrNull()
-            if (d != null && d < 1) "1/${(1/d).toInt()}s" else "${exposureTime}s"
-        } else "",
+            if (d != null && d < 1) "1/${(1 / d).toInt()}s" else "${exposureTime}s"
+        } else {
+            ""
+        },
         iso = iso,
         focalLength = if (focalLength.isNotEmpty()) {
             val parts = focalLength.split("/")
             if (parts.size == 2) "${parts[0].toDouble() / parts[1].toDouble()}mm" else "${focalLength}mm"
-        } else ""
+        } else {
+            ""
+        }
     )
 }
 
@@ -130,7 +134,7 @@ private fun buildExifModel(exif: ExifInterface?): com.mckimquyen.watermark.data.
 private fun resolveRotation(
     context: Context,
     uri: Uri,
-    exif: ExifInterface?,
+    exif: ExifInterface?
 ): Float {
     val tagOrientation: Int = exif?.getAttributeInt(
         ExifInterface.TAG_ORIENTATION,
@@ -176,7 +180,7 @@ suspend fun decodeBitmapFromUri(
     context: Context,
     resolver: ContentResolver,
     uri: Uri,
-    reqLongEdge: Int = 0,
+    reqLongEdge: Int = 0
 ): Result<BitmapCache.BitmapValue> =
     withContext(Dispatchers.IO) {
         if (reqLongEdge <= 0) {
@@ -210,7 +214,7 @@ suspend fun decodeSampledBitmapFromResource(
     resolver: ContentResolver,
     uri: Uri,
     reqWidth: Int,
-    reqHeight: Int,
+    reqHeight: Int
 ): Result<BitmapCache.BitmapValue> = withContext(Dispatchers.IO) {
     val info = BitmapCache.BitmapInfo(uri, reqWidth, reqHeight)
     var cacheValue = BitmapCache.getFromCache(info)
@@ -234,7 +238,7 @@ fun decodeSampledBitmapFromResourceSync(
     resolver: ContentResolver,
     uri: Uri,
     reqWidth: Int,
-    reqHeight: Int,
+    reqHeight: Int
 ): Result<BitmapCache.BitmapValue> {
     try {
         val options = BitmapFactory.Options()
@@ -287,16 +291,16 @@ fun calculateInSampleSize(
     width: Int,
     height: Int,
     reqWidth: Int,
-    reqHeight: Int,
+    reqHeight: Int
 ): Int {
     // Raw height and width of image
     Log.i(
-        "generateImage", "w = $width, h = $height, reqW = $reqWidth, reqH = $reqHeight"
+        "generateImage",
+        "w = $width, h = $height, reqW = $reqWidth, reqH = $reqHeight"
     )
     var inSampleSize = 1
 
     if (height > reqHeight || width > reqWidth) {
-
         val halfHeight: Int = height / 2
         val halfWidth: Int = width / 2
 
@@ -343,20 +347,20 @@ fun getAvailableMemory(context: Context): ActivityManager.MemoryInfo {
     }
 }
 
-//fun addInBitmapOptions(
+// fun addInBitmapOptions(
 //    options: BitmapFactory.Options,
 //    reusableBitmaps: HashSet<SoftReference<Bitmap>>,
-//) {
+// ) {
 //    options.inMutable = true
 //    getBitmapFromReusableSet(options, reusableBitmaps)?.also { inBitmap ->
 //        options.inBitmap = inBitmap
 //    }
-//}
+// }
 
-//fun getBitmapFromReusableSet(
+// fun getBitmapFromReusableSet(
 //    options: BitmapFactory.Options,
 //    reusableBitmaps: HashSet<SoftReference<Bitmap>>,
-//): Bitmap? {
+// ): Bitmap? {
 //    synchronized(reusableBitmaps) {
 //        val iterator = reusableBitmaps.iterator()
 //        while (iterator.hasNext()) {
@@ -375,45 +379,45 @@ fun getAvailableMemory(context: Context): ActivityManager.MemoryInfo {
 //        }
 //        return null
 //    }
-//}
+// }
 
 /**
  * Only the size equals or larger target options can be reused.
  * @author roy.mobile.dev@gmail.com
  * @date 2021/8/16
  */
-//private fun canUseForInBitmap(
+// private fun canUseForInBitmap(
 //    candidate: Bitmap,
 //    targetOptions: BitmapFactory.Options,
-//): Boolean {
+// ): Boolean {
 //    val width = targetOptions.outWidth / targetOptions.inSampleSize
 //    val height = targetOptions.outHeight / targetOptions.inSampleSize
 //    val byteCount = width * height * getBytesInPixel(candidate.config)
 //    return byteCount <= candidate.allocationByteCount
-//}
+// }
 
-//private fun getBytesInPixel(config: Bitmap.Config): Int {
+// private fun getBytesInPixel(config: Bitmap.Config): Int {
 //    return when (config) {
 //        Bitmap.Config.ALPHA_8 -> 1
 //        Bitmap.Config.RGB_565, Bitmap.Config.ARGB_4444 -> 2
 //        Bitmap.Config.ARGB_8888 -> 4
 //        else -> 1
 //    }
-//}
+// }
 
 /**
  * @author roy.mobile.dev@gmail.com
  * @date 2021/10/16
  * Copy from [ImageView]
  */
-//fun generateMatrix(
+// fun generateMatrix(
 //    viewInfo: ViewInfo,
 //    drawableWidth: Int,
 //    drawableHeight: Int,
 //    bounds: Rect,
 //    tempSrc: RectF,
 //    tempDst: RectF,
-//): Matrix {
+// ): Matrix {
 //    val dwidth: Int = drawableWidth
 //    val dheight: Int = drawableHeight
 //    val vwidth: Int = viewInfo.width - viewInfo.paddingLeft - viewInfo.paddingRight
@@ -484,22 +488,21 @@ fun getAvailableMemory(context: Context): ActivityManager.MemoryInfo {
 //        }
 //    }
 //    return mDrawMatrix
-//}
+// }
 
-
-//fun scaleTypeToScaleToFit(st: ScaleType): ScaleToFit {
+// fun scaleTypeToScaleToFit(st: ScaleType): ScaleToFit {
 //    // ScaleToFit enum to their corresponding Matrix.ScaleToFit values
 //    return sS2FArray[st.toNativeInt() - 1]
-//}
+// }
 
-//private val sS2FArray = arrayOf(
+// private val sS2FArray = arrayOf(
 //    ScaleToFit.FILL,
 //    ScaleToFit.START,
 //    ScaleToFit.CENTER,
 //    ScaleToFit.END
-//)
+// )
 
-//fun ScaleType.toNativeInt(): Int {
+// fun ScaleType.toNativeInt(): Int {
 //    return when (this) {
 //        ScaleType.MATRIX -> 0
 //        ScaleType.FIT_XY -> 1
@@ -510,4 +513,4 @@ fun getAvailableMemory(context: Context): ActivityManager.MemoryInfo {
 //        ScaleType.CENTER_CROP -> 6
 //        ScaleType.CENTER_INSIDE -> 7
 //    }
-//}
+// }

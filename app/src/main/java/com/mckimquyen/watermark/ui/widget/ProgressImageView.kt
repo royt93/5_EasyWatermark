@@ -3,7 +3,6 @@ package com.mckimquyen.watermark.ui.widget
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
@@ -63,9 +62,9 @@ class ProgressImageView : AppCompatImageView {
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (measuredWidth < 0 || measuredHeight <= 0 || drawable == null
-            || drawable.intrinsicWidth <= 0 || drawable.intrinsicHeight <= 0 || canvas == null
-            || curX <= 0f || !enableProgress.get()
+        if (measuredWidth < 0 || measuredHeight <= 0 || drawable == null ||
+            drawable.intrinsicWidth <= 0 || drawable.intrinsicHeight <= 0 || canvas == null ||
+            curX <= 0f || !enableProgress.get()
         ) {
             return
         }
@@ -87,7 +86,7 @@ class ProgressImageView : AppCompatImageView {
             /* left = */ bounds.left + paddingLeft,
             /* top = */ bounds.top + paddingTop,
             /* right = */ bounds.right + paddingRight,
-            /* bottom = */ bounds.bottom + paddingBottom,
+            /* bottom = */ bounds.bottom + paddingBottom
         )
     }
 

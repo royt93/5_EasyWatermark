@@ -53,7 +53,7 @@ class TouchSensitiveRv : RecyclerView {
 
     private val colorList = arrayOf(
         ColorUtils.setAlphaComponent(context.colorPrimary, 0),
-        ColorUtils.setAlphaComponent(context.colorPrimary, 15),
+        ColorUtils.setAlphaComponent(context.colorPrimary, 15)
     ).toIntArray()
 
     private val glowPaint by lazy {

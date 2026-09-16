@@ -17,7 +17,7 @@ class TileModeFragment : BaseBindFragment<FTileModeBinding>() {
 
     override fun bindView(
         layoutInflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup?
     ): FTileModeBinding {
         return FTileModeBinding.inflate(layoutInflater, container, false)
     }

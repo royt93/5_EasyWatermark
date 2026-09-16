@@ -10,5 +10,5 @@ data class Image(
     val name: String,
     val size: Long,
     val date: Long,
-    var check: Boolean = false,
+    var check: Boolean = false
 )

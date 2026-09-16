@@ -70,7 +70,7 @@ inline fun FragmentManager.commitWithAnimation(body: FragmentTransaction.() -> U
     }
 }
 
-//fun Activity.getScreenWidth(): Int {
+// fun Activity.getScreenWidth(): Int {
 //    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 //        val windowMetrics: WindowMetrics = this.windowManager.currentWindowMetrics
 //        val insets: Insets = windowMetrics.windowInsets
@@ -81,7 +81,7 @@ inline fun FragmentManager.commitWithAnimation(body: FragmentTransaction.() -> U
 //        this.windowManager.defaultDisplay.getMetrics(displayMetrics)
 //        displayMetrics.widthPixels
 //    }
-//}
+// }
 
 fun Activity.getScreenHeight(): Int {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

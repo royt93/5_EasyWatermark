@@ -96,7 +96,7 @@ class MyApplication : Application(), Configuration.Provider {
             // DEBUG: limits gần như tắt để test thoải mái. RELEASE: preset CONTENT (balanced)
             // — 60s gap, 6/session, 3/hour, 10/day — an toàn policy mà vẫn giữ doanh thu.
             // (CONTENT == AdSafetyLimits() default; ghi rõ tên cho khỏi nhầm.)
-            safety = if (BuildConfig.DEBUG) AdSafetyLimits.TEST else AdSafetyLimits.CONTENT,
+            safety = if (BuildConfig.DEBUG) AdSafetyLimits.TEST else AdSafetyLimits.CONTENT
         )
 
         AdManager.setConfig(adConfig)

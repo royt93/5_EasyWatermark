@@ -7,7 +7,7 @@ import android.util.Log
 import androidx.core.content.edit
 
 class SimpleSp(
-    context: Context,
+    context: Context
 ) : IStorage {
 
     companion object {

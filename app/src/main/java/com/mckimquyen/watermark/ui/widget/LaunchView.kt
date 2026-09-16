@@ -4,40 +4,35 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
-import android.provider.CalendarContract
 import android.util.AttributeSet
-import com.google.android.material.color.MaterialColors
-import com.mckimquyen.watermark.AppLog
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
-import androidx.constraintlayout.utils.widget.ImageFilterView
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
-import androidx.core.view.setPadding
 import androidx.core.view.marginStart
-import androidx.core.view.marginBottom
+import androidx.core.view.setPadding
+import androidx.fragment.app.FragmentContainerView
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.transition.TransitionManager
-import com.google.android.material.transition.MaterialFadeThrough
-import androidx.fragment.app.FragmentContainerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.shape.ShapeAppearanceModel
 import com.google.android.material.tabs.TabLayout
-import android.graphics.Typeface
-import android.widget.TextView
 import com.google.android.material.textview.MaterialTextView
+import com.google.android.material.transition.MaterialFadeThrough
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.ui.widget.utils.BounceEdgeEffectFactory
 import com.mckimquyen.watermark.utils.ktx.dp
 import com.mckimquyen.watermark.utils.ktx.generateAppearAnimationList
-import kotlin.math.abs
 
 /**
  * Custom launch ViewGroup to replace MotionLayout.
@@ -66,7 +61,7 @@ class LaunchView : CustomViewGroup {
         context: Context?,
         attrs: AttributeSet?,
         defStyleAttr: Int,
-        defStyleRes: Int,
+        defStyleRes: Int
     ) : super(context, attrs, defStyleAttr, defStyleRes)
     //endregion
 
@@ -81,15 +76,17 @@ class LaunchView : CustomViewGroup {
                 it.setMargins(0, 0, 0, 16.dp)
             }
 
-            addView(ShapeableImageView(context).apply {
-                layoutParams = android.widget.FrameLayout.LayoutParams(140.dp, 140.dp).apply {
-                    gravity = Gravity.CENTER
+            addView(
+                ShapeableImageView(context).apply {
+                    layoutParams = android.widget.FrameLayout.LayoutParams(140.dp, 140.dp).apply {
+                        gravity = Gravity.CENTER
+                    }
+                    shapeAppearanceModel = ShapeAppearanceModel.Builder()
+                        .setAllCornerSizes(36.dp.toFloat())
+                        .build()
+                    setImageResource(R.drawable.ic_launcher)
                 }
-                shapeAppearanceModel = ShapeAppearanceModel.Builder()
-                    .setAllCornerSizes(36.dp.toFloat())
-                    .build()
-                setImageResource(R.drawable.ic_launcher)
-            })
+            )
         }
     }
 

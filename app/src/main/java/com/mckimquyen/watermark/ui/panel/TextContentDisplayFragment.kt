@@ -15,7 +15,7 @@ import com.mckimquyen.watermark.utils.ktx.titleTextColor
 class TextContentDisplayFragment : BaseBindFragment<FTextContentDisplayBinding>() {
     override fun bindView(
         layoutInflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup?
     ): FTextContentDisplayBinding {
         return FTextContentDisplayBinding.inflate(layoutInflater)
     }

@@ -15,7 +15,7 @@ import com.mckimquyen.watermark.ui.widget.PhotoPreviewItem
 import com.mckimquyen.watermark.utils.VibrateHelper
 
 class PhotoListPreviewAdapter(
-    private val context: Context,
+    private val context: Context
 ) : RecyclerView.Adapter<PhotoListPreviewAdapter.ImageHolder>() {
 
     val data: List<ImageInfo>
@@ -46,7 +46,7 @@ class PhotoListPreviewAdapter(
     override fun onBindViewHolder(
         holder: ImageHolder,
         position: Int,
-        payloads: MutableList<Any>,
+        payloads: MutableList<Any>
     ) {
         super.onBindViewHolder(holder, position, payloads)
         if (payloads.isEmpty()) {

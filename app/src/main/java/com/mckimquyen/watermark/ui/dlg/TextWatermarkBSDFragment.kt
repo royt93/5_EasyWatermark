@@ -36,7 +36,7 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
 
     override fun bindView(
         layoutInflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup?
     ): DlgEditTextContainerBinding {
         return DlgEditTextContainerBinding.inflate(layoutInflater, container, false)
     }
@@ -111,7 +111,6 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
 
                 override fun onTransitionResume(transition: Transition) {
                 }
-
             })
         }
         savedEditHeight = sheetContainer.height
@@ -147,7 +146,6 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
 
                 override fun onTransitionResume(transition: Transition) {
                 }
-
             })
         }
         savedTemplateListHeight = sheetContainer.height

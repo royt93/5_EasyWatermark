@@ -1,7 +1,6 @@
 package com.mckimquyen.watermark.ui.widget
 
 import android.content.Context
-import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
@@ -34,7 +33,7 @@ class UniformScrollGridLayoutManager : GridLayoutManager {
     override fun smoothScrollToPosition(
         recyclerView: RecyclerView?,
         state: RecyclerView.State?,
-        position: Int,
+        position: Int
     ) {
         if (enable) {
             val linearSmoothScroller =

@@ -3,7 +3,14 @@ package com.mckimquyen.watermark.ui.widget
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Shader
 import android.hardware.display.DisplayManager
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
@@ -32,7 +39,7 @@ class ColoredImageVIew : AppCompatImageView {
             context.colorPrimary,
             context.colorSecondary,
             context.colorTertiary,
-            context.colorTertiary,
+            context.colorTertiary
         ).toIntArray()
     } else {
         arrayOf(

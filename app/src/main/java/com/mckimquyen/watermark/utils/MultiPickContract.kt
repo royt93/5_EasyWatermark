@@ -18,7 +18,7 @@ class MultiPickContract :
 
     override fun getSynchronousResult(
         context: Context,
-        input: String,
+        input: String
     ): SynchronousResult<List<Uri?>>? {
         return null
     }
@@ -26,7 +26,9 @@ class MultiPickContract :
     override fun parseResult(resultCode: Int, intent: Intent?): List<Uri?> {
         return if (intent == null || resultCode != Activity.RESULT_OK) {
             emptyList()
-        } else getClipDataUris(intent)
+        } else {
+            getClipDataUris(intent)
+        }
     }
 
     companion object {

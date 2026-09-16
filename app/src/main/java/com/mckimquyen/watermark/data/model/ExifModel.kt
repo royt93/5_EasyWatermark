@@ -15,7 +15,7 @@ data class ExifModel(
     fun isEmpty(): Boolean {
         return make.isEmpty() && model.isEmpty() && dateTime.isEmpty() && fNumber.isEmpty() && exposureTime.isEmpty() && iso.isEmpty() && focalLength.isEmpty()
     }
-    
+
     fun getFormattedExif(): String {
         val parts = mutableListOf<String>()
         if (focalLength.isNotEmpty()) parts.add(focalLength)

@@ -57,7 +57,7 @@ object BitmapCache {
     data class BitmapInfo(
         val uri: Uri,
         val reqWidth: Int,
-        val reqHeight: Int,
+        val reqHeight: Int
     )
 
     data class BitmapValue(

@@ -1,7 +1,6 @@
 package com.mckimquyen.watermark.ui.dlg
 
 import android.app.Dialog
-import android.content.DialogInterface
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -22,7 +21,7 @@ class SignatureBottomSheetFragment : BaseBindBSDFragment<FSignatureBottomSheetBi
 
     override fun bindView(
         layoutInflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup?
     ): FSignatureBottomSheetBinding {
         return FSignatureBottomSheetBinding.inflate(layoutInflater, container, false)
     }

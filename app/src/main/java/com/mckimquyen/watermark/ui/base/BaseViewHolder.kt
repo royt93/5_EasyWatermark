@@ -6,7 +6,8 @@ import androidx.dynamicanimation.animation.SpringForce
 import androidx.recyclerview.widget.RecyclerView
 import com.mckimquyen.watermark.ui.widget.ItemClickSupportViewHolder
 
-open class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
+open class BaseViewHolder(itemView: View) :
+    RecyclerView.ViewHolder(itemView),
     ItemClickSupportViewHolder {
 
     val translationX: SpringAnimation by lazy {

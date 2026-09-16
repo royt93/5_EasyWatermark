@@ -29,7 +29,7 @@ data class ImageInfo(
     @FloatRange(from = 0.0, to = 1.0) val offsetX: Float = 0.5f,
     @FloatRange(from = 0.0, to = 1.0) val offsetY: Float = 0.5f,
     val exifModel: ExifModel? = null,
-    val caption: String? = null,
+    val caption: String? = null
 ) {
     val shareUri: Uri?
         get() = result?.data as? Uri?
@@ -48,10 +48,10 @@ data class ImageInfo(
     }
 
     fun isSameItem(other: ImageInfo): Boolean {
-        return uri == other.uri
-                && result == other.result
-                && jobState == other.jobState
-                && isInDelModel == other.isInDelModel
+        return uri == other.uri &&
+            result == other.result &&
+            jobState == other.jobState &&
+            isInDelModel == other.isInDelModel
     }
 
     companion object {

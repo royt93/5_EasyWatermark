@@ -14,7 +14,7 @@ import com.mckimquyen.watermark.utils.ktx.colorPrimary
 class TextPaintStyleAdapter(
     private val dataList: ArrayList<TextPaintStyleModel>,
     initPaintStyle: TextPaintStyle? = TextPaintStyle.Fill,
-    private val onClickAction: (pos: Int, paintStyle: TextPaintStyle) -> Unit = { _, _ -> },
+    private val onClickAction: (pos: Int, paintStyle: TextPaintStyle) -> Unit = { _, _ -> }
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var selectedPos: Int
@@ -39,7 +39,7 @@ class TextPaintStyleAdapter(
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
         position: Int,
-        payloads: MutableList<Any>,
+        payloads: MutableList<Any>
     ) {
         super.onBindViewHolder(holder, position, payloads)
         if (payloads.isEmpty()) {
@@ -51,7 +51,7 @@ class TextPaintStyleAdapter(
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
-        position: Int,
+        position: Int
     ) {
         handleView(holder, position)
     }
@@ -94,7 +94,7 @@ class TextPaintStyleAdapter(
 
     data class TextPaintStyleModel(
         val paintStyle: TextPaintStyle = TextPaintStyle.Fill,
-        val title: String,
+        val title: String
     )
 
     companion object {
@@ -107,7 +107,7 @@ class TextPaintStyleAdapter(
                 TextPaintStyleModel(
                     paintStyle = TextPaintStyle.Stroke,
                     title = context.getString(R.string.text_paint_stroke)
-                ),
+                )
             )
         }
     }

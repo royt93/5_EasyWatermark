@@ -1,7 +1,6 @@
 package com.mckimquyen.watermark.utils.ktx
 
 import android.content.Context
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.palette.graphics.Palette
 import com.google.android.material.color.MaterialColors
@@ -14,7 +13,8 @@ fun Palette?.bgColor(context: Context): Int {
 
     val platteColor = (this.darkMutedSwatch?.rgb ?: this.mutedSwatch?.rgb) ?: context.colorSurfaceVariant
     val harmonizedColor = MaterialColors.harmonize(
-        platteColor, ContextCompat.getColor(context, R.color.md_theme_dark_background)
+        platteColor,
+        ContextCompat.getColor(context, R.color.md_theme_dark_background)
     )
 //    Log.i("Palette", "platteColor = $platteColor, finalColor $harmonizedColor")
     return harmonizedColor
@@ -40,4 +40,3 @@ fun Palette?.titleTextColor(context: Context): Int {
     }
     return defaultOnSurface
 }
-

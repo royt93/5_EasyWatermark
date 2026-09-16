@@ -13,7 +13,7 @@ data class ViewInfo(
     val paddingRight: Int,
     val paddingBottom: Int,
     val scaleType: ImageView.ScaleType,
-    val matrix: Matrix,
+    val matrix: Matrix
 ) {
     companion object {
         fun from(imageView: ImageView): ViewInfo {

@@ -28,7 +28,7 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
 
     override fun bindView(
         layoutInflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup?
     ): DlgEditTextBinding {
         return DlgEditTextBinding.inflate(layoutInflater, container, false)
     }
@@ -45,7 +45,7 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
                     s: CharSequence?,
                     start: Int,
                     count: Int,
-                    after: Int,
+                    after: Int
                 ) {
                 }
 
@@ -53,7 +53,7 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
                     s: CharSequence?,
                     start: Int,
                     before: Int,
-                    count: Int,
+                    count: Int
                 ) {
                     val text = s?.toString() ?: ""
                     updateTextJob?.cancel()
@@ -101,7 +101,6 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
                 }
         }
     }
-
 
     override fun onDestroyView() {
         // ENH-02: View có thể bị huỷ (back/rời màn hình) trước khi debounce kịp chạy — flush
@@ -152,5 +151,4 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
             }
         }
     }
-
 }

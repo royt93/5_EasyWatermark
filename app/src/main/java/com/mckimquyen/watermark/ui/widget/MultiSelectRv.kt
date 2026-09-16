@@ -78,7 +78,8 @@ class MultiSelectRv : RecyclerView {
                             super.onLongPress(e)
                             isLongPress = true
                         }
-                    })
+                    }
+                )
 
                 override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
                     gestureDetector.onTouchEvent(e)
@@ -218,10 +219,8 @@ class MultiSelectRv : RecyclerView {
                 }
 
                 override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
-
             })
         }
-
     }
 
     override fun onDetachedFromWindow() {

@@ -9,7 +9,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mckimquyen.watermark.R
@@ -23,7 +22,8 @@ import kotlinx.coroutines.launch
 class TextContentTemplateListFragment : BaseBindFragment<DlgEditTextTemplateListBinding>() {
 
     override fun bindView(
-        layoutInflater: LayoutInflater, container: ViewGroup?,
+        layoutInflater: LayoutInflater,
+        container: ViewGroup?
     ): DlgEditTextTemplateListBinding {
         return DlgEditTextTemplateListBinding.inflate(
             /* inflater = */ layoutInflater,
@@ -105,7 +105,6 @@ class TextContentTemplateListFragment : BaseBindFragment<DlgEditTextTemplateList
         }
     }
 
-
     companion object {
         const val TAG = "TextContentTemplateListFragment"
 
@@ -116,10 +115,11 @@ class TextContentTemplateListFragment : BaseBindFragment<DlgEditTextTemplateList
             }
             fa.commitWithAnimation {
                 replace(
-                    containerId, TextContentTemplateListFragment(), TAG
+                    containerId,
+                    TextContentTemplateListFragment(),
+                    TAG
                 )
             }
         }
     }
-
 }

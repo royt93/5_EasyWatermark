@@ -21,7 +21,7 @@ import com.mckimquyen.watermark.utils.bitmap.getAvailableMemory
  */
 open class DetectedPerformanceSeekBarListener(
     context: Context,
-    private val config: WaterMark?,
+    private val config: WaterMark?
 ) : SeekBar.OnSeekBarChangeListener {
 
     private val appContext = context.applicationContext
@@ -32,7 +32,7 @@ open class DetectedPerformanceSeekBarListener(
 
     private var isHighPerformancePredicate: () -> Boolean = {
         config?.markMode == WaterMarkRepository.MarkMode.Text ||
-                !getAvailableMemory(appContext).lowMemory
+            !getAvailableMemory(appContext).lowMemory
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {

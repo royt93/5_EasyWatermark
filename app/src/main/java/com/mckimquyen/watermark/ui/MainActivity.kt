@@ -41,9 +41,9 @@ import com.google.android.material.badge.ExperimentalBadgeUtils
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.BuildConfig
-import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.MyApplication
 import com.mckimquyen.watermark.R

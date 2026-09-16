@@ -16,7 +16,7 @@ import com.mckimquyen.watermark.utils.ktx.colorPrimary
 
 class FuncPanelAdapter(
     private val context: Context,
-    val dataSet: ArrayList<FuncTitleModel>,
+    val dataSet: ArrayList<FuncTitleModel>
 ) : RecyclerView.Adapter<FuncPanelAdapter.FuncTitleHolder>() {
 
     var textColor: Int = MaterialColors.getColor(
@@ -46,7 +46,7 @@ class FuncPanelAdapter(
     override fun onBindViewHolder(
         holder: FuncTitleHolder,
         position: Int,
-        payloads: MutableList<Any>,
+        payloads: MutableList<Any>
     ) {
         super.onBindViewHolder(holder, position, payloads)
         if (payloads.isEmpty()) {

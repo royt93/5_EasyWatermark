@@ -2,8 +2,8 @@ package com.mckimquyen.watermark.ui.about
 import android.os.Bundle
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.AppLog
+import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.databinding.AOpenSourceBinding
 import com.mckimquyen.watermark.utils.ktx.inflate

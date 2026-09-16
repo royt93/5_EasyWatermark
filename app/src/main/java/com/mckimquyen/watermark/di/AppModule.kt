@@ -18,7 +18,7 @@ object AppModule {
     @Singleton
     @Provides
     fun provideYourDatabase(
-        @ApplicationContext app: Context,
+        @ApplicationContext app: Context
     ): AppDatabase? {
         val builder = Room.databaseBuilder(
             context = app,

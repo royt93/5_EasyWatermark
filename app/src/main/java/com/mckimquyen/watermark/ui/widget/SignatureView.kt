@@ -2,7 +2,15 @@ package com.mckimquyen.watermark.ui.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BlurMaskFilter
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
+import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -13,7 +21,9 @@ import android.view.View
  * @author roy.mobile.dev@gmail.com
  */
 class SignatureView @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
     data class Stroke(val path: Path, val paint: Paint)
@@ -21,7 +31,7 @@ class SignatureView @JvmOverloads constructor(
     private val strokes = mutableListOf<Stroke>()
     private var currentPath: Path? = null
     private var currentPaint: Paint? = null
-    
+
     var drawColor: Int = Color.WHITE
     var drawSize: Float = 10f
     var isGlowEnabled: Boolean = false
@@ -38,7 +48,7 @@ class SignatureView @JvmOverloads constructor(
             strokeJoin = Paint.Join.ROUND
             strokeCap = Paint.Cap.ROUND
             strokeWidth = drawSize
-            
+
             if (isGlowEnabled) {
                 // simple blur glow effect
                 maskFilter = BlurMaskFilter(drawSize * 1.5f, BlurMaskFilter.Blur.NORMAL)
@@ -116,7 +126,7 @@ class SignatureView @JvmOverloads constructor(
 
     fun getSignatureBitmap(): Bitmap? {
         if (strokes.isEmpty()) return null
-        
+
         val bounds = RectF()
         val pathBounds = RectF()
         var first = true
@@ -131,11 +141,11 @@ class SignatureView @JvmOverloads constructor(
                 bounds.union(pathBounds)
             }
         }
-        
+
         bounds.intersect(0f, 0f, width.toFloat(), height.toFloat())
         val cropWidth = bounds.width().toInt()
         val cropHeight = bounds.height().toInt()
-        
+
         if (cropWidth <= 0 || cropHeight <= 0) return null
 
         val maxEdge = Math.max(cropWidth, cropHeight)
@@ -148,10 +158,10 @@ class SignatureView @JvmOverloads constructor(
         val bitmap = Bitmap.createBitmap(finalWidth, finalHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.TRANSPARENT)
-        
+
         canvas.scale(scale, scale)
         canvas.translate(-bounds.left, -bounds.top)
-        
+
         for (stroke in strokes) {
             canvas.drawPath(stroke.path, stroke.paint)
         }

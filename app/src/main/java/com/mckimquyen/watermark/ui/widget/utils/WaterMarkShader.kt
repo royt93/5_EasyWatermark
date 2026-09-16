@@ -7,5 +7,5 @@ import androidx.annotation.Keep
 class WaterMarkShader(
     val bitmapShader: BitmapShader,
     val width: Int,
-    val height: Int,
+    val height: Int
 )

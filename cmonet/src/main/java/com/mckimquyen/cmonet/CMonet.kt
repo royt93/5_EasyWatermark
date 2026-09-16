@@ -1,7 +1,6 @@
 package com.mckimquyen.cmonet
 
 import android.app.Application
-import android.util.Log
 import com.google.android.material.color.DynamicColors
 
 object CMonet {

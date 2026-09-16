@@ -12,6 +12,7 @@ import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -34,13 +35,19 @@ class MainViewModelCompressImgRoboTest {
 
     @Before
     fun setUp() {
+        val waterMarkRepo = WaterMarkRepository(context, waterMarkDataStore)
         runBlocking {
             waterMarkDataStore.edit { it.clear() }
+            // Chạy 1 lần collect() thật (đồng bộ trên thread test) trước khi bọc qua asLiveData() —
+            // đảm bảo DataStore đã đọc xong TRƯỚC khi observeForever/idle() chạy, tránh race giữa
+            // IO dispatcher (đọc DataStore) và main looper (chỉ idle() thứ ĐÃ có sẵn trong queue,
+            // không đợi IO dispatcher — flaky ngẫu nhiên khi chạy chung full suite, xem BUG report).
+            waterMarkRepo.waterMark.first()
         }
         viewModel = MainViewModel(
             appContext = context,
             userRepo = UserConfigRepository(userDataStore),
-            waterMarkRepo = WaterMarkRepository(context, waterMarkDataStore),
+            waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
             templateRepo = TemplateRepository(null)
         )

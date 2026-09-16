@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 class BounceEdgeEffectFactory(
     val context: Context,
-    val recyclerView: RecyclerView,
+    val recyclerView: RecyclerView
 ) : RecyclerView.EdgeEffectFactory() {
 
     override fun createEdgeEffect(view: RecyclerView, direction: Int): EdgeEffect {

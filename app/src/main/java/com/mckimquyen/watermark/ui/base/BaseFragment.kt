@@ -13,5 +13,4 @@ open class BaseFragment : Fragment() {
         get() {
             return shareViewModel.waterMark.value
         }
-
 }

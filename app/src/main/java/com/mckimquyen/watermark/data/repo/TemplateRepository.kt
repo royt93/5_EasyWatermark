@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class TemplateRepository @Inject constructor(
-    private val templateDao: TemplateDao?,
+    private val templateDao: TemplateDao?
 ) {
 
     fun checkIfIsDaoNull(): Boolean {

@@ -9,7 +9,7 @@ import com.mckimquyen.watermark.data.model.entity.Template
 import com.mckimquyen.watermark.databinding.ItemTemplateListBinding
 
 class TextContentTemplateListAdapter(
-    private val listener: TextContentTemplateListAdapterListener? = null,
+    private val listener: TextContentTemplateListAdapterListener? = null
 ) : RecyclerView.Adapter<TextContentTemplateListAdapter.ViewHolder>() {
 
     private val diffCallback = object : DiffUtil.ItemCallback<Template>() {
@@ -27,7 +27,9 @@ class TextContentTemplateListAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             ItemTemplateListBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false
+                LayoutInflater.from(parent.context),
+                parent,
+                false
             )
         )
     }
@@ -69,7 +71,7 @@ class TextContentTemplateListAdapter(
     data class TextContentTemplateListAdapterListener(
         val onClickListener: OnClickListener? = null,
         val onEditListener: OnEditListener? = null,
-        val onRemoveListener: OnRemoveListener? = null,
+        val onRemoveListener: OnRemoveListener? = null
     )
 }
 

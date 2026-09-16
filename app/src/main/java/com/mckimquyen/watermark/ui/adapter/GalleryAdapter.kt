@@ -1,8 +1,6 @@
 package com.mckimquyen.watermark.ui.adapter
 
-import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.graphics.Color
 import android.util.Log
 import android.view.ViewGroup
 import androidx.constraintlayout.utils.widget.ImageFilterView
@@ -62,7 +60,7 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
     override fun onBindViewHolder(
         holder: GalleryItemHolder,
         position: Int,
-        payloads: MutableList<Any>,
+        payloads: MutableList<Any>
     ) {
         if (payloads.isEmpty()) {
             onBindViewHolder(holder, position)
@@ -136,7 +134,7 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
         imageFilterView: ImageFilterView,
         isChecked: Boolean,
         animate: Boolean = true,
-        post: () -> Unit = {},
+        post: () -> Unit = {}
     ) {
         val d = 150L // Reduced from 200L
         val round = .3f // Reduced from .4f

@@ -38,7 +38,6 @@ class GalleryItemView : FrameLayout {
         }
     }
 
-
     private val radioButton: RadioButton by lazy {
         RadioButton(context).apply {
             layoutParams = MarginLayoutParams(

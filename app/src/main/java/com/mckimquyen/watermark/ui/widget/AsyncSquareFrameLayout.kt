@@ -29,5 +29,4 @@ class AsyncSquareFrameLayout : SquareFrameLayout {
             action.invoke(view)
         }
     }
-
 }

@@ -4,7 +4,7 @@ import android.content.Context
 import com.google.android.material.color.DynamicColors
 
 class MonetManufacturer(
-    context: Context,
+    context: Context
 ) : IMonetManufacturer {
     private val sp: IStorage = SimpleSp(context)
 

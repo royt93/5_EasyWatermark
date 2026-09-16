@@ -4,7 +4,7 @@ class Result<T>(
     var type: Type,
     var data: T? = null,
     var code: String? = null,
-    var message: String? = null,
+    var message: String? = null
 ) {
 
 //    fun isSuccess() = type == Type.Success

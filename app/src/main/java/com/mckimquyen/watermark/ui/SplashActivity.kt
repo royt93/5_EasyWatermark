@@ -6,9 +6,12 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.mckimquyen.watermark.AppLog
+import com.mckimquyen.watermark.BaseActivity
+import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.databinding.ActivitySplashBinding
 import com.roy.sdkadbmob.AdManager
@@ -18,11 +21,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
-
-import com.mckimquyen.watermark.BaseActivity
-import com.mckimquyen.watermark.BuildConfig
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : BaseActivity() {
@@ -119,7 +117,7 @@ class SplashActivity : BaseActivity() {
         val cm = getSystemService(ConnectivityManager::class.java)
         val caps = cm.getNetworkCapabilities(cm.activeNetwork ?: return false) ?: return false
         return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
     private fun goToMain() {

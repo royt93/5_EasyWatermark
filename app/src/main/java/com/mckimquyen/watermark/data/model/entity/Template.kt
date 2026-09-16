@@ -13,7 +13,7 @@ data class Template(
     @PrimaryKey(autoGenerate = true) var id: Int,
     @ColumnInfo(name = "content") val content: String?,
     @ColumnInfo(name = "creation_date") var creationDate: Date?,
-    @ColumnInfo(name = "last_modified_date") var lastModifiedDate: Date?,
+    @ColumnInfo(name = "last_modified_date") var lastModifiedDate: Date?
 ) : Parcelable {
 //    @PrimaryKey(autoGenerate = true)
 //    var id: Int = 0

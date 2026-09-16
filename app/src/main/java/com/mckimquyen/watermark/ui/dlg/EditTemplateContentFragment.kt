@@ -20,7 +20,7 @@ class EditTemplateContentFragment : BaseBindBSDFragment<DlgEditTemplateBinding>(
 
     override fun bindView(
         layoutInflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup?
     ): DlgEditTemplateBinding {
         return DlgEditTemplateBinding.inflate(layoutInflater, container, false)
     }
@@ -72,7 +72,6 @@ class EditTemplateContentFragment : BaseBindBSDFragment<DlgEditTemplateBinding>(
             }
         }
     }
-
 
     companion object {
         const val TAG = "EditTemplateContentFragment"

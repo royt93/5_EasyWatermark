@@ -13,7 +13,7 @@ abstract class BaseBindBSDFragment<VB : ViewBinding> : BaseBSDFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?,
+        savedInstanceState: Bundle?
     ): View? {
         _binding = bindView(layoutInflater, container)
         return binding.root
@@ -21,7 +21,7 @@ abstract class BaseBindBSDFragment<VB : ViewBinding> : BaseBSDFragment() {
 
     abstract fun bindView(
         layoutInflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup?
     ): VB
 
     override fun onDestroyView() {

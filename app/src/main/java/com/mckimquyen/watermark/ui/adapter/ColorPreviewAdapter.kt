@@ -11,7 +11,7 @@ import com.mckimquyen.watermark.ui.base.BaseViewHolder
 import com.mckimquyen.watermark.ui.widget.SelectableImageView
 
 class ColorPreviewAdapter(
-    val previewList: ArrayList<PreViewModel>,
+    val previewList: ArrayList<PreViewModel>
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     init {
@@ -72,6 +72,6 @@ class ColorPreviewAdapter(
         val type: PreviewType = PreviewType.Color,
         val color: Int = Color.WHITE,
         val resId: Int = -1,
-        var selected: Boolean = false,
+        var selected: Boolean = false
     )
 }

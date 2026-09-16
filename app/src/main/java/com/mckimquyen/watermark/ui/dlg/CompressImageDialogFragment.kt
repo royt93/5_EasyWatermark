@@ -33,7 +33,7 @@ class CompressImageDialogFragment : DialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?,
+        savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.dlg_compress_img, container, false)
         with(root) {

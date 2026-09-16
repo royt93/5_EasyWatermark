@@ -9,12 +9,12 @@ import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.FColorBinding
 import com.mckimquyen.watermark.ui.adapter.ColorPreviewAdapter
 import com.mckimquyen.watermark.ui.base.BaseBindFragment
+import com.mckimquyen.watermark.ui.widget.onItemClick
 import com.mckimquyen.watermark.ui.widget.utils.BounceEdgeEffectFactory
 import com.mckimquyen.watermark.utils.ktx.commitWithAnimation
 import com.skydoves.colorpickerview.ColorEnvelope
 import com.skydoves.colorpickerview.ColorPickerDialog
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
-import com.mckimquyen.watermark.ui.widget.onItemClick
 
 class ColorFragment : BaseBindFragment<FColorBinding>() {
 
@@ -48,7 +48,7 @@ class ColorFragment : BaseBindFragment<FColorBinding>() {
 
     override fun bindView(
         layoutInflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup?
     ): FColorBinding {
         val b = FColorBinding.inflate(layoutInflater, container, false)
 
@@ -84,7 +84,7 @@ class ColorFragment : BaseBindFragment<FColorBinding>() {
                 object : ColorEnvelopeListener {
                     override fun onColorSelected(
                         envelope: ColorEnvelope?,
-                        fromUser: Boolean,
+                        fromUser: Boolean
                     ) {
                         envelope?.color?.let {
                             adapter.updateSelectedColor(it)

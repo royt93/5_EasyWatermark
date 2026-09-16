@@ -15,7 +15,7 @@ abstract class BasePBFragment : BaseBindFragment<FBasePbBinding>() {
 
     override fun bindView(
         layoutInflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup?
     ): FBasePbBinding {
         val b = FBasePbBinding.inflate(layoutInflater, container, false)
 

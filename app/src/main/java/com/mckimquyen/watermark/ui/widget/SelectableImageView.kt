@@ -115,8 +115,10 @@ class SelectableImageView : View {
         super.onDraw(canvas)
         if (isSelected) {
             canvas?.drawCircle(
-                (measuredWidth / 2).toFloat(), (measuredHeight / 2).toFloat(),
-                outSizeCircleRadius, borderPaint
+                (measuredWidth / 2).toFloat(),
+                (measuredHeight / 2).toFloat(),
+                outSizeCircleRadius,
+                borderPaint
             )
         }
 
@@ -147,7 +149,7 @@ class SelectableImageView : View {
         resId: Int = circleResId,
         w: Int = measuredWidth,
         h: Int = measuredHeight,
-        color: Int = circleColor,
+        color: Int = circleColor
     ): Bitmap? {
         var b: Bitmap? = null
         if (resId > 0) {

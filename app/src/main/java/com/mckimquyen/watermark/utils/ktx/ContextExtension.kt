@@ -66,7 +66,6 @@ fun Activity.requestPermission() {
     }
 }
 
-
 inline fun ViewModel.launch(crossinline action: suspend CoroutineScope.() -> Unit): Job {
     return viewModelScope.launch {
         action()
@@ -127,7 +126,7 @@ val Context.colorOnPrimary: Int
         }
     }
 
-//val Context.colorPrimaryContainer: Int
+// val Context.colorPrimaryContainer: Int
 //    get() {
 //        return when {
 //            CMonet.isDynamicColorAvailable() && isNight() -> {
@@ -148,7 +147,7 @@ val Context.colorOnPrimary: Int
 //        }
 //    }
 
-//val Context.colorOnPrimaryContainer: Int
+// val Context.colorOnPrimaryContainer: Int
 //    get() {
 //        return when {
 //            CMonet.isDynamicColorAvailable() && isNight() -> {
@@ -196,7 +195,7 @@ val Context.colorSecondary: Int
         }
     }
 
-//val Context.colorOnSecondary: Int
+// val Context.colorOnSecondary: Int
 //    get() {
 //        return when {
 //            CMonet.isDynamicColorAvailable() && isNight() -> {
@@ -244,7 +243,7 @@ val Context.colorSecondaryContainer: Int
         }
     }
 
-//val Context.colorOnSecondaryContainer: Int
+// val Context.colorOnSecondaryContainer: Int
 //    get() {
 //        return when {
 //            CMonet.isDynamicColorAvailable() && isNight() -> {
@@ -295,7 +294,7 @@ val Context.colorTertiary: Int
         }
     }
 
-//val Context.colorOnTertiary: Int
+// val Context.colorOnTertiary: Int
 //    get() {
 //        return when {
 //            CMonet.isDynamicColorAvailable() && isNight() -> {
@@ -390,7 +389,7 @@ val Context.colorError: Int
         }
     }
 
-//val Context.colorOnError: Int
+// val Context.colorOnError: Int
 //    get() {
 //        return when {
 //            CMonet.isDynamicColorAvailable() -> {
@@ -407,7 +406,7 @@ val Context.colorError: Int
 //        }
 //    }
 
-//val Context.colorErrorContainer: Int
+// val Context.colorErrorContainer: Int
 //    get() {
 //        return when {
 //            CMonet.isDynamicColorAvailable() -> {
@@ -424,7 +423,7 @@ val Context.colorError: Int
 //        }
 //    }
 
-//val Context.colorOnErrorContainer: Int
+// val Context.colorOnErrorContainer: Int
 //    get() {
 //        return when {
 //            CMonet.isDynamicColorAvailable() -> {
@@ -464,7 +463,7 @@ val Context.colorBackground: Int
         }
     }
 
-//val Context.colorOnBackground: Int
+// val Context.colorOnBackground: Int
 //    get() {
 //        return when {
 //            CMonet.isDynamicColorAvailable() && isNight() -> {
@@ -593,7 +592,7 @@ val Context.colorOnSurfaceVariant: Int
         }
     }
 
-//val Context.colorOutline: Int
+// val Context.colorOutline: Int
 //    get() {
 //        return when {
 //            CMonet.isDynamicColorAvailable() && isNight() -> {
@@ -613,7 +612,6 @@ val Context.colorOnSurfaceVariant: Int
 //            }
 //        }
 //    }
-
 
 fun Context.isNight(): Boolean {
     return when (this.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
@@ -636,7 +634,7 @@ fun Context.getColorFromAttr(
     @AttrRes attrColor: Int,
     typedValue: TypedValue = TypedValue(),
     resolveRefs: Boolean = true,
-    defaultColor: Int = 0,
+    defaultColor: Int = 0
 ): Int {
     return try {
         theme.resolveAttribute(attrColor, typedValue, resolveRefs)

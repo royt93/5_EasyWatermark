@@ -9,7 +9,7 @@ import com.mckimquyen.watermark.ui.widget.utils.ViewAnimation
 
 fun View.appearAnimation(
     dampingRatio: Float = SpringForce.DAMPING_RATIO_MEDIUM_BOUNCY,
-    stiffness: Float = SpringForce.STIFFNESS_LOW,
+    stiffness: Float = SpringForce.STIFFNESS_LOW
 ): SpringAnimation {
     return SpringAnimation(this, SpringAnimation.TRANSLATION_Y, 0f).apply {
         spring = SpringForce()
@@ -19,7 +19,7 @@ fun View.appearAnimation(
     }
 }
 
-//fun View.disappearAnimation(toPos: Float = 10f): SpringAnimation {
+// fun View.disappearAnimation(toPos: Float = 10f): SpringAnimation {
 //    return SpringAnimation(this, SpringAnimation.TRANSLATION_Y, toPos).apply {
 //        spring = SpringForce()
 //            .setFinalPosition(toPos)
@@ -32,13 +32,13 @@ fun View.appearAnimation(
 //            this@disappearAnimation.isVisible = false
 //        }
 //    }
-//}
+// }
 
 fun View.appear(
     fromX: Float = 0f,
     fromY: Float = 10.dp.toFloat(),
     fromAlpha: Float = 0.5f,
-    duration: Long = 200,
+    duration: Long = 200
 ) {
     this.translationY = fromY
     this.translationX = fromX
@@ -61,7 +61,7 @@ fun View.disappear(
     toX: Float = 0f,
     toY: Float = 10.dp.toFloat(),
     toAlpha: Float = 0.5f,
-    duration: Long = 200,
+    duration: Long = 200
 ) {
     this.animate()
         .translationY(toX)
@@ -76,16 +76,16 @@ fun View.disappear(
         }
 }
 
-//fun generateAppearAnimationList(
+// fun generateAppearAnimationList(
 //    vararg views: View,
-//): List<SpringAnimation> {
+// ): List<SpringAnimation> {
 //    return views.map {
 //        it.appearAnimation()
 //    }
-//}
+// }
 
 fun generateAppearAnimationList(
-    views: Iterable<View>,
+    views: Iterable<View>
 ): List<ViewAnimation> {
     return views.mapIndexed { index, view ->
         ViewAnimation(view, view.appearAnimation(dampingRatio = DAMPING_RATIO_NO_BOUNCY)).apply {
@@ -107,7 +107,7 @@ fun generateAppearAnimationList(
 }
 
 fun generateDisappearAnimationList(
-    views: Iterable<View>,
+    views: Iterable<View>
 ): List<ViewAnimation> {
     return views.mapIndexed { _, view ->
         ViewAnimation(view, null).apply {

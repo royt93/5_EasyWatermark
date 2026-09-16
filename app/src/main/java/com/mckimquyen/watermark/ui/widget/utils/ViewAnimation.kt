@@ -5,7 +5,7 @@ import androidx.dynamicanimation.animation.SpringAnimation
 
 class ViewAnimation(
     val view: View,
-    val animation: SpringAnimation? = null,
+    val animation: SpringAnimation? = null
 ) {
 
     init {

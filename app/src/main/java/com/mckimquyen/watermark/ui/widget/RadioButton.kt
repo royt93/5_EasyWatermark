@@ -36,8 +36,8 @@ class RadioButton : View {
 
     // ── Unselected state ──────────────────────────────────────────────────────
     // Dark backdrop pill so the white ring is always visible on bright photos
-    private val bgColorNormal = Color.parseColor("#80000000")         // black 50%
-    private val strokeColorNormal = Color.parseColor("#E0FFFFFF")     // white 88%
+    private val bgColorNormal = Color.parseColor("#80000000") // black 50%
+    private val strokeColorNormal = Color.parseColor("#E0FFFFFF") // white 88%
     private val strokeWidthNormal = 1.5f.dp.toFloat()
 
     // ── Selected state ────────────────────────────────────────────────────────

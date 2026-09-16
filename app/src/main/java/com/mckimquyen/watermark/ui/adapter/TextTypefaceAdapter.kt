@@ -17,7 +17,7 @@ class TextTypefaceAdapter(
     private val dataList: ArrayList<TextTypefaceModel>,
     initTypeface: TextTypeface? = TextTypeface.Normal,
     initTextStyle: TextPaintStyle? = TextPaintStyle.Fill,
-    private val onClickAction: (pos: Int, typeface: TextTypeface) -> Unit = { _, _ -> },
+    private val onClickAction: (pos: Int, typeface: TextTypeface) -> Unit = { _, _ -> }
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var selectedPos: Int
     private var textPaintStyle: TextPaintStyle
@@ -42,7 +42,7 @@ class TextTypefaceAdapter(
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
         position: Int,
-        payloads: MutableList<Any>,
+        payloads: MutableList<Any>
     ) {
         super.onBindViewHolder(holder, position, payloads)
         if (payloads.isEmpty()) {
@@ -54,14 +54,14 @@ class TextTypefaceAdapter(
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
-        position: Int,
+        position: Int
     ) {
         handleView(holder, position)
     }
 
     private fun handleView(
         holder: RecyclerView.ViewHolder,
-        position: Int,
+        position: Int
     ) {
         val model = dataList[position]
         val selected = position == selectedPos
@@ -111,7 +111,7 @@ class TextTypefaceAdapter(
 
     data class TextTypefaceModel(
         val textTypeface: TextTypeface = TextTypeface.Normal,
-        val title: String,
+        val title: String
     )
 
     companion object {
@@ -132,7 +132,7 @@ class TextTypefaceAdapter(
                 TextTypefaceModel(
                     textTypeface = TextTypeface.BoldItalic,
                     title = context.getString(R.string.text_typeface_bold_italic)
-                ),
+                )
             )
         }
     }

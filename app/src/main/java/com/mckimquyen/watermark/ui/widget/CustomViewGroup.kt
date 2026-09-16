@@ -28,7 +28,7 @@ abstract class CustomViewGroup : ViewGroup {
         context: Context?,
         attrs: AttributeSet?,
         defStyleAttr: Int,
-        defStyleRes: Int,
+        defStyleRes: Int
     ) : super(context, attrs, defStyleAttr, defStyleRes)
 
 //    protected fun getLayoutParamsWithMargin(

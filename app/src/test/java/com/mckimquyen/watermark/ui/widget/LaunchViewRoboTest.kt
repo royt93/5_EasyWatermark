@@ -2,7 +2,6 @@ package com.mckimquyen.watermark.ui.widget
 
 import android.content.Context
 import android.view.View
-import androidx.core.view.isVisible
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.BuildConfig

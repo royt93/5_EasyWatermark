@@ -9,7 +9,7 @@ import com.mckimquyen.watermark.ui.base.BaseViewHolder
 class SimpleOverScrollEdgeEffect(
     val recyclerView: RecyclerView,
     private val direction: Int,
-    val context: Context,
+    val context: Context
 ) : EdgeEffect(context) {
 
     override fun onPull(deltaDistance: Float, displacement: Float) {
@@ -54,7 +54,7 @@ class SimpleOverScrollEdgeEffect(
     }
 
     private inline fun <reified T : RecyclerView.ViewHolder> RecyclerView.forEachVisibleHolder(
-        action: (T) -> Unit,
+        action: (T) -> Unit
     ) {
         for (i in 0 until childCount) {
             action(getChildViewHolder(getChildAt(i)) as T)
