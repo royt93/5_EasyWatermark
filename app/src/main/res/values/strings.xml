@@ -34,8 +34,8 @@
     <string name="share">Share</string>
     <string name="share_app">Share App</string>
     <string name="share_app_message">Check out %1$s: https://play.google.com/store/apps/details?id=%2$s</string>
-    <string name="backup_data">Backup</string>
-    <string name="restore_data">Restore</string>
+    <string name="backup_data">💾  Backup</string>
+    <string name="restore_data">📥  Restore</string>
     <string name="backup_success">Backup saved successfully</string>
     <string name="backup_failed">Backup failed</string>
     <string name="restore_success">Restore completed successfully</string>
