@@ -78,7 +78,7 @@ class EditTemplateContentFragment : BaseBindBSDFragment<DlgEditTemplateBinding>(
 
         fun safetyShow(manager: FragmentManager, template: Template? = null) {
             try {
-                val f = (manager.findFragmentByTag(TAG) as? SaveImageBSDialogFragment)
+                val f = (manager.findFragmentByTag(TAG) as? EditTemplateContentFragment)
                     ?: EditTemplateContentFragment()
                 f.apply {
                     arguments = Bundle().also {
