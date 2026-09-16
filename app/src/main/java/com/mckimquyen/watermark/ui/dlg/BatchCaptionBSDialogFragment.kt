@@ -7,8 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.FragmentManager
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.BatchCaptionParser
 import com.mckimquyen.watermark.data.model.ImageInfo
@@ -36,15 +34,21 @@ class BatchCaptionBSDialogFragment : BaseBindBSDFragment<FBatchCaptionBottomShee
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val expectedCount = imageList.size
+        val initialImageList = imageList
         binding.tvSubtitle.text = resources.getQuantityString(
             R.plurals.batch_caption_subtitle,
-            expectedCount,
-            expectedCount
+            initialImageList.size,
+            initialImageList.size
         )
-        binding.etCaptions.setText(BatchCaptionParser.toInput(imageList))
+        binding.etCaptions.setText(BatchCaptionParser.toInput(initialImageList))
 
         binding.btnApplyCaptions.setOnClickListener {
+            // Đọc lại imageList.size LIVE ngay lúc bấm Apply (không dùng lại giá trị snapshot lúc
+            // mở dialog) — WaterMarkRepository.updateImageCaptions() cũng áp caption theo
+            // imageInfoList hiện tại tại thời điểm này, không phải lúc dialog mở. Nếu 2 giá trị
+            // lệch nhau (list đổi khi dialog đang mở), validate() phải fail đúng ngay tại đây thay
+            // vì âm thầm gán sai caption cho ảnh khác.
+            val expectedCount = imageList.size
             when (val result = BatchCaptionParser.validate(binding.etCaptions.text?.toString().orEmpty(), expectedCount)) {
                 is BatchCaptionParser.Validation.Disabled -> {
                     shareViewModel.updateBatchCaptions(List(expectedCount) { null })
@@ -77,14 +81,7 @@ class BatchCaptionBSDialogFragment : BaseBindBSDFragment<FBatchCaptionBottomShee
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return super.onCreateDialog(savedInstanceState).apply {
-            setOnShowListener {
-                val bottomSheet = (this as BottomSheetDialog).findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-                bottomSheet?.let {
-                    val behavior = BottomSheetBehavior.from(it)
-                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                    behavior.skipCollapsed = true
-                }
-            }
+            expandBottomSheetFully()
         }
     }
 

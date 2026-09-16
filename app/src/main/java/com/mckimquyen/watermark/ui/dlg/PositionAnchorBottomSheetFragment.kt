@@ -7,8 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.FragmentManager
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.Anchor
@@ -101,14 +99,7 @@ class PositionAnchorBottomSheetFragment : BaseBindBSDFragment<FPositionAnchorBot
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
             )
             window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-            setOnShowListener {
-                val bottomSheet = (this as BottomSheetDialog).findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-                bottomSheet?.let {
-                    val behavior = BottomSheetBehavior.from(it)
-                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                    behavior.skipCollapsed = true
-                }
-            }
+            expandBottomSheetFully()
         }
     }
 

@@ -59,6 +59,21 @@ class BatchExportEngine @Inject constructor(
 ) {
     private val matrixValues = FloatArray(9)
 
+    /**
+     * FEAT-13: caption riêng ("" hợp lệ = cố ý không watermark ảnh này) ghi đè watermark text
+     * chung — DÙNG CHUNG giữa [generateImage] (export thật) và [generatePreviewBitmap] (preview),
+     * tránh 2 nơi tự suy diễn cùng 1 rule rồi lệch nhau (từng gây bug: preview skip vẽ khi rỗng
+     * nhưng export thật không skip, ảnh xuất ra bị tô đen kín). `internal` (thay vì `private`) chỉ
+     * để test truy cập trực tiếp — Robolectric ở máy build này không rasterize pixel thật
+     * (`getPixel`/`ShadowCanvas.description` đều không phản ánh nội dung đã vẽ) nên không thể
+     * assert bằng ảnh xuất ra, phải test trực tiếp điều kiện quyết định có vẽ hay không.
+     */
+    internal fun resolveBaseText(imageInfo: ImageInfo, config: WaterMark): String = imageInfo.caption ?: config.text
+
+    /** Xem [resolveBaseText] — cùng lý do `internal`. */
+    internal fun shouldSkipTextWatermark(markMode: WaterMarkRepository.MarkMode, baseText: String): Boolean =
+        markMode == WaterMarkRepository.MarkMode.Text && baseText.isBlank()
+
     /** Snapshot cấu hình cho 1 lần export batch — đọc 1 lần trước khi loop, không đổi giữa chừng. */
     data class ExportSettings(
         val config: WaterMark,
@@ -208,80 +223,82 @@ class BatchExportEngine @Inject constructor(
                 )
                 val bitmapPaint = TextPaint().applyConfig(imageInfo, tmpConfig, isScale = false)
                 val layoutPaint = Paint()
-                val shader = when (tmpConfig.markMode) {
-                    WaterMarkRepository.MarkMode.Text -> {
-                        // FEAT-13: imageInfo.caption (nếu user đã nhập riêng cho ảnh này) ghi đè
-                        // watermark text chung — "" hợp lệ (cố ý không watermark ảnh đó), null = dùng
-                        // chung tmpConfig.text như cũ (xem BatchCaptionParser).
-                        val baseText = imageInfo.caption ?: tmpConfig.text
-                        // Resolve dynamic text tokens (e.g. {date}, {filename}, {iso}) per image at export time.
-                        val resolvedText = exportNaming.resolveTextTokens(baseText, imageInfo, contentResolver, index)
-                        WaterMarkImageView.buildTextBitmapShader(
-                            imageInfo = imageInfo,
-                            config = tmpConfig.copy(text = resolvedText),
-                            textPaint = bitmapPaint,
-                            coroutineContext = Dispatchers.IO
-                        )
-                    }
-
-                    WaterMarkRepository.MarkMode.Image -> {
-                        val iconBitmapRect = decodeSampledBitmapFromResource(
-                            context = appContext,
-                            resolver = contentResolver,
-                            uri = tmpConfig.iconUri,
-                            reqWidth = viewInfo.width,
-                            reqHeight = viewInfo.height
-                        )
-                        if (iconBitmapRect.isFailure() || iconBitmapRect.data == null) {
-                            return@withContext Result.failure(
-                                data = null,
-                                code = "-1",
-                                message = "decodeSampledBitmapFromResource == null"
-                            )
-                        }
-                        // ENH-15: giữ (retain) bitmap này trong lúc dùng để BitmapCache không
-                        // recycle nó nếu bị evict giữa chừng (batch nhiều ảnh có thể evict entry
-                        // đang xử lý) — release ngay sau khi build shader xong (đã copy pixel vào
-                        // shader riêng, không cần iconBitmap gốc nữa).
-                        val iconBitmapValue = iconBitmapRect.data!!
-                        iconBitmapValue.retain()
-                        try {
-                            WaterMarkImageView.buildIconBitmapShader(
+                // Thiếu guard skipTextWatermark bên dưới từng là bug: layoutPaint (Paint() mặc
+                // định màu đen, alpha 255) vẫn bị canvas.drawRect() tô kín đè lên ảnh vì shader
+                // null, biến "để trống caption = không watermark" thành "ảnh xuất ra bị đen kín".
+                val baseText = resolveBaseText(imageInfo, tmpConfig)
+                if (!shouldSkipTextWatermark(tmpConfig.markMode, baseText)) {
+                    val shader = when (tmpConfig.markMode) {
+                        WaterMarkRepository.MarkMode.Text -> {
+                            // Resolve dynamic text tokens (e.g. {date}, {filename}, {iso}) per image at export time.
+                            val resolvedText = exportNaming.resolveTextTokens(baseText, imageInfo, contentResolver, index)
+                            WaterMarkImageView.buildTextBitmapShader(
                                 imageInfo = imageInfo,
-                                srcBitmap = iconBitmapValue.bitmap!!,
-                                config = tmpConfig,
+                                config = tmpConfig.copy(text = resolvedText),
                                 textPaint = bitmapPaint,
-                                scale = true,
                                 coroutineContext = Dispatchers.IO
                             )
-                        } finally {
-                            iconBitmapValue.release()
+                        }
+
+                        WaterMarkRepository.MarkMode.Image -> {
+                            val iconBitmapRect = decodeSampledBitmapFromResource(
+                                context = appContext,
+                                resolver = contentResolver,
+                                uri = tmpConfig.iconUri,
+                                reqWidth = viewInfo.width,
+                                reqHeight = viewInfo.height
+                            )
+                            if (iconBitmapRect.isFailure() || iconBitmapRect.data == null) {
+                                return@withContext Result.failure(
+                                    data = null,
+                                    code = "-1",
+                                    message = "decodeSampledBitmapFromResource == null"
+                                )
+                            }
+                            // ENH-15: giữ (retain) bitmap này trong lúc dùng để BitmapCache không
+                            // recycle nó nếu bị evict giữa chừng (batch nhiều ảnh có thể evict entry
+                            // đang xử lý) — release ngay sau khi build shader xong (đã copy pixel vào
+                            // shader riêng, không cần iconBitmap gốc nữa).
+                            val iconBitmapValue = iconBitmapRect.data!!
+                            iconBitmapValue.retain()
+                            try {
+                                WaterMarkImageView.buildIconBitmapShader(
+                                    imageInfo = imageInfo,
+                                    srcBitmap = iconBitmapValue.bitmap!!,
+                                    config = tmpConfig,
+                                    textPaint = bitmapPaint,
+                                    scale = true,
+                                    coroutineContext = Dispatchers.IO
+                                )
+                            } finally {
+                                iconBitmapValue.release()
+                            }
                         }
                     }
-                }
 
-                layoutPaint.shader = shader?.bitmapShader
+                    layoutPaint.shader = shader?.bitmapShader
 
-                if (imageInfo.obtainTileMode() == Shader.TileMode.CLAMP) {
-                    canvas.translate(
-                        0 + imageInfo.offsetX * mutableBitmap.width,
-                        0 + imageInfo.offsetY * mutableBitmap.height
-                    )
-                    canvas.drawRect(
-                        /* left = */ 0f,
-                        /* top = */ 0f,
-                        /* right = */ (shader?.width ?: 0).toFloat(),
-                        /* bottom = */ (shader?.height ?: 0).toFloat(),
-                        /* paint = */ layoutPaint
-                    )
-                } else {
-                    canvas.drawRect(
-                        /* left = */ 0f,
-                        /* top = */ 0f,
-                        /* right = */ mutableBitmap.width.toFloat(),
-                        /* bottom = */ mutableBitmap.height.toFloat(),
-                        /* paint = */ layoutPaint
-                    )
+                    if (imageInfo.obtainTileMode() == Shader.TileMode.CLAMP) {
+                        canvas.translate(
+                            0 + imageInfo.offsetX * mutableBitmap.width,
+                            0 + imageInfo.offsetY * mutableBitmap.height
+                        )
+                        canvas.drawRect(
+                            /* left = */ 0f,
+                            /* top = */ 0f,
+                            /* right = */ (shader?.width ?: 0).toFloat(),
+                            /* bottom = */ (shader?.height ?: 0).toFloat(),
+                            /* paint = */ layoutPaint
+                        )
+                    } else {
+                        canvas.drawRect(
+                            /* left = */ 0f,
+                            /* top = */ 0f,
+                            /* right = */ mutableBitmap.width.toFloat(),
+                            /* bottom = */ mutableBitmap.height.toFloat(),
+                            /* paint = */ layoutPaint
+                        )
+                    }
                 }
 
                 val finalExportBitmap = if (tmpConfig.enableExif && imageInfo.exifModel != null && !imageInfo.exifModel!!.isEmpty()) {
@@ -468,10 +485,10 @@ class BatchExportEngine @Inject constructor(
             val approxOriginalWidth = mutableBitmap.width * bitmapValue.inSampleSize
             val approxOriginalHeight = mutableBitmap.height * bitmapValue.inSampleSize
 
-            // FEAT-13: preview phải khớp đúng những gì export thật sẽ vẽ — caption riêng (nếu có)
-            // ghi đè watermark text chung, giống hệt BatchExportEngine.generateImage().
-            val baseText = imageInfo.caption ?: config.text
-            if (config.markMode == WaterMarkRepository.MarkMode.Text && baseText.isBlank()) {
+            // Preview phải khớp đúng những gì export thật sẽ vẽ — dùng chung resolveBaseText()
+            // với generateImage(), không tự suy diễn lại rule.
+            val baseText = resolveBaseText(imageInfo, config)
+            if (shouldSkipTextWatermark(config.markMode, baseText)) {
                 return@withContext PreviewResult(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
             }
 

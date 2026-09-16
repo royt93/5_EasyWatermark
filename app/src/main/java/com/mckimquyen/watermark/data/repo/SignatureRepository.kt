@@ -13,11 +13,20 @@ import java.io.FileOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
-data class SignatureModel(
+/**
+ * Không phải `data class` vì Kotlin bắt buộc mọi tham số constructor của data class phải là
+ * `val`/`var` — `uriProvider` chỉ dùng để khởi tạo `uri` LAZY, không phải property. `uri` tính lazy
+ * vì `FileProvider.getUriForFile()` chỉ nên gọi khi caller thật sự cần URI (ví dụ hiển thị
+ * ảnh/trả kết quả), không phải mỗi lần build `SignatureModel` (test dedup/sanitize path không
+ * cần URI, tránh gọi FileProvider thừa).
+ */
+class SignatureModel(
     val file: File,
-    val uri: Uri,
-    val dateModified: Long
-)
+    val dateModified: Long,
+    uriProvider: () -> Uri
+) {
+    val uri: Uri by lazy(uriProvider)
+}
 
 @Singleton
 class SignatureRepository @Inject constructor(@ApplicationContext private val context: Context) {
@@ -46,8 +55,8 @@ class SignatureRepository @Inject constructor(@ApplicationContext private val co
             .map { file ->
                 SignatureModel(
                     file = file,
-                    uri = fileToContentUri(file),
-                    dateModified = file.lastModified()
+                    dateModified = file.lastModified(),
+                    uriProvider = { fileToContentUri(file) }
                 )
             }
     }
@@ -61,8 +70,8 @@ class SignatureRepository @Inject constructor(@ApplicationContext private val co
             }
             return@withContext SignatureModel(
                 file = file,
-                uri = fileToContentUri(file),
-                dateModified = file.lastModified()
+                dateModified = file.lastModified(),
+                uriProvider = { fileToContentUri(file) }
             )
         } catch (e: Exception) {
             e.printStackTrace()
@@ -85,17 +94,21 @@ class SignatureRepository @Inject constructor(@ApplicationContext private val co
      */
     suspend fun importSignatureBytes(fileName: String, bytes: ByteArray): SignatureModel? = withContext(Dispatchers.IO) {
         try {
-            var target = File(signatureDir, fileName)
+            // Zip-slip guard: fileName đến từ tên entry trong file zip backup do user chọn qua SAF
+            // (không tin cậy) — File(...).name chỉ lấy phần tên cuối cùng, loại bỏ mọi "../" hay
+            // đường dẫn tuyệt đối, không cho ghi ra ngoài signatureDir.
+            val safeName = File(fileName).name.ifBlank { "signature_${System.currentTimeMillis()}.webp" }
+            var target = File(signatureDir, safeName)
             var suffix = 1
             while (target.exists()) {
-                target = File(signatureDir, "${fileName.substringBeforeLast('.')}_$suffix.${fileName.substringAfterLast('.')}")
+                target = File(signatureDir, "${safeName.substringBeforeLast('.')}_$suffix.${safeName.substringAfterLast('.')}")
                 suffix++
             }
             target.writeBytes(bytes)
             return@withContext SignatureModel(
                 file = target,
-                uri = fileToContentUri(target),
-                dateModified = target.lastModified()
+                dateModified = target.lastModified(),
+                uriProvider = { fileToContentUri(target) }
             )
         } catch (e: Exception) {
             e.printStackTrace()

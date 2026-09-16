@@ -35,7 +35,11 @@ class BackupRestoreRepository @Inject constructor(
         try {
             val input = context.contentResolver.openInputStream(srcUri) ?: return@withContext false
             val backup = input.use { BackupRestoreEngine.readBackup(it) }
-            backup.templates.forEach { templateRepo.insertTemplate(it) }
+            // Dedup theo content: restore lặp lại cùng 1 file backup (retry, hoặc máy đích đã có
+            // sẵn template đó) không được nhân đôi — Template.id luôn = 0 (autoGenerate PK mới)
+            // nên không có cách nào khác để nhận biết "đã tồn tại" ngoài so content.
+            val existingContents = templateRepo.getAllTemplate().first().map { it.content }.toSet()
+            backup.templates.filter { it.content !in existingContents }.forEach { templateRepo.insertTemplate(it) }
             backup.signatureFiles.forEach { (name, bytes) -> signatureRepo.importSignatureBytes(name, bytes) }
             true
         } catch (e: Exception) {

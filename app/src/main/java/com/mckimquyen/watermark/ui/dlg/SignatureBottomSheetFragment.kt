@@ -10,8 +10,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentManager
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.mckimquyen.watermark.databinding.FSignatureBottomSheetBinding
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
 import java.io.File
@@ -67,14 +65,7 @@ class SignatureBottomSheetFragment : BaseBindBSDFragment<FSignatureBottomSheetBi
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
             )
             window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-            setOnShowListener {
-                val bottomSheet = (this as BottomSheetDialog).findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-                bottomSheet?.let {
-                    val behavior = BottomSheetBehavior.from(it)
-                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                    behavior.skipCollapsed = true
-                }
-            }
+            expandBottomSheetFully()
         }
     }
 

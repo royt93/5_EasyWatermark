@@ -1,9 +1,13 @@
 package com.mckimquyen.watermark.ui.base
 
+import android.app.Dialog
+import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.activityViewModels
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.ui.MainViewModel
@@ -45,5 +49,24 @@ open class BaseBSDFragment : BottomSheetDialogFragment() {
             }
         }
         return dialog
+    }
+
+    /**
+     * Force bottom sheet mở TOÀN MÀN HÌNH ngay từ đầu, không cho thu gọn (kéo xuống chỉ đóng hẳn,
+     * không dừng ở trạng thái collapsed) — dùng chung cho các bottom sheet cần hiện đủ nội dung
+     * ngay (Qr/Signature/PositionAnchor/BatchCaption), tránh copy-paste
+     * findViewById(design_bottom_sheet) + BottomSheetBehavior ở từng subclass.
+     * Lưu ý: [Dialog.setOnShowListener] chỉ giữ được 1 listener — gọi hàm này THAY VÌ tự set
+     * listener riêng (ghi đè, không cộng dồn).
+     */
+    protected fun Dialog.expandBottomSheetFully() {
+        setOnShowListener {
+            val bottomSheet = (this as BottomSheetDialog).findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            bottomSheet?.let {
+                val behavior = BottomSheetBehavior.from(it)
+                behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                behavior.skipCollapsed = true
+            }
+        }
     }
 }

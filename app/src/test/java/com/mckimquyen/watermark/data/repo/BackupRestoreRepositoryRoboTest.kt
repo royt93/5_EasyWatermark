@@ -79,6 +79,25 @@ class BackupRestoreRepositoryRoboTest {
     }
 
     @Test
+    fun restoreFrom_sameBackupTwice_doesNotDuplicateTemplates() {
+        // Regression cho bug tìm được ở code review (2026-09-16): Template.id luôn = 0 khi restore
+        // (Room autoGenerate PK mới) — không dedup thì restore cùng 1 file backup 2 lần (retry sau
+        // lỗi giữa chừng, hoặc máy đích đã có sẵn) sẽ nhân đôi mọi template.
+        runBlocking {
+            db.templateDao().insertTemplate(Template(id = 0, content = "© Brand", creationDate = Date(1_000L), lastModifiedDate = null))
+            val zipFile = tmp.newFile("backup.zip")
+            val zipUri = Uri.fromFile(zipFile)
+            assertThat(repo.backupTo(zipUri)).isTrue()
+
+            assertThat(repo.restoreFrom(zipUri)).isTrue()
+            assertThat(repo.restoreFrom(zipUri)).isTrue()
+
+            val templates = db.templateDao().getAllTemplate().first()
+            assertThat(templates.map { it.content }).containsExactly("© Brand")
+        }
+    }
+
+    @Test
     fun restoreFrom_invalidZip_doesNotCrashOrInsertGarbage() = runBlocking {
         // ZipInputStream không throw với input không phải zip hợp lệ (đọc được 0 entry) — hành vi
         // đúng cần verify là KHÔNG crash và KHÔNG chèn rác vào DB, không phải giá trị return cụ thể.
