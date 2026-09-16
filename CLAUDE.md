@@ -64,7 +64,7 @@ Build có 2 trục: flavor (`appTest`, `appRelease`) × buildType (`debug`, `rel
 - DI module: `di/AppModule.kt`, `di/DataStoreModule.kt`, `di/RepositoryModule.kt`.
 
 ### Rendering watermark
-- `ui/widget/WaterMarkImageView.kt` là custom view vẽ watermark (text hoặc tile bitmap với shader/rotation/alpha). Lưu ý cảnh báo memory-leak đã ghi trong `doc/todo.md` (executor không shutdown, scope không hủy ở `onDetachedFromWindow`).
+- `ui/widget/WaterMarkImageView.kt` là custom view vẽ watermark (text hoặc tile bitmap với shader/rotation/alpha). Cảnh báo memory-leak cũ (executor không shutdown, scope không hủy) đã được fix từ trước — xem `doc/todo.md` mục Memory Leak Fixes; `onDetachedFromWindow()` hiện cancel `generateBitmapJob` + release `BitmapCache.BitmapValue`, không còn `Executors.newSingleThreadExecutor()`.
 - Tiện ích bitmap ở `utils/bitmap/` (`BitmapUtils`, `BitmapCache`) — decode lấy mẫu, đọc EXIF (`getOrientation`, `TAG_*`).
 - Glide custom qua `GlideModule.kt`.
 

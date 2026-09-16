@@ -28,12 +28,13 @@
 
 ## Sửa lỗi rò rỉ bộ nhớ (Memory Leak Fixes)
 
-> ⚠️ **Cần re-verify (2026-09-16):** `CLAUDE.md` (root) hiện vẫn ghi `WaterMarkImageView` còn leak
-> (executor không shutdown, scope không hủy ở `onDetachedFromWindow`) — mâu thuẫn với mục "ĐÃ XONG"
-> ngay dưới đây. Chưa rõ CLAUDE.md lỗi thời hay leak đã tái xuất hiện sau các lần sửa `WaterMarkImageView`
-> gần đây (FEAT-11 text-effect, M3 migration). Cần đọc lại code thật trước khi tin bên nào.
+> ✅ **Re-verified (2026-09-16):** đọc lại `WaterMarkImageView.kt` thật — `onDetachedFromWindow()`
+> vẫn cancel `generateBitmapJob` + release `mainImageBitmapValue`/`iconBitmapValue`, không còn
+> `Executors.newSingleThreadExecutor()`. Cảnh báo trong `CLAUDE.md` (root) là lỗi thời, đã sửa lại.
+> `drawableAlphaAnimator`/`animator` (snap-back sau pinch) không bị cancel ở `onDetachedFromWindow`
+> nhưng duration ngắn (300-450ms) — không đáng kể, không cần fix.
 
-- [x] ~~**WaterMarkImageView** — scope/executor leak~~ — ĐÃ XONG (theo ghi nhận cũ, cần re-verify ở trên):
+- [x] ~~**WaterMarkImageView** — scope/executor leak~~ — ĐÃ XONG, re-verify lại 2026-09-16 vẫn đúng:
   - `onDetachedFromWindow()` đã override và gọi `generateBitmapJob?.cancel()`.
   - Không còn `Executors.newSingleThreadExecutor()`; dùng `Dispatchers.Default` cho `generateBitmapCoroutineCtx`. (Import rác `Executors` đã được xóa.)
 - [x] ~~**MyApplication** — static `instance: Context`~~ — ĐÃ XONG (2026-09-06): gỡ field `instance`, thread `Context` qua toàn bộ chuỗi gọi.
