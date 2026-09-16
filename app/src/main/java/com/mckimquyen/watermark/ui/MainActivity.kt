@@ -205,6 +205,18 @@ class MainActivity : BaseActivity() {
         // applyEdgeToEdge() is invoked by BaseActivity.onCreate() — no duplicate window setup needed
         if (MyApplication.recoveryMode) {
             setContentView(R.layout.a_recovery)
+            // BUG-23 (phát hiện phụ lúc smoke test): a_recovery.xml chỉ có margin cứng
+            // (48dp/32dp), không có inset listener nào — khác luồng launchView bình thường ngay
+            // dưới đây đã xử lý đúng. Trên máy status/nav bar cao hơn giả định, tiêu đề/nút
+            // "Turn off recovery mode" có thể bị che — đúng lúc app đang crash-loop, màn hình
+            // NÀY càng phải chắc chắn hiển thị đủ, không được để edge-to-edge nuốt mất.
+            val rootRecovery = findViewById<View>(R.id.rootRecovery)
+            androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rootRecovery) { view, insets ->
+                val systemBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+                view.setPadding(0, systemBars.top, 0, systemBars.bottom)
+                insets
+            }
+            androidx.core.view.ViewCompat.requestApplyInsets(rootRecovery)
             initRecoveryView()
             return
         }

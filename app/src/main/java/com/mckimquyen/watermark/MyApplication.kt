@@ -69,13 +69,19 @@ class MyApplication : Application(), Configuration.Provider {
         super.onCreate()
         DynamicColors.applyToActivitiesIfAvailable(this)
         setupAdmob()
+        // BUG-23: CMonet.init() KHÔNG được đặt trong nhánh else của checkRecoveryMode() — khi app
+        // đang recovery mode, mọi màn hình đọc màu theme qua ContextExtension.kt (colorPrimary/
+        // colorSecondary/... — ~30 điểm gọi CMonet.isDynamicColorAvailable()) sẽ crash
+        // UninitializedPropertyAccessException ngay khi vẽ UI đầu tiên, vô hiệu hoá luôn cơ chế
+        // graceful-recovery. init() không có side-effect nguy hiểm liên quan tới nguyên nhân
+        // crash đang điều tra — gọi vô điều kiện, không phụ thuộc recovery mode.
+        CMonet.init(this, true)
         if (checkRecoveryMode()) {
             return
         } else {
             applicationScope.launch {
                 waterMarkRepo.resetModeToText()
             }
-            CMonet.init(this, true)
         }
     }
 
