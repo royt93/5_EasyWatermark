@@ -34,6 +34,14 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
     companion object {
         private val TAG = GalleryFragment::class.java.simpleName
+
+        /**
+         * BUG-29: tỉ lệ "px scroll thật / px kéo slider" — PHẢI dùng phép chia Float, không phải
+         * Int/Int (mất hoàn toàn phần thập phân, khiến kéo slider không cuộn hết list hoặc nhảy
+         * sai vị trí). Tách hàm riêng để test được trực tiếp không cần dựng RecyclerView/View thật.
+         */
+        internal fun computeSliderScrollPercent(scrollRange: Int, totalHeight: Int): Float =
+            scrollRange.toFloat() / totalHeight
     }
 
     private var isScrollSliderManually: Boolean = false
@@ -217,7 +225,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                 override fun onTouch(v: View?, event: MotionEvent?): Boolean {
                     if (v == null) return false
                     val totalHeight = rootView.rvContent.bottom - rootView.rvContent.paddingBottom
-                    val percent = binding.rvContent.computeVerticalScrollRange() / totalHeight
+                    val percent = computeSliderScrollPercent(binding.rvContent.computeVerticalScrollRange(), totalHeight)
                     AppLog.d(TAG, "ivSlider totalHeight=$totalHeight percent=$percent")
                     when (event?.actionMasked) {
                         MotionEvent.ACTION_DOWN -> {

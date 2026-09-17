@@ -31,6 +31,22 @@ class SignatureModel(
 @Singleton
 class SignatureRepository @Inject constructor(@ApplicationContext private val context: Context) {
 
+    companion object {
+        /**
+         * BUG-34: `Bitmap.compress()` trả `Boolean` báo thành công/thất bại thật — trước đây bị
+         * bỏ qua, để lại file rỗng/hỏng + trả `SignatureModel` giả khi encode thất bại (bitmap
+         * hỏng, hết dung lượng...). Hàm thuần (không phụ thuộc Bitmap/Android runtime thật) để dễ
+         * unit test, theo đúng pattern [com.mckimquyen.watermark.data.model.MediaStoreWriteResolver]
+         * (BUG-19) — xoá file rác nếu ghi thất bại, không để lại signature hỏng trên đĩa.
+         */
+        internal fun resolveWriteResult(file: File, compressSucceeded: Boolean): Boolean {
+            if (!compressSucceeded) {
+                file.delete()
+            }
+            return compressSucceeded
+        }
+    }
+
     private val signatureDir: File
         get() {
             val dir = File(context.filesDir, "signatures")
@@ -65,8 +81,11 @@ class SignatureRepository @Inject constructor(@ApplicationContext private val co
         try {
             val fileName = "signature_${System.currentTimeMillis()}.webp"
             val file = File(signatureDir, fileName)
-            FileOutputStream(file).use { out ->
+            val compressed = FileOutputStream(file).use { out ->
                 bitmap.compress(Bitmap.CompressFormat.WEBP, 100, out)
+            }
+            if (!resolveWriteResult(file, compressed)) {
+                return@withContext null
             }
             return@withContext SignatureModel(
                 file = file,

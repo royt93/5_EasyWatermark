@@ -25,6 +25,16 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class AboutActivity : BaseActivity() {
 
+    companion object {
+        /**
+         * BUG-30: trang `store/apps/developer?id=` yêu cầu Developer ID SỐ (không phải tên công
+         * ty dạng chuỗi thô) — dùng `store/search?q=pub:` (tìm theo tên publisher) thay thế, kèm
+         * `Uri.encode` cho khoảng trắng trong tên. Tách hàm riêng để test được không cần Activity.
+         */
+        internal fun buildMoreAppsUrl(developerName: String): String =
+            "https://play.google.com/store/search?q=pub:${Uri.encode(developerName)}"
+    }
+
     private val binding by inflate<AAboutBinding>()
 
     private val viewModel: AboutViewModel by viewModels()
@@ -86,7 +96,7 @@ class AboutActivity : BaseActivity() {
             }
             tvMoreApp.setOnClickListener {
                 AppLog.d(LOG_TAG, "AboutActivity tvMoreApp clicked — opening developer page")
-                openLink("https://play.google.com/store/apps/developer?id=SAIGON PHANTOM LABS")
+                openLink(buildMoreAppsUrl("SAIGON PHANTOM LABS"))
             }
             tvShareApp.setOnClickListener {
                 AppLog.d(LOG_TAG, "AboutActivity tvShareApp clicked — opening share sheet")
