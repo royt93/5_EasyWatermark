@@ -87,6 +87,12 @@ class PositionAnchorBottomSheetFragment : BaseBindBSDFragment<FPositionAnchorBot
         } else {
             android.graphics.Color.TRANSPARENT
         }
+        val textColor = if (selected) {
+            com.google.android.material.color.MaterialColors.getColor(button, com.google.android.material.R.attr.colorPrimary)
+        } else {
+            com.google.android.material.color.MaterialColors.getColor(button, com.google.android.material.R.attr.colorOnSurface)
+        }
+        button.setTextColor(textColor)
         button.strokeColor = android.content.res.ColorStateList.valueOf(strokeColor)
         button.backgroundTintList = android.content.res.ColorStateList.valueOf(bgColor)
         button.strokeWidth = ((if (selected) 2f else 1f) * resources.displayMetrics.density).toInt()

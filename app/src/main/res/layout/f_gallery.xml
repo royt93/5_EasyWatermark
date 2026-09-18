@@ -25,7 +25,7 @@
             android:background="?attr/colorSurface"
             android:elevation="0dp"
             app:menu="@menu/top_app_bar"
-            app:navigationIcon="@drawable/baseline_cancel_24"
+            app:navigationIcon="@drawable/ic_close"
             app:navigationIconTint="?attr/colorOnSurface"
             app:title="@string/action_pick"
             app:titleCentered="true"

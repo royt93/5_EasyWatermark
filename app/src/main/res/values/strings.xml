@@ -5,6 +5,8 @@
     <string name="action_pick">Choose picture</string>
     <string name="action_save">Save</string>
     <string name="action_settings">About</string>
+    <string name="launch_card_pick_desc">Protect photos with text, icons or Leica EXIF</string>
+    <string name="launch_card_about_desc">Settings, backup &amp; Material You theme</string>
     <string name="title_layout">Layout</string>
     <string name="title_style">Style</string>
     <string name="title_content">Content</string>
@@ -35,8 +37,8 @@
     <string name="share">Share</string>
     <string name="share_app">Share App</string>
     <string name="share_app_message">Check out %1$s: https://play.google.com/store/apps/details?id=%2$s</string>
-    <string name="backup_data">💾  Backup</string>
-    <string name="restore_data">📥  Restore</string>
+    <string name="backup_data">Backup</string>
+    <string name="restore_data">Restore</string>
     <string name="backup_success">Backup saved successfully</string>
     <string name="backup_failed">Backup failed</string>
     <string name="restore_success">Restore completed successfully</string>
@@ -64,7 +66,7 @@
     <string name="dialog_title_exist_confirm">Warning</string>
     <string name="dialog_cancel_exist_confirm">Cancel</string>
     <string name="dialog_content_exist_confirm">Discard changes?</string>
-    <string name="about_title_privacy_statement" translatable="false">Privacy Statement</string>
+    <string name="about_title_privacy_statement">Privacy Statement</string>
     <string name="about_title_privacy_statement_zh" translatable="false">隐私政策</string>
     <string name="open_source_desc_color_picker" translatable="false"><![CDATA[ColorPickerView implements getting HSV colors, ARGB values, Hex color codes from any image drawables or your gallery pictures by tapping on the desired color. Supports alpha & brightness slider bar, dialog, and saving & restoring selected data.]]></string>
     <string name="open_source_desc_about_lib" translatable="false">Glide is a fast and efficient open source media management and image loading framework for Android that wraps media decoding, memory and disk caching, and resource pooling into a simple and easy to use interface.</string>
@@ -229,4 +231,13 @@
     </plurals>
     <string name="batch_caption_count_mismatch">%1$d lines entered but %2$d images in batch — fix before applying</string>
     <string name="batch_caption_invalid_csv">Unclosed quote on line %1$d</string>
+    <string name="action_rate_us">Rate us</string>
+    <string name="splash_tagline">Fast • Elegant • Offline Protection</string>
+    <string name="signature_saved_hint">Saved Signatures  (tap to load · ✕ to delete)</string>
+    <string name="draw_signature">Draw Signature</string>
+    <string name="action_clear">Clear</string>
+    <string name="about_section_app_info">App Info</string>
+    <string name="debug_title">Debug</string>
+    <string name="designed_with_by_tovi">Designed with ♥ by tovi</string>
+    <string name="designer_comment">A Designer.</string>
 </resources>

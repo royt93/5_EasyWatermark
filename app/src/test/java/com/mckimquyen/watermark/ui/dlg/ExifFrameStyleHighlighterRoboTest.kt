@@ -38,7 +38,11 @@ class ExifFrameStyleHighlighterRoboTest {
 
         ExifFrameStyleHighlighter.apply(buttons, ExifFrameStyle.POLAROID)
 
-        val expected = ContextCompat.getColor(context, R.color.glass_text_primary)
+        val expected = com.google.android.material.color.MaterialColors.getColor(
+            themedContext,
+            com.google.android.material.R.attr.colorPrimary,
+            0
+        )
         assertThat(buttons.getValue(ExifFrameStyle.POLAROID).strokeColor?.defaultColor).isEqualTo(expected)
     }
 
@@ -48,7 +52,11 @@ class ExifFrameStyleHighlighterRoboTest {
 
         ExifFrameStyleHighlighter.apply(buttons, ExifFrameStyle.POLAROID)
 
-        val expected = ContextCompat.getColor(context, R.color.glass_border)
+        val expected = com.google.android.material.color.MaterialColors.getColor(
+            themedContext,
+            com.google.android.material.R.attr.colorOutlineVariant,
+            0
+        )
         assertThat(buttons.getValue(ExifFrameStyle.CLASSIC).strokeColor?.defaultColor).isEqualTo(expected)
         assertThat(buttons.getValue(ExifFrameStyle.FILM_STRIP).strokeColor?.defaultColor).isEqualTo(expected)
         assertThat(buttons.getValue(ExifFrameStyle.MINIMAL).strokeColor?.defaultColor).isEqualTo(expected)
@@ -71,8 +79,16 @@ class ExifFrameStyleHighlighterRoboTest {
 
         ExifFrameStyleHighlighter.apply(buttons, ExifFrameStyle.FILM_STRIP)
 
-        val expectedUnselected = ContextCompat.getColor(context, R.color.glass_border)
-        val expectedSelected = ContextCompat.getColor(context, R.color.glass_text_primary)
+        val expectedUnselected = com.google.android.material.color.MaterialColors.getColor(
+            themedContext,
+            com.google.android.material.R.attr.colorOutlineVariant,
+            0
+        )
+        val expectedSelected = com.google.android.material.color.MaterialColors.getColor(
+            themedContext,
+            com.google.android.material.R.attr.colorPrimary,
+            0
+        )
         assertThat(buttons.getValue(ExifFrameStyle.CLASSIC).strokeColor?.defaultColor).isEqualTo(expectedUnselected)
         assertThat(buttons.getValue(ExifFrameStyle.FILM_STRIP).strokeColor?.defaultColor).isEqualTo(expectedSelected)
     }
@@ -84,7 +100,11 @@ class ExifFrameStyleHighlighterRoboTest {
         ExifFrameStyle.entries.forEach { selected ->
             ExifFrameStyleHighlighter.apply(buttons, selected)
 
-            val expectedSelected = ContextCompat.getColor(context, R.color.glass_text_primary)
+            val expectedSelected = com.google.android.material.color.MaterialColors.getColor(
+                themedContext,
+                com.google.android.material.R.attr.colorPrimary,
+                0
+            )
             val highlightedCount = buttons.values.count { it.strokeColor?.defaultColor == expectedSelected }
             assertThat(highlightedCount).isEqualTo(1)
             assertThat(buttons.getValue(selected).strokeColor?.defaultColor).isEqualTo(expectedSelected)

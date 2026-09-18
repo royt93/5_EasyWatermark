@@ -15,7 +15,8 @@
         android:id="@+id/vHandle"
         android:layout_width="32dp"
         android:layout_height="4dp"
-        android:background="?attr/colorOutlineVariant"
+        android:alpha="0.4"
+        android:background="?attr/colorOnSurfaceVariant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -58,6 +59,9 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:text="↖"
+                android:textSize="20sp"
+                android:textColor="?attr/colorOnSurface"
                 app:cornerRadius="14dp"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
@@ -70,6 +74,9 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:text="↑"
+                android:textSize="20sp"
+                android:textColor="?attr/colorOnSurface"
                 app:cornerRadius="14dp"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
@@ -82,6 +89,9 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:text="↗"
+                android:textSize="20sp"
+                android:textColor="?attr/colorOnSurface"
                 app:cornerRadius="14dp"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
@@ -101,6 +111,9 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:text="←"
+                android:textSize="20sp"
+                android:textColor="?attr/colorOnSurface"
                 app:cornerRadius="14dp"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
@@ -113,6 +126,9 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:text="●"
+                android:textSize="16sp"
+                android:textColor="?attr/colorOnSurface"
                 app:cornerRadius="14dp"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
@@ -125,6 +141,9 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:text="→"
+                android:textSize="20sp"
+                android:textColor="?attr/colorOnSurface"
                 app:cornerRadius="14dp"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
@@ -144,6 +163,9 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:text="↙"
+                android:textSize="20sp"
+                android:textColor="?attr/colorOnSurface"
                 app:cornerRadius="14dp"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
@@ -156,6 +178,9 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:text="↓"
+                android:textSize="20sp"
+                android:textColor="?attr/colorOnSurface"
                 app:cornerRadius="14dp"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
@@ -168,6 +193,9 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:text="↘"
+                android:textSize="20sp"
+                android:textColor="?attr/colorOnSurface"
                 app:cornerRadius="14dp"
                 app:strokeColor="?attr/colorOutlineVariant" />
 

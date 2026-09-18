@@ -8,12 +8,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="280dp"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_glassmorphism_panel"
+    android:background="@drawable/bg_m3_dialog"
     android:minWidth="280dp"
-    android:paddingStart="16dp"
-    android:paddingTop="20dp"
-    android:paddingEnd="16dp"
-    android:paddingBottom="16dp">
+    android:paddingStart="20dp"
+    android:paddingTop="24dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="20dp">
 
     <TextView
         android:id="@+id/tvTitle"
@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:text="@string/tips_tip_title"
         android:textColor="?attr/colorOnSurface"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -32,6 +32,7 @@
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:layout_marginTop="16dp"
+        android:indeterminateTint="?attr/colorPrimary"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,7 +49,7 @@
         android:text="@string/tips_need_compress_img"
         android:textAlignment="center"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="13sp"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cpbCompress" />
@@ -59,9 +60,10 @@
         style="@style/Widget.Material3.Button.FilledButton"
         android:layout_width="0dp"
         android:layout_height="48dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="20dp"
         android:text="@string/tips_compress_images"
         android:textStyle="bold"
+        app:cornerRadius="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvCompressTips" />

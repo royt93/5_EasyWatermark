@@ -29,31 +29,30 @@ class TileModeFragment : BaseBindFragment<FTileModeBinding>() {
                 return@observe
             }
             val checkedId = when (it.tileMode) {
-                Shader.TileMode.CLAMP.ordinal -> R.id.rbTileModeDecal
-                else -> R.id.rbTileModeRepeat
+                Shader.TileMode.CLAMP.ordinal -> R.id.btnTileModeDecal
+                else -> R.id.btnTileModeRepeat
             }
             binding?.btnPositionAnchor?.visibility =
                 if (it.tileMode == Shader.TileMode.CLAMP.ordinal) View.VISIBLE else View.GONE
-            binding?.rgTileMode?.setOnCheckedChangeListener(null)
-            binding?.rgTileMode?.check(checkedId)
-            binding?.rgTileMode?.setOnCheckedChangeListener { _, id ->
+            binding?.tgTileMode?.clearOnButtonCheckedListeners()
+            binding?.tgTileMode?.check(checkedId)
+            binding?.tgTileMode?.addOnButtonCheckedListener { _, checkedButtonId, isChecked ->
+                if (!isChecked) return@addOnButtonCheckedListener
                 val imageInfo = it
-                if (id == R.id.rbTileModeDecal && imageInfo.tileMode == Shader.TileMode.CLAMP.ordinal) {
-                    return@setOnCheckedChangeListener
+                if (checkedButtonId == R.id.btnTileModeDecal && imageInfo.tileMode == Shader.TileMode.CLAMP.ordinal) {
+                    return@addOnButtonCheckedListener
                 }
-                if (id == R.id.rbTileModeRepeat && imageInfo.tileMode == Shader.TileMode.REPEAT.ordinal) {
-                    return@setOnCheckedChangeListener
+                if (checkedButtonId == R.id.btnTileModeRepeat && imageInfo.tileMode == Shader.TileMode.REPEAT.ordinal) {
+                    return@addOnButtonCheckedListener
                 }
-                when (id) {
-                    R.id.rbTileModeDecal -> shareViewModel.updateTileMode(imageInfo, Shader.TileMode.CLAMP)
+                when (checkedButtonId) {
+                    R.id.btnTileModeDecal -> shareViewModel.updateTileMode(imageInfo, Shader.TileMode.CLAMP)
                     else -> shareViewModel.updateTileMode(imageInfo, Shader.TileMode.REPEAT)
                 }
             }
         }
         shareViewModel.colorPalette.observe(this.viewLifecycleOwner) {
             val color = it.titleTextColor(requireContext())
-            binding?.rbTileModeDecal?.setTextColor(color)
-            binding?.rbTileModeRepeat?.setTextColor(color)
             binding?.btnPositionAnchor?.setTextColor(color)
         }
         binding?.btnPositionAnchor?.setOnClickListener {

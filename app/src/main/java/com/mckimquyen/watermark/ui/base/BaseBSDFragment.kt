@@ -30,43 +30,43 @@ open class BaseBSDFragment : BottomSheetDialogFragment() {
         // phần padding thật xử lý ở setOnShowListener bên dưới (design_bottom_sheet).
         dialog.window?.let { WindowCompat.setDecorFitsSystemWindows(it, false) }
 
-        // Remove BottomSheet's default solid background
+        // Remove BottomSheet's default solid background and apply navigation bar insets
+        if (dialog is BottomSheetDialog) {
+            setupBottomSheet(dialog, expandFully = false)
+        }
+        return dialog
+    }
+
+    protected fun setupBottomSheet(dialog: BottomSheetDialog, expandFully: Boolean = false) {
         dialog.setOnShowListener {
-            val bottomSheet = (it as com.google.android.material.bottomsheet.BottomSheetDialog)
-                .findViewById<android.view.View>(com.google.android.material.R.id.design_bottom_sheet)
+            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
             bottomSheet?.setBackgroundResource(android.R.color.transparent)
-            // BottomSheetBehavior định vị/đo kích thước theo chính view design_bottom_sheet này
-            // (không phải content root bên trong) — padding ở root không đủ để tránh nav bar,
-            // phải cộng thêm ở đây thì nút CTA cuối layout mới không bị nav bar che.
             bottomSheet?.let { sheet ->
+                if (expandFully) {
+                    val behavior = BottomSheetBehavior.from(sheet)
+                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                    behavior.skipCollapsed = true
+                }
                 val baseBottom = sheet.paddingBottom
                 ViewCompat.setOnApplyWindowInsetsListener(sheet) { view, insets ->
-                    val navBarBottom = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+                    val navBarBottom = insets.getInsets(
+                        WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+                    ).bottom
                     view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, baseBottom + navBarBottom)
                     insets
                 }
                 ViewCompat.requestApplyInsets(sheet)
             }
         }
-        return dialog
     }
 
     /**
      * Force bottom sheet mở TOÀN MÀN HÌNH ngay từ đầu, không cho thu gọn (kéo xuống chỉ đóng hẳn,
-     * không dừng ở trạng thái collapsed) — dùng chung cho các bottom sheet cần hiện đủ nội dung
-     * ngay (Qr/Signature/PositionAnchor/BatchCaption), tránh copy-paste
-     * findViewById(design_bottom_sheet) + BottomSheetBehavior ở từng subclass.
-     * Lưu ý: [Dialog.setOnShowListener] chỉ giữ được 1 listener — gọi hàm này THAY VÌ tự set
-     * listener riêng (ghi đè, không cộng dồn).
+     * không dừng ở trạng thái collapsed) — bảo toàn padding insets và nền trong suốt.
      */
     protected fun Dialog.expandBottomSheetFully() {
-        setOnShowListener {
-            val bottomSheet = (this as BottomSheetDialog).findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            bottomSheet?.let {
-                val behavior = BottomSheetBehavior.from(it)
-                behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                behavior.skipCollapsed = true
-            }
+        if (this is BottomSheetDialog) {
+            setupBottomSheet(this, expandFully = true)
         }
     }
 }

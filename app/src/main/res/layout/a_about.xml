@@ -65,10 +65,11 @@
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/topAppBar"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
+                android:layout_height="wrap_content"
+                android:minHeight="?attr/actionBarSize"
                 android:background="@android:color/transparent"
                 app:layout_collapseMode="pin"
-                app:navigationIcon="@drawable/baseline_cancel_24"
+                app:navigationIcon="@drawable/ic_close"
                 app:navigationIconTint="?attr/colorOnSurface"
                 app:title="@string/about_title_info"
                 app:titleCentered="true"
@@ -80,6 +81,7 @@
 
     <!-- ─── Scrollable content ─── -->
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
@@ -158,8 +160,11 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="8dp"
-                                app:backgroundTint="?attr/colorPrimary"
-                                android:text="⭐  Rate Us"
+                                app:icon="@drawable/ic_star"
+                                app:iconSize="16dp"
+                                app:iconTint="?attr/colorOnPrimary"
+                                app:iconGravity="textStart"
+                                android:text="@string/action_rate_us"
                                 android:textColor="?attr/colorOnPrimary"
                                 android:textSize="13sp"
                                 android:textStyle="bold"
@@ -173,8 +178,11 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="8dp"
-                                app:backgroundTint="?attr/colorSecondaryContainer"
-                                android:text="🛍  More Apps"
+                                app:icon="@drawable/ic_apps"
+                                app:iconSize="16dp"
+                                app:iconTint="?attr/colorOnSecondaryContainer"
+                                app:iconGravity="textStart"
+                                android:text="@string/more_apps"
                                 android:textColor="?attr/colorOnSecondaryContainer"
                                 android:textSize="13sp"
                                 android:textStyle="bold"
@@ -188,22 +196,28 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="8dp"
-                                app:backgroundTint="?attr/colorSecondaryContainer"
-                                android:text="📤  Share App"
+                                app:icon="@drawable/ic_share"
+                                app:iconSize="16dp"
+                                app:iconTint="?attr/colorOnSecondaryContainer"
+                                app:iconGravity="textStart"
+                                android:text="@string/share_app"
                                 android:textColor="?attr/colorOnSecondaryContainer"
                                 android:textSize="13sp"
                                 android:textStyle="bold"
                                 app:cornerRadius="20dp"
                                 app:strokeWidth="0dp" />
 
-                            <!-- Đề xuất F: Backup Template + Signature ra file zip -->
+                            <!-- Backup Template + Signature -->
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/tvBackupData"
                                 style="@style/Widget.Material3.Button.TonalButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
                                 android:layout_marginEnd="8dp"
-                                app:backgroundTint="?attr/colorSecondaryContainer"
+                                app:icon="@drawable/ic_backup"
+                                app:iconSize="16dp"
+                                app:iconTint="?attr/colorOnSecondaryContainer"
+                                app:iconGravity="textStart"
                                 android:text="@string/backup_data"
                                 android:textColor="?attr/colorOnSecondaryContainer"
                                 android:textSize="13sp"
@@ -211,13 +225,16 @@
                                 app:cornerRadius="20dp"
                                 app:strokeWidth="0dp" />
 
-                            <!-- Đề xuất F: Restore Template + Signature từ file zip -->
+                            <!-- Restore Template + Signature -->
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/tvRestoreData"
                                 style="@style/Widget.Material3.Button.TonalButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
-                                app:backgroundTint="?attr/colorSecondaryContainer"
+                                app:icon="@drawable/ic_restore"
+                                app:iconSize="16dp"
+                                app:iconTint="?attr/colorOnSecondaryContainer"
+                                app:iconGravity="textStart"
                                 android:text="@string/restore_data"
                                 android:textColor="?attr/colorOnSecondaryContainer"
                                 android:textSize="13sp"
@@ -243,7 +260,7 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="6dp"
                 android:letterSpacing="0.12"
-                android:text="APP INFO"
+                android:text="@string/about_section_app_info"
                 android:textAllCaps="true"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp"
@@ -338,11 +355,10 @@
                             android:textSize="15sp" />
 
                         <ImageView
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
-                            android:alpha="0.5"
-                            android:rotation="45"
-                            android:src="@drawable/baseline_cancel_24"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.6"
+                            android:src="@drawable/ic_chevron_right"
                             app:tint="?attr/colorOnSurfaceVariant"
                             tools:ignore="ContentDescription" />
 
@@ -382,11 +398,10 @@
                             android:textSize="15sp" />
 
                         <ImageView
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
-                            android:alpha="0.5"
-                            android:rotation="45"
-                            android:src="@drawable/baseline_cancel_24"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.6"
+                            android:src="@drawable/ic_chevron_right"
                             app:tint="?attr/colorOnSurfaceVariant"
                             tools:ignore="ContentDescription" />
 
@@ -406,7 +421,7 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="6dp"
                 android:letterSpacing="0.12"
-                android:text="DEBUG"
+                android:text="@string/debug_title"
                 android:textAllCaps="true"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp"
@@ -590,7 +605,7 @@
                                 android:layout_marginEnd="20dp"
                                 android:ellipsize="end"
                                 android:singleLine="true"
-                                android:text="Designed with ♥ by tovi"
+                                android:text="@string/designed_with_by_tovi"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textStyle="bold"
                                 app:layout_constraintEnd_toEndOf="parent"
@@ -604,7 +619,7 @@
                                 android:layout_marginStart="20dp"
                                 android:layout_marginTop="8dp"
                                 android:layout_marginEnd="20dp"
-                                android:text="A Designer."
+                                android:text="@string/designer_comment"
                                 android:textColor="?attr/colorOnSurfaceVariant"
                                 android:textSize="12sp"
                                 app:layout_constraintBottom_toTopOf="@id/civAvatarDesigner"

@@ -7,68 +7,55 @@
     android:background="?attr/colorSurface">
 
     <!-- Top App Bar -->
-    <LinearLayout
-        android:id="@+id/llTopBar"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:paddingTop="48dp"
-        android:paddingBottom="16dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
         android:background="?attr/colorSurface"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="?attr/colorOnSurface"
+        app:title="@string/signature_studio"
+        app:titleCentered="false"
+        app:titleTextColor="?attr/colorOnSurface"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/ivBack"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:padding="4dp"
-            android:src="@drawable/ic_arrow_back"
-            app:tint="?attr/colorOnSurface" />
-        
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/signature_studio"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <ImageView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/ivUndo"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:padding="4dp"
-            android:src="@drawable/ic_undo"
-            app:tint="?attr/colorTertiary"
-            android:layout_marginEnd="8dp" />
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end"
+            android:layout_marginEnd="4dp"
+            app:icon="@drawable/ic_undo"
+            app:iconTint="?attr/colorTertiary"
+            tools:ignore="ContentDescription" />
 
-        <ImageView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/ivClear"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:padding="4dp"
-            android:src="@drawable/ic_clear_draw"
-            app:tint="?attr/colorError" />
-    </LinearLayout>
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end"
+            android:layout_marginEnd="8dp"
+            app:icon="@drawable/ic_clear_draw"
+            app:iconTint="?attr/colorError"
+            tools:ignore="ContentDescription" />
+    </com.google.android.material.appbar.MaterialToolbar>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/flCanvasContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="16dp"
-        app:cardBackgroundColor="?attr/colorSurfaceContainer"
-        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+        app:cardCornerRadius="24dp"
         app:cardElevation="0dp"
         app:strokeColor="?attr/colorOutlineVariant"
         app:strokeWidth="1dp"
         app:layout_constraintBottom_toTopOf="@id/llBottomControls"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/llTopBar">
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <TextView
             android:id="@+id/tvEmptyHint"
@@ -108,7 +95,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
-                android:text="Saved Signatures  (tap to load · ✕ to delete)"
+                android:text="@string/signature_saved_hint"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp" />
 
@@ -136,13 +123,16 @@
                 android:text="@string/size"
                 android:textColor="?attr/colorOnSurface" />
 
-            <SeekBar
+            <com.google.android.material.slider.Slider
                 android:id="@+id/sbSize"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:max="50"
-                android:progress="10" />
+                android:valueFrom="3"
+                android:valueTo="53"
+                android:value="13"
+                android:stepSize="1"
+                app:labelBehavior="floating" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -171,6 +161,7 @@
         <!-- Action Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnApply"
+            style="@style/Widget.Material3.Button.FilledButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="8dp"
@@ -180,7 +171,7 @@
             android:textColor="?attr/colorOnPrimary"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:cornerRadius="16dp"
+            app:cornerRadius="26dp"
             app:elevation="2dp"
             app:rippleColor="?attr/colorOnPrimary"
             app:strokeWidth="0dp" />

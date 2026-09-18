@@ -249,7 +249,10 @@
         android:gravity="start|center_vertical"
         android:paddingStart="0dp"
         android:text="@string/batch_caption_entry"
-        android:textColor="?attr/colorPrimary" />
+        android:textColor="?attr/colorPrimary"
+        app:icon="@drawable/ic_apps"
+        app:iconGravity="textStart"
+        app:iconTint="?attr/colorPrimary" />
 
     <!-- ══ SECTION: EXPORT LIST ═════════════════════════════════════════════ -->
     <TextView
@@ -298,18 +301,23 @@
         android:textStyle="bold"
         app:cornerRadius="16dp"
         app:elevation="2dp"
+        app:icon="@drawable/ic_save"
+        app:iconGravity="textStart"
+        app:iconTint="?attr/colorOnPrimary"
         app:rippleColor="?attr/colorOnPrimary"
         app:strokeWidth="0dp" />
 
     <!-- ══ SECONDARY: Open in gallery ══════════════════════════════════════ -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnOpenGallery"
-        style="@style/Widget.App.Button.TextButton"
+        style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="4dp"
-        android:backgroundTint="@android:color/transparent"
+        android:layout_marginTop="8dp"
+        app:cornerRadius="16dp"
+        app:icon="@drawable/ic_picker_image"
+        app:iconGravity="textStart"
         android:text="@string/dialog_open_in_gallery"
         android:textColor="?attr/colorPrimary" />
 

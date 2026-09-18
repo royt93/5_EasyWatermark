@@ -19,7 +19,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorSurface"
             android:elevation="0dp"
-            app:navigationIcon="@drawable/baseline_cancel_24"
+            app:navigationIcon="@drawable/ic_arrow_back"
             app:navigationIconTint="?attr/colorOnSurface"
             app:title="@string/about_title_open_source"
             app:titleTextColor="?attr/colorOnSurface" />

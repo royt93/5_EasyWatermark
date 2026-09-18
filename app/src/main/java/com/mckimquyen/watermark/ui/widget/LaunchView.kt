@@ -9,7 +9,9 @@ import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
@@ -21,6 +23,7 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.transition.TransitionManager
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.shape.ShapeAppearanceModel
@@ -106,7 +109,7 @@ class LaunchView : CustomViewGroup {
     val tvAppTagline: TextView by lazy {
         MaterialTextView(context).apply {
             layoutParams = MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-            text = "Fast • Elegant • Offline Protection"
+            text = context.getString(R.string.splash_tagline)
             setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
             val onSurfaceVariant = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.DKGRAY)
             setTextColor(onSurfaceVariant)
@@ -127,84 +130,211 @@ class LaunchView : CustomViewGroup {
         }
     }
 
-    val ivSelectedPhotoTips: MaterialButton by lazy {
-        MaterialButton(context).apply {
-            layoutParams = MarginLayoutParams(
-                LayoutParams.WRAP_CONTENT,
-                56.dp
-            ).also {
-                it.setMargins(0, 0, 0, 16.dp)
+    private fun createActionCard(
+        isPrimary: Boolean,
+        iconRes: Int,
+        titleRes: Int,
+        descRes: Int
+    ): MaterialCardView {
+        val card = MaterialCardView(context).apply {
+            val cardWidth = 320.dp
+            layoutParams = MarginLayoutParams(cardWidth, ViewGroup.LayoutParams.WRAP_CONTENT)
+            radius = 24.dp.toFloat()
+            isClickable = true
+            isFocusable = true
+
+            if (isPrimary) {
+                val containerColor = MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorSurfaceContainerHigh,
+                    Color.LTGRAY
+                )
+                val primaryColor = MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorPrimary,
+                    Color.BLACK
+                )
+                val strokeColorVal = MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorOutlineVariant,
+                    Color.TRANSPARENT
+                )
+                setCardBackgroundColor(containerColor)
+                strokeColor = strokeColorVal
+                strokeWidth = 1.dp
+                cardElevation = 2.dp.toFloat()
+            } else {
+                val containerColor = MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorSurfaceContainer,
+                    Color.LTGRAY
+                )
+                setCardBackgroundColor(containerColor)
+                strokeWidth = 0
+                cardElevation = 0f
             }
 
-            minHeight = 56.dp
-            minWidth = 240.dp
-            textAlignment = TEXT_ALIGNMENT_CENTER
-            gravity = Gravity.CENTER
-
-            val primaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorPrimary, Color.BLACK)
-            val onPrimaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnPrimary, Color.WHITE)
-
-            setBackgroundColor(primaryColor)
-            setTextColor(onPrimaryColor)
-
-            text = context.getString(R.string.tips_pick_image)
-            textSize = 16f
-            letterSpacing = 0.02f
-
-            icon = ContextCompat.getDrawable(context, R.drawable.ic_picker_image)
-            iconTint = ColorStateList.valueOf(onPrimaryColor)
-            iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
-            iconPadding = 10.dp
-            iconSize = 22.dp
-
-            shapeAppearanceModel = ShapeAppearanceModel.Builder()
-                .setAllCornerSizes(28.dp.toFloat())
-                .build()
-
-            strokeWidth = 0
-            elevation = 2.dp.toFloat()
-            setPadding(32.dp, paddingTop, 32.dp, paddingBottom)
+            // Spring scale tactile animation on touch
+            setOnTouchListener { v, event ->
+                when (event.actionMasked) {
+                    android.view.MotionEvent.ACTION_DOWN -> {
+                        v.animate().scaleX(0.97f).scaleY(0.97f).setDuration(120L).start()
+                    }
+                    android.view.MotionEvent.ACTION_UP,
+                    android.view.MotionEvent.ACTION_CANCEL -> {
+                        v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(180L).start()
+                    }
+                }
+                false
+            }
         }
+
+        val rootLayout = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(16.dp, 16.dp, 16.dp, 16.dp)
+            layoutParams = android.widget.FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        // 1. Tonal Icon Badge Container
+        val iconBadge = android.widget.FrameLayout(context).apply {
+            val badgeSize = 48.dp
+            layoutParams = LinearLayout.LayoutParams(badgeSize, badgeSize).apply {
+                marginEnd = 14.dp
+            }
+
+            val badgeBg = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 16.dp.toFloat()
+                if (isPrimary) {
+                    val badgeColor = MaterialColors.getColor(
+                        context,
+                        com.google.android.material.R.attr.colorPrimaryContainer,
+                        Color.BLACK
+                    )
+                    setColor(badgeColor)
+                } else {
+                    val badgeColor = MaterialColors.getColor(
+                        context,
+                        com.google.android.material.R.attr.colorSecondaryContainer,
+                        Color.DKGRAY
+                    )
+                    setColor(badgeColor)
+                }
+            }
+            background = badgeBg
+
+            val iv = ImageView(context).apply {
+                val iconSize = 24.dp
+                layoutParams = android.widget.FrameLayout.LayoutParams(iconSize, iconSize).apply {
+                    gravity = Gravity.CENTER
+                }
+                setImageResource(iconRes)
+                val tintColor = if (isPrimary) {
+                    MaterialColors.getColor(
+                        context,
+                        com.google.android.material.R.attr.colorOnPrimaryContainer,
+                        Color.WHITE
+                    )
+                } else {
+                    MaterialColors.getColor(
+                        context,
+                        com.google.android.material.R.attr.colorOnSecondaryContainer,
+                        Color.WHITE
+                    )
+                }
+                imageTintList = ColorStateList.valueOf(tintColor)
+            }
+            addView(iv)
+        }
+        rootLayout.addView(iconBadge)
+
+        // 2. Text Content (Headline + Subhead)
+        val textContainer = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
+            )
+        }
+
+        val tvTitle = MaterialTextView(context).apply {
+            setText(titleRes)
+            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleMedium)
+            typeface = Typeface.DEFAULT_BOLD
+            val onSurfaceColor = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorOnSurface,
+                Color.BLACK
+            )
+            setTextColor(onSurfaceColor)
+        }
+
+        val tvDesc = MaterialTextView(context).apply {
+            setText(descRes)
+            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodySmall)
+            val onSurfaceVariant = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorOnSurfaceVariant,
+                Color.GRAY
+            )
+            setTextColor(onSurfaceVariant)
+            setPadding(0, 2.dp, 0, 0)
+        }
+
+        textContainer.addView(tvTitle)
+        textContainer.addView(tvDesc)
+        rootLayout.addView(textContainer)
+
+        // 3. Trailing Arrow Chevron
+        val ivArrow = ImageView(context).apply {
+            val arrowSize = 20.dp
+            layoutParams = LinearLayout.LayoutParams(arrowSize, arrowSize).apply {
+                marginStart = 8.dp
+            }
+            setImageResource(R.drawable.ic_arrow_forward)
+            val arrowTint = if (isPrimary) {
+                MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorPrimary,
+                    Color.BLACK
+                )
+            } else {
+                MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorOnSurfaceVariant,
+                    Color.GRAY
+                )
+            }
+            imageTintList = ColorStateList.valueOf(arrowTint)
+            alpha = 0.75f
+        }
+        rootLayout.addView(ivArrow)
+
+        card.addView(rootLayout)
+        return card
     }
 
-    val ivGoAboutPage: MaterialButton by lazy {
-        MaterialButton(context).apply {
-            layoutParams = MarginLayoutParams(
-                LayoutParams.WRAP_CONTENT,
-                56.dp
-            ).also {
-                it.setMargins(0, 0, 0, 40.dp)
-            }
+    val ivSelectedPhotoTips: MaterialCardView by lazy {
+        createActionCard(
+            isPrimary = true,
+            iconRes = R.drawable.ic_picker_image,
+            titleRes = R.string.tips_pick_image,
+            descRes = R.string.launch_card_pick_desc
+        )
+    }
 
-            minHeight = 56.dp
-            minWidth = 240.dp
-            textAlignment = TEXT_ALIGNMENT_CENTER
-            gravity = Gravity.CENTER
-
-            val secContainerColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorSecondaryContainer, Color.LTGRAY)
-            val onSecContainerColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSecondaryContainer, Color.BLACK)
-
-            setBackgroundColor(secContainerColor)
-            setTextColor(onSecContainerColor)
-
-            text = context.getString(R.string.about_title_info)
-            textSize = 16f
-            letterSpacing = 0.02f
-
-            icon = ContextCompat.getDrawable(context, R.drawable.ic_settings_glass)
-            iconTint = ColorStateList.valueOf(onSecContainerColor)
-            iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
-            iconPadding = 10.dp
-            iconSize = 22.dp
-
-            shapeAppearanceModel = ShapeAppearanceModel.Builder()
-                .setAllCornerSizes(28.dp.toFloat())
-                .build()
-
-            strokeWidth = 0
-            elevation = 0f
-            setPadding(28.dp, paddingTop, 28.dp, paddingBottom)
-        }
+    val ivGoAboutPage: MaterialCardView by lazy {
+        createActionCard(
+            isPrimary = false,
+            iconRes = R.drawable.ic_settings_glass,
+            titleRes = R.string.about_title_info,
+            descRes = R.string.launch_card_about_desc
+        )
     }
 
     val toolbar: MaterialToolbar by lazy {
@@ -214,7 +344,7 @@ class LaunchView : CustomViewGroup {
                     LayoutParams.MATCH_PARENT,
                     LayoutParams.WRAP_CONTENT
                 )
-                    .also { it.setMargins(0, 20.dp, 0, 0) }
+                    .also { it.setMargins(0, 4.dp, 0, 0) }
             // Edge-to-edge: small right padding so the last action icon (settings) clears the
             // screen edge / rounded corner (Toolbar contentInsetEnd is 0 here).
             setPadding(0, 0, 12.dp, 0)
@@ -249,6 +379,13 @@ class LaunchView : CustomViewGroup {
             setBackgroundColor(Color.TRANSPARENT)
             val primaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorPrimary, Color.BLACK)
             val onSurfaceVariant = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.DKGRAY)
+            val indicatorDrawable = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 3.dp.toFloat()
+                setColor(primaryColor)
+                setSize(-1, 3.dp)
+            }
+            setSelectedTabIndicator(indicatorDrawable)
             setSelectedTabIndicatorColor(primaryColor)
             setTabTextColors(onSurfaceVariant, primaryColor)
             val contentTab = newTab().also {

@@ -23,6 +23,7 @@ import com.mckimquyen.watermark.databinding.ActivitySignatureBinding
 import com.mckimquyen.watermark.ui.adapter.ColorPreviewAdapter
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
 import com.mckimquyen.watermark.ui.widget.onItemClick
+import com.mckimquyen.watermark.utils.ktx.isNight
 import com.mckimquyen.watermark.utils.ktx.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -68,8 +69,12 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
     @Inject
     lateinit var repo: SignatureRepository
     private val historyAdapter = SignatureHistoryAdapter()
+    private val defaultInkColor by lazy {
+        if (this.isNight()) Color.WHITE else Color.BLACK
+    }
+
     private val colorAdapter by lazy {
-        ColorPreviewAdapter(buildColorList(Color.WHITE))
+        ColorPreviewAdapter(buildColorList(defaultInkColor))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,24 +88,30 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
         // view.paddingBottom trong callback — listener có thể chạy nhiều lần, đọc giá trị đã
         // bị cộng dồn từ lần trước sẽ làm padding tăng vô hạn).
         val basePaddingBottom = binding.llBottomControls.paddingBottom
-        ViewCompat.setOnApplyWindowInsetsListener(binding.llBottomControls) { view, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, basePaddingBottom + systemBars.bottom)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val statusBars = insets.getInsets(
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            val navBars = insets.getInsets(
+                WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            binding.toolbar.setPadding(0, statusBars.top, 0, 0)
+            binding.llBottomControls.setPadding(
+                binding.llBottomControls.paddingLeft,
+                binding.llBottomControls.paddingTop,
+                binding.llBottomControls.paddingRight,
+                basePaddingBottom + navBars.bottom
+            )
             insets
         }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.llTopBar) { view, insets ->
-            val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-            view.setPadding(view.paddingLeft, statusBars.top + 8, view.paddingRight, view.paddingBottom)
-            insets
-        }
+        ViewCompat.requestApplyInsets(binding.root)
 
         initViews()
         loadHistory()
     }
 
     private fun initViews() {
-        binding.ivBack.setOnClickListener { finish() }
+        binding.toolbar.setNavigationOnClickListener { finish() }
         binding.ivClear.setOnClickListener {
             binding.signatureView.clear()
             binding.tvEmptyHint.visibility = View.VISIBLE
@@ -119,15 +130,12 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
             false
         }
 
-        // Brush Size
-        binding.sbSize.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                binding.signatureView.drawSize = (progress + 3).toFloat()
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-        binding.signatureView.drawSize = 13f
+        // Brush Size (Material Slider)
+        binding.sbSize.addOnChangeListener { _, value, _ ->
+            binding.signatureView.drawSize = value
+        }
+        binding.signatureView.drawSize = binding.sbSize.value
+        binding.signatureView.drawColor = defaultInkColor
 
         // Glow
         binding.swGlow.setOnCheckedChangeListener { _, isChecked ->

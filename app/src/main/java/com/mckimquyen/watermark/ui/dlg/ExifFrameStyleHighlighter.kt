@@ -1,7 +1,8 @@
 package com.mckimquyen.watermark.ui.dlg
 
-import androidx.core.content.ContextCompat
+import android.content.res.ColorStateList
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.color.MaterialColors
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ExifFrameStyle
 
@@ -15,8 +16,11 @@ object ExifFrameStyleHighlighter {
     fun apply(buttons: Map<ExifFrameStyle, MaterialButton>, selected: ExifFrameStyle) {
         buttons.forEach { (style, button) ->
             val isSelected = style == selected
-            val strokeColorRes = if (isSelected) R.color.glass_text_primary else R.color.glass_border
-            button.strokeColor = ContextCompat.getColorStateList(button.context, strokeColorRes)
+            val strokeColor = MaterialColors.getColor(
+                button,
+                if (isSelected) com.google.android.material.R.attr.colorPrimary else com.google.android.material.R.attr.colorOutlineVariant
+            )
+            button.strokeColor = ColorStateList.valueOf(strokeColor)
             button.strokeWidth = ((if (isSelected) 2f else 1f) * button.resources.displayMetrics.density).toInt()
         }
     }

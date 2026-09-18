@@ -61,18 +61,23 @@ class AboutActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         AppLog.d(LOG_TAG, "AboutActivity onCreate")
         initView()
-        // Edge-to-edge is handled globally by BaseActivity.applyEdgeToEdge()
-        // Add inset listener so AppBarLayout starts BELOW the status bar, and root handles bottom nav bar
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { root, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            root.setPadding(0, 0, 0, systemBars.bottom)
+        // Edge-to-edge (BaseActivity.applyEdgeToEdge): push topAppBar down below status bar & camera cutout,
+        // and add navigation bar bottom padding to nestedScrollView so all content is reachable.
+        val baseAppBarHeight = (220 * resources.displayMetrics.density).toInt()
+        val baseScrollBottomPadding = (32 * resources.displayMetrics.density).toInt()
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val statusBarTop = insets.getInsets(
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+            ).top
+            val navBarBottom = insets.getInsets(
+                WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.displayCutout()
+            ).bottom
+            binding.appBarLayout.layoutParams.height = baseAppBarHeight + statusBarTop
+            binding.topAppBar.setPadding(0, statusBarTop, 0, 0)
+            binding.nestedScrollView.setPadding(0, 0, 0, baseScrollBottomPadding + navBarBottom)
             insets
         }
-        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { view, insets ->
-            val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            view.setPadding(0, statusBarHeight, 0, 0)
-            insets
-        }
+        ViewCompat.requestApplyInsets(binding.root)
         AppLog.d(LOG_TAG, "AboutActivity onCreate complete — adManager set")
     }
 

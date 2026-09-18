@@ -12,7 +12,8 @@
         android:layout_width="32dp"
         android:layout_height="4dp"
         android:layout_marginTop="12dp"
-        android:background="?attr/colorOutlineVariant"
+        android:alpha="0.4"
+        android:background="?attr/colorOnSurfaceVariant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -26,7 +27,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:contentDescription="@string/back"
-        android:src="@drawable/baseline_cancel_24"
+        android:src="@drawable/ic_arrow_back"
         app:tint="?attr/colorOnSurface"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/vHandle" />
@@ -91,6 +92,10 @@
         android:text="@string/dialog_button_add_template"
         android:textAllCaps="false"
         android:textStyle="bold"
+        app:cornerRadius="16dp"
+        app:icon="@drawable/ic_func_text"
+        app:iconGravity="textStart"
+        app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

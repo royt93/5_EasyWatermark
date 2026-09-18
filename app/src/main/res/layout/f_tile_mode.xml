@@ -13,36 +13,42 @@
     android:layout_marginStart="16dp"
     android:layout_marginEnd="16dp">
 
-    <RadioGroup
-        android:id="@+id/rgTileMode"
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/tgTileMode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal"
+        app:singleSelection="true"
+        app:selectionRequired="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btnPositionAnchor"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.material.radiobutton.MaterialRadioButton
-            android:id="@+id/rbTileModeRepeat"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTileModeRepeat"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
+            android:layout_height="38dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
             android:text="@string/tile_mode_title_repeat"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="14sp" />
+            android:textSize="13sp" />
 
-        <com.google.android.material.radiobutton.MaterialRadioButton
-            android:id="@+id/rbTileModeDecal"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTileModeDecal"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
+            android:layout_height="38dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
             android:text="@string/tile_mode_title_decal"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="14sp" />
+            android:textSize="13sp" />
 
-    </RadioGroup>
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnPositionAnchor"
