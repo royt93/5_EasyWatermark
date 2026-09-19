@@ -54,7 +54,11 @@ class TileModeFragment : BaseBindFragment<FTileModeBinding>() {
         shareViewModel.colorPalette.observe(this.viewLifecycleOwner) {
             val color = it.titleTextColor(requireContext())
             binding?.btnPositionAnchor?.setTextColor(color)
+            binding?.btnPositionAnchor?.iconTint = android.content.res.ColorStateList.valueOf(color)
         }
+        binding?.btnTileModeRepeat?.contentDescription = getString(R.string.tile_mode_title_repeat)
+        binding?.btnTileModeDecal?.contentDescription = getString(R.string.tile_mode_title_decal)
+        binding?.btnPositionAnchor?.contentDescription = getString(R.string.position_anchor_button)
         binding?.btnPositionAnchor?.setOnClickListener {
             PositionAnchorBottomSheetFragment.safetyShow(parentFragmentManager)
         }

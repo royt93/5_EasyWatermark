@@ -251,4 +251,15 @@
     <string name="action_deselect_all">Deselect all</string>
     <string name="action_edit">Edit</string>
     <string name="action_delete">Delete</string>
+    <string name="color_white">White</string>
+    <string name="color_black">Black</string>
+    <string name="color_yellow">Yellow</string>
+    <string name="color_orange">Orange</string>
+    <string name="color_pink">Pink</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_green">Green</string>
+    <string name="color_custom">Custom color</string>
+    <string name="accessibility_edit_watermark_text">Edit watermark text</string>
+    <string name="state_enabled">Enabled</string>
+    <string name="state_disabled">Disabled</string>
 </resources>

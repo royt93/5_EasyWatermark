@@ -84,6 +84,10 @@ class TextPaintStyleAdapter(
                     )
                 }
             )
+            val stateText = root.context.getString(
+                if (selected) R.string.state_enabled else R.string.state_disabled
+            )
+            root.contentDescription = "${model.title}, $stateText"
             root.setOnClickListener {
                 onClickAction.invoke(position, model.paintStyle)
                 updateSelected(position)

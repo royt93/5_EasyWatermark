@@ -113,20 +113,43 @@ class ColorFragment : BaseBindFragment<FColorBinding>() {
         return arrayListOf(
             ColorPreviewAdapter.PreViewModel(
                 color = white,
-                selected = savedColor == white
+                selected = savedColor == white,
+                contentDescription = getString(R.string.color_white)
             ),
-            ColorPreviewAdapter.PreViewModel(color = black, selected = savedColor == black),
+            ColorPreviewAdapter.PreViewModel(
+                color = black,
+                selected = savedColor == black,
+                contentDescription = getString(R.string.color_black)
+            ),
             ColorPreviewAdapter.PreViewModel(
                 color = yellow,
-                selected = savedColor == yellow
+                selected = savedColor == yellow,
+                contentDescription = getString(R.string.color_yellow)
             ),
-            ColorPreviewAdapter.PreViewModel(color = orange, selected = savedColor == orange),
-            ColorPreviewAdapter.PreViewModel(color = pink, selected = savedColor == pink),
-            ColorPreviewAdapter.PreViewModel(color = blue, selected = savedColor == blue),
-            ColorPreviewAdapter.PreViewModel(color = green, selected = savedColor == green),
+            ColorPreviewAdapter.PreViewModel(
+                color = orange,
+                selected = savedColor == orange,
+                contentDescription = getString(R.string.color_orange)
+            ),
+            ColorPreviewAdapter.PreViewModel(
+                color = pink,
+                selected = savedColor == pink,
+                contentDescription = getString(R.string.color_pink)
+            ),
+            ColorPreviewAdapter.PreViewModel(
+                color = blue,
+                selected = savedColor == blue,
+                contentDescription = getString(R.string.color_blue)
+            ),
+            ColorPreviewAdapter.PreViewModel(
+                color = green,
+                selected = savedColor == green,
+                contentDescription = getString(R.string.color_green)
+            ),
             ColorPreviewAdapter.PreViewModel(
                 type = ColorPreviewAdapter.PreviewType.Res,
-                resId = R.drawable.ic_btn_color_picker
+                resId = R.drawable.ic_btn_color_picker,
+                contentDescription = getString(R.string.tips_choose_color_dialog)
             )
         )
     }

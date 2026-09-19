@@ -37,10 +37,22 @@ class ColorPreviewAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val model = previewList[position]
-        (holder as PreviewHolder).siv.apply {
-            isSelected = model.selected
-            circleColor = model.color
-            circleResId = model.resId
+        val desc = model.contentDescription ?: if (model.type == PreviewType.Res) {
+            holder.itemView.context.getString(R.string.color_custom)
+        } else {
+            String.format("#%06X", 0xFFFFFF and model.color)
+        }
+        val fullDesc = if (model.selected) {
+            "$desc, ${holder.itemView.context.getString(R.string.state_enabled)}"
+        } else {
+            desc
+        }
+        (holder as PreviewHolder).apply {
+            siv.isSelected = model.selected
+            siv.circleColor = model.color
+            siv.circleResId = model.resId
+            siv.contentDescription = fullDesc
+            root.contentDescription = fullDesc
         }
     }
 
@@ -59,7 +71,7 @@ class ColorPreviewAdapter(
         notifyDataSetChanged()
     }
 
-    internal class PreviewHolder(root: View) : BaseViewHolder(root) {
+    internal class PreviewHolder(val root: View) : BaseViewHolder(root) {
         val siv: SelectableImageView = root.findViewById(R.id.sivColor)
     }
 
@@ -72,6 +84,7 @@ class ColorPreviewAdapter(
         val type: PreviewType = PreviewType.Color,
         val color: Int = Color.WHITE,
         val resId: Int = -1,
-        var selected: Boolean = false
+        var selected: Boolean = false,
+        val contentDescription: String? = null
     )
 }

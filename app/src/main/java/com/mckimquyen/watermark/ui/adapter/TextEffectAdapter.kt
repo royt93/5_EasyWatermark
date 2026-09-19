@@ -44,6 +44,10 @@ class TextEffectAdapter(
         holder.root.setBackgroundResource(
             if (enabled) R.drawable.bg_glass_button_checked else R.drawable.bg_glass_button
         )
+        val stateText = holder.root.context.getString(
+            if (enabled) R.string.state_enabled else R.string.state_disabled
+        )
+        holder.root.contentDescription = "${holder.tvLabel.text}, $stateText"
         holder.tvLabel.setTextColor(
             if (enabled) {
                 MaterialColors.getColor(

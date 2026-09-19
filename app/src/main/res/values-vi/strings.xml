@@ -232,4 +232,15 @@
     <string name="action_deselect_all">Bỏ chọn tất cả</string>
     <string name="action_edit">Chỉnh sửa</string>
     <string name="action_delete">Xoá</string>
+    <string name="color_white">Trắng</string>
+    <string name="color_black">Đen</string>
+    <string name="color_yellow">Vàng</string>
+    <string name="color_orange">Cam</string>
+    <string name="color_pink">Hồng</string>
+    <string name="color_blue">Xanh dương</string>
+    <string name="color_green">Xanh lá</string>
+    <string name="color_custom">Màu tùy chỉnh</string>
+    <string name="accessibility_edit_watermark_text">Chỉnh sửa nội dung watermark</string>
+    <string name="state_enabled">Đang bật</string>
+    <string name="state_disabled">Đang tắt</string>
 </resources>

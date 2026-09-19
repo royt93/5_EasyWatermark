@@ -59,6 +59,8 @@ class TextContentDisplayFragment : BaseBindFragment<FTextContentDisplayBinding>(
         shareViewModel.waterMark.observe(this.viewLifecycleOwner) {
             val string = (it?.text ?: getString(R.string.tips_input_text_can_not_be_empty))
             binding?.etWaterText?.text = string
+            val editDesc = getString(R.string.accessibility_edit_watermark_text)
+            binding?.root?.contentDescription = "$editDesc: $string"
         }
     }
 
