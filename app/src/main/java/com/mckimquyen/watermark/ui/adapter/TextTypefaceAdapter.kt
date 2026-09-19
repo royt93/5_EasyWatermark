@@ -11,7 +11,9 @@ import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.TextPaintStyle
 import com.mckimquyen.watermark.data.model.TextTypeface
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
-import com.mckimquyen.watermark.utils.ktx.colorOnPrimary
+import android.graphics.Color
+import com.google.android.material.color.MaterialColors
+import com.mckimquyen.watermark.utils.ktx.colorPrimary
 
 class TextTypefaceAdapter(
     private val dataList: ArrayList<TextTypefaceModel>,
@@ -70,15 +72,26 @@ class TextTypefaceAdapter(
                 model.textTypeface.applyStyle(this)
             }
             tvTitle?.text = model.title
+            root.setBackgroundResource(
+                if (selected) R.drawable.bg_glass_button_checked else R.drawable.bg_glass_button
+            )
             tvPreview.setTextColor(
                 if (selected) {
-                    tvPreview.context.colorOnPrimary
+                    MaterialColors.getColor(
+                        tvPreview.context,
+                        com.google.android.material.R.attr.colorOnPrimaryContainer,
+                        tvPreview.context.colorPrimary
+                    )
                 } else {
-                    tvPreview.context.colorOnPrimary
+                    MaterialColors.getColor(
+                        tvPreview.context,
+                        com.google.android.material.R.attr.colorOnSurface,
+                        Color.BLACK
+                    )
                 }
             )
             textPaintStyle.applyStyle(tvPreview)
-            tvPreview.setOnClickListener {
+            root.setOnClickListener {
                 onClickAction.invoke(position, model.textTypeface)
                 updateSelected(position)
             }

@@ -54,6 +54,14 @@ object BitmapCache {
         }
     }
 
+    /** Xoá toàn bộ bitmap trong cache khi hệ thống cảnh báo bộ nhớ thấp hoặc kết thúc batch export. */
+    fun clearCache() {
+        memoryCache.evictAll()
+    }
+
+    /** Dung lượng cache hiện tại tính theo KB. */
+    fun currentSize(): Int = memoryCache.size()
+
     data class BitmapInfo(
         val uri: Uri,
         val reqWidth: Int,

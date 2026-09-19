@@ -139,6 +139,7 @@ class BatchExportEngine @Inject constructor(
                 info
             }
             onProgress(null)
+            com.mckimquyen.watermark.utils.bitmap.BitmapCache.clearCache()
             return@withContext Result.success(updatedList)
         }
 
@@ -162,17 +163,27 @@ class BatchExportEngine @Inject constructor(
             if (rect.isFailure()) {
                 return@withContext Result.extendMsg(rect)
             }
-            val mutableBitmap = rect.data?.bitmap?.copy(Bitmap.Config.ARGB_8888, true)
+            val decodedBitmap = rect.data?.bitmap
                 ?: return@withContext Result.failure(
                     data = null,
                     code = "-1",
-                    message = "Copy bitmap from uri failed."
+                    message = "Decoded bitmap from uri is null."
                 )
-            // rect.data.bitmap không cache/chia sẻ nơi khác (decodeBitmapFromUri không qua
-            // BitmapCache) — đã copy xong sang mutableBitmap nên recycle ngay, tránh giữ 2 bitmap
-            // full-res cùng lúc khi xử lý batch nhiều ảnh (BUG-05).
-            rect.data?.bitmap?.let { original ->
-                if (original !== mutableBitmap && !original.isRecycled) original.recycle()
+            // OOM-OPT: nếu decodedBitmap đã mutable (nhờ inMutable = true), tái dùng trực tiếp
+            // thay vì copy tạo bản sao thứ hai gây spike RAM (tránh OOM trên ảnh 4K/8K/108MP).
+            val mutableBitmap = if (decodedBitmap.isMutable) {
+                decodedBitmap
+            } else {
+                val copied = decodedBitmap.copy(Bitmap.Config.ARGB_8888, true)
+                    ?: return@withContext Result.failure(
+                        data = null,
+                        code = "-1",
+                        message = "Copy bitmap from uri failed."
+                    )
+                if (decodedBitmap !== copied && !decodedBitmap.isRecycled) {
+                    decodedBitmap.recycle()
+                }
+                copied
             }
 
             // BUG-21: theo dõi bitmap đang "sở hữu" (chưa recycle) — mọi early-return lỗi bên

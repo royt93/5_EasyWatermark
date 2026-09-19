@@ -1,10 +1,12 @@
 package com.mckimquyen.watermark.ui.adapter
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.color.MaterialColors
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
 import com.mckimquyen.watermark.utils.ktx.colorOnSurface
@@ -43,7 +45,19 @@ class TextEffectAdapter(
             if (enabled) R.drawable.bg_glass_button_checked else R.drawable.bg_glass_button
         )
         holder.tvLabel.setTextColor(
-            if (enabled) holder.tvLabel.context.colorPrimary else holder.tvLabel.context.colorOnSurface
+            if (enabled) {
+                MaterialColors.getColor(
+                    holder.tvLabel.context,
+                    com.google.android.material.R.attr.colorOnPrimaryContainer,
+                    holder.tvLabel.context.colorPrimary
+                )
+            } else {
+                MaterialColors.getColor(
+                    holder.tvLabel.context,
+                    com.google.android.material.R.attr.colorOnSurface,
+                    Color.BLACK
+                )
+            }
         )
     }
 

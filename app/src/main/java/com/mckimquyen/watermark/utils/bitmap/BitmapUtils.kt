@@ -171,10 +171,39 @@ private fun resolveRotation(
 }
 
 /**
- * ENH-14: [reqLongEdge] > 0 (user đã chọn resize output khác "Original") sẽ downsample NGAY lúc
- * decode thay vì decode full-res rồi resize sau khi vẽ watermark — giảm peak memory lúc build
- * canvas full-res không cần thiết cho ảnh 12-48MP. `reqLongEdge` = 0 (mặc định, "Original") giữ
- * nguyên hành vi decode full-res như trước, không đổi.
+ * Tính kích thước cạnh dài an toàn tối đa để phòng ngừa OutOfMemoryError khi giải mã ảnh siêu phân giải (4K/8K/108MP).
+ * Đảm bảo dung lượng bitmap ARGB_8888 không vượt quá 35% heap khả dụng của JVM thiết bị.
+ * Hàm thuần (JVM-friendly), dễ dàng unit test độc lập.
+ */
+fun computeMaxSafeDimension(
+    width: Int,
+    height: Int,
+    reqLongEdge: Int = 0,
+    maxHeapBytes: Long = Runtime.getRuntime().maxMemory()
+): Int {
+    if (width <= 0 || height <= 0) return reqLongEdge
+    val imageLongEdge = maxOf(width, height)
+    val userConstrained = if (reqLongEdge > 0) minOf(imageLongEdge, reqLongEdge) else imageLongEdge
+
+    // Ngưỡng an toàn bộ nhớ: Tối đa 35% tổng JVM heap cho một buffer bitmap đơn lẻ.
+    // Mỗi pixel ARGB_8888 chiếm 4 bytes.
+    val maxSafePixels = (maxHeapBytes * 0.35 / 4.0).toLong().coerceAtLeast(1024L * 1024L)
+    val currentPixels = width.toLong() * height.toLong()
+
+    if (currentPixels <= maxSafePixels) {
+        return userConstrained
+    }
+
+    val scale = kotlin.math.sqrt(maxSafePixels.toDouble() / currentPixels.toDouble())
+    val safeEdge = (imageLongEdge * scale).toInt().coerceAtLeast(1080)
+    return if (userConstrained in 1 until safeEdge) userConstrained else safeEdge
+}
+
+/**
+ * ENH-14 & OOM-PROTECT: downsample khi user chọn resize (reqLongEdge > 0) HOẶC khi ảnh có kích thước
+ * siêu lớn (4K/8K/108MP) vượt quá ngưỡng an toàn bộ nhớ ([computeMaxSafeDimension]) để chống OOM crash.
+ * Đồng thời đặt inMutable = true để giải mã trực tiếp thành bitmap có thể vẽ được, loại bỏ hoàn toàn
+ * bước bitmap.copy() gây nhân đôi bộ nhớ đỉnh (Peak Memory).
  */
 suspend fun decodeBitmapFromUri(
     context: Context,
@@ -184,11 +213,12 @@ suspend fun decodeBitmapFromUri(
 ): Result<BitmapCache.BitmapValue> =
     withContext(Dispatchers.IO) {
         if (reqLongEdge <= 0) {
+            val opts = BitmapFactory.Options().apply { inMutable = true }
             resolver.openInputStream(uri).use { inputStream ->
                 if (inputStream == null) {
                     return@withContext Result.failure(null, "-1", "Open input stream failed.")
                 }
-                return@withContext decodeBitmapWithExif(context, uri, inputStream)
+                return@withContext decodeBitmapWithExif(context, uri, inputStream, opts)
             }
         }
         val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -199,8 +229,10 @@ suspend fun decodeBitmapFromUri(
         } else {
             options.run { outHeight to outWidth }
         }
-        options.inSampleSize = calculateInSampleSizeForLongEdge(maxOf(oWidth, oHeight), reqLongEdge)
+        val safeLongEdge = computeMaxSafeDimension(oWidth, oHeight, reqLongEdge)
+        options.inSampleSize = calculateInSampleSizeForLongEdge(maxOf(oWidth, oHeight), safeLongEdge)
         options.inJustDecodeBounds = false
+        options.inMutable = true
         resolver.openInputStream(uri).use { inputStream ->
             if (inputStream == null) {
                 return@withContext Result.failure(null, "-1", "Open input stream failed.")
@@ -263,6 +295,7 @@ fun decodeSampledBitmapFromResourceSync(
         )
         // 3. Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false
+        options.inMutable = true
         resolver.openInputStream(uri).use { inputStream ->
             if (inputStream == null) {
                 return Result.failure(null, "-1", "Open input stream failed.")

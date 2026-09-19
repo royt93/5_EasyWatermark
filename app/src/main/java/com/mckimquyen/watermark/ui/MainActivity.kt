@@ -1159,6 +1159,22 @@ class MainActivity : BaseActivity() {
         return ViewInfo.from(launchView.ivPhoto)
     }
 
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        AppLog.d(LOG_TAG, "MainActivity onTrimMemory level=$level")
+        if (level >= TRIM_MEMORY_BACKGROUND) {
+            com.mckimquyen.watermark.utils.bitmap.BitmapCache.clearCache()
+        }
+        com.bumptech.glide.Glide.get(this).onTrimMemory(level)
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        AppLog.d(LOG_TAG, "MainActivity onLowMemory received — clearing caches")
+        com.mckimquyen.watermark.utils.bitmap.BitmapCache.clearCache()
+        com.bumptech.glide.Glide.get(this).onLowMemory()
+    }
+
     companion object {
         private const val REQ_CODE_PICK_IMAGE: Int = 42
         const val REQ_CODE_REQ_WRITE_PERMISSION: Int = 43

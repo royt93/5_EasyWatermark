@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.TextPaintStyle
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
+import android.graphics.Color
+import com.google.android.material.color.MaterialColors
 import com.mckimquyen.watermark.utils.ktx.colorPrimary
 
 class TextPaintStyleAdapter(
@@ -64,14 +66,25 @@ class TextPaintStyleAdapter(
                 model.paintStyle.applyStyle(this)
             }
             tvTitle?.text = model.title
+            root.setBackgroundResource(
+                if (selected) R.drawable.bg_glass_button_checked else R.drawable.bg_glass_button
+            )
             tvPreview.setTextColor(
                 if (selected) {
-                    tvPreview.context.colorPrimary
+                    MaterialColors.getColor(
+                        tvPreview.context,
+                        com.google.android.material.R.attr.colorOnPrimaryContainer,
+                        tvPreview.context.colorPrimary
+                    )
                 } else {
-                    tvPreview.context.colorPrimary
+                    MaterialColors.getColor(
+                        tvPreview.context,
+                        com.google.android.material.R.attr.colorOnSurface,
+                        Color.BLACK
+                    )
                 }
             )
-            tvPreview.setOnClickListener {
+            root.setOnClickListener {
                 onClickAction.invoke(position, model.paintStyle)
                 updateSelected(position)
             }
