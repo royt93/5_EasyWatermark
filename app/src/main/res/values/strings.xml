@@ -249,4 +249,6 @@
     <string name="designer_comment">A Designer.</string>
     <string name="action_select_all">Select all</string>
     <string name="action_deselect_all">Deselect all</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
 </resources>

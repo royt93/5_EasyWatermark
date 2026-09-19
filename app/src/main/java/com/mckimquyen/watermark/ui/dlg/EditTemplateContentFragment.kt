@@ -41,7 +41,11 @@ class EditTemplateContentFragment : BaseBindBSDFragment<DlgEditTemplateBinding>(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.tvTitle.text = if (isEdit) getString(R.string.dialog_title_template_edit) else getString(R.string.dialog_button_add_template)
+        val titleText = if (isEdit) getString(R.string.dialog_title_template_edit) else getString(R.string.dialog_button_add_template)
+        binding.tvTitle.text = titleText
+        binding.tlWaterText.hint = titleText
+        binding.btnConfirm.text = if (isEdit) getString(R.string.tips_ok) else getString(R.string.dialog_button_add_template)
+        binding.btnConfirm.setIconResource(if (isEdit) R.drawable.ic_check else R.drawable.ic_add)
         binding.etWaterText.apply {
             setText(template?.content)
             post {

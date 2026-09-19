@@ -46,12 +46,19 @@ fun Toolbar.applyConsistentIconTint(@ColorInt iconColor: Int) {
         }
     }
 
-    // 4. Samsung OneUI & Android Framework ActionMenuView Child Traversal
-    fun tintChildViews(group: ViewGroup) {
+    // 4. Ensure toolbar logo (image resource watermark) is NEVER tinted
+    logo?.let {
+        DrawableCompat.setTintList(it, null)
+    }
+
+    // 5. Samsung OneUI & Android Framework ActionMenuView Child Traversal
+    // Only traverse ActionMenuView to tint action buttons and overflow menu.
+    // Never tint Toolbar direct children outside ActionMenuView (such as the watermark logo image).
+    fun tintActionMenuView(group: ViewGroup) {
         for (i in 0 until group.childCount) {
             when (val child = group.getChildAt(i)) {
-                is ActionMenuView -> tintChildViews(child)
-                is ViewGroup -> tintChildViews(child)
+                is ActionMenuView -> tintActionMenuView(child)
+                is ViewGroup -> tintActionMenuView(child)
                 is TextView -> {
                     // ActionMenuItemView on Samsung and Android is a TextView
                     child.compoundDrawables.forEach { d ->
@@ -70,20 +77,33 @@ fun Toolbar.applyConsistentIconTint(@ColorInt iconColor: Int) {
                     }
                 }
                 is ImageView -> {
-                    child.imageTintList = ColorStateList.valueOf(iconColor)
-                    child.imageTintMode = PorterDuff.Mode.SRC_IN
-                    child.drawable?.let {
-                        DrawableCompat.setTint(it.mutate(), iconColor)
-                        DrawableCompat.setTintMode(it, PorterDuff.Mode.SRC_IN)
+                    // Only tint overflow button inside ActionMenuView, never the logo
+                    if (child.drawable !== logo) {
+                        child.imageTintList = ColorStateList.valueOf(iconColor)
+                        child.imageTintMode = PorterDuff.Mode.SRC_IN
+                        child.drawable?.let {
+                            DrawableCompat.setTint(it.mutate(), iconColor)
+                            DrawableCompat.setTintMode(it, PorterDuff.Mode.SRC_IN)
+                        }
+                    } else {
+                        child.imageTintList = null
                     }
                 }
             }
         }
     }
 
-    tintChildViews(this)
+    for (i in 0 until childCount) {
+        val child = getChildAt(i)
+        if (child is ActionMenuView) {
+            tintActionMenuView(child)
+        } else if (child is ImageView && child.drawable === logo) {
+            // Explicitly clear tint on logo view
+            child.imageTintList = null
+        }
+    }
 
-    // 5. Post to guarantee tinting after layout passes or dynamic menu view recreation
+    // 6. Post to guarantee tinting after layout passes or dynamic menu view recreation
     post {
         navigationIcon?.let {
             DrawableCompat.setTint(it.mutate(), iconColor)
@@ -103,6 +123,16 @@ fun Toolbar.applyConsistentIconTint(@ColorInt iconColor: Int) {
                 menuItem.iconTintMode = PorterDuff.Mode.SRC_IN
             }
         }
-        tintChildViews(this)
+        logo?.let {
+            DrawableCompat.setTintList(it, null)
+        }
+        for (i in 0 until childCount) {
+            val child = getChildAt(i)
+            if (child is ActionMenuView) {
+                tintActionMenuView(child)
+            } else if (child is ImageView && child.drawable === logo) {
+                child.imageTintList = null
+            }
+        }
     }
 }

@@ -8,9 +8,12 @@
     android:layout_marginStart="16dp"
     android:layout_marginEnd="16dp"
     android:layout_marginBottom="8dp"
+    android:clickable="true"
+    android:focusable="true"
     app:cardBackgroundColor="?attr/colorSurfaceContainer"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
+    app:rippleColor="?attr/colorControlHighlight"
     app:strokeColor="?attr/colorOutlineVariant"
     app:strokeWidth="1dp">
 
@@ -18,14 +21,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="16dp"
-        android:paddingTop="12dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="12dp">
+        android:paddingTop="8dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="8dp">
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvContent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:lineSpacingExtra="2sp"
+            android:paddingEnd="8dp"
             android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -37,26 +42,30 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/ivEdit"
             style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/action_edit"
             app:icon="@drawable/ic_template_list_item_edit"
+            app:iconSize="22dp"
             app:iconTint="?attr/colorOnSurfaceVariant"
-            app:layout_constraintBottom_toBottomOf="@id/tvContent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/ivDelete"
             app:layout_constraintStart_toEndOf="@id/tvContent"
-            app:layout_constraintTop_toTopOf="@id/tvContent" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/ivDelete"
             style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/action_delete"
             app:icon="@drawable/ic_template_list_item_remove"
+            app:iconSize="22dp"
             app:iconTint="?attr/colorError"
-            app:layout_constraintBottom_toBottomOf="@id/tvContent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivEdit"
-            app:layout_constraintTop_toTopOf="@id/tvContent" />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

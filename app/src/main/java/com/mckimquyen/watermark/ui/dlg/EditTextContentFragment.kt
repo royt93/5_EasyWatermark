@@ -118,8 +118,10 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
         TextTokenResolver.SUPPORTED_TOKENS.forEach { token ->
             val chip = Chip(requireContext()).apply {
                 text = "{$token}"
+                contentDescription = "{$token}"
                 isCheckable = false
                 isClickable = true
+                setEnsureMinTouchTargetSize(true)
                 setOnClickListener {
                     val start = editText.selectionStart.coerceAtLeast(0)
                     val end = editText.selectionEnd.coerceAtLeast(0)
