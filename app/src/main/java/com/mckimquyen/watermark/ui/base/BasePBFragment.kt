@@ -6,7 +6,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.slider.Slider
+import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.databinding.FBasePbBinding
 import com.mckimquyen.watermark.utils.ktx.toColor
@@ -30,10 +32,7 @@ abstract class BasePBFragment : BaseBindFragment<FBasePbBinding>() {
             text = formatValueTips(shareViewModel.waterMark.value)
         }
 
-        b.slideContentSize.trackTintList =
-            ColorStateList.valueOf(
-                shareViewModel.colorPalette.value?.darkMutedSwatch?.bodyTextColor ?: Color.WHITE
-            )
+        applySliderColors(b)
 
         return b
     }
@@ -43,12 +42,31 @@ abstract class BasePBFragment : BaseBindFragment<FBasePbBinding>() {
         shareViewModel.waterMark.observe(viewLifecycleOwner) {
             binding?.tvProgressVertical?.text = formatValueTips(it)
         }
-        shareViewModel.colorPalette.observe(viewLifecycleOwner) { palette ->
-            val color = palette.darkMutedSwatch?.bodyTextColor ?: Color.WHITE
-            binding?.slideContentSize?.trackTintList?.defaultColor?.toColor(color) {
-                binding?.slideContentSize?.trackTintList =
-                    ColorStateList.valueOf(it.animatedValue as Int)
-            }
+    }
+
+    companion object {
+        fun applySliderColors(b: FBasePbBinding) {
+            val context = b.root.context
+            val activeColor = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorPrimary,
+                Color.BLACK
+            )
+            val inactiveColor = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorSurfaceVariant,
+                Color.LTGRAY
+            )
+            val onSurfaceColor = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorOnSurface,
+                Color.BLACK
+            )
+
+            b.slideContentSize.trackActiveTintList = ColorStateList.valueOf(activeColor)
+            b.slideContentSize.trackInactiveTintList = ColorStateList.valueOf(inactiveColor)
+            b.slideContentSize.thumbTintList = ColorStateList.valueOf(activeColor)
+            b.tvProgressVertical.setTextColor(onSurfaceColor)
         }
     }
 
