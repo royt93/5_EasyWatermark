@@ -26,6 +26,13 @@ class SignatureBottomSheetFragment : BaseBindBSDFragment<FSignatureBottomSheetBi
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val defaultInkColor = com.google.android.material.color.MaterialColors.getColor(
+            binding.signatureView,
+            com.google.android.material.R.attr.colorOnSurface,
+            android.graphics.Color.BLACK
+        )
+        binding.signatureView.drawColor = defaultInkColor
+
         binding.btnClear.setOnClickListener {
             binding.signatureView.clear()
         }
@@ -56,10 +63,6 @@ class SignatureBottomSheetFragment : BaseBindBSDFragment<FSignatureBottomSheetBi
             e.printStackTrace()
             null
         }
-    }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return super.onCreateDialog(savedInstanceState)
     }
 
     companion object {

@@ -104,18 +104,7 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
         }
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return super.onCreateDialog(savedInstanceState).apply {
-            window?.setFlags(
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-            )
-            window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-            if (this is com.google.android.material.bottomsheet.BottomSheetDialog) {
-                setupBottomSheet(this, expandFully = false)
-            }
-        }
-    }
+
 
     companion object {
         const val TAG = "QrCodeBottomSheetFragment"
