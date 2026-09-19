@@ -20,7 +20,17 @@ object ExifFrameStyleHighlighter {
                 button,
                 if (isSelected) com.google.android.material.R.attr.colorPrimary else com.google.android.material.R.attr.colorOutlineVariant
             )
+            val bgColor = MaterialColors.getColor(
+                button,
+                if (isSelected) com.google.android.material.R.attr.colorPrimaryContainer else com.google.android.material.R.attr.colorSurfaceContainerHigh
+            )
+            val textColor = MaterialColors.getColor(
+                button,
+                if (isSelected) com.google.android.material.R.attr.colorOnPrimaryContainer else com.google.android.material.R.attr.colorOnSurface
+            )
             button.strokeColor = ColorStateList.valueOf(strokeColor)
+            button.backgroundTintList = ColorStateList.valueOf(bgColor)
+            button.setTextColor(textColor)
             button.strokeWidth = ((if (isSelected) 2f else 1f) * button.resources.displayMetrics.density).toInt()
         }
     }

@@ -42,8 +42,8 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
         }
     }
 
-    fun submitList(list: List<Image>) {
-        differ.submitList(list)
+    fun submitList(list: List<Image>?, commitCallback: Runnable? = null) {
+        differ.submitList(list, commitCallback)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GalleryItemHolder {

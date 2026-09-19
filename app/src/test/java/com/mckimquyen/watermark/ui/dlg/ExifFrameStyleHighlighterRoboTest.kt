@@ -43,7 +43,19 @@ class ExifFrameStyleHighlighterRoboTest {
             com.google.android.material.R.attr.colorPrimary,
             0
         )
+        val expectedBg = com.google.android.material.color.MaterialColors.getColor(
+            themedContext,
+            com.google.android.material.R.attr.colorPrimaryContainer,
+            0
+        )
+        val expectedText = com.google.android.material.color.MaterialColors.getColor(
+            themedContext,
+            com.google.android.material.R.attr.colorOnPrimaryContainer,
+            0
+        )
         assertThat(buttons.getValue(ExifFrameStyle.POLAROID).strokeColor?.defaultColor).isEqualTo(expected)
+        assertThat(buttons.getValue(ExifFrameStyle.POLAROID).backgroundTintList?.defaultColor).isEqualTo(expectedBg)
+        assertThat(buttons.getValue(ExifFrameStyle.POLAROID).currentTextColor).isEqualTo(expectedText)
     }
 
     @Test

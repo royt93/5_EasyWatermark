@@ -197,6 +197,19 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             tvResult.text = exportCountText(theAdapter)
 
             slideQuality.apply {
+                val activeColor = com.google.android.material.color.MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorPrimary,
+                    android.graphics.Color.BLACK
+                )
+                val inactiveColor = com.google.android.material.color.MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorSurfaceVariant,
+                    android.graphics.Color.LTGRAY
+                )
+                trackActiveTintList = android.content.res.ColorStateList.valueOf(activeColor)
+                trackInactiveTintList = android.content.res.ColorStateList.valueOf(inactiveColor)
+                thumbTintList = android.content.res.ColorStateList.valueOf(activeColor)
                 value = compressLevel
                 addOnChangeListener { _, value, _ ->
                     shareViewModel.saveOutput(shareViewModel.outputFormat, value.toInt())

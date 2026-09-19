@@ -187,16 +187,15 @@ class BatchWatermarkE2EAndroidTest {
 
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                val viewModelField = MainActivity::class.java.getDeclaredField("viewModel")
-                viewModelField.isAccessible = true
-                val viewModel = viewModelField.get(activity) as MainViewModel
+                val viewModel = androidx.lifecycle.ViewModelProvider(activity)[MainViewModel::class.java]
 
                 // Feed images to trigger Editor Mode
                 viewModel.updateImageList(listOf(uri1, uri2))
 
-                val launchViewField = MainActivity::class.java.getDeclaredField("launchView")
-                launchViewField.isAccessible = true
-                val launchView = launchViewField.get(activity) as LaunchView
+                val launchViewField = MainActivity::class.java.declaredFields.firstOrNull { it.type == LaunchView::class.java }
+                launchViewField?.isAccessible = true
+                val launchView = (launchViewField?.get(activity) as? LaunchView)
+                    ?: activity.findViewById(android.R.id.content)
 
                 // Transition to editor
                 launchView.toEditorMode()
@@ -237,9 +236,7 @@ class BatchWatermarkE2EAndroidTest {
                 Image(id = 3, uri = Uri.parse("content://media/3"), name = "img3.jpg", size = 4096, date = 300)
             )
 
-            adapter.submitList(testList)
-            // Wait brief moment for async differ
-            dummyRv.post {
+            adapter.submitList(testList) {
                 // When submitted, selectAll
                 adapter.selectAll(dummyRv)
                 assertThat(adapter.isAllSelected()).isTrue()

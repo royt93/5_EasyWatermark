@@ -318,8 +318,9 @@
         app:cornerRadius="16dp"
         app:icon="@drawable/ic_picker_image"
         app:iconGravity="textStart"
+        app:iconTint="?attr/colorOnSecondaryContainer"
         android:text="@string/dialog_open_in_gallery"
-        android:textColor="?attr/colorPrimary" />
+        android:textColor="?attr/colorOnSecondaryContainer" />
 
 </LinearLayout>
 

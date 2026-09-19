@@ -76,7 +76,19 @@ class ExifPbFragment : BaseBindBSDFragment<DlgExifBorderBinding>() {
             }
         }
 
-        binding.vExifBandColorSwatch.setOnClickListener { showBandColorPicker() }
+        val activeColor = com.google.android.material.color.MaterialColors.getColor(
+            requireContext(),
+            com.google.android.material.R.attr.colorPrimary,
+            android.graphics.Color.BLACK
+        )
+        val inactiveColor = com.google.android.material.color.MaterialColors.getColor(
+            requireContext(),
+            com.google.android.material.R.attr.colorSurfaceVariant,
+            android.graphics.Color.LTGRAY
+        )
+        binding.slideExifBandThickness.trackActiveTintList = android.content.res.ColorStateList.valueOf(activeColor)
+        binding.slideExifBandThickness.trackInactiveTintList = android.content.res.ColorStateList.valueOf(inactiveColor)
+        binding.slideExifBandThickness.thumbTintList = android.content.res.ColorStateList.valueOf(activeColor)
 
         binding.slideExifBandThickness.addOnChangeListener { _, value, fromUser ->
             binding.tvExifBandThicknessValue.text = getString(R.string.position_anchor_margin_value, value.toInt())
