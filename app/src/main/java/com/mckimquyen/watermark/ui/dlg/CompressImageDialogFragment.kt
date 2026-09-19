@@ -27,6 +27,7 @@ class CompressImageDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return super.onCreateDialog(savedInstanceState).apply {
             isCancelable = false
+            window?.setBackgroundDrawableResource(android.R.color.transparent)
         }
     }
 

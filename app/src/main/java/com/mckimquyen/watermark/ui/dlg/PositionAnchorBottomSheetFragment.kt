@@ -105,7 +105,9 @@ class PositionAnchorBottomSheetFragment : BaseBindBSDFragment<FPositionAnchorBot
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
             )
             window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-            expandBottomSheetFully()
+            if (this is com.google.android.material.bottomsheet.BottomSheetDialog) {
+                setupBottomSheet(this, expandFully = false)
+            }
         }
     }
 

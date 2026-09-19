@@ -59,14 +59,7 @@ class SignatureBottomSheetFragment : BaseBindBSDFragment<FSignatureBottomSheetBi
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return super.onCreateDialog(savedInstanceState).apply {
-            window?.setFlags(
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-            )
-            window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-            expandBottomSheetFully()
-        }
+        return super.onCreateDialog(savedInstanceState)
     }
 
     companion object {

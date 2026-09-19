@@ -45,29 +45,35 @@ open class BaseBSDFragment : BottomSheetDialogFragment() {
                 com.google.android.material.R.attr.colorSurface,
                 android.graphics.Color.WHITE
             )
+            val surfaceContainerLow = com.google.android.material.color.MaterialColors.getColor(
+                dialog.context,
+                com.google.android.material.R.attr.colorSurfaceContainerLow,
+                android.graphics.Color.WHITE
+            )
             WindowCompat.setDecorFitsSystemWindows(win, false)
             if (expandFully) {
                 win.statusBarColor = surfaceColor
                 win.navigationBarColor = surfaceColor
             } else {
                 win.statusBarColor = android.graphics.Color.TRANSPARENT
-                win.navigationBarColor = android.graphics.Color.TRANSPARENT
+                win.navigationBarColor = surfaceContainerLow
             }
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                 win.navigationBarDividerColor = android.graphics.Color.TRANSPARENT
             }
             win.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
             win.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            val isNight = (dialog.context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
-            val insetsController = WindowCompat.getInsetsController(win, win.decorView)
-            insetsController.isAppearanceLightStatusBars = !isNight
-            insetsController.isAppearanceLightNavigationBars = !isNight
+            updateSystemBarAppearance(dialog, win, expandFully)
         }
 
         dialog.setOnShowListener {
             val coordinator = dialog.findViewById<View>(com.google.android.material.R.id.coordinator)
             val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            bottomSheet?.setBackgroundResource(android.R.color.transparent)
+
+            dialog.window?.let { win ->
+                updateSystemBarAppearance(dialog, win, expandFully)
+            }
+
             bottomSheet?.let { sheet ->
                 if (expandFully) {
                     coordinator?.fitsSystemWindows = false
@@ -79,18 +85,52 @@ open class BaseBSDFragment : BottomSheetDialogFragment() {
                     behavior.skipCollapsed = true
                     behavior.peekHeight = sheet.resources.displayMetrics.heightPixels
                 } else {
+                    sheet.setBackgroundResource(com.mckimquyen.watermark.R.drawable.bg_bottom_sheet_surface)
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        val radius = (28 * sheet.resources.displayMetrics.density).toInt()
+                        sheet.outlineProvider = object : android.view.ViewOutlineProvider() {
+                            override fun getOutline(view: View, outline: android.graphics.Outline) {
+                                outline.setRoundRect(0, 0, view.width, view.height + radius, radius.toFloat())
+                            }
+                        }
+                        sheet.clipToOutline = true
+                    }
+
+                    val behavior = BottomSheetBehavior.from(sheet)
+                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                    behavior.skipCollapsed = true
+
                     val baseBottom = sheet.paddingBottom
                     ViewCompat.setOnApplyWindowInsetsListener(sheet) { view, insets ->
+                        val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
                         val navBarBottom = insets.getInsets(
                             WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.displayCutout()
                         ).bottom
-                        view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, baseBottom + navBarBottom)
+                        val bottomInset = maxOf(imeBottom, navBarBottom)
+                        view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, baseBottom + bottomInset)
                         insets
                     }
                     ViewCompat.requestApplyInsets(sheet)
                 }
             }
         }
+    }
+
+    private fun updateSystemBarAppearance(dialog: BottomSheetDialog, win: android.view.Window, expandFully: Boolean) {
+        val isNight = (dialog.context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        val insetsController = WindowCompat.getInsetsController(win, win.decorView)
+
+        if (expandFully) {
+            insetsController.isAppearanceLightStatusBars = !isNight
+        } else {
+            // Keep status bar icon contrast matching underlying Activity behind translucent dim
+            val activityLightStatus = activity?.window?.let { actWin ->
+                WindowCompat.getInsetsController(actWin, actWin.decorView).isAppearanceLightStatusBars
+            }
+            insetsController.isAppearanceLightStatusBars = activityLightStatus ?: !isNight
+        }
+        // Navigation bar: surface container low is behind navigation bar
+        insetsController.isAppearanceLightNavigationBars = !isNight
     }
 
     /**

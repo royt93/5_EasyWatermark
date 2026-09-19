@@ -80,9 +80,7 @@ class BatchCaptionBSDialogFragment : BaseBindBSDFragment<FBatchCaptionBottomShee
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return super.onCreateDialog(savedInstanceState).apply {
-            expandBottomSheetFully()
-        }
+        return super.onCreateDialog(savedInstanceState)
     }
 
     companion object {
