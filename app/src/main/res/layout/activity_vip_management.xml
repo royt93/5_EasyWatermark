@@ -48,7 +48,11 @@
                 <com.facebook.shimmer.ShimmerFrameLayout
                     android:id="@+id/shimmerCrown"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    app:shimmer_auto_start="true"
+                    app:shimmer_base_alpha="0.9"
+                    app:shimmer_duration="1400"
+                    app:shimmer_highlight_alpha="1.0">
 
                     <ImageView
                         android:id="@+id/ivCrown"
@@ -57,7 +61,7 @@
                         android:background="@drawable/bg_glass_button"
                         android:padding="10dp"
                         android:src="@drawable/ic_workspace_premium"
-                        app:tint="@color/vip_gold"
+                        app:tint="@color/vip_icon_accent"
                         tools:ignore="ContentDescription" />
                 </com.facebook.shimmer.ShimmerFrameLayout>
 
@@ -133,7 +137,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    app:indicatorColor="@color/vip_gold"
+                    app:indicatorColor="@color/vip_icon_accent"
                     app:trackColor="?attr/colorSurfaceContainerHighest"
                     app:trackCornerRadius="4dp"
                     app:trackThickness="8dp" />
@@ -174,7 +178,7 @@
                     android:hint="@string/vip_key_hint"
                     app:endIconMode="clear_text"
                     app:startIconDrawable="@drawable/ic_confirmation_number"
-                    app:startIconTint="?attr/colorPrimary">
+                    app:startIconTint="@color/vip_icon_accent">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtVipKey"

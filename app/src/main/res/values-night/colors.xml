@@ -4,4 +4,5 @@
     <color name="splash_circle_bg">#2C2A24</color>
     <color name="splash_circle_border">#4B4739</color>
     <color name="color_swatch_border">#969080</color>
+    <color name="vip_icon_accent">#FFFFD60A</color>
 </resources>

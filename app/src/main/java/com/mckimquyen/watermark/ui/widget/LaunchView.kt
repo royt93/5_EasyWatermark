@@ -131,7 +131,6 @@ class LaunchView : CustomViewGroup {
     }
 
     private fun createActionCard(
-        isPrimary: Boolean,
         iconRes: Int,
         titleRes: Int,
         descRes: Int
@@ -152,21 +151,12 @@ class LaunchView : CustomViewGroup {
             strokeWidth = 1.dp
             cardElevation = 2.dp.toFloat()
 
-            if (isPrimary) {
-                val containerColor = MaterialColors.getColor(
-                    context,
-                    com.google.android.material.R.attr.colorSurfaceContainerHigh,
-                    Color.LTGRAY
-                )
-                setCardBackgroundColor(containerColor)
-            } else {
-                val containerColor = MaterialColors.getColor(
-                    context,
-                    com.google.android.material.R.attr.colorSurfaceContainer,
-                    Color.LTGRAY
-                )
-                setCardBackgroundColor(containerColor)
-            }
+            val containerColor = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorSurfaceContainerHigh,
+                Color.LTGRAY
+            )
+            setCardBackgroundColor(containerColor)
 
             // Spring scale tactile animation on touch
             setOnTouchListener { v, event ->
@@ -203,21 +193,12 @@ class LaunchView : CustomViewGroup {
             val badgeBg = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadius = 16.dp.toFloat()
-                if (isPrimary) {
-                    val badgeColor = MaterialColors.getColor(
-                        context,
-                        com.google.android.material.R.attr.colorPrimaryContainer,
-                        Color.BLACK
-                    )
-                    setColor(badgeColor)
-                } else {
-                    val badgeColor = MaterialColors.getColor(
-                        context,
-                        com.google.android.material.R.attr.colorSecondaryContainer,
-                        Color.DKGRAY
-                    )
-                    setColor(badgeColor)
-                }
+                val badgeColor = MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorPrimaryContainer,
+                    Color.BLACK
+                )
+                setColor(badgeColor)
             }
             background = badgeBg
 
@@ -227,19 +208,11 @@ class LaunchView : CustomViewGroup {
                     gravity = Gravity.CENTER
                 }
                 setImageResource(iconRes)
-                val tintColor = if (isPrimary) {
-                    MaterialColors.getColor(
-                        context,
-                        com.google.android.material.R.attr.colorOnPrimaryContainer,
-                        Color.WHITE
-                    )
-                } else {
-                    MaterialColors.getColor(
-                        context,
-                        com.google.android.material.R.attr.colorOnSecondaryContainer,
-                        Color.WHITE
-                    )
-                }
+                val tintColor = MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorOnPrimaryContainer,
+                    Color.WHITE
+                )
                 imageTintList = ColorStateList.valueOf(tintColor)
             }
             addView(iv)
@@ -291,19 +264,11 @@ class LaunchView : CustomViewGroup {
                 marginStart = 8.dp
             }
             setImageResource(R.drawable.ic_arrow_forward)
-            val arrowTint = if (isPrimary) {
-                MaterialColors.getColor(
-                    context,
-                    com.google.android.material.R.attr.colorPrimary,
-                    Color.BLACK
-                )
-            } else {
-                MaterialColors.getColor(
-                    context,
-                    com.google.android.material.R.attr.colorOnSurfaceVariant,
-                    Color.GRAY
-                )
-            }
+            val arrowTint = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorPrimary,
+                Color.BLACK
+            )
             imageTintList = ColorStateList.valueOf(arrowTint)
             alpha = 0.75f
         }
@@ -315,7 +280,6 @@ class LaunchView : CustomViewGroup {
 
     val ivSelectedPhotoTips: MaterialCardView by lazy {
         createActionCard(
-            isPrimary = true,
             iconRes = R.drawable.ic_picker_image,
             titleRes = R.string.tips_pick_image,
             descRes = R.string.launch_card_pick_desc
@@ -324,7 +288,6 @@ class LaunchView : CustomViewGroup {
 
     val ivGoAboutPage: MaterialCardView by lazy {
         createActionCard(
-            isPrimary = false,
             iconRes = R.drawable.ic_settings_glass,
             titleRes = R.string.about_title_info,
             descRes = R.string.launch_card_about_desc
