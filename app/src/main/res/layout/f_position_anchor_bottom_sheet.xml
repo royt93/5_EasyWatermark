@@ -59,10 +59,12 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="↖"
-                android:textSize="20sp"
-                android:textColor="?attr/colorOnSurface"
+                android:contentDescription="Top Left"
                 app:cornerRadius="14dp"
+                app:icon="@drawable/ic_anchor_top_left"
+                app:iconGravity="textStart"
+                app:iconSize="28dp"
+                app:iconTint="?attr/colorOnSurface"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
@@ -74,10 +76,12 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="↑"
-                android:textSize="20sp"
-                android:textColor="?attr/colorOnSurface"
+                android:contentDescription="Top Center"
                 app:cornerRadius="14dp"
+                app:icon="@drawable/ic_anchor_top_center"
+                app:iconGravity="textStart"
+                app:iconSize="28dp"
+                app:iconTint="?attr/colorOnSurface"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
@@ -89,10 +93,12 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="↗"
-                android:textSize="20sp"
-                android:textColor="?attr/colorOnSurface"
+                android:contentDescription="Top Right"
                 app:cornerRadius="14dp"
+                app:icon="@drawable/ic_anchor_top_right"
+                app:iconGravity="textStart"
+                app:iconSize="28dp"
+                app:iconTint="?attr/colorOnSurface"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
         </LinearLayout>
@@ -111,10 +117,12 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="←"
-                android:textSize="20sp"
-                android:textColor="?attr/colorOnSurface"
+                android:contentDescription="Center Left"
                 app:cornerRadius="14dp"
+                app:icon="@drawable/ic_anchor_center_left"
+                app:iconGravity="textStart"
+                app:iconSize="28dp"
+                app:iconTint="?attr/colorOnSurface"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
@@ -126,10 +134,12 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="●"
-                android:textSize="16sp"
-                android:textColor="?attr/colorOnSurface"
+                android:contentDescription="Center"
                 app:cornerRadius="14dp"
+                app:icon="@drawable/ic_anchor_center"
+                app:iconGravity="textStart"
+                app:iconSize="28dp"
+                app:iconTint="?attr/colorOnSurface"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
@@ -141,10 +151,12 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="→"
-                android:textSize="20sp"
-                android:textColor="?attr/colorOnSurface"
+                android:contentDescription="Center Right"
                 app:cornerRadius="14dp"
+                app:icon="@drawable/ic_anchor_center_right"
+                app:iconGravity="textStart"
+                app:iconSize="28dp"
+                app:iconTint="?attr/colorOnSurface"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
         </LinearLayout>
@@ -163,10 +175,12 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="↙"
-                android:textSize="20sp"
-                android:textColor="?attr/colorOnSurface"
+                android:contentDescription="Bottom Left"
                 app:cornerRadius="14dp"
+                app:icon="@drawable/ic_anchor_bottom_left"
+                app:iconGravity="textStart"
+                app:iconSize="28dp"
+                app:iconTint="?attr/colorOnSurface"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
@@ -178,10 +192,12 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="↓"
-                android:textSize="20sp"
-                android:textColor="?attr/colorOnSurface"
+                android:contentDescription="Bottom Center"
                 app:cornerRadius="14dp"
+                app:icon="@drawable/ic_anchor_bottom_center"
+                app:iconGravity="textStart"
+                app:iconSize="28dp"
+                app:iconTint="?attr/colorOnSurface"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
             <com.google.android.material.button.MaterialButton
@@ -193,10 +209,12 @@
                 android:layout_margin="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="↘"
-                android:textSize="20sp"
-                android:textColor="?attr/colorOnSurface"
+                android:contentDescription="Bottom Right"
                 app:cornerRadius="14dp"
+                app:icon="@drawable/ic_anchor_bottom_right"
+                app:iconGravity="textStart"
+                app:iconSize="28dp"
+                app:iconTint="?attr/colorOnSurface"
                 app:strokeColor="?attr/colorOutlineVariant" />
 
         </LinearLayout>

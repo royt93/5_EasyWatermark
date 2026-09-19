@@ -97,6 +97,8 @@
         android:textSize="16sp"
         android:textStyle="bold"
         app:cornerRadius="16dp"
+        app:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnPrimary"
         app:icon="@drawable/ic_func_qr_code"
         app:iconGravity="textStart"
         app:iconTint="?attr/colorOnPrimary"

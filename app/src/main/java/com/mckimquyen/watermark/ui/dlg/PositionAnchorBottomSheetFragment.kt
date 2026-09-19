@@ -93,6 +93,7 @@ class PositionAnchorBottomSheetFragment : BaseBindBSDFragment<FPositionAnchorBot
             com.google.android.material.color.MaterialColors.getColor(button, com.google.android.material.R.attr.colorOnSurface)
         }
         button.setTextColor(textColor)
+        button.iconTint = android.content.res.ColorStateList.valueOf(textColor)
         button.strokeColor = android.content.res.ColorStateList.valueOf(strokeColor)
         button.backgroundTintList = android.content.res.ColorStateList.valueOf(bgColor)
         button.strokeWidth = ((if (selected) 2f else 1f) * resources.displayMetrics.density).toInt()

@@ -144,13 +144,13 @@ class MaterialYouInsetsAndThemeRoboTest {
         val btnBottomRight = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnAnchorBottomRight)
 
         assertThat(btnTopLeft).isNotNull()
-        assertThat(btnTopLeft.text.toString()).isEqualTo("↖")
+        assertThat(btnTopLeft.icon).isNotNull()
 
         assertThat(btnCenter).isNotNull()
-        assertThat(btnCenter.text.toString()).isEqualTo("●")
+        assertThat(btnCenter.icon).isNotNull()
 
         assertThat(btnBottomRight).isNotNull()
-        assertThat(btnBottomRight.text.toString()).isEqualTo("↘")
+        assertThat(btnBottomRight.icon).isNotNull()
 
         fragment.dismiss()
     }
