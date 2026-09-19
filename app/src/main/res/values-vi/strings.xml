@@ -190,7 +190,7 @@
     <string name="vip_success_title">Thành công</string>
     <string name="vip_failed_title">Thất bại</string>
     <string name="func_title_signature">Chữ ký</string>
-    <string name="func_title_leica_exif">Khung Leica EXIF</string>
+    <string name="func_title_leica_exif">Khung EXIF</string>
     <string name="about_version_display">v%1$s</string>
     <string name="share_error">Lỗi khi chia sẻ với %1$s</string>
     <plurals name="gallery_select_photo_count">

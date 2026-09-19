@@ -54,7 +54,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_func_layout_vertical"
+                    android:src="@drawable/ic_func_frame"
                     app:tint="?attr/colorPrimary" />
             </FrameLayout>
 

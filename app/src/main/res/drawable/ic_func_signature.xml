@@ -1,0 +1,11 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:tint="#FFFFFF"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Material Signature icon: angled pen with signature underline -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M2,18.5h20v1.5H2V18.5zM18.41,5.8l-1.21,-1.21c-0.78,-0.78 -2.05,-0.78 -2.83,0l-8.62,8.62c-0.19,0.19 -0.32,0.42 -0.38,0.68L4.6,17.65c-0.12,0.52 0.34,0.98 0.86,0.86l3.76,-0.77c0.26,-0.06 0.49,-0.19 0.68,-0.38l8.62,-8.62C19.19,8.04 19.19,6.77 18.41,5.8zM8.19,16.4l-1.92,0.39l0.39,-1.92l7.29,-7.29l1.53,1.53L8.19,16.4z" />
+</vector>

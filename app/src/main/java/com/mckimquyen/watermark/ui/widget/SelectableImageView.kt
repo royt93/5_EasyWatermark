@@ -10,6 +10,7 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.drawable.BitmapDrawable
 import android.util.AttributeSet
 import android.view.View
+import com.google.android.material.color.MaterialColors
 import com.mckimquyen.watermark.R
 import kotlin.math.min
 
@@ -17,12 +18,16 @@ class SelectableImageView : View {
 
     constructor(context: Context?) : super(context!!)
     constructor(context: Context?, attrs: AttributeSet?) : super(context!!, attrs) {
+        val defaultPrimary = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorPrimary,
+            Color.WHITE
+        )
         context.obtainStyledAttributes(attrs, R.styleable.SelectableImageView).run {
-            borderColor = getColor(R.styleable.SelectableImageView_siv_border_color, Color.WHITE)
+            borderColor = getColor(R.styleable.SelectableImageView_siv_border_color, defaultPrimary)
             borderWidth = getDimension(R.styleable.SelectableImageView_siv_border_width, 3f)
-            ringColor = getColor(R.styleable.SelectableImageView_siv_ring_color, Color.WHITE)
+            ringColor = getColor(R.styleable.SelectableImageView_siv_ring_color, defaultPrimary)
             ringWidth = getDimension(R.styleable.SelectableImageView_siv_ring_width, 3f)
-            borderColor = getColor(R.styleable.SelectableImageView_siv_border_color, Color.WHITE)
             innerCircleWidth = getDimension(R.styleable.SelectableImageView_siv_circle_width, 10f)
             circleResId = getResourceId(R.styleable.SelectableImageView_siv_src, -1)
             circleColor = getColor(R.styleable.SelectableImageView_siv_color, Color.WHITE)
@@ -79,6 +84,18 @@ class SelectableImageView : View {
             color = borderColor
             style = Paint.Style.STROKE
             strokeWidth = borderWidth
+        }
+    }
+
+    private val swatchStrokePaint by lazy {
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 1f * context.resources.displayMetrics.density
+            color = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorOutlineVariant,
+                Color.LTGRAY
+            )
         }
     }
 
@@ -143,6 +160,15 @@ class SelectableImageView : View {
         }
         paint.xfermode = null
         canvas.restoreToCount(sc)
+
+        if (innerCircleWidth > 0f) {
+            canvas.drawCircle(
+                (measuredWidth / 2).toFloat(),
+                (measuredHeight / 2).toFloat(),
+                (innerCircleWidth / 2) - 0.5f,
+                swatchStrokePaint
+            )
+        }
     }
 
     private fun createSrcBitmapFromRes(

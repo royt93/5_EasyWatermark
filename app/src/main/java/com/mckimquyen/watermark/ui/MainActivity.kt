@@ -119,7 +119,7 @@ class MainActivity : BaseActivity() {
             FuncTitleModel(
                 type = FuncTitleModel.FuncType.Signature,
                 title = getString(R.string.func_title_signature),
-                iconRes = R.drawable.ic_func_text
+                iconRes = R.drawable.ic_func_signature
             ),
             FuncTitleModel(
                 type = FuncTitleModel.FuncType.QRCode,
@@ -129,7 +129,7 @@ class MainActivity : BaseActivity() {
             FuncTitleModel(
                 type = FuncTitleModel.FuncType.ExifBorder,
                 title = getString(R.string.func_title_leica_exif),
-                iconRes = R.drawable.ic_func_layout_vertical
+                iconRes = R.drawable.ic_func_frame
             )
         )
     }
