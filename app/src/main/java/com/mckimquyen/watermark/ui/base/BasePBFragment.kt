@@ -27,7 +27,7 @@ abstract class BasePBFragment : BaseBindFragment<FBasePbBinding>() {
         }
 
         b.tvProgressVertical.apply {
-            text = "${formatValue(shareViewModel.waterMark.value)}"
+            text = formatValueTips(shareViewModel.waterMark.value)
         }
 
         b.slideContentSize.trackTintList =

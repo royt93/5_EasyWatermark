@@ -19,6 +19,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -266,6 +267,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         shareViewModel.galleryPickedImageList.observe(viewLifecycleOwner) {
             AppLog.d(LOG_TAG, "GalleryFragment galleryPickedImageList updated — count=${it?.size ?: 0}")
             galleryAdapter.submitList(it)
+            binding.llEmptyState.isVisible = it.isNullOrEmpty()
         }
 
         // ── Observe selection count → animate FAB + hint pill ────────────────

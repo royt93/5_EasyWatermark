@@ -27,7 +27,7 @@ class HorizonPbFragment : BasePBFragment() {
     }
 
     override fun formatValueTips(config: WaterMark?): String {
-        return "${config?.hGap ?: 1f}"
+        return "${config?.hGap ?: 0} px"
     }
 
     companion object {

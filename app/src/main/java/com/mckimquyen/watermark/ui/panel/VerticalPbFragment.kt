@@ -27,7 +27,7 @@ class VerticalPbFragment : BasePBFragment() {
     }
 
     override fun formatValueTips(config: WaterMark?): String {
-        return "${config?.vGap ?: 1f}"
+        return "${config?.vGap ?: 0} px"
     }
 
     companion object {

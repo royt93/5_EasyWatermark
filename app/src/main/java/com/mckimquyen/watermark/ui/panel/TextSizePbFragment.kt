@@ -29,7 +29,7 @@ class TextSizePbFragment : BasePBFragment() {
     override fun formatValueTips(config: WaterMark?): String {
         val size = (config?.textSize?.toInt()?.toFloat() ?: 1f).coerceAtLeast(1f)
             .coerceAtMost(WaterMarkRepository.MAX_TEXT_SIZE)
-        return "$size"
+        return "${size.toInt()} sp"
     }
 
     companion object {
