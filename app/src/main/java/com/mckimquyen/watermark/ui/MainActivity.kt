@@ -21,8 +21,10 @@ import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.ActionMenuView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -194,7 +196,7 @@ class MainActivity : BaseActivity() {
 
     private val vibrateHelper: VibrateHelper by lazy { VibrateHelper.get() }
 
-    private lateinit var launchView: LaunchView
+    internal lateinit var launchView: LaunchView
     private var vipBadge: BadgeDrawable? = null
 
     private var bgTransformAnimator: ObjectAnimator? = null
@@ -555,14 +557,7 @@ class MainActivity : BaseActivity() {
 
             launchView.tabLayout.setSelectedTabIndicatorColor(editorOnBgSelected)
             launchView.tabLayout.setTabTextColors(editorOnBgText, editorOnBgSelected)
-            launchView.toolbar.navigationIcon?.setTint(editorOnBgIcon)
-            launchView.toolbar.menu.forEach { menuItem ->
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    menuItem.iconTintList = ColorStateList.valueOf(editorOnBgIcon)
-                } else {
-                    menuItem.icon?.setTint(editorOnBgIcon)
-                }
-            }
+            applyToolbarIconColor(editorOnBgIcon)
         }
     }
 
@@ -597,6 +592,12 @@ class MainActivity : BaseActivity() {
             // Small WATERMARK branding logo next to the back arrow (the raw drawable is too wide).
             logo = buildSmallWatermarkLogo()
         }
+        val defaultToolbarIconColor = MaterialColors.getColor(
+            this,
+            com.google.android.material.R.attr.colorOnSurface,
+            Color.BLACK
+        )
+        applyToolbarIconColor(defaultToolbarIconColor)
         // go about page
         launchView.ivGoAboutPage.setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
@@ -859,8 +860,53 @@ class MainActivity : BaseActivity() {
         return src
     }
 
+    private var currentToolbarIconColor: Int? = null
+
+    fun applyToolbarIconColor(iconColor: Int) {
+        currentToolbarIconColor = iconColor
+        if (!this::launchView.isInitialized) return
+        val toolbar = launchView.toolbar
+        toolbar.navigationIcon?.setTint(iconColor)
+        toolbar.overflowIcon?.setTint(iconColor)
+        toolbar.menu.forEach { menuItem ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                menuItem.iconTintList = ColorStateList.valueOf(iconColor)
+            } else {
+                menuItem.icon?.setTint(iconColor)
+            }
+        }
+        toolbar.post {
+            toolbar.navigationIcon?.setTint(iconColor)
+            toolbar.overflowIcon?.setTint(iconColor)
+            toolbar.menu.forEach { menuItem ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    menuItem.iconTintList = ColorStateList.valueOf(iconColor)
+                } else {
+                    menuItem.icon?.setTint(iconColor)
+                }
+            }
+            for (i in 0 until toolbar.childCount) {
+                val child = toolbar.getChildAt(i)
+                if (child is ActionMenuView) {
+                    for (j in 0 until child.childCount) {
+                        val menuChild = child.getChildAt(j)
+                        if (menuChild is ImageView) {
+                            menuChild.imageTintList = ColorStateList.valueOf(iconColor)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu, menu)
+        val iconColor = currentToolbarIconColor ?: MaterialColors.getColor(
+            this,
+            com.google.android.material.R.attr.colorOnSurface,
+            Color.BLACK
+        )
+        applyToolbarIconColor(iconColor)
         refreshVipBadge()
         return true
     }
@@ -1091,6 +1137,12 @@ class MainActivity : BaseActivity() {
         val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
         insetsController.isAppearanceLightStatusBars = isLightBg
         insetsController.isAppearanceLightNavigationBars = isLightBg
+        val toolbarIconColor = if (isLightBg) {
+            MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface, Color.BLACK)
+        } else {
+            Color.WHITE
+        }
+        applyToolbarIconColor(toolbarIconColor)
     }
 
     private fun selectTab(index: Int) {

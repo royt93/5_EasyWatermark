@@ -306,6 +306,13 @@ class LaunchView : CustomViewGroup {
             // screen edge / rounded corner (Toolbar contentInsetEnd is 0 here).
             setPadding(0, 0, 12.dp, 0)
             clipToPadding = false
+            val defaultIconColor = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorOnSurface,
+                Color.BLACK
+            )
+            setNavigationIconTint(defaultIconColor)
+            overflowIcon?.setTint(defaultIconColor)
 //            setBackgroundColor(context.colorSurface)
         }
     }

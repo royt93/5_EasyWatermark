@@ -6,8 +6,6 @@
     </style>
 
 
-    <style name="SaveDialogExposedDropdownMenu" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu" />
-
     <style name="SaveDialogAutoCompleteTextView" parent="ThemeOverlay.Material3.AutoCompleteTextView.OutlinedBox" />
 
 </resources>

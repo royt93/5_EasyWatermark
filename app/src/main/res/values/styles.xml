@@ -68,14 +68,14 @@
         <item name="android:paddingEnd">0dp</item>
     </style>
 
-    <style name="SaveDialogExposedDropdownMenu" parent="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+    <style name="SaveDialogExposedDropdownMenu" parent="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
         <item name="boxBackgroundColor">?attr/colorSurfaceContainerHigh</item>
         <item name="boxStrokeColor">?attr/colorOutline</item>
         <item name="boxStrokeWidth">1dp</item>
         <item name="boxStrokeWidthFocused">2dp</item>
         <item name="shapeAppearance">@style/ShapeAppearance.App.SmallComponent</item>
         <item name="hintTextColor">?attr/colorOnSurfaceVariant</item>
-        <item name="endIconTint">?attr/colorOnSurface</item>
+        <item name="endIconTint">?attr/colorOnSurfaceVariant</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:textColorHint">?attr/colorOnSurfaceVariant</item>
     </style>

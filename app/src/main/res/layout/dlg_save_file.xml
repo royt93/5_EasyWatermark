@@ -242,17 +242,16 @@
     <!-- ══ FEAT-13: entry point cho caption riêng từng ảnh ═════════════════════ -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBatchCaptions"
-        style="@style/Widget.App.Button.TextButton"
+        style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:backgroundTint="@android:color/transparent"
-        android:gravity="start|center_vertical"
-        android:paddingStart="0dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
         android:text="@string/batch_caption_entry"
         android:textColor="?attr/colorPrimary"
+        app:cornerRadius="12dp"
         app:icon="@drawable/ic_edit"
         app:iconGravity="textStart"
+        app:iconPadding="8dp"
         app:iconTint="?attr/colorPrimary" />
 
     <!-- ══ SECTION: EXPORT LIST ═════════════════════════════════════════════ -->

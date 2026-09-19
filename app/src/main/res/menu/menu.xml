@@ -6,23 +6,27 @@
         android:id="@+id/actionPick"
         android:icon="@drawable/ic_picker_image"
         android:title="@string/action_pick"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/actionSave"
         android:icon="@drawable/ic_save"
         android:title="@string/action_save"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/actionVip"
         android:icon="@drawable/ic_workspace_premium"
         android:title="@string/vip_title"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/actionSettings"
         android:icon="@drawable/ic_about"
         android:title="@string/action_settings"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
 </menu>
