@@ -2,9 +2,11 @@
 <!-- Material Design 3: a_open_source — open source library list -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="?attr/colorSurface"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,9 +21,10 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorSurface"
             android:elevation="0dp"
-            app:navigationIcon="@drawable/ic_arrow_back"
+            app:navigationIcon="@drawable/ic_close"
             app:navigationIconTint="?attr/colorOnSurface"
             app:title="@string/about_title_open_source"
+            app:titleCentered="false"
             app:titleTextColor="?attr/colorOnSurface" />
 
         <!-- ColorPickerView card -->
@@ -32,9 +35,12 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
+            android:clickable="true"
+            android:focusable="true"
             app:cardBackgroundColor="?attr/colorSurfaceContainer"
-            app:cardCornerRadius="16dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp"
+            app:rippleColor="?attr/colorControlHighlight"
             app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp">
 
@@ -44,20 +50,36 @@
                 android:layout_margin="16dp"
                 android:orientation="vertical">
 
-                <com.google.android.material.textview.MaterialTextView
-                    style="@style/Theme.MyApp.TitleText"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="?attr/colorOnSurface"
-                    android:text="@string/colorpickerview" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/Theme.MyApp.TitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/colorpickerview"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_open_in_new"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                </LinearLayout>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="4dp"
-                    android:text="@string/open_source_desc_color_picker" />
+                    android:text="@string/open_source_desc_color_picker"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
 
@@ -69,11 +91,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:layout_marginEnd="16dp"
+            android:clickable="true"
+            android:focusable="true"
             app:cardBackgroundColor="?attr/colorSurfaceContainer"
-            app:cardCornerRadius="16dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp"
+            app:rippleColor="?attr/colorControlHighlight"
             app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp">
 
@@ -83,20 +108,36 @@
                 android:layout_margin="16dp"
                 android:orientation="vertical">
 
-                <com.google.android.material.textview.MaterialTextView
-                    style="@style/Theme.MyApp.TitleText"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="?attr/colorOnSurface"
-                    android:text="@string/glide" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/Theme.MyApp.TitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/glide"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_open_in_new"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                </LinearLayout>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="4dp"
-                    android:text="@string/open_source_desc_about_lib" />
+                    android:text="@string/open_source_desc_about_lib"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
 
@@ -108,11 +149,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:layout_marginEnd="16dp"
+            android:clickable="true"
+            android:focusable="true"
             app:cardBackgroundColor="?attr/colorSurfaceContainer"
-            app:cardCornerRadius="16dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp"
+            app:rippleColor="?attr/colorControlHighlight"
             app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp">
 
@@ -122,20 +166,36 @@
                 android:layout_margin="16dp"
                 android:orientation="vertical">
 
-                <com.google.android.material.textview.MaterialTextView
-                    style="@style/Theme.MyApp.TitleText"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="?attr/colorOnSurface"
-                    android:text="@string/material_components_for_android" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/Theme.MyApp.TitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/material_components_for_android"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_open_in_new"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                </LinearLayout>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="4dp"
-                    android:text="@string/open_source_desc_material_components" />
+                    android:text="@string/open_source_desc_material_components"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
 
@@ -147,11 +207,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:layout_marginEnd="16dp"
+            android:clickable="true"
+            android:focusable="true"
             app:cardBackgroundColor="?attr/colorSurfaceContainer"
-            app:cardCornerRadius="16dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp"
+            app:rippleColor="?attr/colorControlHighlight"
             app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp">
 
@@ -161,20 +224,36 @@
                 android:layout_margin="16dp"
                 android:orientation="vertical">
 
-                <com.google.android.material.textview.MaterialTextView
-                    style="@style/Theme.MyApp.TitleText"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="?attr/colorOnSurface"
-                    android:text="@string/compressor" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        style="@style/Theme.MyApp.TitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/compressor"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_open_in_new"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                </LinearLayout>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="4dp"
-                    android:text="@string/open_source_desc_compressor" />
+                    android:text="@string/open_source_desc_compressor"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
 

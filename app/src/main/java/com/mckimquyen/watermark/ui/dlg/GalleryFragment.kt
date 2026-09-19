@@ -17,6 +17,8 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -110,6 +112,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
             isCancelable = false
         }
+        setupBottomSheet(d, expandFully = true)
         return d
     }
 
@@ -126,6 +129,12 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         container: ViewGroup?
     ): FGalleryBinding {
         val rootView = FGalleryBinding.inflate(layoutInflater, container, false)
+
+        val baseToolbarHeight = resources.getDimensionPixelSize(
+            com.google.android.material.R.dimen.m3_appbar_size_compact
+        )
+        rootView.topAppBar.layoutParams.height = baseToolbarHeight
+        rootView.topAppBar.setPadding(0, 0, 0, 0)
 
         // ── Navigation ───────────────────────────────────────────────────────
         rootView.topAppBar.setNavigationOnClickListener {

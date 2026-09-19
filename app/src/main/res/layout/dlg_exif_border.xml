@@ -26,10 +26,8 @@
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="24dp"
-        android:background="?attr/colorOutlineVariant"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:alpha="0.4"
+        android:background="?attr/colorOnSurfaceVariant" />
 
     <com.google.android.material.card.MaterialCardView
         style="@style/Widget.Material3.CardView.Filled"

@@ -28,7 +28,7 @@
             app:navigationIcon="@drawable/ic_close"
             app:navigationIconTint="?attr/colorOnSurface"
             app:title="@string/action_pick"
-            app:titleCentered="true"
+            app:titleCentered="false"
             app:titleTextColor="?attr/colorOnSurface" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -113,7 +113,7 @@
         android:textStyle="bold"
         app:cornerRadius="16dp"
         app:elevation="6dp"
-        app:icon="@drawable/baseline_check_circle_outline_24"
+        app:icon="@drawable/ic_check"
         app:iconSize="24dp"
         app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="parent"

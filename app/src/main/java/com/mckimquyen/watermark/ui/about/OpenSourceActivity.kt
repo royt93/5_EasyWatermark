@@ -17,21 +17,24 @@ class OpenSourceActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         AppLog.d(LOG_TAG, "OpenSourceActivity onCreate")
         setContentView(binding.root)
-        // Insets: push toolbar down below the status bar, and add bottom padding for nav bar
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { root, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            root.setPadding(0, 0, 0, systemBars.bottom)
+        // Insets: push toolbar down below the status bar & camera cutout, and add bottom padding for nav bar
+        val baseAppBarHeight = resources.getDimensionPixelSize(
+            com.google.android.material.R.dimen.m3_appbar_size_compact
+        )
+        val baseScrollBottom = (32 * resources.displayMetrics.density).toInt()
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val statusBarTop = insets.getInsets(
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+            ).top
+            val navBarBottom = insets.getInsets(
+                WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.displayCutout()
+            ).bottom
+            binding.myToolbar.setPadding(0, statusBarTop, 0, 0)
+            binding.myToolbar.layoutParams.height = baseAppBarHeight + statusBarTop
+            binding.root.setPadding(0, 0, 0, baseScrollBottom + navBarBottom)
             insets
         }
-        ViewCompat.setOnApplyWindowInsetsListener(binding.myToolbar) { view, insets ->
-            val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            AppLog.d(LOG_TAG, "OpenSourceActivity insets — statusBarTop=$top")
-            view.setPadding(0, top, 0, 0)
-            view.layoutParams.height = resources.getDimensionPixelSize(
-                com.google.android.material.R.dimen.m3_appbar_size_compact
-            ) + top
-            insets
-        }
+        ViewCompat.requestApplyInsets(binding.root)
         setupViews()
     }
 
