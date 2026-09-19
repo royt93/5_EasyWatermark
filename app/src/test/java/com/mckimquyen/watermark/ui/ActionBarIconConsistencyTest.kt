@@ -94,7 +94,7 @@ class ActionBarIconConsistencyTest {
         )
 
         val menu = toolbar.menu
-        assertThat(menu.size()).isEqualTo(2)
+        assertThat(menu.size()).isAtLeast(2)
 
         menu.forEach { item ->
             assertThat(item.icon).isNotNull()

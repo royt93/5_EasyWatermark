@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.mckimquyen.cmonet"
-    compileSdk = Apps.targetSdk
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 23

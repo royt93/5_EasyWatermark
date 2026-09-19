@@ -218,7 +218,16 @@
     <string name="draw_signature">Vẽ chữ ký</string>
     <string name="action_clear">Xóa</string>
     <string name="about_section_app_info">Thông tin ứng dụng</string>
+    <string name="about_section_support">Hỗ trợ &amp; Cộng đồng</string>
+    <string name="rate_us_subtitle">Đánh giá 5 sao trên Google Play</string>
+    <string name="share_app_subtitle">Chia sẻ ứng dụng với bạn bè</string>
+    <string name="more_apps_subtitle">Khám phá các ứng dụng hữu ích khác</string>
+    <string name="about_section_data">Quản lý dữ liệu</string>
+    <string name="backup_data_subtitle">Sao lưu mẫu đóng dấu và chữ ký</string>
+    <string name="restore_data_subtitle">Khôi phục mẫu đóng dấu và chữ ký</string>
     <string name="debug_title">Gỡ lỗi</string>
     <string name="designed_with_by_tovi">Thiết kế với ♥ bởi tovi</string>
     <string name="designer_comment">Nhà thiết kế.</string>
+    <string name="action_select_all">Chọn tất cả</string>
+    <string name="action_deselect_all">Bỏ chọn tất cả</string>
 </resources>

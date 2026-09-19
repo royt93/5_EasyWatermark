@@ -23,6 +23,6 @@
         android:padding="2dp"
         android:background="@drawable/bg_circle_red"
         android:src="@drawable/ic_remove_item"
-        app:tint="#FFFFFF" />
+        app:tint="@android:color/white" />
 
 </FrameLayout>

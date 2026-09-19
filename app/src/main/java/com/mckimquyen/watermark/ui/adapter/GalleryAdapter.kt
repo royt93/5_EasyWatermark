@@ -216,17 +216,40 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
         latestSelectedItem = position
     }
 
+    fun selectAll(recyclerView: RecyclerView) {
+        val list = differ.currentList
+        if (list.isEmpty()) return
+        list.forEachIndexed { i, item ->
+            item.check = true
+            selectedPosSet.add(i)
+            (recyclerView.findViewHolderForAdapterPosition(i) as? GalleryItemHolder?)?.apply {
+                cbImage.isChecked = true
+                applyCheckStyle(imageFilterView = ivImage, isChecked = true)
+            }
+        }
+        selectedCount.value = list.size
+        latestSelectedItem = list.size - 1
+    }
+
     fun unSelectAll(recyclerView: RecyclerView) {
         val list = differ.currentList
         selectedPosSet.forEach { i ->
-            list[i].check = false
-            (recyclerView.findViewHolderForAdapterPosition(i) as? GalleryItemHolder?)?.apply {
-                cbImage.isChecked = false
-                applyCheckStyle(imageFilterView = ivImage, isChecked = false)
+            if (i in 0 until list.size) {
+                list[i].check = false
+                (recyclerView.findViewHolderForAdapterPosition(i) as? GalleryItemHolder?)?.apply {
+                    cbImage.isChecked = false
+                    applyCheckStyle(imageFilterView = ivImage, isChecked = false)
+                }
             }
         }
+        selectedPosSet.clear()
         selectedCount.value = 0
         latestSelectedItem = -1
+    }
+
+    fun isAllSelected(): Boolean {
+        val list = differ.currentList
+        return list.isNotEmpty() && (selectedCount.value ?: 0) >= list.size
     }
 
 //    fun markAutoScroll(autoScrolling: Boolean, autoSelect: Boolean) {

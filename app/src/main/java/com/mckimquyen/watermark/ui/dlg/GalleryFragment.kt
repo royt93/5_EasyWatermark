@@ -221,6 +221,15 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                     pickFolderLauncher.launch(null)
                     return@setOnMenuItemClickListener true
                 }
+
+                R.id.actionSelectToggle -> {
+                    if (galleryAdapter.isAllSelected()) {
+                        galleryAdapter.unSelectAll(rootView.rvContent)
+                    } else {
+                        galleryAdapter.selectAll(rootView.rvContent)
+                    }
+                    return@setOnMenuItemClickListener true
+                }
             }
             return@setOnMenuItemClickListener false
         }
@@ -273,6 +282,14 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         // ── Observe selection count → animate FAB + hint pill ────────────────
         galleryAdapter.selectedCount.observe(viewLifecycleOwner) { count ->
             AppLog.d(LOG_TAG, "GalleryFragment selectedCount changed -> $count")
+            val selectToggleItem = rootView.topAppBar.menu.findItem(R.id.actionSelectToggle)
+            if (galleryAdapter.isAllSelected()) {
+                selectToggleItem?.setIcon(R.drawable.ic_deselect_all)
+                selectToggleItem?.setTitle(R.string.action_deselect_all)
+            } else {
+                selectToggleItem?.setIcon(R.drawable.ic_select_all)
+                selectToggleItem?.setTitle(R.string.action_select_all)
+            }
             if (count > 0) {
                 // ENH-09: <plurals> thay vì if/else hardcode — chuẩn Android cho số nhiều, hỗ trợ
                 // đúng ngữ pháp khi có bản dịch ngôn ngữ khác (vd tiếng Ả Rập/Nga nhiều dạng số nhiều).

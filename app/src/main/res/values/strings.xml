@@ -237,7 +237,16 @@
     <string name="draw_signature">Draw Signature</string>
     <string name="action_clear">Clear</string>
     <string name="about_section_app_info">App Info</string>
+    <string name="about_section_support">Support &amp; Community</string>
+    <string name="rate_us_subtitle">Rate us 5 stars on Google Play</string>
+    <string name="share_app_subtitle">Share EasyWatermark with friends</string>
+    <string name="more_apps_subtitle">Explore more apps by developer</string>
+    <string name="about_section_data">Data Management</string>
+    <string name="backup_data_subtitle">Export templates and signatures</string>
+    <string name="restore_data_subtitle">Import templates and signatures</string>
     <string name="debug_title">Debug</string>
     <string name="designed_with_by_tovi">Designed with ♥ by tovi</string>
     <string name="designer_comment">A Designer.</string>
+    <string name="action_select_all">Select all</string>
+    <string name="action_deselect_all">Deselect all</string>
 </resources>
