@@ -9,20 +9,16 @@
         android:strokeWidth="1.5"
         android:strokeColor="#ffffff" />
     <path
-        android:fillAlpha="0.6"
         android:fillColor="#00000000"
         android:pathData="M12,11.2068L12,16.5442"
         android:strokeWidth="1.8"
-        android:strokeAlpha="0.6"
         android:strokeColor="#ffffff"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
     <path
-        android:fillAlpha="0.6"
         android:fillColor="#00000000"
         android:pathData="M12,8L12,8.0293"
         android:strokeWidth="2.2"
-        android:strokeAlpha="0.6"
         android:strokeColor="#ffffff"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />

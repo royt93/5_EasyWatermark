@@ -16,11 +16,14 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
+import android.graphics.Color
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.common.const.AdKeys
 import com.mckimquyen.watermark.databinding.ActivityVipManagementBinding
+import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.roy.sdkadbmob.AdManager
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
@@ -58,6 +61,8 @@ class VipManagementActivity : BaseActivity() {
     }
 
     private fun setupView() {
+        val iconColor = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface, Color.BLACK)
+        binding.topAppBar.applyConsistentIconTint(iconColor)
         binding.topAppBar.setNavigationOnClickListener { finish() }
         binding.btnRedeemKey.setOnClickListener { redeemKey() }
         binding.btnWatchRewarded.setOnClickListener { watchRewarded() }

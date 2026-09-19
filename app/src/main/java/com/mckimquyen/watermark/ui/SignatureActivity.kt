@@ -23,6 +23,8 @@ import com.mckimquyen.watermark.databinding.ActivitySignatureBinding
 import com.mckimquyen.watermark.ui.adapter.ColorPreviewAdapter
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
 import com.mckimquyen.watermark.ui.widget.onItemClick
+import com.google.android.material.color.MaterialColors
+import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.isNight
 import com.mckimquyen.watermark.utils.ktx.toast
 import dagger.hilt.android.AndroidEntryPoint
@@ -111,6 +113,8 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
     }
 
     private fun initViews() {
+        val iconColor = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface, Color.BLACK)
+        binding.toolbar.applyConsistentIconTint(iconColor)
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.ivClear.setOnClickListener {
             binding.signatureView.clear()

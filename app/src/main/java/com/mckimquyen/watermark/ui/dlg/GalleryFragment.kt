@@ -23,6 +23,9 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import android.graphics.Color
+import com.google.android.material.color.MaterialColors
+import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
@@ -136,6 +139,12 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         )
         rootView.topAppBar.layoutParams.height = baseToolbarHeight
         rootView.topAppBar.setPadding(0, 0, 0, 0)
+        val toolbarIconColor = MaterialColors.getColor(
+            requireContext(),
+            com.google.android.material.R.attr.colorOnSurface,
+            Color.BLACK
+        )
+        rootView.topAppBar.applyConsistentIconTint(toolbarIconColor)
 
         // ── Navigation ───────────────────────────────────────────────────────
         rootView.topAppBar.setNavigationOnClickListener {
@@ -290,6 +299,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                 selectToggleItem?.setIcon(R.drawable.ic_select_all)
                 selectToggleItem?.setTitle(R.string.action_select_all)
             }
+            rootView.topAppBar.applyConsistentIconTint(toolbarIconColor)
             if (count > 0) {
                 // ENH-09: <plurals> thay vì if/else hardcode — chuẩn Android cho số nhiều, hỗ trợ
                 // đúng ngữ pháp khi có bản dịch ngôn ngữ khác (vd tiếng Ả Rập/Nga nhiều dạng số nhiều).

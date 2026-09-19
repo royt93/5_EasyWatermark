@@ -19,6 +19,9 @@ import com.mckimquyen.watermark.databinding.AAboutBinding
 import com.mckimquyen.watermark.feature.vip.VipManagementActivity
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.openLink
+import android.graphics.Color
+import com.google.android.material.color.MaterialColors
+import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.roy.sdkadbmob.AdManager
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -88,6 +91,8 @@ class AboutActivity : BaseActivity() {
             tvVersion2.text = BuildConfig.VERSION_NAME
 
             // Back navigation via CollapsingToolbar's nav icon
+            val iconColor = MaterialColors.getColor(this@AboutActivity, com.google.android.material.R.attr.colorOnSurface, Color.BLACK)
+            topAppBar.applyConsistentIconTint(iconColor)
             topAppBar.setNavigationOnClickListener {
                 AppLog.d(LOG_TAG, "AboutActivity back button clicked via topAppBar")
                 finish()

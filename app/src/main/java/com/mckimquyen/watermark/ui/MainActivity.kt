@@ -58,6 +58,7 @@ import com.mckimquyen.watermark.rateAppInApp
 import com.mckimquyen.watermark.ui.about.AboutActivity
 import com.mckimquyen.watermark.ui.adapter.FuncPanelAdapter
 import com.mckimquyen.watermark.ui.adapter.PhotoListPreviewAdapter
+import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.ui.dlg.CompressImageDialogFragment
 import com.mckimquyen.watermark.ui.dlg.GalleryFragment
 import com.mckimquyen.watermark.ui.dlg.SaveImageBSDialogFragment
@@ -865,38 +866,7 @@ class MainActivity : BaseActivity() {
     fun applyToolbarIconColor(iconColor: Int) {
         currentToolbarIconColor = iconColor
         if (!this::launchView.isInitialized) return
-        val toolbar = launchView.toolbar
-        toolbar.navigationIcon?.setTint(iconColor)
-        toolbar.overflowIcon?.setTint(iconColor)
-        toolbar.menu.forEach { menuItem ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                menuItem.iconTintList = ColorStateList.valueOf(iconColor)
-            } else {
-                menuItem.icon?.setTint(iconColor)
-            }
-        }
-        toolbar.post {
-            toolbar.navigationIcon?.setTint(iconColor)
-            toolbar.overflowIcon?.setTint(iconColor)
-            toolbar.menu.forEach { menuItem ->
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    menuItem.iconTintList = ColorStateList.valueOf(iconColor)
-                } else {
-                    menuItem.icon?.setTint(iconColor)
-                }
-            }
-            for (i in 0 until toolbar.childCount) {
-                val child = toolbar.getChildAt(i)
-                if (child is ActionMenuView) {
-                    for (j in 0 until child.childCount) {
-                        val menuChild = child.getChildAt(j)
-                        if (menuChild is ImageView) {
-                            menuChild.imageTintList = ColorStateList.valueOf(iconColor)
-                        }
-                    }
-                }
-            }
-        }
+        launchView.toolbar.applyConsistentIconTint(iconColor)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

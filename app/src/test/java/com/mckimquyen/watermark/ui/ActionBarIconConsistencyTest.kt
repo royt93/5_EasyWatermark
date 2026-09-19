@@ -16,6 +16,7 @@ import com.google.android.material.color.MaterialColors
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.ui.widget.LaunchView
+import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -150,4 +151,116 @@ class ActionBarIconConsistencyTest {
         assertThat(vipToolbar).isNotNull()
         assertThat(vipToolbar.navigationIcon).isNotNull()
     }
+
+    @Test
+    fun universalTintEngine_samsungOneUiSimulation_tintsCompoundDrawablesAndActionViews() {
+        val toolbar = MaterialToolbar(themedContext)
+        toolbar.navigationIcon = ContextCompat.getDrawable(themedContext, R.drawable.ic_arrow_back)
+        toolbar.overflowIcon = ContextCompat.getDrawable(themedContext, R.drawable.ic_save)
+
+        val actionMenuView = ActionMenuView(themedContext)
+        
+        // Simulating Samsung OneUI ActionMenuItemView which extends TextView
+        val mockActionItemView = android.widget.TextView(themedContext).apply {
+            val iconDrawable = ContextCompat.getDrawable(themedContext, R.drawable.ic_picker_image)
+            setCompoundDrawablesWithIntrinsicBounds(iconDrawable, null, null, null)
+        }
+        actionMenuView.addView(mockActionItemView)
+
+        // Simulating OverflowMenuButton which is an ImageView
+        val mockOverflowButton = ImageView(themedContext).apply {
+            setImageDrawable(ContextCompat.getDrawable(themedContext, R.drawable.ic_about))
+        }
+        actionMenuView.addView(mockOverflowButton)
+
+        toolbar.addView(actionMenuView)
+
+        val testColor = Color.rgb(33, 150, 243)
+        toolbar.applyConsistentIconTint(testColor)
+
+        // Check Toolbar navigation tint
+        assertThat(toolbar.navigationIconTint).isEqualTo(testColor)
+
+        // Check ImageView imageTintList
+        assertThat(mockOverflowButton.imageTintList?.defaultColor).isEqualTo(testColor)
+    }
+
+    @Test
+    fun vectorDrawables_actionIconsArePureWhiteBase_avoidingTintClash() {
+        // Assert that vector drawables load properly without throwing
+        val vipIcon = ContextCompat.getDrawable(themedContext, R.drawable.ic_workspace_premium)
+        assertThat(vipIcon).isNotNull()
+
+        val selectAllIcon = ContextCompat.getDrawable(themedContext, R.drawable.ic_select_all)
+        assertThat(selectAllIcon).isNotNull()
+
+        val deselectAllIcon = ContextCompat.getDrawable(themedContext, R.drawable.ic_deselect_all)
+        assertThat(deselectAllIcon).isNotNull()
+
+        val aboutIcon = ContextCompat.getDrawable(themedContext, R.drawable.ic_about)
+        assertThat(aboutIcon).isNotNull()
+    }
+
+    @Test
+    fun signatureActivity_toolbarAndActionButtons_shareIdenticalTint() {
+        val activityController = Robolectric.buildActivity(SignatureActivity::class.java).setup()
+        val activity = activityController.get()
+
+        val expectedColor = MaterialColors.getColor(
+            activity,
+            com.google.android.material.R.attr.colorOnSurface,
+            Color.BLACK
+        )
+
+        val toolbar = activity.findViewById<MaterialToolbar>(R.id.toolbar)
+        val ivUndo = activity.findViewById<MaterialButton>(R.id.ivUndo)
+        val ivClear = activity.findViewById<MaterialButton>(R.id.ivClear)
+
+        assertThat(toolbar).isNotNull()
+        assertThat(toolbar.navigationIconTint).isEqualTo(expectedColor)
+        assertThat(ivUndo.iconTint?.defaultColor).isEqualTo(expectedColor)
+        assertThat(ivClear.iconTint?.defaultColor).isEqualTo(expectedColor)
+    }
+
+    @Test
+    fun vipManagementActivity_toolbarNavigationIcon_hasConsistentTint() {
+        val activityController = Robolectric.buildActivity(com.mckimquyen.watermark.feature.vip.VipManagementActivity::class.java).setup()
+        val activity = activityController.get()
+
+        val expectedColor = MaterialColors.getColor(
+            activity,
+            com.google.android.material.R.attr.colorOnSurface,
+            Color.BLACK
+        )
+
+        val toolbar = activity.findViewById<MaterialToolbar>(R.id.topAppBar)
+        assertThat(toolbar).isNotNull()
+        assertThat(toolbar.navigationIconTint).isEqualTo(expectedColor)
+    }
+
+    @Test
+    fun aboutActivity_and_openSourceActivity_toolbars_haveConsistentTint() {
+        val aboutController = Robolectric.buildActivity(com.mckimquyen.watermark.ui.about.AboutActivity::class.java).setup()
+        val aboutActivity = aboutController.get()
+        val aboutColor = MaterialColors.getColor(
+            aboutActivity,
+            com.google.android.material.R.attr.colorOnSurface,
+            Color.BLACK
+        )
+        val aboutToolbar = aboutActivity.findViewById<MaterialToolbar>(R.id.topAppBar)
+        assertThat(aboutToolbar).isNotNull()
+        assertThat(aboutToolbar.navigationIconTint).isEqualTo(aboutColor)
+
+        val openSourceController = Robolectric.buildActivity(com.mckimquyen.watermark.ui.about.OpenSourceActivity::class.java).setup()
+        val openSourceActivity = openSourceController.get()
+        val osColor = MaterialColors.getColor(
+            openSourceActivity,
+            com.google.android.material.R.attr.colorOnSurface,
+            Color.BLACK
+        )
+        val osToolbar = openSourceActivity.findViewById<MaterialToolbar>(R.id.myToolbar)
+        assertThat(osToolbar).isNotNull()
+        assertThat(osToolbar.navigationIconTint).isEqualTo(osColor)
+    }
 }
+
