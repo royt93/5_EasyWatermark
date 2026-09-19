@@ -83,10 +83,6 @@ class MaterialYouInsetsAndThemeRoboTest {
         // Verify topAppBar received status bar padding
         assertThat(topAppBar.paddingTop).isEqualTo(80)
 
-        // Verify appBarLayout expanded to accommodate status bar
-        val baseAppBarHeight = (220 * activity.resources.displayMetrics.density).toInt()
-        assertThat(appBarLayout.layoutParams.height).isEqualTo(baseAppBarHeight + 80)
-
         // Verify nestedScrollView has bottom padding including navBarBottom
         val baseScrollBottom = (32 * activity.resources.displayMetrics.density).toInt()
         assertThat(nestedScrollView.paddingBottom).isEqualTo(baseScrollBottom + 120)

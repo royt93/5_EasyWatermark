@@ -63,7 +63,6 @@ class AboutActivity : BaseActivity() {
         initView()
         // Edge-to-edge (BaseActivity.applyEdgeToEdge): push topAppBar down below status bar & camera cutout,
         // and add navigation bar bottom padding to nestedScrollView so all content is reachable.
-        val baseAppBarHeight = (220 * resources.displayMetrics.density).toInt()
         val baseScrollBottomPadding = (32 * resources.displayMetrics.density).toInt()
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val statusBarTop = insets.getInsets(
@@ -72,7 +71,6 @@ class AboutActivity : BaseActivity() {
             val navBarBottom = insets.getInsets(
                 WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.displayCutout()
             ).bottom
-            binding.appBarLayout.layoutParams.height = baseAppBarHeight + statusBarTop
             binding.topAppBar.setPadding(0, statusBarTop, 0, 0)
             binding.nestedScrollView.setPadding(0, 0, 0, baseScrollBottomPadding + navBarBottom)
             insets

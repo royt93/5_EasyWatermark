@@ -143,26 +143,22 @@ class LaunchView : CustomViewGroup {
             isClickable = true
             isFocusable = true
 
+            val strokeColorVal = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorOutlineVariant,
+                Color.TRANSPARENT
+            )
+            strokeColor = strokeColorVal
+            strokeWidth = 1.dp
+            cardElevation = 2.dp.toFloat()
+
             if (isPrimary) {
                 val containerColor = MaterialColors.getColor(
                     context,
                     com.google.android.material.R.attr.colorSurfaceContainerHigh,
                     Color.LTGRAY
                 )
-                val primaryColor = MaterialColors.getColor(
-                    context,
-                    com.google.android.material.R.attr.colorPrimary,
-                    Color.BLACK
-                )
-                val strokeColorVal = MaterialColors.getColor(
-                    context,
-                    com.google.android.material.R.attr.colorOutlineVariant,
-                    Color.TRANSPARENT
-                )
                 setCardBackgroundColor(containerColor)
-                strokeColor = strokeColorVal
-                strokeWidth = 1.dp
-                cardElevation = 2.dp.toFloat()
             } else {
                 val containerColor = MaterialColors.getColor(
                     context,
@@ -170,8 +166,6 @@ class LaunchView : CustomViewGroup {
                     Color.LTGRAY
                 )
                 setCardBackgroundColor(containerColor)
-                strokeWidth = 0
-                cardElevation = 0f
             }
 
             // Spring scale tactile animation on touch
