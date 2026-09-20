@@ -115,6 +115,8 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
     private fun initViews() {
         val iconColor = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface, Color.BLACK)
         binding.toolbar.applyConsistentIconTint(iconColor)
+        binding.ivUndo.iconTint = android.content.res.ColorStateList.valueOf(iconColor)
+        binding.ivClear.iconTint = android.content.res.ColorStateList.valueOf(iconColor)
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.ivClear.setOnClickListener {
             binding.signatureView.clear()
@@ -135,15 +137,23 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
         }
 
         // Brush Size (Material Slider)
+        binding.sbSize.contentDescription = getString(R.string.brush_size_format, binding.sbSize.value.toInt())
         binding.sbSize.addOnChangeListener { _, value, _ ->
             binding.signatureView.drawSize = value
+            binding.sbSize.contentDescription = getString(R.string.brush_size_format, value.toInt())
         }
         binding.signatureView.drawSize = binding.sbSize.value
         binding.signatureView.drawColor = defaultInkColor
 
         // Glow
+        val updateGlowDesc = { isChecked: Boolean ->
+            val state = getString(if (isChecked) R.string.state_enabled else R.string.state_disabled)
+            binding.swGlow.contentDescription = "${getString(R.string.neon_glow)}, $state"
+        }
+        updateGlowDesc(binding.swGlow.isChecked)
         binding.swGlow.setOnCheckedChangeListener { _, isChecked ->
             binding.signatureView.isGlowEnabled = isChecked
+            updateGlowDesc(isChecked)
         }
 
         // Colors

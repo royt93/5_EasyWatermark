@@ -253,4 +253,9 @@
     <string name="accessibility_edit_watermark_text">Chỉnh sửa nội dung watermark</string>
     <string name="state_enabled">Đang bật</string>
     <string name="state_disabled">Đang tắt</string>
+    <string name="action_undo">Hoàn tác</string>
+    <string name="action_clear_canvas">Xóa nét vẽ</string>
+    <string name="brush_size_format">Kích thước nét vẽ %d px</string>
+    <string name="signature_history_delete">Xóa chữ ký</string>
+    <string name="signature_history_item">Chữ ký đã lưu</string>
 </resources>

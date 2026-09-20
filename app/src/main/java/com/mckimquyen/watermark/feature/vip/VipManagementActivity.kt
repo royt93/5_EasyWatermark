@@ -245,10 +245,12 @@ class VipManagementActivity : BaseActivity() {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(remaining) % 60
         val seconds = TimeUnit.MILLISECONDS.toSeconds(remaining) % 60
         binding.tvCountdown.text = getString(R.string.vip_remaining, days, hours, minutes, seconds)
+        val progressVal = computeElapsedProgress(grantedAtMs, expiryMs, now)
         binding.progressVip.setProgressCompat(
-            computeElapsedProgress(grantedAtMs, expiryMs, now),
+            progressVal,
             true
         )
+        binding.progressVip.contentDescription = "${getString(R.string.vip_time_left)}: ${binding.tvCountdown.text}"
 
         // Animation #4: count-up nhẹ khi phút đổi (không chạy mỗi giây).
         val currentMinute = TimeUnit.MILLISECONDS.toMinutes(remaining)

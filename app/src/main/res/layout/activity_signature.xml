@@ -26,9 +26,9 @@
             android:layout_height="48dp"
             android:layout_gravity="end"
             android:layout_marginEnd="4dp"
+            android:contentDescription="@string/action_undo"
             app:icon="@drawable/ic_undo"
-            app:iconTint="?attr/colorOnSurface"
-            tools:ignore="ContentDescription" />
+            app:iconTint="?attr/colorOnSurface" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/ivClear"
@@ -37,9 +37,9 @@
             android:layout_height="48dp"
             android:layout_gravity="end"
             android:layout_marginEnd="8dp"
+            android:contentDescription="@string/action_clear_canvas"
             app:icon="@drawable/ic_clear_draw"
-            app:iconTint="?attr/colorOnSurface"
-            tools:ignore="ContentDescription" />
+            app:iconTint="?attr/colorOnSurface" />
     </com.google.android.material.appbar.MaterialToolbar>
 
     <com.google.android.material.card.MaterialCardView
@@ -128,6 +128,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:contentDescription="@string/size"
+                android:focusable="true"
                 android:valueFrom="3"
                 android:valueTo="53"
                 android:value="13"
@@ -146,7 +148,8 @@
                 android:id="@+id/swGlow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp" />
+                android:layout_marginStart="16dp"
+                android:contentDescription="@string/neon_glow" />
         </LinearLayout>
 
         <!-- Color List (Re-using generic view) -->

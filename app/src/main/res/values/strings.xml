@@ -272,4 +272,9 @@
     <string name="accessibility_edit_watermark_text">Edit watermark text</string>
     <string name="state_enabled">Enabled</string>
     <string name="state_disabled">Disabled</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_clear_canvas">Clear canvas</string>
+    <string name="brush_size_format">Brush size %d px</string>
+    <string name="signature_history_delete">Delete signature</string>
+    <string name="signature_history_item">Saved signature</string>
 </resources>

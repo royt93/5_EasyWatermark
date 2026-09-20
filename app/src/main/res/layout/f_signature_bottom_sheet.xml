@@ -38,6 +38,8 @@
         style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minWidth="48dp"
+        android:minHeight="48dp"
         android:text="@string/action_clear"
         android:textColor="?attr/colorError"
         app:layout_constraintBottom_toBottomOf="@id/tvTitle"

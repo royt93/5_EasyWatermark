@@ -32,12 +32,21 @@ class TileModeFragment : BaseBindFragment<FTileModeBinding>() {
                 Shader.TileMode.CLAMP.ordinal -> R.id.btnTileModeDecal
                 else -> R.id.btnTileModeRepeat
             }
+            val updateA11yDescriptions = {
+                val isRepeat = binding?.tgTileMode?.checkedButtonId == R.id.btnTileModeRepeat
+                val repeatState = getString(if (isRepeat) R.string.state_enabled else R.string.state_disabled)
+                val decalState = getString(if (!isRepeat) R.string.state_enabled else R.string.state_disabled)
+                binding?.btnTileModeRepeat?.contentDescription = "${getString(R.string.tile_mode_title_repeat)}, $repeatState"
+                binding?.btnTileModeDecal?.contentDescription = "${getString(R.string.tile_mode_title_decal)}, $decalState"
+            }
             binding?.btnPositionAnchor?.visibility =
                 if (it.tileMode == Shader.TileMode.CLAMP.ordinal) View.VISIBLE else View.GONE
             binding?.tgTileMode?.clearOnButtonCheckedListeners()
             binding?.tgTileMode?.check(checkedId)
+            updateA11yDescriptions()
             binding?.tgTileMode?.addOnButtonCheckedListener { _, checkedButtonId, isChecked ->
                 if (!isChecked) return@addOnButtonCheckedListener
+                updateA11yDescriptions()
                 val imageInfo = it
                 if (checkedButtonId == R.id.btnTileModeDecal && imageInfo.tileMode == Shader.TileMode.CLAMP.ordinal) {
                     return@addOnButtonCheckedListener
@@ -56,8 +65,6 @@ class TileModeFragment : BaseBindFragment<FTileModeBinding>() {
             binding?.btnPositionAnchor?.setTextColor(color)
             binding?.btnPositionAnchor?.iconTint = android.content.res.ColorStateList.valueOf(color)
         }
-        binding?.btnTileModeRepeat?.contentDescription = getString(R.string.tile_mode_title_repeat)
-        binding?.btnTileModeDecal?.contentDescription = getString(R.string.tile_mode_title_decal)
         binding?.btnPositionAnchor?.contentDescription = getString(R.string.position_anchor_button)
         binding?.btnPositionAnchor?.setOnClickListener {
             PositionAnchorBottomSheetFragment.safetyShow(parentFragmentManager)
