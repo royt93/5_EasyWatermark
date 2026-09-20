@@ -27,8 +27,14 @@ import com.mckimquyen.watermark.ui.MainActivity
 import com.mckimquyen.watermark.ui.MainViewModel
 import com.mckimquyen.watermark.ui.adapter.SaveImageListAdapter
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
+import com.mckimquyen.watermark.utils.ExportZipHelper
+import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
 import com.mckimquyen.watermark.utils.ktx.preCheckStoragePermission
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     private val imageList: List<ImageInfo>
@@ -109,6 +115,13 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 this.isInvisible = true
                 setOnClickListener {
                     openGallery()
+                }
+            }
+
+            btnShareZip.apply {
+                this.isInvisible = true
+                setOnClickListener {
+                    openShareZip()
                 }
             }
 
@@ -258,6 +271,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                     text = getString(R.string.dialog_save_cancel)
                 }
                 binding.btnOpenGallery.isInvisible = true
+                binding.btnShareZip.isInvisible = true
                 binding.atvFormat.isEnabled = false
                 binding.slideQuality.isEnabled = false
                 binding.menuFormat.isEnabled = false
@@ -275,6 +289,8 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 }
                 TransitionManager.beginDelayedTransition(binding.root, AutoTransition())
                 binding.btnOpenGallery.isInvisible = !hasSuccess
+                binding.btnShareZip.isInvisible = !hasSuccess
+                binding.btnShareZip.isEnabled = hasSuccess
                 binding.atvFormat.isEnabled = true
                 binding.slideQuality.isEnabled = true
                 binding.menuFormat.isEnabled = true
@@ -291,6 +307,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                     text = getString(R.string.dialog_export_to_gallery)
                 }
                 binding.btnOpenGallery.isInvisible = true
+                binding.btnShareZip.isInvisible = true
                 binding.atvFormat.isEnabled = true
                 binding.slideQuality.isEnabled = true
                 binding.menuFormat.isEnabled = true
@@ -367,11 +384,86 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         }
     }
 
+    private fun openShareZip() {
+        val list = shareViewModel.imageList.value?.first ?: emptyList()
+        val successfulUris = list.mapNotNull { it.shareUri }
+        if (successfulUris.isEmpty()) {
+            Toast.makeText(requireContext(), R.string.save_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+        binding.btnShareZip.isEnabled = false
+        Toast.makeText(requireContext(), R.string.zipping_images, Toast.LENGTH_SHORT).show()
+
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val context = requireContext().applicationContext
+            val zipDir = ExportZipHelper.getZipCacheDir(context)
+            FileUtils.cleanOldTempFiles(zipDir, maxRetainedFiles = 1, maxAgeMs = 30 * 60 * 1000L)
+            val zipFile = File(zipDir, "watermark_export_temp_${System.currentTimeMillis()}.zip")
+            val resultFile = ExportZipHelper.createZipArchive(context.contentResolver, successfulUris, zipFile)
+
+            withContext(Dispatchers.Main) {
+                if (isAdded) {
+                    binding.btnShareZip.isEnabled = true
+                }
+                if (resultFile != null && resultFile.exists()) {
+                    try {
+                        val zipUri = ExportZipHelper.getShareableZipUri(context, resultFile)
+                        val shareIntent = ExportZipHelper.createShareZipIntent(context, zipUri)
+                        startActivity(shareIntent)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(
+                            context,
+                            getString(R.string.share_error, e.message),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
+                    Toast.makeText(context, R.string.share_zip_failed, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     @androidx.annotation.VisibleForTesting
     internal fun performOpenGallery() = openGallery()
 
     @androidx.annotation.VisibleForTesting
     internal fun performOpenShare() = openShare()
+
+    @androidx.annotation.VisibleForTesting
+    internal fun performOpenShareZip(zipFileOverride: File? = null) {
+        val list = shareViewModel.imageList.value?.first ?: emptyList()
+        val successfulUris = list.mapNotNull { it.shareUri }
+        if (successfulUris.isEmpty()) {
+            Toast.makeText(requireContext(), R.string.save_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val context = requireContext().applicationContext
+        val zipDir = ExportZipHelper.getZipCacheDir(context)
+        val zipFile = zipFileOverride ?: File(zipDir, "watermark_export_temp_${System.currentTimeMillis()}.zip")
+        val resultFile = if (zipFile.exists() && zipFileOverride != null) {
+            zipFile
+        } else {
+            ExportZipHelper.createZipArchive(context.contentResolver, successfulUris, zipFile)
+        }
+        if (resultFile != null && resultFile.exists()) {
+            try {
+                val zipUri = ExportZipHelper.getShareableZipUri(context, resultFile)
+                val shareIntent = ExportZipHelper.createShareZipIntent(context, zipUri)
+                startActivity(shareIntent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(
+                    context,
+                    getString(R.string.share_error, e.message),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        } else {
+            Toast.makeText(context, R.string.share_zip_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     @androidx.annotation.VisibleForTesting
     internal fun performSetUpLoadingView(result: Result<*>?) = setUpLoadingView(result)

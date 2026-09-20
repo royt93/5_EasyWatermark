@@ -12,6 +12,9 @@
     <external-path
         name="my_external_dir"
         path="Pictures/EasyWaterMark/" />
+    <cache-path
+        name="export_zip"
+        path="zip_cache/" />
     <files-path
         name="signature_images"
         path="signatures/" />

@@ -80,6 +80,10 @@
     <string name="dialog_save_export_count_with_failures">%1$d/%2$d · %3$d lỗi</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d · ~%3$s</string>
     <string name="dialog_open_in_gallery">Xem trong thư viện</string>
+    <string name="dialog_share_as_zip">Chia sẻ dạng ZIP</string>
+    <string name="dialog_share_images">Chia sẻ ảnh</string>
+    <string name="zipping_images">Đang tạo tệp ZIP…</string>
+    <string name="share_zip_failed">Tạo tệp ZIP thất bại</string>
     <string name="dialog_save_config_format">Định dạng</string>
     <string name="dialog_save_config_quality">Chất lượng</string>
     <string name="dialog_save_exporting">Đang xuất</string>

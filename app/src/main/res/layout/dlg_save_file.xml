@@ -314,21 +314,46 @@
         app:rippleColor="?attr/colorOnPrimary"
         app:strokeWidth="0dp" />
 
-    <!-- ══ SECONDARY: Open in gallery ══════════════════════════════════════ -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnOpenGallery"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_width="wrap_content"
+    <!-- ══ SECONDARY ACTIONS: Open in gallery & Share ZIP ═════════════════ -->
+    <LinearLayout
+        android:id="@+id/layoutFinishedActions"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:layout_gravity="center"
         android:layout_marginTop="8dp"
-        app:cornerRadius="24dp"
-        app:icon="@drawable/ic_picker_image"
-        app:iconGravity="textStart"
-        app:iconTint="?attr/colorOnSecondaryContainer"
-        android:text="@string/dialog_open_in_gallery"
-        android:textColor="?attr/colorOnSecondaryContainer" />
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnOpenGallery"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:minHeight="48dp"
+            app:cornerRadius="24dp"
+            app:icon="@drawable/ic_picker_image"
+            app:iconGravity="textStart"
+            app:iconTint="?attr/colorOnSecondaryContainer"
+            android:text="@string/dialog_open_in_gallery"
+            android:textColor="?attr/colorOnSecondaryContainer" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnShareZip"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:minHeight="48dp"
+            app:cornerRadius="24dp"
+            app:icon="@drawable/ic_share"
+            app:iconGravity="textStart"
+            app:iconTint="?attr/colorOnSecondaryContainer"
+            android:text="@string/dialog_share_as_zip"
+            android:textColor="?attr/colorOnSecondaryContainer" />
+
+    </LinearLayout>
 
 </LinearLayout>
 

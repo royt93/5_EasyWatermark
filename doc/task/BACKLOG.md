@@ -35,7 +35,7 @@
 
 **Đã DONE**: ENH-01..16, ENH-18..20, ENH-21 (gate SimpleSp debug log), ENH-22 (xoá 167 dòng dead code Applovin.kt), ENH-23 (gỡ @Named nhầm ở provideMemorySettingRepository), ENH-24 (gỡ saveVersionCode/KEY_CHANGE_LOG vô ích), ENH-27 (sửa selectedPos khi xoá ảnh cuối), ENH-28..29 (fix fd leak + dọn temp cache), ENH-30 (dọn field et thừa TextWatermarkBSDFragment), ENH-32 (cancel preview job per ViewHolder), ENH-35 (PreviewResult flag ảnh lỗi).
 
-## NEW_FEATURES (14 todo + 1 inprogress + 10 done) — tính năng mới thực dụng, 1-2 tuần
+## NEW_FEATURES (13 todo + 1 inprogress + 11 done) — tính năng mới thực dụng, 1-2 tuần
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
@@ -49,14 +49,13 @@
 | [FEAT-15](todo/FEAT-15-chon-thu-muc-xuat-anh-bang-saf-khac-feat-08-chon-thu-muc-ngu.md) | M | Chọn thư mục XUẤT ảnh bằng SAF (khác FEAT-08 — chọn thư mục NGUỒN ảnh vào batch) |
 | [FEAT-17](todo/FEAT-17-bo-qua-skip-1-anh-trong-batch-ngay-tai-man-export-preview-kh.md) | M | Bỏ qua (skip) 1 ảnh trong batch ngay tại màn export preview |
 | [FEAT-18](todo/FEAT-18-so-sanh-truocsau-bang-slider-beforeafter-compare-ca-trong-ed.md) | M | So sánh trước/sau bằng slider (before/after compare) — editor lẫn preview batch |
-| [FEAT-20](todo/FEAT-20-chia-se-ngay-cac-anh-vua-export-xong-share-sheetgoi-zip.md) | M | Chia sẻ ngay các ảnh vừa export xong (share sheet/gói ZIP) |
 | [FEAT-23](todo/FEAT-23-ghi-nho-vi-tri-watermark-rieng-theo-ti-le-khung-anh-portrait.md) | M | Ghi nhớ vị trí watermark riêng theo tỉ lệ khung ảnh (portrait/landscape) |
 | [FEAT-03](todo/FEAT-03-multi-layer-watermark.md) | L | Watermark đa lớp (chồng text + logo/QR cùng lúc) |
 | [FEAT-16](todo/FEAT-16-cropstraighten-nhanh-truoc-khi-watermark.md) | L | Crop/straighten nhanh trước khi watermark |
 
 **Đang làm** (`inprogress/`): FEAT-13 (caption riêng theo ảnh trong batch — code + unit test xong, **thiếu smoke test thật riêng cho ticket này**, xem `## FEAT-13/FEAT-05 2026-09-16` cuối file).
 
-**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch. **FEAT-10 2026-09-13** (xem `## FEAT-10 2026-09-13` cuối file): tự nhận diện hãng máy để gợi ý style khung EXIF. **FEAT-07 2026-09-13** (xem `## FEAT-07 2026-09-13` cuối file, verify 1 phần — xem ghi chú giới hạn môi trường trong file done): preview grid watermark + ước tính dung lượng trước khi export cả batch. **FEAT-05 2026-09-16** (xem `## FEAT-13/FEAT-05 2026-09-16` cuối file): xuất/nhập Template + Signature (backup/restore) qua SAF + zip, smoke test thật đầy đủ trên TECNO KJ7.
+**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch. **FEAT-10 2026-09-13** (xem `## FEAT-10 2026-09-13` cuối file): tự nhận diện hãng máy để gợi ý style khung EXIF. **FEAT-07 2026-09-13** (xem `## FEAT-07 2026-09-13` cuối file, verify 1 phần — xem ghi chú giới hạn môi trường trong file done): preview grid watermark + ước tính dung lượng trước khi export cả batch. **FEAT-05 2026-09-16** (xem `## FEAT-13/FEAT-05 2026-09-16` cuối file): xuất/nhập Template + Signature (backup/restore) qua SAF + zip, smoke test thật đầy đủ trên TECNO KJ7. **FEAT-20 2026-09-20**: chia sẻ sau batch export (Sharesheet hàng loạt ảnh hoặc nén ZIP an toàn qua FileProvider, UI M3 TonalButton).
 
 ## MATERIAL_YOU_MIGRATION (9 done) — chuyển đổi toàn diện UI/UX sang Material You (Material 3)
 
@@ -262,3 +261,15 @@ Cả 2 ticket implement độc lập ngoài luồng `/loop` chuẩn (session kh�
   - Không phá vỡ bất kỳ logic nghiệp vụ xử lý ảnh hoặc xuất watermark nào.
   - Toàn bộ thay đổi được lưu trữ an toàn trong working directory, tuân thủ nghiêm ngặt chỉ thị **KHÔNG COMMIT CODE**.
 
+## FEAT-20 2026-09-20 — Chia sẻ ngay các ảnh vừa export xong (share sheet / gói ZIP)
+
+- **Giải pháp kỹ thuật:**
+  - Xây dựng `ExportZipHelper`: đóng gói danh sách ảnh xuất thành công thành file ZIP trong `cacheDir/zip_cache/` thông qua `ZipOutputStream`.
+  - Cơ chế bảo mật: chống tấn công Zip Slip (chỉ trích xuất `File(name).name`), lọc sạch ký tự cấm hệ điều hành, tự động deduplicate tên file trùng lặp (`photo.jpg` -> `photo_2.jpg`).
+  - Quản lý rác bộ nhớ đệm: tự động dọn dẹp các tệp ZIP tạm cũ (`*_temp_*`) qua `FileUtils.cleanOldTempFiles()`.
+  - Khai báo `<cache-path name="export_zip" path="zip_cache/" />` trong `filepaths.xml` và chia sẻ URI an toàn qua `FileProvider.getUriForFile` kèm `ClipData` và cờ `FLAG_GRANT_READ_URI_PERMISSION`.
+  - UI M3: Cập nhật `dlg_save_file.xml` với hàng nút phụ `layoutFinishedActions` bao gồm `btnOpenGallery` (Xem trong thư viện) và `btnShareZip` (Chia sẻ dạng ZIP) dùng `Widget.Material3.Button.TonalButton`. Nút chính `btnSave` đổi nhãn sang "Chia sẻ" sau khi xuất hoàn tất. Cả 2 nút phụ tự động ẩn khi đang xuất hoặc khi toàn bộ batch thất bại.
+- **Kiểm thử tự động:**
+  - Unit tests: `ExportZipHelperTest` (5/5 PASS: chống zip slip, deduplicate, nén đa file, nén khi có file lỗi, cấu hình intent).
+  - Integration & Widget tests: `SaveImageBSDialogFragmentBatchActionRoboTest` (8/8 PASS: kiểm tra hiển thị nút, share multiple ảnh, share zip 3 ảnh, nén an toàn khi có ảnh lỗi, ẩn nút khi batch fail).
+  - Kiểm tra phong cách mã nguồn: `./gradlew :app:ktlintCheck` PASS 100%.
