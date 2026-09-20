@@ -157,17 +157,21 @@ class SaveImageListAdapterPreviewRoboTest {
             scope = CoroutineScope(Dispatchers.Default),
             generatePreview = { info, _ ->
                 if (info.uri == Uri.parse("content://media/a")) {
-                    completer.await()
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                        completer.await()
+                    }
                 } else {
                     BatchExportEngine.PreviewResult(previewBitmap(), 200, 200)
                 }
             },
             estimateOutput = { w, h -> (w to h) to 1L }
         )
-        adapter.submitList(listOf(
-            ImageInfo(Uri.parse("content://media/a")),
-            ImageInfo(Uri.parse("content://media/b"))
-        ))
+        adapter.submitList(
+            listOf(
+                ImageInfo(Uri.parse("content://media/a")),
+                ImageInfo(Uri.parse("content://media/b"))
+            )
+        )
 
         val holder = createBoundHolder(adapter, 0)
         val oldJob = holder.previewJob

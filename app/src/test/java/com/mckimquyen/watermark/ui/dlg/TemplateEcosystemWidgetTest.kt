@@ -14,9 +14,9 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.entity.Template
+import com.mckimquyen.watermark.databinding.DlgEditTemplateBinding
 import com.mckimquyen.watermark.databinding.DlgEditTextBinding
 import com.mckimquyen.watermark.databinding.DlgEditTextTemplateListBinding
-import com.mckimquyen.watermark.databinding.DlgEditTemplateBinding
 import com.mckimquyen.watermark.databinding.ItemTemplateListBinding
 import org.junit.Before
 import org.junit.Test

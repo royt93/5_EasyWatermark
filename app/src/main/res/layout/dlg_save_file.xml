@@ -30,8 +30,9 @@
     android:paddingEnd="16dp"
     android:paddingBottom="24dp">
 
-    <!-- Material 3 Handle pill -->
+    <!-- ══ M3 DRAG HANDLE ═══════════════════════════════════════════════════ -->
     <View
+        android:id="@+id/vHandle"
         android:layout_width="32dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"

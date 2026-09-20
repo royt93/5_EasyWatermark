@@ -604,16 +604,13 @@ class MainViewModel @Inject constructor(
         val removePos = list.indexOf(imageInfo)
         if (removePos < 0) return
         list.removeAt(removePos)
-        val selectedPos =
-            if (removePos < curSelectedPos || removePos >= (
-                imageList.value?.first?.size
-                    ?: 0
-                ) - 1
-            ) {
-                (curSelectedPos - 1).coerceAtLeast(0)
-            } else {
-                curSelectedPos
-            }
+        // ENH-27: Chỉ dịch lùi selectedPos khi ảnh bị xoá nằm TRƯỚC ảnh đang chọn,
+        // hoặc khi chính ảnh đang chọn bị xoá và nó nằm ở cuối danh sách.
+        val selectedPos = when {
+            removePos < curSelectedPos -> curSelectedPos - 1
+            curSelectedPos >= list.size -> (list.size - 1).coerceAtLeast(0)
+            else -> curSelectedPos
+        }
         launch {
             autoScroll = false
             nextSelectedPos = selectedPos
@@ -750,10 +747,6 @@ ${System.currentTimeMillis().formatDate("yyy-MM-dd")}
         // instance này) rò rỉ vĩnh viễn trong registry của LiveData/WorkManager.
         exportWorkObserver?.let { exportWorkLiveData?.removeObserver(it) }
         super.onCleared()
-    }
-
-    fun saveUpgradeInfo() {
-        launch { userRepo.saveVersionCode() }
     }
 
     fun query(contentResolver: ContentResolver) {

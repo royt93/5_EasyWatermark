@@ -1,11 +1,8 @@
 package com.mckimquyen.watermark.ui.panel
 
 import android.graphics.Color
-import android.graphics.Shader
 import android.os.Looper
-import android.view.View
 import android.widget.TextView
-import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.button.MaterialButton
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R

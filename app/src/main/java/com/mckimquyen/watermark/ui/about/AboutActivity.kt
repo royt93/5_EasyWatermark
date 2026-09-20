@@ -1,4 +1,5 @@
 package com.mckimquyen.watermark.ui.about
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -9,6 +10,7 @@ import androidx.activity.viewModels
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import com.google.android.material.color.MaterialColors
 import com.jakewharton.processphoenix.ProcessPhoenix
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.AppLog
@@ -18,11 +20,9 @@ import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.AAboutBinding
 import com.mckimquyen.watermark.feature.vip.VipManagementActivity
+import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.openLink
-import android.graphics.Color
-import com.google.android.material.color.MaterialColors
-import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.roy.sdkadbmob.AdManager
 import dagger.hilt.android.AndroidEntryPoint
 

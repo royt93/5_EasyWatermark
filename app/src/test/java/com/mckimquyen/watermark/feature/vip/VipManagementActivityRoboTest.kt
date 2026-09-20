@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Build
 import android.widget.TextView
 import androidx.test.core.app.ActivityScenario
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.common.truth.Truth.assertThat

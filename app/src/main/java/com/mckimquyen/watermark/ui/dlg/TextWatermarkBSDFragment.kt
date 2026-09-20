@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -18,7 +17,6 @@ import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.transition.MaterialFadeThrough
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.DlgEditTextContainerBinding
@@ -32,7 +30,6 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
     private var savedTemplateListHeight: Int = 0
     private var savedEditHeight: Int = 0
     private var bottomSheet: View? = null
-    private var et: TextInputEditText? = null
 
     override fun bindView(
         layoutInflater: LayoutInflater,
@@ -199,7 +196,6 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
             )
             .addToBackStack(EditTextContentFragment.TAG)
             .commit()
-        et?.requestFocus()
     }
 
     override fun onDismiss(dialog: DialogInterface) {

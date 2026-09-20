@@ -1,13 +1,11 @@
 package com.mckimquyen.watermark.ui.dlg
 
-import android.app.Dialog
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentManager
 import com.mckimquyen.watermark.databinding.FSignatureBottomSheetBinding

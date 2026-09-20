@@ -11,7 +11,6 @@ import com.google.android.material.slider.Slider
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.databinding.FBasePbBinding
-import com.mckimquyen.watermark.utils.ktx.toColor
 
 abstract class BasePBFragment : BaseBindFragment<FBasePbBinding>() {
 

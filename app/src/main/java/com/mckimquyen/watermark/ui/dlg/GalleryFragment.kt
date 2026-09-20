@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Color
 import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.Bundle
@@ -17,15 +18,11 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import android.graphics.Color
 import com.google.android.material.color.MaterialColors
-import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
@@ -35,6 +32,7 @@ import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
 import com.mckimquyen.watermark.ui.widget.UniformScrollGridLayoutManager
 import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.MultiPickContract
+import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 
 class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
@@ -84,14 +82,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
             }
         pickFolderLauncher =
             registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { treeUri: Uri? ->
-                if (treeUri == null) return@registerForActivityResult
-                // Giữ quyền đọc qua lần khởi động app sau — ảnh trong thư mục vẫn cần đọc lại lúc
-                // export (có thể đã sang tiến trình mới, xem BatchExportWorker/ENH-01).
-                requireContext().contentResolver.takePersistableUriPermission(
-                    treeUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                )
-                handleActivityResult(FileUtils.listImagesInTree(requireContext(), treeUri))
+                handleTreeUriResult(treeUri)
             }
         shareViewModel.query(requireContext().contentResolver)
         AppLog.d(LOG_TAG, "GalleryFragment querying media store...")
@@ -354,6 +345,22 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         AppLog.d(LOG_TAG, "GalleryFragment onDismiss — resetting gallery data")
         doOnDismiss.invoke()
         shareViewModel.resetGalleryData()
+    }
+
+    internal fun handleTreeUriResult(treeUri: Uri?) {
+        if (treeUri == null) return
+        // Giữ quyền đọc qua lần khởi động app sau — ảnh trong thư mục vẫn cần đọc lại lúc
+        // export (có thể đã sang tiến trình mới, xem BatchExportWorker/ENH-01).
+        // BUG-35: Bọc runCatching tránh SecurityException nếu provider không hỗ trợ persist permission.
+        runCatching {
+            requireContext().contentResolver.takePersistableUriPermission(
+                treeUri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        }.onFailure { e ->
+            AppLog.w(LOG_TAG, "Failed to persist treeUri permission: $treeUri", e)
+        }
+        handleActivityResult(FileUtils.listImagesInTree(requireContext(), treeUri))
     }
 
     private fun handleActivityResult(list: List<Uri?>?) {

@@ -2,7 +2,6 @@ package com.mckimquyen.watermark.ui.dlg
 
 import android.content.Context
 import android.view.ContextThemeWrapper
-import androidx.core.content.ContextCompat
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.material.button.MaterialButton
 import com.google.common.truth.Truth.assertThat

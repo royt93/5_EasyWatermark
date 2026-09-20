@@ -22,13 +22,18 @@ android {
     kotlin {
         jvmToolchain(17)
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
     api(libs.core.ktx)
     api(libs.appcompat)
     api(libs.material)
-//    testImplementation(libs.test.junit)
-//    androidTestImplementation(libs.test.ext.junit)
-//    androidTestImplementation(libs.test.espresso.core)
+    testImplementation(libs.test.junit)
+    testImplementation(libs.test.truth)
+    testImplementation(libs.test.robolectric)
+    testImplementation(libs.test.core)
 }

@@ -1,6 +1,5 @@
 package com.mckimquyen.watermark.ui
 
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.widget.ImageView
@@ -159,7 +158,7 @@ class ActionBarIconConsistencyTest {
         toolbar.overflowIcon = ContextCompat.getDrawable(themedContext, R.drawable.ic_save)
 
         val actionMenuView = ActionMenuView(themedContext)
-        
+
         // Simulating Samsung OneUI ActionMenuItemView which extends TextView
         val mockActionItemView = android.widget.TextView(themedContext).apply {
             val iconDrawable = ContextCompat.getDrawable(themedContext, R.drawable.ic_picker_image)
@@ -263,4 +262,3 @@ class ActionBarIconConsistencyTest {
         assertThat(osToolbar.navigationIconTint).isEqualTo(osColor)
     }
 }
-

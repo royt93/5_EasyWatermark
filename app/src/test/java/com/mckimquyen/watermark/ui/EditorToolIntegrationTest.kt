@@ -7,8 +7,8 @@ import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.FuncTitleModel
 import com.mckimquyen.watermark.ui.adapter.ColorPreviewAdapter
-import com.mckimquyen.watermark.ui.adapter.FuncPanelAdapter
 import com.mckimquyen.watermark.ui.adapter.ColorPreviewAdapter.PreViewModel
+import com.mckimquyen.watermark.ui.adapter.FuncPanelAdapter
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner

@@ -5,7 +5,6 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.material.button.MaterialButton
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R
-import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.entity.Template
 import com.mckimquyen.watermark.ui.adapter.TextContentTemplateListAdapter
 import org.junit.Test

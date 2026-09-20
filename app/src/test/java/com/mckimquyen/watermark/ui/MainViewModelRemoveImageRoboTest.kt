@@ -93,4 +93,84 @@ class MainViewModelRemoveImageRoboTest {
 
         assertThat(viewModel.imageList.value?.first).containsExactly(a)
     }
+
+    /**
+     * ENH-27: Batch 3 ảnh [A, B, C], đang chọn B (pos = 1).
+     * Xoá ảnh CUỐI [C] (removePos = 2).
+     * selectedPos PHẢI giữ nguyên là 1 (vẫn chọn B), không được nhảy lùi về 0 (A).
+     */
+    @Test
+    fun removeImage_batch3_selectMiddle_removeLast_preservesSelectedPos() {
+        val a = imageInfo(Uri.parse("content://media/A"))
+        val b = imageInfo(Uri.parse("content://media/B"))
+        val c = imageInfo(Uri.parse("content://media/C"))
+        runBlocking { waterMarkRepo.updateImageList(listOf(a, b, c)) }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        viewModel.removeImage(c, curSelectedPos = 1)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(viewModel.imageList.value?.first).containsExactly(a, b).inOrder()
+        assertThat(viewModel.nextSelectedPos).isEqualTo(1)
+    }
+
+    /**
+     * ENH-27: Batch 3 ảnh [A, B, C], đang chọn B (pos = 1).
+     * Xoá ảnh ĐẦU [A] (removePos = 0).
+     * selectedPos phải giảm xuống 0 (vì B giờ đã là index 0).
+     */
+    @Test
+    fun removeImage_batch3_selectMiddle_removeFirst_decrementsSelectedPos() {
+        val a = imageInfo(Uri.parse("content://media/A"))
+        val b = imageInfo(Uri.parse("content://media/B"))
+        val c = imageInfo(Uri.parse("content://media/C"))
+        runBlocking { waterMarkRepo.updateImageList(listOf(a, b, c)) }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        viewModel.removeImage(a, curSelectedPos = 1)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(viewModel.imageList.value?.first).containsExactly(b, c).inOrder()
+        assertThat(viewModel.nextSelectedPos).isEqualTo(0)
+    }
+
+    /**
+     * ENH-27: Batch 3 ảnh [A, B, C], đang chọn C (pos = 2, phần tử cuối).
+     * Xoá chính ảnh C (removePos = 2).
+     * selectedPos phải clamp về phần tử cuối mới là B (index 1).
+     */
+    @Test
+    fun removeImage_batch3_selectLast_removeLast_clampsToNewLastPos() {
+        val a = imageInfo(Uri.parse("content://media/A"))
+        val b = imageInfo(Uri.parse("content://media/B"))
+        val c = imageInfo(Uri.parse("content://media/C"))
+        runBlocking { waterMarkRepo.updateImageList(listOf(a, b, c)) }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        viewModel.removeImage(c, curSelectedPos = 2)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(viewModel.imageList.value?.first).containsExactly(a, b).inOrder()
+        assertThat(viewModel.nextSelectedPos).isEqualTo(1)
+    }
+
+    /**
+     * ENH-27: Batch 3 ảnh [A, B, C], đang chọn A (pos = 0).
+     * Xoá ảnh CUỐI [C] (removePos = 2).
+     * selectedPos giữ nguyên 0 (A).
+     */
+    @Test
+    fun removeImage_batch3_selectFirst_removeLast_preservesSelectedPos() {
+        val a = imageInfo(Uri.parse("content://media/A"))
+        val b = imageInfo(Uri.parse("content://media/B"))
+        val c = imageInfo(Uri.parse("content://media/C"))
+        runBlocking { waterMarkRepo.updateImageList(listOf(a, b, c)) }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        viewModel.removeImage(c, curSelectedPos = 0)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(viewModel.imageList.value?.first).containsExactly(a, b).inOrder()
+        assertThat(viewModel.nextSelectedPos).isEqualTo(0)
+    }
 }

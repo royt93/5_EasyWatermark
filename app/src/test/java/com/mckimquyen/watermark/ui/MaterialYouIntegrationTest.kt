@@ -2,8 +2,6 @@ package com.mckimquyen.watermark.ui
 
 import android.os.Build
 import android.os.Looper
-import android.view.ViewGroup
-import androidx.fragment.app.FragmentActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R

@@ -7,7 +7,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
@@ -21,10 +20,8 @@ import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.widget.ActionMenuView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -58,7 +55,6 @@ import com.mckimquyen.watermark.rateAppInApp
 import com.mckimquyen.watermark.ui.about.AboutActivity
 import com.mckimquyen.watermark.ui.adapter.FuncPanelAdapter
 import com.mckimquyen.watermark.ui.adapter.PhotoListPreviewAdapter
-import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.ui.dlg.CompressImageDialogFragment
 import com.mckimquyen.watermark.ui.dlg.GalleryFragment
 import com.mckimquyen.watermark.ui.dlg.SaveImageBSDialogFragment
@@ -79,6 +75,7 @@ import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.PickImageContract
 import com.mckimquyen.watermark.utils.ShareIntentResolver
 import com.mckimquyen.watermark.utils.VibrateHelper
+import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.bgColor
 import com.mckimquyen.watermark.utils.ktx.colorPrimary
 import com.mckimquyen.watermark.utils.ktx.colorSurface

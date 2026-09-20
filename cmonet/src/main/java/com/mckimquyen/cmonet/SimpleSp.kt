@@ -41,7 +41,9 @@ class SimpleSp(
     }
 
     override fun <T> save(key: String, value: T) {
-        Log.i(TAG, "save: $key, $value")
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "save: $key, $value")
+        }
         when (value) {
             is Int -> {
                 sp.edit {
@@ -80,7 +82,9 @@ class SimpleSp(
     }
 
     override fun <T> getValue(key: String, defaultValue: T): T {
-        Log.i(TAG, "getValue: $key, $defaultValue")
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "getValue: $key, $defaultValue")
+        }
         when (defaultValue) {
             is Int -> {
                 return sp.get(key, defaultValue)

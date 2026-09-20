@@ -110,6 +110,7 @@ output.json
 hs_err_pid*
 
 # End of https://www.toptal.com/developers/gitignore/api/android,kotlin
+.kotlin/
 .idea/libraries-with-intellij-classes.xml
 
 # Claude Code local settings (YOLO/bypassPermissions — không commit)

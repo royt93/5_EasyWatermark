@@ -1,16 +1,16 @@
 package com.mckimquyen.watermark.ui.adapter
 
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.color.MaterialColors
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.TextPaintStyle
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
-import android.graphics.Color
-import com.google.android.material.color.MaterialColors
 import com.mckimquyen.watermark.utils.ktx.colorPrimary
 
 class TextPaintStyleAdapter(

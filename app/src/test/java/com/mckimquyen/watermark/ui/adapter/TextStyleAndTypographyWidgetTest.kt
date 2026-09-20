@@ -11,8 +11,6 @@ import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.TextPaintStyle
 import com.mckimquyen.watermark.data.model.TextTypeface
 import com.mckimquyen.watermark.ui.base.BasePBFragment
-import com.mckimquyen.watermark.ui.panel.AlphaPbFragment
-import com.mckimquyen.watermark.ui.panel.TextSizePbFragment
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

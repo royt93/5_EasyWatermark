@@ -107,4 +107,47 @@ class GalleryFragmentFolderPickRoboTest {
         assertThat(menu.findItem(R.id.ivSysImage)).isNotNull()
         assertThat(menu.findItem(R.id.ivPickFolder)).isNotNull()
     }
+
+    /**
+     * BUG-35: handleTreeUriResult với null Uri không thực hiện hành động nào và không crash.
+     */
+    @Test
+    fun `handleTreeUriResult with null does not crash`() {
+        val activity = Robolectric.buildActivity(TestHostActivity::class.java).setup().get()
+        val containerId = FrameLayout(activity).let {
+            it.id = android.view.View.generateViewId()
+            activity.setContentView(it)
+            it.id
+        }
+        val fragment = GalleryFragment().apply { setShowsDialog(false) }
+        activity.supportFragmentManager.beginTransaction().add(containerId, fragment, "gallery").commit()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // Null treeUri
+        fragment.handleTreeUriResult(null)
+        shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    /**
+     * BUG-35: Khi takePersistableUriPermission ném SecurityException,
+     * fragment bắt lỗi qua runCatching, không làm crash app và vẫn xử lý flow.
+     */
+    @Test
+    fun `handleTreeUriResult catches SecurityException when persisting permission fails`() {
+        val activity = Robolectric.buildActivity(TestHostActivity::class.java).setup().get()
+        val containerId = FrameLayout(activity).let {
+            it.id = android.view.View.generateViewId()
+            activity.setContentView(it)
+            it.id
+        }
+        val fragment = GalleryFragment().apply { setShowsDialog(false) }
+        activity.supportFragmentManager.beginTransaction().add(containerId, fragment, "gallery").commit()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // ContentResolver trên Robolectric sẽ ném SecurityException cho Uri này
+        val dummyTreeUri = android.net.Uri.parse("content://unauthorized.provider/tree/test")
+        fragment.handleTreeUriResult(dummyTreeUri)
+        shadowOf(Looper.getMainLooper()).idle()
+        // Không crash!
+    }
 }

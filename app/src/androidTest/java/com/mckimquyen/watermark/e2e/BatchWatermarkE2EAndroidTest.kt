@@ -31,7 +31,6 @@ import com.mckimquyen.watermark.ui.Image
 import com.mckimquyen.watermark.ui.MainActivity
 import com.mckimquyen.watermark.ui.MainViewModel
 import com.mckimquyen.watermark.ui.adapter.GalleryAdapter
-import com.mckimquyen.watermark.ui.widget.LaunchView
 import com.mckimquyen.watermark.utils.bitmap.BitmapCache
 import kotlinx.coroutines.runBlocking
 import org.junit.After

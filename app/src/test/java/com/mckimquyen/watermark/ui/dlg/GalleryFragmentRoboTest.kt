@@ -2,10 +2,6 @@ package com.mckimquyen.watermark.ui.dlg
 
 import android.os.Build
 import android.os.Looper
-import android.view.ViewGroup
-import androidx.core.graphics.Insets
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.common.truth.Truth.assertThat

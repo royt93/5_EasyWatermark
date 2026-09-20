@@ -1,12 +1,10 @@
 package com.mckimquyen.watermark.ui
 
-import android.graphics.Color
 import android.graphics.Insets
 import android.os.Build
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.appbar.AppBarLayout
@@ -14,7 +12,6 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.card.MaterialCardView
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R
-import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.ui.about.AboutActivity
 import com.mckimquyen.watermark.ui.dlg.PositionAnchorBottomSheetFragment
 import com.mckimquyen.watermark.ui.widget.LaunchView

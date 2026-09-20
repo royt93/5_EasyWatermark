@@ -37,7 +37,6 @@ object RepositoryModule {
         return WaterMarkRepository(context, dataStore)
     }
 
-    @Named("WaterMarkPreferences")
     @Provides
     @Singleton
     fun provideMemorySettingRepository(): MemorySettingRepo {

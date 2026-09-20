@@ -2,8 +2,6 @@ package com.mckimquyen.watermark.ui.about
 
 import android.os.Build
 import android.widget.TextView
-import androidx.appcompat.view.ContextThemeWrapper
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R

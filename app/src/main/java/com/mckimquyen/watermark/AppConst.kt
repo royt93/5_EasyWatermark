@@ -19,4 +19,12 @@ object AppLog {
     fun d(tag: String, msg: String) {
         if (BuildConfig.DEBUG) Log.d(tag, msg)
     }
+
+    fun w(tag: String, msg: String, tr: Throwable? = null) {
+        if (tr != null) Log.w(tag, msg, tr) else Log.w(tag, msg)
+    }
+
+    fun e(tag: String, msg: String, tr: Throwable? = null) {
+        if (tr != null) Log.e(tag, msg, tr) else Log.e(tag, msg)
+    }
 }

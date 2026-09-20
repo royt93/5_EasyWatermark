@@ -7,9 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.data.model.UserPreferences
-import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_CHANGE_LOG
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_COMPRESS_LEVEL
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_COPYRIGHT
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_MAX_LONG_EDGE
@@ -33,7 +31,6 @@ class UserConfigRepository @Inject constructor(
         val KEY_MAX_LONG_EDGE = intPreferencesKey(SP_KEY_MAX_LONG_EDGE)
         val KEY_COPYRIGHT = stringPreferencesKey(SP_KEY_COPYRIGHT)
         val KEY_OUTPUT_NAME_PATTERN = stringPreferencesKey(SP_KEY_OUTPUT_NAME_PATTERN)
-        val KEY_CHANGE_LOG = stringPreferencesKey(WaterMarkRepository.SP_KEY_CHANGE_LOG)
     }
 
     val userPreferences: Flow<UserPreferences> = dataStore.data
@@ -99,12 +96,6 @@ class UserConfigRepository @Inject constructor(
     ) {
         dataStore.edit {
             it[KEY_OUTPUT_NAME_PATTERN] = pattern
-        }
-    }
-
-    suspend fun saveVersionCode() {
-        dataStore.edit {
-            it[KEY_CHANGE_LOG] = BuildConfig.VERSION_CODE.toString()
         }
     }
 

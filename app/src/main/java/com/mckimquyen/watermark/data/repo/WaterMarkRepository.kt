@@ -330,7 +330,6 @@ class WaterMarkRepository @Inject constructor(
         const val SP_KEY_HORIZON_GAP = "${SP_NAME}_key_horizon_gap"
         const val SP_KEY_VERTICAL_GAP = "${SP_NAME}_key_vertical_gap"
         const val SP_KEY_DEGREE = "${SP_NAME}_key_degree"
-        const val SP_KEY_CHANGE_LOG = "${SP_NAME}_key_change_log"
         const val SP_KEY_ENABLE_BOUNDS = "${SP_NAME}_key_enable_bounds"
         const val SP_KEY_ENABLE_EXIF = "${SP_NAME}_key_enable_exif"
         const val SP_KEY_EXIF_FRAME_STYLE = "${SP_NAME}_key_exif_frame_style"

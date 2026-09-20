@@ -1,8 +1,8 @@
 package com.mckimquyen.watermark.ui.about
+import android.graphics.Color
 import android.os.Bundle
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import android.graphics.Color
 import com.google.android.material.color.MaterialColors
 import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.BaseActivity
