@@ -295,4 +295,34 @@ class SaveImageBSDialogFragmentBatchActionRoboTest {
         customZipFile.delete()
         tempDir.deleteRecursively()
     }
+
+    @Test
+    fun feat19_selectConflictPolicy_persistsPolicyToViewModel() {
+        val (activity, dialog) = setupDialog()
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+
+        // Ban đầu mặc định là KEEP_BOTH
+        assertThat(viewModel.conflictPolicy).isEqualTo(com.mckimquyen.watermark.data.model.ConflictPolicy.KEEP_BOTH)
+
+        // Chọn item index 1: RENAME_VERSION
+        dialog.binding.atvConflictPolicy.performCompletion()
+        dialog.binding.atvConflictPolicy.onItemClickListener?.onItemClick(null, null, 1, 1L)
+
+        val deadline = System.currentTimeMillis() + 3_000
+        while (viewModel.conflictPolicy != com.mckimquyen.watermark.data.model.ConflictPolicy.RENAME_VERSION && System.currentTimeMillis() < deadline) {
+            shadowOf(Looper.getMainLooper()).idle()
+            Thread.sleep(20)
+        }
+
+        assertThat(viewModel.conflictPolicy).isEqualTo(com.mckimquyen.watermark.data.model.ConflictPolicy.RENAME_VERSION)
+
+        // Chọn item index 2: OVERWRITE
+        dialog.binding.atvConflictPolicy.onItemClickListener?.onItemClick(null, null, 2, 2L)
+        val deadline2 = System.currentTimeMillis() + 3_000
+        while (viewModel.conflictPolicy != com.mckimquyen.watermark.data.model.ConflictPolicy.OVERWRITE && System.currentTimeMillis() < deadline2) {
+            shadowOf(Looper.getMainLooper()).idle()
+            Thread.sleep(20)
+        }
+        assertThat(viewModel.conflictPolicy).isEqualTo(com.mckimquyen.watermark.data.model.ConflictPolicy.OVERWRITE)
+    }
 }

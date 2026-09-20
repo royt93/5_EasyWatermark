@@ -99,6 +99,85 @@ class ExportNaming @Inject constructor() {
         return "$base.${trapOutputExtension(outputFormat)}"
     }
 
+    /**
+     * FEAT-19: Ghép hậu tố phiên bản (_v2, _v3, ...) vào trước extension.
+     * Ví dụ: "photo.jpg", version=2 -> "photo_v2.jpg"
+     */
+    fun buildVersionedName(originalName: String, version: Int): String {
+        if (version <= 1) return originalName
+        val dotIndex = originalName.lastIndexOf('.')
+        return if (dotIndex != -1) {
+            val name = originalName.substring(0, dotIndex)
+            val ext = originalName.substring(dotIndex)
+            "${name}_v$version$ext"
+        } else {
+            "${originalName}_v$version"
+        }
+    }
+
+    /**
+     * FEAT-19: Tìm tên tệp chưa bị trùng bằng cách tăng dần phiên bản (_v2, _v3, ...) cho tới khi
+     * hàm [isNameTaken] trả về false.
+     */
+    fun resolveVersionedName(baseName: String, isNameTaken: (String) -> Boolean): String {
+        if (!isNameTaken(baseName)) return baseName
+        var version = 2
+        while (true) {
+            val candidate = buildVersionedName(baseName, version)
+            if (!isNameTaken(candidate)) {
+                return candidate
+            }
+            version++
+        }
+    }
+
+    /**
+     * FEAT-19: Truy vấn MediaStore để tìm Uri của file đã tồn tại cùng tên trong thư mục Pictures/WaterMarkCreator/.
+     * Trả về Content Uri nếu tồn tại, null nếu không tìm thấy.
+     */
+    fun queryExistingMediaUri(
+        contentResolver: ContentResolver,
+        displayName: String,
+        subFolder: String = com.mckimquyen.watermark.utils.FileUtils.outPutFolderName
+    ): Uri? {
+        val collection = android.provider.MediaStore.Images.Media.getContentUri(
+            android.provider.MediaStore.VOLUME_EXTERNAL_PRIMARY
+        )
+        val projection = arrayOf(
+            android.provider.MediaStore.Images.Media._ID,
+            android.provider.MediaStore.Images.Media.DISPLAY_NAME,
+            android.provider.MediaStore.Images.Media.RELATIVE_PATH
+        )
+        val selection = "${android.provider.MediaStore.Images.Media.DISPLAY_NAME} = ? AND (${android.provider.MediaStore.Images.Media.RELATIVE_PATH} = ? OR ${android.provider.MediaStore.Images.Media.RELATIVE_PATH} = ?)"
+        val selectionArgs = arrayOf(
+            displayName,
+            "Pictures/$subFolder/",
+            "Pictures/$subFolder"
+        )
+        return try {
+            contentResolver.query(collection, projection, selection, selectionArgs, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val idIndex = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media._ID)
+                    val id = cursor.getLong(idIndex)
+                    android.content.ContentUris.withAppendedId(collection, id)
+                } else {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * FEAT-19: Kiểm tra xem tên file đã tồn tại trong MediaStore hay chưa.
+     */
+    fun isMediaFileExists(
+        contentResolver: ContentResolver,
+        displayName: String,
+        subFolder: String = com.mckimquyen.watermark.utils.FileUtils.outPutFolderName
+    ): Boolean = queryExistingMediaUri(contentResolver, displayName, subFolder) != null
+
     fun trapOutputExtension(outputFormat: Bitmap.CompressFormat): String {
         return OutputImageUtils.extensionFor(outputFormat)
     }

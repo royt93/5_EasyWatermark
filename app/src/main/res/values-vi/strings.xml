@@ -171,6 +171,11 @@
     <string name="dialog_save_config_copyright_hint">© Tên của bạn</string>
     <string name="dialog_save_config_name_pattern">Quy tắc đặt tên tệp</string>
     <string name="dialog_save_config_name_pattern_hint">Ví dụ: {filename}_wm_{seq} — để trống dùng mặc định</string>
+    <string name="dialog_save_config_conflict_policy">Khi trùng tên tệp</string>
+    <string name="conflict_policy_keep_both">Giữ cả hai (MediaStore)</string>
+    <string name="conflict_policy_rename_version">Tự đổi tên (_v2, _v3)</string>
+    <string name="conflict_policy_overwrite">Ghi đè</string>
+    <string name="conflict_policy_skip">Bỏ qua</string>
     <string name="exif_customize_label">TUỲ CHỈNH</string>
     <string name="exif_customize_reset">Đặt lại</string>
     <string name="exif_customize_band_color">Màu dải viền</string>

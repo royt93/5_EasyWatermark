@@ -81,7 +81,8 @@ class BatchExportEngine @Inject constructor(
         val compressLevel: Int,
         val maxOutputLongEdge: Int,
         val copyright: String,
-        val outputNamePattern: String
+        val outputNamePattern: String,
+        val conflictPolicy: com.mckimquyen.watermark.data.model.ConflictPolicy = com.mckimquyen.watermark.data.model.ConflictPolicy.KEEP_BOTH
     )
 
     /**
@@ -342,29 +343,61 @@ class BatchExportEngine @Inject constructor(
                 }
                 bitmapGuard.replace(exportBitmap)
 
+                val conflictPolicy = settings.conflictPolicy
+                val rawOutputName = exportNaming.generateOutputName(
+                    contentResolver,
+                    imageInfo,
+                    index,
+                    settings.outputNamePattern,
+                    settings.outputFormat
+                )
+
                 return@withContext if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     val imageCollection =
                         MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-                    val outputName = exportNaming.generateOutputName(
-                        contentResolver,
-                        imageInfo,
-                        index,
-                        settings.outputNamePattern,
-                        settings.outputFormat
-                    )
-                    val imageDetail = ContentValues().apply {
-                        put(MediaStore.Images.Media.DISPLAY_NAME, outputName)
-                        put(MediaStore.Images.Media.MIME_TYPE, "image/${exportNaming.trapOutputExtension(settings.outputFormat)}")
-                        put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/$outPutFolderName/")
-                        put(MediaStore.Images.Media.IS_PENDING, 1)
+                    val existingUri = if (conflictPolicy != com.mckimquyen.watermark.data.model.ConflictPolicy.KEEP_BOTH) {
+                        exportNaming.queryExistingMediaUri(contentResolver, rawOutputName)
+                    } else {
+                        null
                     }
 
-                    val insertResult = MediaStoreInsertResolver.resolve(
-                        contentResolver.insert(imageCollection, imageDetail),
-                        MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_INSERT
-                    )
-                    if (insertResult.isFailure()) return@withContext insertResult
-                    val imageContentUri = insertResult.data!!
+                    if (existingUri != null && conflictPolicy == com.mckimquyen.watermark.data.model.ConflictPolicy.SKIP) {
+                        exportBitmap.recycle()
+                        bitmapGuard.release()
+                        return@withContext Result.success(existingUri)
+                    }
+
+                    val finalOutputName = when {
+                        existingUri != null && conflictPolicy == com.mckimquyen.watermark.data.model.ConflictPolicy.RENAME_VERSION -> {
+                            exportNaming.resolveVersionedName(rawOutputName) { candidate ->
+                                exportNaming.isMediaFileExists(contentResolver, candidate)
+                            }
+                        }
+                        else -> rawOutputName
+                    }
+
+                    val (targetUri, isNewRow) = if (existingUri != null && conflictPolicy == com.mckimquyen.watermark.data.model.ConflictPolicy.OVERWRITE) {
+                        val updateDetails = ContentValues().apply {
+                            put(MediaStore.Images.Media.IS_PENDING, 1)
+                        }
+                        contentResolver.update(existingUri, updateDetails, null, null)
+                        existingUri to false
+                    } else {
+                        val imageDetail = ContentValues().apply {
+                            put(MediaStore.Images.Media.DISPLAY_NAME, finalOutputName)
+                            put(MediaStore.Images.Media.MIME_TYPE, "image/${exportNaming.trapOutputExtension(settings.outputFormat)}")
+                            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/$outPutFolderName/")
+                            put(MediaStore.Images.Media.IS_PENDING, 1)
+                        }
+                        val insertResult = MediaStoreInsertResolver.resolve(
+                            contentResolver.insert(imageCollection, imageDetail),
+                            MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_INSERT
+                        )
+                        if (insertResult.isFailure()) return@withContext insertResult
+                        insertResult.data!! to true
+                    }
+
+                    val imageContentUri = targetUri
                     // BUG-19: openFileDescriptor() có thể trả null, và compress() có thể trả false
                     // (trước đây cả 2 bị bỏ qua → báo "thành công" giả + để lại row IS_PENDING rác).
                     val writeResult = try {
@@ -385,16 +418,19 @@ class BatchExportEngine @Inject constructor(
                         Result.failure<Unit>(data = null, code = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_WRITE, message = e.message)
                     }
                     if (writeResult.isFailure()) {
-                        // Ghi thất bại → xoá row IS_PENDING rác thay vì để lại file 0-byte/lỗi trong gallery.
-                        contentResolver.delete(imageContentUri, null, null)
+                        // Ghi thất bại → xoá row IS_PENDING nếu mới tạo thay vì để lại file 0-byte/lỗi trong gallery.
+                        if (isNewRow) {
+                            contentResolver.delete(imageContentUri, null, null)
+                        }
                         return@withContext Result.extendMsg(writeResult)
                     }
                     // Đã compress xong, không còn dùng bitmap này nữa (BUG-05).
                     exportBitmap.recycle()
                     bitmapGuard.release()
-                    imageDetail.clear()
-                    imageDetail.put(MediaStore.Images.Media.IS_PENDING, 0)
-                    contentResolver.update(imageContentUri, imageDetail, null, null)
+                    val finalDetails = ContentValues().apply {
+                        put(MediaStore.Images.Media.IS_PENDING, 0)
+                    }
+                    contentResolver.update(imageContentUri, finalDetails, null, null)
                     exportNaming.applyCopyrightExif(contentResolver, imageContentUri, settings.copyright, settings.outputFormat)
                     Result.success(imageContentUri)
                 } else {
@@ -415,10 +451,35 @@ class BatchExportEngine @Inject constructor(
                     if (!mediaDir.exists()) {
                         mediaDir.mkdirs()
                     }
-                    val outputFile = File(
-                        mediaDir,
-                        exportNaming.generateOutputName(contentResolver, imageInfo, index, settings.outputNamePattern, settings.outputFormat)
-                    )
+
+                    val initialFile = File(mediaDir, rawOutputName)
+                    if (initialFile.exists() && conflictPolicy == com.mckimquyen.watermark.data.model.ConflictPolicy.SKIP) {
+                        exportBitmap.recycle()
+                        bitmapGuard.release()
+                        val existingUri = FileProvider.getUriForFile(
+                            /* context = */ appContext,
+                            /* authority = */ "${BuildConfig.APPLICATION_ID}.fileprovider",
+                            /* file = */ initialFile
+                        )
+                        return@withContext Result.success(existingUri)
+                    }
+
+                    val finalOutputName = when {
+                        initialFile.exists() && conflictPolicy == com.mckimquyen.watermark.data.model.ConflictPolicy.RENAME_VERSION -> {
+                            exportNaming.resolveVersionedName(rawOutputName) { candidate ->
+                                File(mediaDir, candidate).exists()
+                            }
+                        }
+                        initialFile.exists() && conflictPolicy == com.mckimquyen.watermark.data.model.ConflictPolicy.KEEP_BOTH -> {
+                            // Legacy file system không tự đổi tên như MediaStore Q+, nên tự sinh phiên bản
+                            exportNaming.resolveVersionedName(rawOutputName) { candidate ->
+                                File(mediaDir, candidate).exists()
+                            }
+                        }
+                        else -> rawOutputName
+                    }
+
+                    val outputFile = File(mediaDir, finalOutputName)
                     val compressOk = outputFile.outputStream().use { fileOutputStream ->
                         exportBitmap.compress(
                             /* format = */ settings.outputFormat,

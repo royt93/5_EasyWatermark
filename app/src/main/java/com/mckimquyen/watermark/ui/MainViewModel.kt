@@ -117,6 +117,9 @@ class MainViewModel @Inject constructor(
     val outputNamePattern: String
         get() = userPreferences.value.outputNamePattern
 
+    val conflictPolicy: com.mckimquyen.watermark.data.model.ConflictPolicy
+        get() = userPreferences.value.conflictPolicy
+
     val colorPalette: MutableLiveData<Palette> = MutableLiveData()
 
     private val projection = arrayOf(
@@ -588,6 +591,12 @@ class MainViewModel @Inject constructor(
     fun saveOutputNamePattern(pattern: String) {
         viewModelScope.launch {
             userRepo.updateOutputNamePattern(pattern)
+        }
+    }
+
+    fun saveConflictPolicy(policy: com.mckimquyen.watermark.data.model.ConflictPolicy) {
+        viewModelScope.launch {
+            userRepo.updateConflictPolicy(policy)
         }
     }
 

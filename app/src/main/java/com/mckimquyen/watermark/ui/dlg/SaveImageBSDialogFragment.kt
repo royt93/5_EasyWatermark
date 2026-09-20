@@ -54,6 +54,14 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     private val resizeArray = OutputImageUtils.resizePresets.map { it.label }.toTypedArray()
     private val resizeValues = OutputImageUtils.resizePresets.map { it.maxLongEdge }.toIntArray()
 
+    // FEAT-19: Chính sách xử lý trùng tên file
+    private val conflictPolicyValues = arrayOf(
+        com.mckimquyen.watermark.data.model.ConflictPolicy.KEEP_BOTH,
+        com.mckimquyen.watermark.data.model.ConflictPolicy.RENAME_VERSION,
+        com.mckimquyen.watermark.data.model.ConflictPolicy.OVERWRITE,
+        com.mckimquyen.watermark.data.model.ConflictPolicy.SKIP
+    )
+
     /** PNG là lossless nên ẩn slider chất lượng; JPEG/WEBP có dùng. */
     private fun supportsQuality(format: Bitmap.CompressFormat): Boolean =
         format != Bitmap.CompressFormat.PNG
@@ -174,6 +182,28 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             etOutputName.setOnFocusChangeListener { _, hasFocus ->
                 if (!hasFocus) {
                     shareViewModel.saveOutputNamePattern(etOutputName.text?.toString().orEmpty().trim())
+                }
+            }
+
+            atvConflictPolicy.also {
+                val conflictPolicyLabels = arrayOf(
+                    getString(R.string.conflict_policy_keep_both),
+                    getString(R.string.conflict_policy_rename_version),
+                    getString(R.string.conflict_policy_overwrite),
+                    getString(R.string.conflict_policy_skip)
+                )
+                val adapter = ArrayAdapter(
+                    requireContext(),
+                    R.layout.simple_dropdown_item_1line,
+                    conflictPolicyLabels
+                )
+                it.setAdapter(adapter)
+                it.setDropDownBackgroundDrawable(requireContext().getDrawable(R.drawable.bg_dropdown_popup))
+                val curIdx = conflictPolicyValues.indexOf(shareViewModel.conflictPolicy).coerceAtLeast(0)
+                it.setText(conflictPolicyLabels[curIdx], false)
+                it.setOnItemClickListener { _, _, index, _ ->
+                    val selectedPolicy = conflictPolicyValues.getOrElse(index) { com.mckimquyen.watermark.data.model.ConflictPolicy.KEEP_BOTH }
+                    shareViewModel.saveConflictPolicy(selectedPolicy)
                 }
             }
 

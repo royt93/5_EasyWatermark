@@ -11,7 +11,9 @@ data class UserPreferences(
     val maxOutputLongEdge: Int = UserConfigRepository.DEFAULT_MAX_LONG_EDGE,
     val copyright: String = "",
     /** Pattern tên file xuất, vd "{filename}_wm_{seq}" (xem [TextTokenResolver]). Rỗng = hành vi mặc định "ewm_{timestamp}". */
-    val outputNamePattern: String = ""
+    val outputNamePattern: String = "",
+    /** FEAT-19: Chính sách xử lý trùng tên file khi export lại. */
+    val conflictPolicy: ConflictPolicy = ConflictPolicy.KEEP_BOTH
 ) {
     companion object {
         val DEFAULT = UserPreferences(
@@ -19,7 +21,8 @@ data class UserPreferences(
             UserConfigRepository.DEFAULT_COMPRESS_LEVEL,
             UserConfigRepository.DEFAULT_MAX_LONG_EDGE,
             "",
-            ""
+            "",
+            ConflictPolicy.KEEP_BOTH
         )
     }
 }

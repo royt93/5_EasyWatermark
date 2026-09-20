@@ -156,6 +156,36 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- ══ SECTION: CONFLICT POLICY (FEAT-19) ════════════════════════════════ -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/menuConflictPolicy"
+        style="@style/SaveDialogExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="@string/dialog_save_config_conflict_policy"
+        app:boxStrokeColor="?attr/colorOutline"
+        app:boxStrokeWidth="1dp"
+        app:boxStrokeWidthFocused="2dp"
+        app:hintTextColor="?attr/colorOnSurfaceVariant">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/atvConflictPolicy"
+            style="@style/SaveDialogAutoCompleteTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:hint="@string/dialog_save_config_conflict_policy"
+            android:inputType="none"
+            android:labelFor="@id/menuConflictPolicy"
+            android:minWidth="120dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="15sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
     <!-- ══ SECTION: COPYRIGHT (EXIF) ════════════════════════════════════════ -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilCopyright"

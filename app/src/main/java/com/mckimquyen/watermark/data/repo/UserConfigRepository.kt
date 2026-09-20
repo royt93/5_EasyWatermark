@@ -7,8 +7,10 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.mckimquyen.watermark.data.model.ConflictPolicy
 import com.mckimquyen.watermark.data.model.UserPreferences
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_COMPRESS_LEVEL
+import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_CONFLICT_POLICY
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_COPYRIGHT
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_MAX_LONG_EDGE
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_OUTPUT_FORMAT
@@ -31,6 +33,7 @@ class UserConfigRepository @Inject constructor(
         val KEY_MAX_LONG_EDGE = intPreferencesKey(SP_KEY_MAX_LONG_EDGE)
         val KEY_COPYRIGHT = stringPreferencesKey(SP_KEY_COPYRIGHT)
         val KEY_OUTPUT_NAME_PATTERN = stringPreferencesKey(SP_KEY_OUTPUT_NAME_PATTERN)
+        val KEY_CONFLICT_POLICY = intPreferencesKey(SP_KEY_CONFLICT_POLICY)
     }
 
     val userPreferences: Flow<UserPreferences> = dataStore.data
@@ -56,7 +59,8 @@ class UserConfigRepository @Inject constructor(
             val maxLongEdge = (it[KEY_MAX_LONG_EDGE] ?: DEFAULT_MAX_LONG_EDGE).coerceAtLeast(DEFAULT_MAX_LONG_EDGE)
             val copyright = it[KEY_COPYRIGHT] ?: ""
             val outputNamePattern = it[KEY_OUTPUT_NAME_PATTERN] ?: ""
-            UserPreferences(outputFormat, compressLevel, maxLongEdge, copyright, outputNamePattern)
+            val conflictPolicy = ConflictPolicy.fromId(it[KEY_CONFLICT_POLICY] ?: ConflictPolicy.KEEP_BOTH.id)
+            UserPreferences(outputFormat, compressLevel, maxLongEdge, copyright, outputNamePattern, conflictPolicy)
         }
 
     suspend fun updateFormat(
@@ -99,6 +103,14 @@ class UserConfigRepository @Inject constructor(
         }
     }
 
+    suspend fun updateConflictPolicy(
+        policy: ConflictPolicy
+    ) {
+        dataStore.edit {
+            it[KEY_CONFLICT_POLICY] = policy.id
+        }
+    }
+
     companion object {
         const val DEFAULT_COMPRESS_LEVEL = 80
 
@@ -111,5 +123,6 @@ class UserConfigRepository @Inject constructor(
         const val SP_KEY_MAX_LONG_EDGE = "${SP_NAME}_key_max_long_edge"
         const val SP_KEY_COPYRIGHT = "${SP_NAME}_key_copyright"
         const val SP_KEY_OUTPUT_NAME_PATTERN = "${SP_NAME}_key_output_name_pattern"
+        const val SP_KEY_CONFLICT_POLICY = "${SP_NAME}_key_conflict_policy"
     }
 }
