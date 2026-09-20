@@ -31,6 +31,7 @@
                 android:background="@android:color/transparent"
                 app:navigationIcon="@drawable/ic_arrow_back"
                 app:navigationIconTint="?attr/colorOnSurface"
+                app:navigationContentDescription="@string/back"
                 app:title="@string/vip_title"
                 app:titleTextColor="?attr/colorOnSurface" />
 
@@ -61,8 +62,8 @@
                         android:background="@drawable/bg_glass_button"
                         android:padding="10dp"
                         android:src="@drawable/ic_workspace_premium"
-                        app:tint="@color/vip_icon_accent"
-                        tools:ignore="ContentDescription" />
+                        android:contentDescription="@string/vip_title"
+                        app:tint="@color/vip_icon_accent" />
                 </com.facebook.shimmer.ShimmerFrameLayout>
 
                 <LinearLayout
@@ -184,6 +185,7 @@
                         android:id="@+id/edtVipKey"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:minHeight="48dp"
                         android:inputType="textVisiblePassword"
                         android:singleLine="true"
                         android:textColor="?attr/colorOnSurface"

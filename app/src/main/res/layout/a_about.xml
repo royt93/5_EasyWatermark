@@ -28,6 +28,7 @@
             android:background="@android:color/transparent"
             app:navigationIcon="@drawable/ic_close"
             app:navigationIconTint="?attr/colorOnSurface"
+            app:navigationContentDescription="@string/close"
             app:title="@string/about_title_info"
             app:titleCentered="true"
             app:titleTextColor="?attr/colorOnSurface" />
@@ -621,6 +622,52 @@
                             android:layout_marginStart="12dp"
                             android:layout_weight="1"
                             android:text="@string/about_title_privacy_statement"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="15sp" />
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.6"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="?attr/colorOnSurfaceVariant"
+                            tools:ignore="ContentDescription" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="48dp"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Open Source Licenses row -->
+                    <LinearLayout
+                        android:id="@+id/rowOpenSource"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.8"
+                            android:src="@drawable/ic_open_source"
+                            app:tint="?attr/colorOnSurface"
+                            tools:ignore="ContentDescription" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:text="@string/about_title_open_source"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="15sp" />
 

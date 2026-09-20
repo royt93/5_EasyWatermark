@@ -33,11 +33,14 @@ class TileModeFragment : BaseBindFragment<FTileModeBinding>() {
                 else -> R.id.btnTileModeRepeat
             }
             val updateA11yDescriptions = {
-                val isRepeat = binding?.tgTileMode?.checkedButtonId == R.id.btnTileModeRepeat
-                val repeatState = getString(if (isRepeat) R.string.state_enabled else R.string.state_disabled)
-                val decalState = getString(if (!isRepeat) R.string.state_enabled else R.string.state_disabled)
-                binding?.btnTileModeRepeat?.contentDescription = "${getString(R.string.tile_mode_title_repeat)}, $repeatState"
-                binding?.btnTileModeDecal?.contentDescription = "${getString(R.string.tile_mode_title_decal)}, $decalState"
+                val ctx = context
+                if (ctx != null) {
+                    val isRepeat = binding?.tgTileMode?.checkedButtonId == R.id.btnTileModeRepeat
+                    val repeatState = ctx.getString(if (isRepeat) R.string.state_enabled else R.string.state_disabled)
+                    val decalState = ctx.getString(if (!isRepeat) R.string.state_enabled else R.string.state_disabled)
+                    binding?.btnTileModeRepeat?.contentDescription = "${ctx.getString(R.string.tile_mode_title_repeat)}, $repeatState"
+                    binding?.btnTileModeDecal?.contentDescription = "${ctx.getString(R.string.tile_mode_title_decal)}, $decalState"
+                }
             }
             binding?.btnPositionAnchor?.visibility =
                 if (it.tileMode == Shader.TileMode.CLAMP.ordinal) View.VISIBLE else View.GONE

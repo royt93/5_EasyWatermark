@@ -51,6 +51,20 @@ class SignatureHistoryAdapter(
         val btnDelete = holder.itemView.findViewById<ImageView>(R.id.ivDeleteBtn)
 
         iv.setImageURI(item.uri)
+        holder.itemView.contentDescription = holder.itemView.context.getString(R.string.signature_history_item)
+        btnDelete.contentDescription = holder.itemView.context.getString(R.string.signature_history_delete)
+        holder.itemView.post {
+            val rect = android.graphics.Rect()
+            btnDelete.getHitRect(rect)
+            val minSize = (48 * holder.itemView.resources.displayMetrics.density).toInt()
+            val dx = maxOf(0, (minSize - rect.width()) / 2)
+            val dy = maxOf(0, (minSize - rect.height()) / 2)
+            rect.left -= dx
+            rect.top -= dy
+            rect.right += dx
+            rect.bottom += dy
+            holder.itemView.touchDelegate = android.view.TouchDelegate(rect, btnDelete)
+        }
 
         holder.itemView.setOnClickListener {
             val pos = holder.bindingAdapterPosition

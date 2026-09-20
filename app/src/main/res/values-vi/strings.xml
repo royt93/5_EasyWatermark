@@ -258,4 +258,6 @@
     <string name="brush_size_format">Kích thước nét vẽ %d px</string>
     <string name="signature_history_delete">Xóa chữ ký</string>
     <string name="signature_history_item">Chữ ký đã lưu</string>
+    <string name="close">Đóng</string>
+    <string name="action_close">Đóng</string>
 </resources>

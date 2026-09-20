@@ -23,6 +23,7 @@
             android:elevation="0dp"
             app:navigationIcon="@drawable/ic_close"
             app:navigationIconTint="?attr/colorOnSurface"
+            app:navigationContentDescription="@string/close"
             app:title="@string/about_title_open_source"
             app:titleCentered="false"
             app:titleTextColor="?attr/colorOnSurface" />

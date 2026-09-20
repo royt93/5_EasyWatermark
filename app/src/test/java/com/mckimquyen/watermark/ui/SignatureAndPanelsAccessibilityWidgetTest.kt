@@ -188,4 +188,51 @@ class SignatureAndPanelsAccessibilityWidgetTest {
         assertThat(btnCancel.minimumHeight).isAtLeast(48)
         assertThat(btnCancel.minimumWidth).isAtLeast(48)
     }
+
+    @Test
+    fun signatureActivity_toolbar_hasAccessibleNavigation() {
+        val root = LayoutInflater.from(themedContext).inflate(R.layout.activity_signature, null, false)
+        val toolbar = root.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        assertThat(toolbar).isNotNull()
+        assertThat(toolbar.navigationContentDescription?.toString()).isEqualTo(themedContext.getString(R.string.back))
+    }
+
+    @Test
+    fun vipManagementActivity_toolbar_and_crown_areAccessible() {
+        val root = LayoutInflater.from(themedContext).inflate(R.layout.activity_vip_management, null, false)
+        val topAppBar = root.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.topAppBar)
+        val ivCrown = root.findViewById<ImageView>(R.id.ivCrown)
+        val edtVipKey = root.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.edtVipKey)
+
+        assertThat(topAppBar).isNotNull()
+        assertThat(topAppBar.navigationContentDescription?.toString()).isEqualTo(themedContext.getString(R.string.back))
+
+        assertThat(ivCrown).isNotNull()
+        assertThat(ivCrown.contentDescription?.toString()).isEqualTo(themedContext.getString(R.string.vip_title))
+
+        assertThat(edtVipKey).isNotNull()
+        assertThat(edtVipKey.minimumHeight).isAtLeast(48)
+    }
+
+    @Test
+    fun openSourceActivity_toolbar_hasAccessibleNavigation() {
+        val root = LayoutInflater.from(themedContext).inflate(R.layout.a_open_source, null, false)
+        val toolbar = root.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.myToolbar)
+        assertThat(toolbar).isNotNull()
+        assertThat(toolbar.navigationContentDescription?.toString()).isEqualTo(themedContext.getString(R.string.close))
+    }
+
+    @Test
+    fun aboutActivity_toolbar_and_openSourceRow_areAccessible() {
+        val root = LayoutInflater.from(themedContext).inflate(R.layout.a_about, null, false)
+        val topAppBar = root.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.topAppBar)
+        val rowOpenSource = root.findViewById<android.view.View>(R.id.rowOpenSource)
+
+        assertThat(topAppBar).isNotNull()
+        assertThat(topAppBar.navigationContentDescription?.toString()).isEqualTo(themedContext.getString(R.string.close))
+
+        assertThat(rowOpenSource).isNotNull()
+        assertThat(rowOpenSource.isClickable).isTrue()
+        assertThat(rowOpenSource.layoutParams.height).isAtLeast(48)
+    }
 }

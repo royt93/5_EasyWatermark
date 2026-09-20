@@ -155,6 +155,9 @@ class AboutActivity : BaseActivity() {
             rowVip.setOnClickListener {
                 startActivity(android.content.Intent(this@AboutActivity, VipManagementActivity::class.java))
             }
+            rowOpenSource.setOnClickListener {
+                startActivity(android.content.Intent(this@AboutActivity, OpenSourceActivity::class.java))
+            }
 
             switchDebug.setOnCheckedChangeListener { _, isChecked ->
                 AppLog.d(LOG_TAG, "AboutActivity switchDebug changed -> isChecked=$isChecked")

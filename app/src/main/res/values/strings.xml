@@ -277,4 +277,6 @@
     <string name="brush_size_format">Brush size %d px</string>
     <string name="signature_history_delete">Delete signature</string>
     <string name="signature_history_item">Saved signature</string>
+    <string name="close">Close</string>
+    <string name="action_close">Close</string>
 </resources>

@@ -263,7 +263,7 @@ class VipManagementActivity : BaseActivity() {
     /**
      * progress = (now - grantedAt) / (expiry - grantedAt) * 100. Bar RỖNG lúc kích hoạt, ĐẦY DẦN đến hết hạn.
      */
-    private fun computeElapsedProgress(grantedAtMs: Long, expiryMs: Long, nowMs: Long): Int {
+    internal fun computeElapsedProgress(grantedAtMs: Long, expiryMs: Long, nowMs: Long): Int {
         val total = expiryMs - grantedAtMs
         if (total <= 0L) return 100
         val elapsed = nowMs - grantedAtMs

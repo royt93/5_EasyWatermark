@@ -586,6 +586,7 @@ class MainActivity : BaseActivity() {
             supportActionBar?.title = null
             // Back arrow (left) — same exit-editor flow as the system back button.
             navigationIcon = ContextCompat.getDrawable(this@MainActivity, R.drawable.ic_arrow_back)
+            navigationContentDescription = getString(R.string.back)
             setNavigationOnClickListener {
                 @Suppress("DEPRECATION")
                 onBackPressed()
