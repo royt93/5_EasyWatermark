@@ -15,6 +15,9 @@
     <cache-path
         name="export_zip"
         path="zip_cache/" />
+    <cache-path
+        name="camera_photos"
+        path="camera/" />
     <files-path
         name="signature_images"
         path="signatures/" />

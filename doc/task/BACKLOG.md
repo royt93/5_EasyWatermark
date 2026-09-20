@@ -35,7 +35,7 @@
 
 **Đã DONE**: ENH-01..16, ENH-18..20, ENH-21 (gate SimpleSp debug log), ENH-22 (xoá 167 dòng dead code Applovin.kt), ENH-23 (gỡ @Named nhầm ở provideMemorySettingRepository), ENH-24 (gỡ saveVersionCode/KEY_CHANGE_LOG vô ích), ENH-27 (sửa selectedPos khi xoá ảnh cuối), ENH-28..29 (fix fd leak + dọn temp cache), ENH-30 (dọn field et thừa TextWatermarkBSDFragment), ENH-32 (cancel preview job per ViewHolder), ENH-35 (PreviewResult flag ảnh lỗi).
 
-## NEW_FEATURES (12 todo + 1 inprogress + 12 done) — tính năng mới thực dụng, 1-2 tuần
+## NEW_FEATURES (11 todo + 1 inprogress + 13 done) — tính năng mới thực dụng, 1-2 tuần
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
@@ -43,7 +43,6 @@
 | [FEAT-06](todo/FEAT-06-watermark-profile-day-du.md) | M | Watermark profile đầy đủ |
 | [FEAT-12](todo/FEAT-12-undo-redo-editor.md) | M | Undo/Redo chỉnh sửa watermark trong editor |
 | [FEAT-19](todo/FEAT-19-chinh-sach-xu-ly-trung-ten-file-khi-export-lai-cung-batchnam.md) | S | Chính sách xử lý trùng tên file khi export lại cùng batch/naming pattern |
-| [FEAT-22](todo/FEAT-22-chup-anh-truc-tiep-tu-camera-roi-watermark-ngay.md) | S | Chụp ảnh trực tiếp từ Camera rồi watermark ngay |
 | [FEAT-24](todo/FEAT-24-danh-sach-iconlogo-gan-day-dung-nhanh-mru-quick-pick.md) | S | Danh sách icon/logo gần đây dùng nhanh (MRU quick-pick) |
 | [FEAT-15](todo/FEAT-15-chon-thu-muc-xuat-anh-bang-saf-khac-feat-08-chon-thu-muc-ngu.md) | M | Chọn thư mục XUẤT ảnh bằng SAF (khác FEAT-08 — chọn thư mục NGUỒN ảnh vào batch) |
 | [FEAT-17](todo/FEAT-17-bo-qua-skip-1-anh-trong-batch-ngay-tai-man-export-preview-kh.md) | M | Bỏ qua (skip) 1 ảnh trong batch ngay tại màn export preview |
@@ -54,7 +53,7 @@
 
 **Đang làm** (`inprogress/`): FEAT-13 (caption riêng theo ảnh trong batch — code + unit test xong, **thiếu smoke test thật riêng cho ticket này**, xem `## FEAT-13/FEAT-05 2026-09-16` cuối file).
 
-**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch. **FEAT-10 2026-09-13** (xem `## FEAT-10 2026-09-13` cuối file): tự nhận diện hãng máy để gợi ý style khung EXIF. **FEAT-07 2026-09-13** (xem `## FEAT-07 2026-09-13` cuối file, verify 1 phần — xem ghi chú giới hạn môi trường trong file done): preview grid watermark + ước tính dung lượng trước khi export cả batch. **FEAT-05 2026-09-16** (xem `## FEAT-13/FEAT-05 2026-09-16` cuối file): xuất/nhập Template + Signature (backup/restore) qua SAF + zip, smoke test thật đầy đủ trên TECNO KJ7. **FEAT-20 2026-09-20**: chia sẻ sau batch export (Sharesheet hàng loạt ảnh hoặc nén ZIP an toàn qua FileProvider, UI M3 TonalButton). **FEAT-21 2026-09-20**: [FEAT-21](done/FEAT-21-dan-anh-tu-clipboard-de-watermark-nhanh.md) dán ảnh từ Clipboard để watermark nhanh (trích xuất URI ảnh/text từ ClipboardManager, action card trên LaunchView & actionPaste trên toolbar, toast thông báo).
+**Đã DONE**: FEAT-01 (9-grid position anchor — xác nhận đã triển khai 2026-09-05, xem `doc/feat.md` mục 7), FEAT-02 (naming template file xuất), FEAT-09 (preset resize theo nền tảng), FEAT-14 (Custom Frame Builder tham số hoá EXIF). **FEAT-11 2026-09-12** (xem `## FEAT-11 2026-09-12` cuối file): hiệu ứng viền/bóng/nền pill cho text watermark. **FEAT-08 2026-09-12** (xem `## FEAT-08 2026-09-12` cuối file): chọn cả thư mục (SAF tree) để batch. **FEAT-10 2026-09-13** (xem `## FEAT-10 2026-09-13` cuối file): tự nhận diện hãng máy để gợi ý style khung EXIF. **FEAT-07 2026-09-13** (xem `## FEAT-07 2026-09-13` cuối file, verify 1 phần — xem ghi chú giới hạn môi trường trong file done): preview grid watermark + ước tính dung lượng trước khi export cả batch. **FEAT-05 2026-09-16** (xem `## FEAT-13/FEAT-05 2026-09-16` cuối file): xuất/nhập Template + Signature (backup/restore) qua SAF + zip, smoke test thật đầy đủ trên TECNO KJ7. **FEAT-20 2026-09-20**: chia sẻ sau batch export (Sharesheet hàng loạt ảnh hoặc nén ZIP an toàn qua FileProvider, UI M3 TonalButton). **FEAT-21 2026-09-20**: [FEAT-21](done/FEAT-21-dan-anh-tu-clipboard-de-watermark-nhanh.md) dán ảnh từ Clipboard để watermark nhanh. **FEAT-22 2026-09-20**: [FEAT-22](done/FEAT-22-chup-anh-truc-tiep-tu-camera-roi-watermark-ngay.md) chụp ảnh trực tiếp từ Camera rồi watermark ngay (CameraCaptureHelper, action card trên LaunchView & actionCamera trên toolbar, FileProvider camera_photos).
 
 ## MATERIAL_YOU_MIGRATION (9 done) — chuyển đổi toàn diện UI/UX sang Material You (Material 3)
 
@@ -286,3 +285,24 @@ Cả 2 ticket implement độc lập ngoài luồng `/loop` chuẩn (session kh�
   - Unit tests: `ClipboardImageHelperTest` (6/6 PASS: clip rỗng, clip chỉ có text, clip có URI ảnh, nhiều ảnh, text chứa URI ảnh, file không phải ảnh).
   - Integration & Widget tests: `MainActivityPasteClipboardRoboTest` (4/4 PASS: hiển thị action card trên LaunchView, dán ảnh hợp lệ chuyển sang Editor mode và nạp vào ViewModel, dán khi chỉ có text hiển thị Toast và giữ nguyên LaunchMode, dán qua toolbar menu).
   - Kiểm tra phong cách mã nguồn: `./gradlew :app:ktlintCheck` PASS 100%.
+
+## FEAT-22 2026-09-20 — Chụp ảnh trực tiếp từ Camera rồi watermark ngay
+
+- **Giải pháp kỹ thuật:**
+  - Xây dựng `CameraCaptureHelper`: tạo tệp ảnh tạm thời trong thư mục `cacheDir/camera/` với tên tiền tố `camera_photo_<timestamp>.jpg`, cấp quyền URI bảo mật thông qua `FileProvider` (`<cache-path name="camera_photos" path="camera/" />` trong `filepaths.xml`).
+  - Hỗ trợ dọn dẹp tệp ảnh tạm rỗng khi chụp bị huỷ hoặc thất bại (`cleanupPhotoFile`).
+  - Cung cấp phương thức kiểm tra ứng dụng máy ảnh khả dụng trên thiết bị (`isCameraAvailable`).
+  - Entry point UI:
+    - Thêm action card `ivCaptureFromCamera` ("Chụp ảnh từ máy ảnh" / "Take a photo") chuẩn phong cách Material 3 trên `LaunchView`.
+    - Thêm icon menu `actionCamera` (`R.id.actionCamera`) trên toolbar (`menu.xml`).
+  - Xử lý Activity Lifecycle & OEM Camera:
+    - Đăng ký `ActivityResultContracts.TakePicture()` trong `MainActivity.registerResultCallback()`.
+    - Lưu và khôi phục trạng thái URI/File ảnh qua `onSaveInstanceState()` / `onCreate()` bảo đảm không bị mất tham chiếu khi hệ điều hành tiêu diệt activity do camera chiếm dụng RAM.
+    - Hỗ trợ kiểm tra tệp ảnh hợp lệ trên đĩa nếu ứng dụng máy ảnh OEM (Transsion/TECNO/Xiaomi) hoàn tất ghi file nhưng trả kết quả ngoại lệ.
+- **Kiểm thử tự động:**
+  - Unit tests: `CameraCaptureHelperTest` (6/6 PASS: tạo tệp cache, sinh URI FileProvider, dọn tệp rỗng, giữ tệp hợp lệ, xử lý an toàn tệp null, kiểm tra camera).
+  - Integration & Widget tests: `MainActivityCaptureCameraRoboTest` (4/4 PASS: hiển thị card trên LaunchView, chụp thành công nạp vào ViewModel và chuyển Editor mode, chụp thất bại giữ LaunchMode và dọn tệp, xử lý menu toolbar `actionCamera`).
+  - Kiểm tra phong cách mã nguồn: `./gradlew :app:ktlintCheck` PASS 100%.
+- **Smoke test thực tế trên thiết bị TECNO BG6 (`118743744X002560`):**
+  - Cài đặt APK thành công, kiểm tra trực quan giao diện LaunchView hiển thị đầy đủ 4 card M3 chuẩn kích thước và tỉ lệ.
+  - Bấm nút "Take a photo" kích hoạt thành công camera hệ thống `com.transsion.camera.app.CaptureActivity`.

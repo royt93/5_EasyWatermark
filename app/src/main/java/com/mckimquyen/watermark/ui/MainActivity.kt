@@ -2,6 +2,7 @@ package com.mckimquyen.watermark.ui
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -71,6 +72,7 @@ import com.mckimquyen.watermark.ui.panel.VerticalPbFragment
 import com.mckimquyen.watermark.ui.widget.CenterLayoutManager
 import com.mckimquyen.watermark.ui.widget.LaunchView
 import com.mckimquyen.watermark.ui.widget.onItemClick
+import com.mckimquyen.watermark.utils.CameraCaptureHelper
 import com.mckimquyen.watermark.utils.ClipboardImageHelper
 import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.PickImageContract
@@ -90,6 +92,7 @@ import com.mckimquyen.watermark.utils.ktx.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
@@ -100,6 +103,12 @@ class MainActivity : BaseActivity() {
     /** ENH-10: Android Photo Picker — không cần quyền READ_MEDIA_IMAGES/READ_EXTERNAL_STORAGE. */
     private lateinit var pickIconVisualMediaLauncher: ActivityResultLauncher<PickVisualMediaRequest>
     private lateinit var signatureLauncher: ActivityResultLauncher<Intent>
+
+    /** FEAT-22: Launcher chụp ảnh trực tiếp từ ứng dụng Camera hệ thống. */
+    private lateinit var takePictureLauncher: ActivityResultLauncher<Uri>
+    private var currentCameraPhotoFile: File? = null
+    private var currentCameraPhotoUri: Uri? = null
+
     private val viewModel: MainViewModel by viewModels()
 
     private val currentBgColor: Int
@@ -235,6 +244,15 @@ class MainActivity : BaseActivity() {
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
             }
+        } else {
+            val uriStr = savedInstanceState.getString(KEY_SAVED_CAMERA_URI)
+            if (!uriStr.isNullOrBlank()) {
+                currentCameraPhotoUri = Uri.parse(uriStr)
+            }
+            val filePath = savedInstanceState.getString(KEY_SAVED_CAMERA_FILE)
+            if (!filePath.isNullOrBlank()) {
+                currentCameraPhotoFile = File(filePath)
+            }
         }
         initView()
         initObserver()
@@ -330,6 +348,11 @@ class MainActivity : BaseActivity() {
             } else {
                 AppLog.d(LOG_TAG, "[MAIN] resultCode is NOT RESULT_OK → ignored")
             }
+        }
+
+        takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            AppLog.d(LOG_TAG, "[MAIN] takePictureLauncher callback: success=$success")
+            handleCameraResult(success)
         }
     }
 
@@ -607,6 +630,10 @@ class MainActivity : BaseActivity() {
             preCheckStoragePermission {
                 performFileSearch(REQ_CODE_PICK_IMAGE)
             }
+        }
+        // FEAT-22: Capture image directly from camera
+        launchView.ivCaptureFromCamera.setOnClickListener {
+            captureImageFromCamera()
         }
         // FEAT-21: Paste image directly from clipboard
         launchView.ivPasteFromClipboard.setOnClickListener {
@@ -926,6 +953,11 @@ class MainActivity : BaseActivity() {
             true
         }
 
+        R.id.actionCamera -> {
+            captureImageFromCamera()
+            true
+        }
+
         R.id.actionPaste -> {
             pasteImageFromClipboard()
             true
@@ -1053,6 +1085,50 @@ class MainActivity : BaseActivity() {
             clipboard?.primaryClip
         }
         handlePasteClipData(clipData)
+    }
+
+    /**
+     * FEAT-22: Chụp ảnh trực tiếp từ Camera và đưa vào editor đóng dấu watermark.
+     */
+    private fun captureImageFromCamera() {
+        try {
+            val photoFile = CameraCaptureHelper.createPhotoFile(this)
+            val photoUri = CameraCaptureHelper.getPhotoUri(this, photoFile)
+            currentCameraPhotoFile = photoFile
+            currentCameraPhotoUri = photoUri
+            takePictureLauncher.launch(photoUri)
+        } catch (e: ActivityNotFoundException) {
+            CameraCaptureHelper.cleanupPhotoFile(currentCameraPhotoFile)
+            Toast.makeText(
+                this,
+                getString(R.string.camera_app_not_found),
+                Toast.LENGTH_SHORT
+            ).show()
+        } catch (e: Exception) {
+            CameraCaptureHelper.cleanupPhotoFile(currentCameraPhotoFile)
+            Toast.makeText(
+                this,
+                "${getString(R.string.tips_error)}: ${e.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    @androidx.annotation.VisibleForTesting
+    internal fun handleCameraResult(success: Boolean, photoUriOverride: Uri? = null) {
+        val uri = photoUriOverride ?: currentCameraPhotoUri
+        val file = currentCameraPhotoFile
+        val hasValidFile = file != null && file.exists() && file.length() > 0
+        if ((success || hasValidFile) && uri != null) {
+            dealWithImage(listOf(uri))
+        } else {
+            CameraCaptureHelper.cleanupPhotoFile(file)
+        }
+    }
+
+    @androidx.annotation.VisibleForTesting
+    internal fun performCaptureImageFromCamera() {
+        captureImageFromCamera()
     }
 
     private fun handleActivityResult(requestCode: Int, list: List<Uri?>?) {
@@ -1184,10 +1260,18 @@ class MainActivity : BaseActivity() {
         com.bumptech.glide.Glide.get(this).onLowMemory()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        currentCameraPhotoUri?.let { outState.putString(KEY_SAVED_CAMERA_URI, it.toString()) }
+        currentCameraPhotoFile?.let { outState.putString(KEY_SAVED_CAMERA_FILE, it.absolutePath) }
+    }
+
     companion object {
         private const val REQ_CODE_PICK_IMAGE: Int = 42
         const val REQ_CODE_REQ_WRITE_PERMISSION: Int = 43
         const val REQ_PICK_ICON: Int = 44
         private const val INTERSTITIAL_DELAY_MS: Long = 800
+        private const val KEY_SAVED_CAMERA_URI: String = "key_saved_camera_uri"
+        private const val KEY_SAVED_CAMERA_FILE: String = "key_saved_camera_file"
     }
 }

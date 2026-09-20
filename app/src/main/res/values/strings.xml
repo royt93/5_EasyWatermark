@@ -96,6 +96,10 @@
     <string name="dialog_save_config_quality">Quality</string>
     <string name="dialog_save_exporting">Exporting</string>
     <string name="tips_pick_image">Choose Images</string>
+    <string name="launch_card_camera_title">Take a photo</string>
+    <string name="launch_card_camera_desc">Capture with camera and watermark immediately</string>
+    <string name="action_camera">Camera</string>
+    <string name="camera_app_not_found">No camera application found on this device</string>
     <string name="launch_card_paste_title">Paste from clipboard</string>
     <string name="launch_card_paste_desc">Watermark copied image or screenshot</string>
     <string name="clipboard_no_image">No image found in clipboard</string>

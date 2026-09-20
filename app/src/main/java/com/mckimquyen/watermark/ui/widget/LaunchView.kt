@@ -284,6 +284,14 @@ class LaunchView : CustomViewGroup {
         )
     }
 
+    val ivCaptureFromCamera: MaterialCardView by lazy {
+        createActionCard(
+            iconRes = R.drawable.ic_camera,
+            titleRes = R.string.launch_card_camera_title,
+            descRes = R.string.launch_card_camera_desc
+        )
+    }
+
     val ivPasteFromClipboard: MaterialCardView by lazy {
         createActionCard(
             iconRes = R.drawable.sharp_content_paste_search_24,
@@ -437,6 +445,7 @@ class LaunchView : CustomViewGroup {
             tvAppBrand,
             tvAppTagline,
             ivSelectedPhotoTips,
+            ivCaptureFromCamera,
             ivPasteFromClipboard,
             ivGoAboutPage,
             tvVersionCopyright
@@ -544,18 +553,22 @@ class LaunchView : CustomViewGroup {
         tvAppTagline.layoutHorizontallyCentered(subtitleY)
 
         // 4. "Choose Images" primary CTA
-        val ctaY = tvAppTagline.bottom + 32.dp
+        val ctaY = tvAppTagline.bottom + 20.dp
         ivSelectedPhotoTips.layoutHorizontallyCentered(ctaY)
 
-        // 5. "Paste from clipboard" secondary CTA
-        val pasteY = ivSelectedPhotoTips.bottom + 12.dp
+        // 5. "Capture from camera" secondary CTA
+        val cameraY = ivSelectedPhotoTips.bottom + 10.dp
+        ivCaptureFromCamera.layoutHorizontallyCentered(cameraY)
+
+        // 6. "Paste from clipboard" secondary CTA
+        val pasteY = ivCaptureFromCamera.bottom + 10.dp
         ivPasteFromClipboard.layoutHorizontallyCentered(pasteY)
 
-        // 6. "Information & Settings" secondary button
-        val aboutY = ivPasteFromClipboard.bottom + 12.dp
+        // 7. "Information & Settings" secondary button
+        val aboutY = ivPasteFromClipboard.bottom + 10.dp
         ivGoAboutPage.layoutHorizontallyCentered(aboutY)
 
-        // 7. Version & Copyright footer safely placed above navigation bar inset
+        // 8. Version & Copyright footer safely placed above navigation bar inset
         val footerY = usableBottom - tvVersionCopyright.measuredHeight - 16.dp
         tvVersionCopyright.layoutHorizontallyCentered(footerY)
     }

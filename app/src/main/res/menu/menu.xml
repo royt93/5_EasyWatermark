@@ -10,6 +10,13 @@
         app:showAsAction="always" />
 
     <item
+        android:id="@+id/actionCamera"
+        android:icon="@drawable/ic_camera"
+        android:title="@string/action_camera"
+        app:iconTint="?attr/colorOnSurface"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/actionPaste"
         android:icon="@drawable/sharp_content_paste_search_24"
         android:title="@string/action_paste"
