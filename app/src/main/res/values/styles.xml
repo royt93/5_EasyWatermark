@@ -27,7 +27,7 @@
 
     <style name="Widget.Material3.Button.FilledButton" parent="Widget.Material3.Button" />
 
-    <style name="WindowAnimationTransition" parent="Animation.MaterialComponents.BottomSheetDialog">
+    <style name="WindowAnimationTransition" parent="Animation.Material3.BottomSheetDialog">
         <item name="android:activityOpenEnterAnimation">@anim/a_open_in</item>
         <item name="android:activityOpenExitAnimation">@anim/a_open_out</item>
         <item name="android:activityCloseEnterAnimation">@anim/a_close_in</item>
@@ -51,8 +51,10 @@
         <item name="boxStrokeWidthFocused">2dp</item>
     </style>
 
-    <style name="ProgressBarStyle" parent="Widget.AppCompat.ProgressBar">
+    <style name="ProgressBarStyle">
         <item name="android:indeterminate">true</item>
+        <item name="android:indeterminateTint">?attr/colorPrimary</item>
+        <item name="android:indeterminateTintMode">src_in</item>
     </style>
 
     <style name="AboutPageTextViewStyle" parent="TextAppearance.Material3.TitleLarge">
@@ -62,7 +64,7 @@
         <item name="android:drawableTint">?attr/colorOnSurface</item>
     </style>
 
-    <style name="SaveDialogTextViewStyle" parent="Widget.MaterialComponents.BottomSheet.Modal">
+    <style name="SaveDialogTextViewStyle" parent="Widget.Material3.BottomSheet.Modal">
         <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:paddingStart">0dp</item>
         <item name="android:paddingEnd">0dp</item>

@@ -21,7 +21,7 @@
         android:id="@+id/ivDone"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:contentDescription="@string/app_name"
+        android:contentDescription="@string/action_save"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_save_done"
         app:layout_constraintBottom_toBottomOf="parent"

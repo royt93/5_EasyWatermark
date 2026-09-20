@@ -139,6 +139,8 @@
     <string name="compressor">Compressor</string>
     <string name="developed_with_by_rosu">Developed with ♥ by rosu</string>
     <string name="force_open_dynamic_color_support">Force Open Dynamic Color Support</string>
+    <string name="dynamic_color_subtitle_supported">Automatically adapt to system wallpaper palette (Material You)</string>
+    <string name="dynamic_color_subtitle_unsupported">Requires Android 12+ (Device uses standard Material 3 palette)</string>
     <string name="show_bounds">Show Bounds</string>
     <string name="more_apps">More apps</string>
     <string name="you_ll_need_to_close_and_restart_the_app_to_switch_themes">You\'ll need to close and restart the app to switch themes</string>
@@ -279,4 +281,5 @@
     <string name="signature_history_item">Saved signature</string>
     <string name="close">Close</string>
     <string name="action_close">Close</string>
+    <string name="gallery_photo_item_desc">Photo %1$d</string>
 </resources>

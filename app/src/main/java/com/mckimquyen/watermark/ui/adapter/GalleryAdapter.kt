@@ -72,6 +72,12 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
                     holder.bindWhenInflated {
                         holder.cbImage.isChecked = true
                         applyCheckStyle(imageFilterView = holder.ivImage, isChecked = true, animate = true)
+                        val pos = holder.absoluteAdapterPosition
+                        if (pos >= 0) {
+                            val desc = holder.itemView.context.getString(R.string.gallery_photo_item_desc, pos + 1)
+                            val state = holder.itemView.context.getString(R.string.state_enabled)
+                            holder.itemView.contentDescription = "$desc, $state"
+                        }
                     }
                 }
 
@@ -79,6 +85,12 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
                     holder.bindWhenInflated {
                         holder.cbImage.isChecked = false
                         applyCheckStyle(imageFilterView = holder.ivImage, isChecked = false, animate = true)
+                        val pos = holder.absoluteAdapterPosition
+                        if (pos >= 0) {
+                            val desc = holder.itemView.context.getString(R.string.gallery_photo_item_desc, pos + 1)
+                            val state = holder.itemView.context.getString(R.string.state_disabled)
+                            holder.itemView.contentDescription = "$desc, $state"
+                        }
                     }
                 }
             }
@@ -90,6 +102,10 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
             return
         }
         val item = getItem(position) ?: return
+        val context = holder.itemView.context
+        val photoIndexDesc = context.getString(R.string.gallery_photo_item_desc, position + 1)
+        val stateText = context.getString(if (item.check) R.string.state_enabled else R.string.state_disabled)
+        holder.itemView.contentDescription = "$photoIndexDesc, $stateText"
 
         // Set click listeners immediately
         holder.itemView.setOnLongClickListener {
@@ -123,6 +139,11 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
                     selectedPosSet.remove(holder.absoluteAdapterPosition)
                 }
                 dataItem.check = isChecked
+                val currentDesc = holder.itemView.context.getString(R.string.gallery_photo_item_desc, holder.absoluteAdapterPosition + 1)
+                val stateTextNew = holder.itemView.context.getString(
+                    if (isChecked) R.string.state_enabled else R.string.state_disabled
+                )
+                holder.itemView.contentDescription = "$currentDesc, $stateTextNew"
             }
 
             // Load image asynchronously

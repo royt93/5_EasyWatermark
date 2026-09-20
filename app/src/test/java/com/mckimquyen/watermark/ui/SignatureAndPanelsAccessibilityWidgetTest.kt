@@ -235,4 +235,59 @@ class SignatureAndPanelsAccessibilityWidgetTest {
         assertThat(rowOpenSource.isClickable).isTrue()
         assertThat(rowOpenSource.layoutParams.height).isAtLeast(48)
     }
+
+    @Test
+    fun galleryFragment_hasAccessibleNavigationAndFab() {
+        val root = LayoutInflater.from(themedContext).inflate(R.layout.f_gallery, null, false)
+        val topAppBar = root.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.topAppBar)
+        val fab = root.findViewById<com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton>(R.id.fab)
+
+        assertThat(topAppBar).isNotNull()
+        assertThat(topAppBar.navigationContentDescription?.toString()).isEqualTo(themedContext.getString(R.string.close))
+
+        assertThat(fab).isNotNull()
+        assertThat(fab.contentDescription?.toString()).isEqualTo(themedContext.getString(R.string.action_pick))
+        assertThat(fab.layoutParams.height).isAtLeast(48)
+    }
+
+    @Test
+    fun recoveryMode_hasAccessibleButtonsWithMinTouchTargets() {
+        val root = LayoutInflater.from(themedContext).inflate(R.layout.a_recovery, null, false)
+        val btnEmail = root.findViewById<MaterialButton>(R.id.btnEmail)
+        val btnStore = root.findViewById<MaterialButton>(R.id.btnStore)
+        val btnCloseRecovery = root.findViewById<MaterialButton>(R.id.btnCloseRecoveryMode)
+
+        assertThat(btnEmail).isNotNull()
+        assertThat(btnEmail.minimumHeight).isAtLeast(48)
+
+        assertThat(btnStore).isNotNull()
+        assertThat(btnStore.minimumHeight).isAtLeast(48)
+
+        assertThat(btnCloseRecovery).isNotNull()
+        assertThat(btnCloseRecovery.layoutParams.height).isAtLeast(48)
+    }
+
+    @Test
+    fun saveFileBottomSheet_hasAccessibleOpenGalleryButtonAndIvDone() {
+        val root = LayoutInflater.from(themedContext).inflate(R.layout.dlg_save_file, null, false)
+        val btnOpenGallery = root.findViewById<MaterialButton>(R.id.btnOpenGallery)
+
+        assertThat(btnOpenGallery).isNotNull()
+        assertThat(btnOpenGallery.minimumHeight).isAtLeast(48)
+
+        val itemSaving = LayoutInflater.from(themedContext).inflate(R.layout.item_saving_image, null, false)
+        val ivDone = itemSaving.findViewById<ImageView>(R.id.ivDone)
+        assertThat(ivDone).isNotNull()
+        assertThat(ivDone.contentDescription?.toString()).isEqualTo(themedContext.getString(R.string.action_save))
+    }
+
+    @Test
+    fun signatureBottomSheet_canvasHasContentDescription() {
+        val parent = FrameLayout(themedContext)
+        val root = LayoutInflater.from(themedContext).inflate(R.layout.f_signature_bottom_sheet, parent, false)
+        val signatureView = root.findViewById<com.mckimquyen.watermark.ui.widget.SignatureView>(R.id.signatureView)
+
+        assertThat(signatureView).isNotNull()
+        assertThat(signatureView.contentDescription?.toString()).isEqualTo(themedContext.getString(R.string.draw_signature))
+    }
 }

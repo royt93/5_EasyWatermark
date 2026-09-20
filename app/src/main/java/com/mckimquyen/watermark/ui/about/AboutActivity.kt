@@ -1,5 +1,6 @@
 package com.mckimquyen.watermark.ui.about
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -164,8 +165,17 @@ class AboutActivity : BaseActivity() {
                 viewModel.toggleBounds(isChecked)
             }
 
-            switchDynamicColor.isChecked = CMonet.isDynamicColorAvailable()
-            AppLog.d(LOG_TAG, "AboutActivity dynamicColor available=${CMonet.isDynamicColorAvailable()}")
+            val isDynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && CMonet.isDynamicColorAvailable()
+            if (isDynamicColorSupported) {
+                switchDynamicColor.isEnabled = true
+                switchDynamicColor.isChecked = CMonet.isDynamicColorAvailable()
+                tvDynamicColorStatus.setText(R.string.dynamic_color_subtitle_supported)
+            } else {
+                switchDynamicColor.isEnabled = false
+                switchDynamicColor.isChecked = false
+                tvDynamicColorStatus.setText(R.string.dynamic_color_subtitle_unsupported)
+            }
+            AppLog.d(LOG_TAG, "AboutActivity dynamicColor supported=$isDynamicColorSupported available=${CMonet.isDynamicColorAvailable()}")
 
             switchDynamicColor.setOnCheckedChangeListener { _, isChecked ->
                 AppLog.d(LOG_TAG, "AboutActivity switchDynamicColor changed -> isChecked=$isChecked — triggering rebirth")

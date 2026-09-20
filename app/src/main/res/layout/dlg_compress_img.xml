@@ -15,8 +15,9 @@
     android:paddingEnd="24dp"
     android:paddingBottom="20dp">
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvTitle"
+        style="@style/TextAppearance.Material3.TitleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/tips_tip_title"
@@ -40,8 +41,9 @@
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         tools:visibility="visible" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvCompressTips"
+        style="@style/TextAppearance.Material3.BodyMedium"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"

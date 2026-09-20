@@ -111,6 +111,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:minHeight="48dp"
                 android:text="@string/send_email"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -120,6 +121,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:minHeight="48dp"
                 android:text="@string/jump_to_store"
                 android:textColor="?attr/colorOnSurfaceVariant" />
         </LinearLayout>

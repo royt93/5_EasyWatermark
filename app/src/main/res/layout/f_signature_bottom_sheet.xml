@@ -15,7 +15,7 @@
         android:layout_width="32dp"
         android:layout_height="4dp"
         android:alpha="0.4"
-        android:background="?attr/colorOnSurfaceVariant"
+        android:background="@drawable/bg_m3_drag_handle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -64,7 +64,8 @@
         <com.mckimquyen.watermark.ui.widget.SignatureView
             android:id="@+id/signatureView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:contentDescription="@string/draw_signature" />
     </com.google.android.material.card.MaterialCardView>
 
     <!-- Save Button -->
@@ -79,8 +80,8 @@
         android:textColor="?attr/colorOnPrimary"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:cornerRadius="16dp"
-        app:elevation="2dp"
+        app:cornerRadius="26dp"
+        app:elevation="0dp"
         app:rippleColor="?attr/colorOnPrimary"
         app:strokeWidth="0dp"
         app:layout_constraintBottom_toBottomOf="parent"

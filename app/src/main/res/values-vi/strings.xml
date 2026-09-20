@@ -130,6 +130,8 @@
     <string name="compressor">Compressor</string>
     <string name="developed_with_by_rosu">Phát triển với ♥ bởi rosu</string>
     <string name="force_open_dynamic_color_support">Bật giao diện Dynamic Color</string>
+    <string name="dynamic_color_subtitle_supported">Tự động đổi màu theo hình nền hệ thống (Material You)</string>
+    <string name="dynamic_color_subtitle_unsupported">Yêu cầu Android 12+ (Thiết bị dùng bảng màu chuẩn Material 3)</string>
     <string name="show_bounds">Hiện khung viền</string>
     <string name="more_apps">Ứng dụng khác</string>
     <string name="you_ll_need_to_close_and_restart_the_app_to_switch_themes">Bạn cần đóng và mở lại ứng dụng để áp dụng chủ đề mới</string>
@@ -260,4 +262,5 @@
     <string name="signature_history_item">Chữ ký đã lưu</string>
     <string name="close">Đóng</string>
     <string name="action_close">Đóng</string>
+    <string name="gallery_photo_item_desc">Ảnh %1$d</string>
 </resources>
