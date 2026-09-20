@@ -98,14 +98,17 @@ class AboutActivity : BaseActivity() {
                 finish()
             }
 
+            tvRating.contentDescription = "${getString(R.string.action_rate_us)}, ${getString(R.string.rate_us_subtitle)}"
             tvRating.setOnClickListener {
                 AppLog.d(LOG_TAG, "AboutActivity tvRating clicked — opening Play Store")
                 openLink(Uri.parse("https://play.google.com/store/apps/details?id=${it.context.packageName}"))
             }
+            tvMoreApp.contentDescription = "${getString(R.string.more_apps)}, ${getString(R.string.more_apps_subtitle)}"
             tvMoreApp.setOnClickListener {
                 AppLog.d(LOG_TAG, "AboutActivity tvMoreApp clicked — opening developer page")
                 openLink(buildMoreAppsUrl("SAIGON PHANTOM LABS"))
             }
+            tvShareApp.contentDescription = "${getString(R.string.share_app)}, ${getString(R.string.share_app_subtitle)}"
             tvShareApp.setOnClickListener {
                 AppLog.d(LOG_TAG, "AboutActivity tvShareApp clicked — opening share sheet")
                 val message = getString(
@@ -119,10 +122,12 @@ class AboutActivity : BaseActivity() {
                 }
                 startActivity(android.content.Intent.createChooser(sendIntent, getString(R.string.share_app)))
             }
+            tvBackupData.contentDescription = "${getString(R.string.backup_data)}, ${getString(R.string.backup_data_subtitle)}"
             tvBackupData.setOnClickListener {
                 AppLog.d(LOG_TAG, "AboutActivity tvBackupData clicked — opening SAF create-document")
                 backupLauncher.launch(getString(R.string.backup_file_name))
             }
+            tvRestoreData.contentDescription = "${getString(R.string.restore_data)}, ${getString(R.string.restore_data_subtitle)}"
             tvRestoreData.setOnClickListener {
                 AppLog.d(LOG_TAG, "AboutActivity tvRestoreData clicked — opening SAF open-document")
                 restoreLauncher.launch(arrayOf("application/zip", "application/octet-stream"))

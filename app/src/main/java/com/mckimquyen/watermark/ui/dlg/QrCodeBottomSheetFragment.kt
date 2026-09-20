@@ -78,6 +78,11 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
 
     private fun refreshPreview(content: String) {
         refreshJob?.cancel()
+        if (content.isBlank()) {
+            previewBitmap = null
+            binding.ivPreview.setImageBitmap(null)
+            return
+        }
         refreshJob = viewLifecycleOwner.lifecycleScope.launch {
             delay(QR_REFRESH_DEBOUNCE_MS)
             val bitmap = withContext(Dispatchers.Default) {

@@ -21,8 +21,8 @@ import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
  */
 class PositionAnchorBottomSheetFragment : BaseBindBSDFragment<FPositionAnchorBottomSheetBinding>() {
 
-    private val anchorButtons by lazy {
-        mapOf(
+    private val anchorButtons
+        get() = mapOf(
             Anchor.TOP_LEFT to binding.btnAnchorTopLeft,
             Anchor.TOP_CENTER to binding.btnAnchorTopCenter,
             Anchor.TOP_RIGHT to binding.btnAnchorTopRight,
@@ -33,6 +33,17 @@ class PositionAnchorBottomSheetFragment : BaseBindBSDFragment<FPositionAnchorBot
             Anchor.BOTTOM_CENTER to binding.btnAnchorBottomCenter,
             Anchor.BOTTOM_RIGHT to binding.btnAnchorBottomRight
         )
+
+    private fun getAnchorNameRes(anchor: Anchor): Int = when (anchor) {
+        Anchor.TOP_LEFT -> R.string.anchor_top_left
+        Anchor.TOP_CENTER -> R.string.anchor_top_center
+        Anchor.TOP_RIGHT -> R.string.anchor_top_right
+        Anchor.CENTER_LEFT -> R.string.anchor_center_left
+        Anchor.CENTER -> R.string.anchor_center
+        Anchor.CENTER_RIGHT -> R.string.anchor_center_right
+        Anchor.BOTTOM_LEFT -> R.string.anchor_bottom_left
+        Anchor.BOTTOM_CENTER -> R.string.anchor_bottom_center
+        Anchor.BOTTOM_RIGHT -> R.string.anchor_bottom_right
     }
 
     override fun bindView(
@@ -66,8 +77,11 @@ class PositionAnchorBottomSheetFragment : BaseBindBSDFragment<FPositionAnchorBot
         binding.slMargin.trackInactiveTintList = android.content.res.ColorStateList.valueOf(inactiveColor)
         binding.slMargin.thumbTintList = android.content.res.ColorStateList.valueOf(activeColor)
 
+        binding.slMargin.contentDescription = getString(R.string.position_anchor_margin)
         binding.slMargin.addOnChangeListener { _, value, fromUser ->
-            binding.tvMarginValue.text = getString(R.string.position_anchor_margin_value, value.toInt())
+            val formatted = getString(R.string.position_anchor_margin_value, value.toInt())
+            binding.tvMarginValue.text = formatted
+            binding.slMargin.contentDescription = "${getString(R.string.position_anchor_margin)}: $formatted"
             if (fromUser) {
                 shareViewModel.updateMarginPercent(value / 100f)
             }
@@ -80,17 +94,25 @@ class PositionAnchorBottomSheetFragment : BaseBindBSDFragment<FPositionAnchorBot
             if (binding.slMargin.value != marginPercentValue) {
                 binding.slMargin.value = marginPercentValue
             }
-            binding.tvMarginValue.text = getString(R.string.position_anchor_margin_value, marginPercentValue.toInt())
+            val formatted = getString(R.string.position_anchor_margin_value, marginPercentValue.toInt())
+            binding.tvMarginValue.text = formatted
+            binding.slMargin.contentDescription = "${getString(R.string.position_anchor_margin)}: $formatted"
         }
     }
 
     private fun highlightAnchor(selected: Anchor) {
         anchorButtons.forEach { (anchor, button) ->
-            setSelected(button, anchor == selected)
+            setSelected(button, anchor, anchor == selected)
         }
     }
 
-    private fun setSelected(button: MaterialButton, selected: Boolean) {
+    private fun setSelected(button: MaterialButton, anchor: Anchor, selected: Boolean) {
+        val baseName = getString(getAnchorNameRes(anchor))
+        button.contentDescription = if (selected) {
+            getString(R.string.anchor_selected_format, baseName)
+        } else {
+            baseName
+        }
         val strokeColor = if (selected) {
             com.google.android.material.color.MaterialColors.getColor(button, com.google.android.material.R.attr.colorPrimary)
         } else {

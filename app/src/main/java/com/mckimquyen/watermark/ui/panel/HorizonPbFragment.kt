@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.FragmentActivity
 import com.google.android.material.slider.Slider
+import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.ui.base.BasePBFragment
@@ -29,6 +30,8 @@ class HorizonPbFragment : BasePBFragment() {
     override fun formatValueTips(config: WaterMark?): String {
         return "${config?.hGap ?: 0} px"
     }
+
+    override fun getSliderTitleRes(): Int = R.string.title_horizon_layout
 
     companion object {
         const val TAG = "HorizonPbFragment"

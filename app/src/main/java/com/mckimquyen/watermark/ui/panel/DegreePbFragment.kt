@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.FragmentActivity
 import com.google.android.material.slider.Slider
+import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.ui.base.BasePBFragment
@@ -28,6 +29,8 @@ class DegreePbFragment : BasePBFragment() {
     override fun formatValueTips(config: WaterMark?): String {
         return "${config?.degree?.toInt() ?: 0}°"
     }
+
+    override fun getSliderTitleRes(): Int = R.string.title_text_rotate
 
     companion object {
         const val TAG = "DegreePbFragment"

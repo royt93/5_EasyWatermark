@@ -90,11 +90,21 @@ class ExifPbFragment : BaseBindBSDFragment<DlgExifBorderBinding>() {
         binding.slideExifBandThickness.trackInactiveTintList = android.content.res.ColorStateList.valueOf(inactiveColor)
         binding.slideExifBandThickness.thumbTintList = android.content.res.ColorStateList.valueOf(activeColor)
 
+        binding.slideExifBandThickness.contentDescription = getString(R.string.exif_customize_band_thickness)
         binding.slideExifBandThickness.addOnChangeListener { _, value, fromUser ->
-            binding.tvExifBandThicknessValue.text = getString(R.string.position_anchor_margin_value, value.toInt())
+            val formatted = getString(R.string.position_anchor_margin_value, value.toInt())
+            binding.tvExifBandThicknessValue.text = formatted
+            binding.slideExifBandThickness.contentDescription = "${getString(R.string.exif_customize_band_thickness)}: $formatted"
             if (fromUser) {
                 shareViewModel.updateExifBandThicknessPercent(value / 100f)
             }
+        }
+
+        binding.flExifBandColor.setOnClickListener {
+            showBandColorPicker()
+        }
+        binding.vExifBandColorSwatch.setOnClickListener {
+            showBandColorPicker()
         }
 
         binding.swExifSerifCaption.setOnCheckedChangeListener { buttonView, isChecked ->

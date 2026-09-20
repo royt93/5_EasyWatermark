@@ -23,8 +23,10 @@ abstract class BasePBFragment : BaseBindFragment<FBasePbBinding>() {
 
         b.slideContentSize.apply {
             value = formatValue(shareViewModel.waterMark.value)
+            contentDescription = getSliderDescription(shareViewModel.waterMark.value)
             addOnChangeListener { slider, value, fromUser ->
                 doOnChange(slider = slider, value = value, fromUser = fromUser)
+                slider.contentDescription = getSliderDescription(shareViewModel.waterMark.value)
             }
         }
 
@@ -41,6 +43,7 @@ abstract class BasePBFragment : BaseBindFragment<FBasePbBinding>() {
         super.onViewCreated(view, savedInstanceState)
         shareViewModel.waterMark.observe(viewLifecycleOwner) {
             binding?.tvProgressVertical?.text = formatValueTips(it)
+            binding?.slideContentSize?.contentDescription = getSliderDescription(it)
         }
     }
 
@@ -75,4 +78,17 @@ abstract class BasePBFragment : BaseBindFragment<FBasePbBinding>() {
     abstract fun formatValue(config: WaterMark?): Float
 
     abstract fun formatValueTips(config: WaterMark?): String
+
+    open fun getSliderTitleRes(): Int = 0
+
+    open fun getSliderTitle(): String {
+        val res = getSliderTitleRes()
+        return if (res != 0) context?.getString(res) ?: "" else ""
+    }
+
+    open fun getSliderDescription(config: WaterMark?): String {
+        val title = getSliderTitle()
+        val tips = formatValueTips(config)
+        return if (title.isNotEmpty()) "$title: $tips" else tips
+    }
 }

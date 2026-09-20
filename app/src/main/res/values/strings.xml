@@ -119,6 +119,16 @@
     <string name="position_anchor_title">Watermark Position</string>
     <string name="position_anchor_margin">Margin from edge</string>
     <string name="position_anchor_margin_value">%d%%</string>
+    <string name="anchor_top_left">Top Left</string>
+    <string name="anchor_top_center">Top Center</string>
+    <string name="anchor_top_right">Top Right</string>
+    <string name="anchor_center_left">Center Left</string>
+    <string name="anchor_center">Center</string>
+    <string name="anchor_center_right">Center Right</string>
+    <string name="anchor_bottom_left">Bottom Left</string>
+    <string name="anchor_bottom_center">Bottom Center</string>
+    <string name="anchor_bottom_right">Bottom Right</string>
+    <string name="anchor_selected_format">%1$s, selected</string>
     <string name="aa">Aa!</string>
     <string name="send_email">Send email</string>
     <string name="send_telegram">Send Telegram</string>

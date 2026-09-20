@@ -110,6 +110,16 @@
     <string name="position_anchor_title">Vị trí watermark</string>
     <string name="position_anchor_margin">Khoảng cách mép</string>
     <string name="position_anchor_margin_value">%d%%</string>
+    <string name="anchor_top_left">Trên trái</string>
+    <string name="anchor_top_center">Trên giữa</string>
+    <string name="anchor_top_right">Trên phải</string>
+    <string name="anchor_center_left">Giữa trái</string>
+    <string name="anchor_center">Ở giữa</string>
+    <string name="anchor_center_right">Giữa phải</string>
+    <string name="anchor_bottom_left">Dưới trái</string>
+    <string name="anchor_bottom_center">Dưới giữa</string>
+    <string name="anchor_bottom_right">Dưới phải</string>
+    <string name="anchor_selected_format">%1$s, đã chọn</string>
     <string name="aa">Aa!</string>
     <string name="send_email">Gửi email</string>
     <string name="send_telegram">Gửi Telegram</string>

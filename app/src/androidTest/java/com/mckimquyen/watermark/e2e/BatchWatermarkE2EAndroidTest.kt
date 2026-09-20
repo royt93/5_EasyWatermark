@@ -192,10 +192,7 @@ class BatchWatermarkE2EAndroidTest {
                 // Feed images to trigger Editor Mode
                 viewModel.updateImageList(listOf(uri1, uri2))
 
-                val launchViewField = MainActivity::class.java.declaredFields.firstOrNull { it.type == LaunchView::class.java }
-                launchViewField?.isAccessible = true
-                val launchView = (launchViewField?.get(activity) as? LaunchView)
-                    ?: activity.findViewById(android.R.id.content)
+                val launchView = activity.launchView
 
                 // Transition to editor
                 launchView.toEditorMode()
@@ -216,9 +213,6 @@ class BatchWatermarkE2EAndroidTest {
                 // Select Layout Tab
                 launchView.tabLayout.getTabAt(2)?.select()
                 assertThat(launchView.tabLayout.selectedTabPosition).isEqualTo(2)
-
-                // Transition back to Launch Mode cleanly
-                launchView.toLaunchMode()
             }
         }
     }

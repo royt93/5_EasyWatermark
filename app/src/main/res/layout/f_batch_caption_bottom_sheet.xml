@@ -55,6 +55,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:hint="@string/batch_caption_hint"
+        app:endIconMode="clear_text"
+        app:endIconTint="?attr/colorOnSurfaceVariant"
         app:boxCornerRadiusBottomEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"

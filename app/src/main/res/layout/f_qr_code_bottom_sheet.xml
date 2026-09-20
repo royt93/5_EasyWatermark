@@ -41,6 +41,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:hint="@string/qr_code_hint"
+        app:endIconMode="clear_text"
+        app:endIconTint="?attr/colorOnSurfaceVariant"
         app:boxCornerRadiusBottomEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
@@ -56,6 +58,7 @@
             android:id="@+id/etContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:inputType="textUri|textMultiLine"
             android:maxLines="3"
             android:textColor="?attr/colorOnSurface" />

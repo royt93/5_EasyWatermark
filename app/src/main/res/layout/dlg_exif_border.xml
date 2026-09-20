@@ -87,6 +87,7 @@
                 android:id="@+id/swExif"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:contentDescription="@string/leica_exif_border"
                 android:layout_marginStart="16dp" />
 
         </LinearLayout>
@@ -122,7 +123,8 @@
                     android:id="@+id/btnStyleClassic"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="40dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
                     android:layout_marginEnd="8dp"
                     android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_classic"
@@ -136,7 +138,8 @@
                     android:id="@+id/btnStylePolaroid"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="40dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
                     android:layout_marginEnd="8dp"
                     android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_polaroid"
@@ -150,7 +153,8 @@
                     android:id="@+id/btnStyleFilmStrip"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="40dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
                     android:layout_marginEnd="8dp"
                     android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_film_strip"
@@ -164,7 +168,8 @@
                     android:id="@+id/btnStyleMinimal"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="40dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
                     android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_minimal"
                     android:textColor="?attr/colorOnSurface"
@@ -206,7 +211,11 @@
                 android:id="@+id/tvExifCustomizeReset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="4dp"
+                android:minHeight="48dp"
+                android:gravity="center_vertical"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:text="@string/exif_customize_reset"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="13sp" />
@@ -228,11 +237,22 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp" />
 
-            <View
-                android:id="@+id/vExifBandColorSwatch"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="@drawable/bg_color_swatch" />
+            <FrameLayout
+                android:id="@+id/flExifBandColor"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="@string/exif_customize_band_color"
+                android:background="?attr/selectableItemBackgroundBorderless">
+
+                <View
+                    android:id="@+id/vExifBandColorSwatch"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_color_swatch" />
+            </FrameLayout>
 
         </LinearLayout>
 
@@ -266,7 +286,8 @@
             style="@style/MySeekBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:focusable="false"
+            android:contentDescription="@string/exif_customize_band_thickness"
+            android:focusable="true"
             android:stepSize="1"
             android:valueFrom="4"
             android:valueTo="30"
@@ -290,7 +311,8 @@
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/swExifSerifCaption"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/exif_customize_serif_caption" />
 
         </LinearLayout>
 

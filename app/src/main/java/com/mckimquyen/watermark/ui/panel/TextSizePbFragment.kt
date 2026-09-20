@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.FragmentActivity
 import com.google.android.material.slider.Slider
+import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.ui.base.BasePBFragment
@@ -31,6 +32,8 @@ class TextSizePbFragment : BasePBFragment() {
             .coerceAtMost(WaterMarkRepository.MAX_TEXT_SIZE)
         return "${size.toInt()} sp"
     }
+
+    override fun getSliderTitleRes(): Int = R.string.title_text_size
 
     companion object {
         const val TAG = "TextSizePbFragment"

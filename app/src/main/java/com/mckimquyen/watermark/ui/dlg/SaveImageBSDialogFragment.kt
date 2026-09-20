@@ -211,9 +211,12 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 trackInactiveTintList = android.content.res.ColorStateList.valueOf(inactiveColor)
                 thumbTintList = android.content.res.ColorStateList.valueOf(activeColor)
                 value = compressLevel
+                val baseDesc = getString(R.string.dialog_save_config_quality)
+                contentDescription = "$baseDesc: ${compressLevel.toInt()}"
                 addOnChangeListener { _, value, _ ->
                     shareViewModel.saveOutput(shareViewModel.outputFormat, value.toInt())
                     tvQualityValue.text = value.toInt().toString()
+                    contentDescription = "$baseDesc: ${value.toInt()}"
                 }
             }
 
