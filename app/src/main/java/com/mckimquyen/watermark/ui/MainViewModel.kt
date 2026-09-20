@@ -63,7 +63,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val userRepo: UserConfigRepository,
-    private val waterMarkRepo: WaterMarkRepository,
+    internal val waterMarkRepo: WaterMarkRepository,
     private val memorySettingRepo: MemorySettingRepo,
     private val templateRepo: TemplateRepository,
     private val exportNaming: com.mckimquyen.watermark.export.ExportNaming = com.mckimquyen.watermark.export.ExportNaming(),

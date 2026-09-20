@@ -52,6 +52,7 @@ class SignatureBottomSheetFragment : BaseBindBSDFragment<FSignatureBottomSheetBi
     }
 
     internal fun saveBitmapToCache(bitmap: Bitmap): Uri? {
+        if (bitmap.isRecycled) return null
         return try {
             val cachePath = File(requireContext().cacheDir, "signatures")
             cachePath.mkdirs()

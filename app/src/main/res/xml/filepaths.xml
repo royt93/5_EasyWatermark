@@ -6,6 +6,9 @@
     <cache-path
         name="qr_codes"
         path="qrcodes/" />
+    <cache-path
+        name="signature_cache"
+        path="signatures/" />
     <external-path
         name="my_external_dir"
         path="Pictures/EasyWaterMark/" />

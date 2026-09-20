@@ -96,6 +96,7 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
     }
 
     internal fun saveBitmapToCache(bitmap: Bitmap): Uri? {
+        if (bitmap.isRecycled) return null
         return try {
             val cachePath = File(requireContext().cacheDir, "qrcodes")
             cachePath.mkdirs()

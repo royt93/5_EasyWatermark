@@ -91,6 +91,8 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                         MainViewModel.TYPE_SAVING -> shareViewModel.cancelSaveImage()
                         else -> {
                             shareViewModel.saveCopyright(etCopyright.text?.toString().orEmpty().trim())
+                            // BUG-32: Lưu pattern tên file ngay khi bấm Export (không phụ thuộc blur/mất focus của etOutputName)
+                            shareViewModel.saveOutputNamePattern(etOutputName.text?.toString().orEmpty().trim())
                             requireActivity().preCheckStoragePermission {
                                 shareViewModel.saveImage(
                                     requireActivity().contentResolver,
@@ -264,12 +266,15 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             }
 
             MainViewModel.TYPE_JOB_FINISH -> {
+                // BUG-33: Kiểm tra xem có ít nhất 1 ảnh thành công (shareUri != null) hay không
+                val successfulList = shareViewModel.imageList.value?.first?.filter { it.shareUri != null } ?: emptyList()
+                val hasSuccess = successfulList.isNotEmpty()
                 binding.btnSave.apply {
-                    isEnabled = true
+                    isEnabled = hasSuccess
                     text = getString(R.string.share)
                 }
                 TransitionManager.beginDelayedTransition(binding.root, AutoTransition())
-                binding.btnOpenGallery.isInvisible = false
+                binding.btnOpenGallery.isInvisible = !hasSuccess
                 binding.atvFormat.isEnabled = true
                 binding.slideQuality.isEnabled = true
                 binding.menuFormat.isEnabled = true
@@ -298,50 +303,61 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     }
 
     private fun openGallery() {
-        val list = shareViewModel.imageList.value?.first
-        if (list.isNullOrEmpty()) return
-        val outputUri = list.first().shareUri
+        // BUG-33: Tìm ảnh thành công ĐẦU TIÊN (có shareUri != null), không lấy index 0 thô
+        val list = shareViewModel.imageList.value?.first ?: return
+        val successfulItem = list.firstOrNull { it.shareUri != null } ?: run {
+            Toast.makeText(requireContext(), R.string.save_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val outputUri = successfulItem.shareUri ?: return
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(outputUri, "image/*")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        startActivity(intent)
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(requireContext(), R.string.share_error, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun openShare() {
-        val list = ArrayList(shareViewModel.imageList.value?.first ?: emptyList())
-        if (list.isEmpty()) return
+        // BUG-33: Chỉ lấy các ảnh có shareUri hợp lệ; nếu toàn bộ batch fail thì không mở intent rỗng
+        val list = shareViewModel.imageList.value?.first ?: emptyList()
+        val successfulUris = ArrayList(list.mapNotNull { it.shareUri })
+        if (successfulUris.isEmpty()) {
+            Toast.makeText(requireContext(), R.string.save_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
         val intent = Intent().apply {
             type = "image/*"
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
-        if (list.size == 1) {
-            val outputUri = list.first().shareUri
+        if (successfulUris.size == 1) {
+            val outputUri = successfulUris.first()
             intent.apply {
                 action = Intent.ACTION_SEND
                 putExtra(Intent.EXTRA_STREAM, outputUri)
                 clipData = android.content.ClipData.newUri(requireContext().contentResolver, "Image", outputUri)
             }
         } else {
-            val uriList = ArrayList(list.mapNotNull { it.shareUri })
-            if (uriList.isNotEmpty()) {
-                intent.apply {
-                    action = Intent.ACTION_SEND_MULTIPLE
-                    putParcelableArrayListExtra(Intent.EXTRA_STREAM, uriList)
-                    val clipData = android.content.ClipData("Images", arrayOf("image/*"), android.content.ClipData.Item(uriList[0]))
-                    for (i in 1 until uriList.size) {
-                        clipData.addItem(android.content.ClipData.Item(uriList[i]))
-                    }
-                    this.clipData = clipData
+            intent.apply {
+                action = Intent.ACTION_SEND_MULTIPLE
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, successfulUris)
+                val clipData = android.content.ClipData("Images", arrayOf("image/*"), android.content.ClipData.Item(successfulUris[0]))
+                for (i in 1 until successfulUris.size) {
+                    clipData.addItem(android.content.ClipData.Item(successfulUris[i]))
                 }
+                this.clipData = clipData
             }
         }
         try {
             startActivity(intent)
-        } catch (e: SecurityException) {
+        } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(
                 requireContext(),
@@ -350,6 +366,15 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             ).show()
         }
     }
+
+    @androidx.annotation.VisibleForTesting
+    internal fun performOpenGallery() = openGallery()
+
+    @androidx.annotation.VisibleForTesting
+    internal fun performOpenShare() = openShare()
+
+    @androidx.annotation.VisibleForTesting
+    internal fun performSetUpLoadingView(result: Result<*>?) = setUpLoadingView(result)
 
     companion object {
 

@@ -145,22 +145,38 @@ class SaveImageListAdapter(
         holder.showPreviewInfo(null)
         holder.previewJob = scope.launch {
             val result = generatePreview(info, position)
-            if (!isActive || holder.itemView.tag != info.uri || result == null) {
+            if (!isActive || holder.itemView.tag != info.uri) {
                 // ENH-32: holder đã bị tái sử dụng cho uri khác hoặc job bị huỷ — recycle bitmap mồ côi
                 // ngay lập tức thay vì đợi GC, tránh tích luỹ RAM khi cuộn nhanh batch lớn.
-                result?.bitmap?.takeIf { !it.isRecycled }?.recycle()
+                if (result is BatchExportEngine.PreviewResult.Success) {
+                    result.bitmap.takeIf { !it.isRecycled }?.recycle()
+                }
                 return@launch
             }
-            holder.ivIcon.setImageBitmap(result.bitmap)
-            val (dimensions, bytes) = estimateOutput(result.approxOriginalWidth, result.approxOriginalHeight)
-            holder.showPreviewInfo(
-                context.getString(
-                    R.string.dialog_save_export_estimate,
-                    dimensions.first,
-                    dimensions.second,
-                    Formatter.formatShortFileSize(context, bytes)
-                )
-            )
+            when (result) {
+                is BatchExportEngine.PreviewResult.Success -> {
+                    holder.ready()
+                    holder.ivIcon.setImageBitmap(result.bitmap)
+                    val (dimensions, bytes) = estimateOutput(result.approxOriginalWidth, result.approxOriginalHeight)
+                    holder.showPreviewInfo(
+                        context.getString(
+                            R.string.dialog_save_export_estimate,
+                            dimensions.first,
+                            dimensions.second,
+                            Formatter.formatShortFileSize(context, bytes)
+                        )
+                    )
+                }
+
+                is BatchExportEngine.PreviewResult.DecodeFailure -> {
+                    // ENH-35: Phản ánh rõ ảnh lỗi/không đọc được ngay trong grid preview trước khi export thật
+                    holder.showDecodeError(context.getString(R.string.save_failed))
+                }
+
+                null -> {
+                    holder.showPreviewInfo(null)
+                }
+            }
         }
     }
 
@@ -237,6 +253,13 @@ class SaveImageListAdapter(
         fun failed() {
             ivIcon.failed()
             ivDone.disappear()
+        }
+
+        /** ENH-35: Hiển thị icon lỗi và thanh failedColor khi decode ảnh preview thất bại (ảnh hỏng/đã xoá). */
+        fun showDecodeError(errorText: String) {
+            failed()
+            ivIcon.setImageResource(R.drawable.baseline_error_24)
+            showPreviewInfo(errorText)
         }
 
         /** FEAT-07: `null` ẩn overlay (chưa render xong preview) — tránh hiện text ước tính của item cũ bị tái sử dụng. */

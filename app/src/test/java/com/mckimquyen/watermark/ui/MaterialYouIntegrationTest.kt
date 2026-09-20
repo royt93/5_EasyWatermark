@@ -20,16 +20,9 @@ import org.robolectric.annotation.Config
 @Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
 class MaterialYouIntegrationTest {
 
-    class TestHostingActivity : FragmentActivity() {
-        override fun onCreate(savedInstanceState: android.os.Bundle?) {
-            setTheme(R.style.Theme_MyApp)
-            super.onCreate(savedInstanceState)
-        }
-    }
-
     @Test
     fun saveImageBSDialogFragment_showsAndAppliesM3BottomSheetTheme() {
-        val controller = Robolectric.buildActivity(TestHostingActivity::class.java).setup()
+        val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
         val activity = controller.get()
         shadowOf(Looper.getMainLooper()).idle()
 
@@ -54,7 +47,7 @@ class MaterialYouIntegrationTest {
 
     @Test
     fun positionAnchorBottomSheet_showsAndAppliesM3Theme() {
-        val controller = Robolectric.buildActivity(TestHostingActivity::class.java).setup()
+        val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
         val activity = controller.get()
         shadowOf(Looper.getMainLooper()).idle()
 

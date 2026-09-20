@@ -46,7 +46,7 @@ class BatchExportEnginePreviewRoboTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertThat(result).isNotNull()
-        assertThat(result!!.bitmap.isRecycled).isFalse()
+        assertThat(result!!.bitmap!!.isRecycled).isFalse()
         // Robolectric shadow BitmapFactory decode mọi uri thành bitmap giả 100x100 mặc định —
         // preview không downsample thêm (100 < PREVIEW_MAX_SIZE) nên approx == kích thước decode.
         assertThat(result.approxOriginalWidth).isEqualTo(100)

@@ -456,13 +456,34 @@ class BatchExportEngine @Inject constructor(
             }
         }
 
-    /** FEAT-07: kết quả preview NHẸ cho 1 ảnh trong grid xem trước batch. */
-    data class PreviewResult(
-        val bitmap: Bitmap,
-        /** Kích thước ảnh gốc ước lượng lại từ inSampleSize (bitmap đã decode ở size nhỏ hơn). */
-        val approxOriginalWidth: Int,
+    /** FEAT-07 & ENH-35: kết quả preview NHẸ cho 1 ảnh trong grid xem trước batch. */
+    sealed interface PreviewResult {
+        val approxOriginalWidth: Int
         val approxOriginalHeight: Int
-    )
+        val bitmap: Bitmap?
+            get() = (this as? Success)?.bitmap
+
+        data class Success(
+            override val bitmap: Bitmap,
+            override val approxOriginalWidth: Int,
+            override val approxOriginalHeight: Int
+        ) : PreviewResult
+
+        data class DecodeFailure(
+            val error: Throwable? = null,
+            val message: String? = null,
+            override val approxOriginalWidth: Int = 0,
+            override val approxOriginalHeight: Int = 0
+        ) : PreviewResult
+
+        companion object {
+            operator fun invoke(
+                bitmap: Bitmap,
+                approxOriginalWidth: Int,
+                approxOriginalHeight: Int
+            ): Success = Success(bitmap, approxOriginalWidth, approxOriginalHeight)
+        }
+    }
 
     /**
      * FEAT-07: render watermark preview NHẸ cho grid xem trước cả batch — KHÔNG ghi MediaStore,
@@ -480,7 +501,7 @@ class BatchExportEngine @Inject constructor(
         imageInfo: ImageInfo,
         config: WaterMark,
         index: Int
-    ): PreviewResult? = withContext(Dispatchers.IO) {
+    ): PreviewResult = withContext(Dispatchers.IO) {
         val decodeResult = decodeSampledBitmapFromResource(
             appContext,
             contentResolver,
@@ -488,11 +509,16 @@ class BatchExportEngine @Inject constructor(
             PREVIEW_MAX_SIZE,
             PREVIEW_MAX_SIZE
         )
-        val bitmapValue = decodeResult.data ?: return@withContext null
+        val bitmapValue = decodeResult.data
+        if (decodeResult.isFailure() || bitmapValue == null) {
+            // ENH-35: Báo rõ DecodeFailure thay vì null im lặng để UI hiển thị badge/icon lỗi
+            return@withContext PreviewResult.DecodeFailure(message = decodeResult.message)
+        }
         bitmapValue.retain()
         try {
-            val srcBitmap = bitmapValue.bitmap ?: return@withContext null
-            val mutableBitmap = srcBitmap.copy(Bitmap.Config.ARGB_8888, true) ?: return@withContext null
+            val srcBitmap = bitmapValue.bitmap ?: return@withContext PreviewResult.DecodeFailure()
+            val mutableBitmap = srcBitmap.copy(Bitmap.Config.ARGB_8888, true)
+                ?: return@withContext PreviewResult.DecodeFailure()
             val approxOriginalWidth = mutableBitmap.width * bitmapValue.inSampleSize
             val approxOriginalHeight = mutableBitmap.height * bitmapValue.inSampleSize
 
@@ -500,7 +526,7 @@ class BatchExportEngine @Inject constructor(
             // với generateImage(), không tự suy diễn lại rule.
             val baseText = resolveBaseText(imageInfo, config)
             if (shouldSkipTextWatermark(config.markMode, baseText)) {
-                return@withContext PreviewResult(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
+                return@withContext PreviewResult.Success(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
             }
 
             val previewInfo = imageInfo.copy(
@@ -532,7 +558,7 @@ class BatchExportEngine @Inject constructor(
                     val iconValue = iconResult.data
                     val iconBitmap = iconValue?.bitmap
                     if (iconValue == null || iconBitmap == null) {
-                        return@withContext PreviewResult(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
+                        return@withContext PreviewResult.Success(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
                     }
                     iconValue.retain()
                     try {
@@ -567,12 +593,12 @@ class BatchExportEngine @Inject constructor(
             } else {
                 canvas.drawRect(0f, 0f, mutableBitmap.width.toFloat(), mutableBitmap.height.toFloat(), layoutPaint)
             }
-            PreviewResult(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
+            PreviewResult.Success(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
         } catch (ce: CancellationException) {
             throw ce
         } catch (e: Exception) {
             e.printStackTrace()
-            null
+            PreviewResult.DecodeFailure(e)
         } finally {
             bitmapValue.release()
         }

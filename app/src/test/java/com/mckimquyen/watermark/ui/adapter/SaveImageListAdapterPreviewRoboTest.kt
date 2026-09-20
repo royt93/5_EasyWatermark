@@ -86,6 +86,22 @@ class SaveImageListAdapterPreviewRoboTest {
     }
 
     @Test
+    fun bind_previewDecodeFailure_showsErrorStateAndFailedBadge() {
+        val adapter = SaveImageListAdapter(
+            context = context,
+            scope = CoroutineScope(Dispatchers.Unconfined),
+            generatePreview = { _, _ -> BatchExportEngine.PreviewResult.DecodeFailure(java.io.IOException("file deleted")) },
+            estimateOutput = { w, h -> (w to h) to 0L }
+        )
+        adapter.submitList(listOf(ImageInfo(Uri.parse("content://media/broken"))))
+
+        val holder = createBoundHolder(adapter, 0)
+
+        assertThat(tvPreviewInfo(holder).isVisible).isTrue()
+        assertThat(tvPreviewInfo(holder).text.toString()).isEqualTo(context.getString(R.string.save_failed))
+    }
+
+    @Test
     fun rebind_samePayloadUri_doesNotRegeneratePreview() {
         var generatePreviewCallCount = 0
         val adapter = SaveImageListAdapter(

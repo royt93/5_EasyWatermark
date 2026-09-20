@@ -36,6 +36,15 @@ class SignatureBottomSheetFragmentSaveCacheRoboTest {
         return fragment
     }
 
+    @org.junit.Before
+    fun resetFileProviderCache() {
+        try {
+            val field = androidx.core.content.FileProvider::class.java.getDeclaredField("sCache")
+            field.isAccessible = true
+            (field.get(null) as? java.util.Map<*, *>)?.clear()
+        } catch (_: Exception) {}
+    }
+
     @Test
     fun saveBitmapToCache_validBitmap_savesFileAndReturnsUri() {
         val fragment = launchFragment()
