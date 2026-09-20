@@ -25,6 +25,8 @@ import com.mckimquyen.watermark.ui.widget.ProgressImageView
 import com.mckimquyen.watermark.utils.ktx.appear
 import com.mckimquyen.watermark.utils.ktx.disappear
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 /**
@@ -131,14 +133,24 @@ class SaveImageListAdapter(
         // + shader tốn kém mỗi lần. `itemView.tag` vừa là khoá "đã render/đang render uri nào" vừa
         // là guard chống set nhầm bitmap vào ViewHolder đã bị RecyclerView tái dùng cho item khác.
         if (holder.itemView.tag == info.uri) return
+
+        // ENH-32: huỷ job render trước đó của holder này nếu đang chạy dở cho ảnh khác
+        holder.previewJob?.cancel()
+        holder.previewJob = null
+
         Glide.with(context)
             .load(info.uri)
             .into(holder.ivIcon)
         holder.itemView.tag = info.uri
         holder.showPreviewInfo(null)
-        scope.launch {
+        holder.previewJob = scope.launch {
             val result = generatePreview(info, position)
-            if (holder.itemView.tag != info.uri || result == null) return@launch
+            if (!isActive || holder.itemView.tag != info.uri || result == null) {
+                // ENH-32: holder đã bị tái sử dụng cho uri khác hoặc job bị huỷ — recycle bitmap mồ côi
+                // ngay lập tức thay vì đợi GC, tránh tích luỹ RAM khi cuộn nhanh batch lớn.
+                result?.bitmap?.takeIf { !it.isRecycled }?.recycle()
+                return@launch
+            }
             holder.ivIcon.setImageBitmap(result.bitmap)
             val (dimensions, bytes) = estimateOutput(result.approxOriginalWidth, result.approxOriginalHeight)
             holder.showPreviewInfo(
@@ -150,6 +162,15 @@ class SaveImageListAdapter(
                 )
             )
         }
+    }
+
+    override fun onViewRecycled(holder: ImageHolder) {
+        super.onViewRecycled(holder)
+        // ENH-32: ViewHolder bị RecyclerView thu hồi vào pool (cuộn khỏi màn hình) — huỷ ngay
+        // preview job đang chạy để không tốn CPU/RAM vô ích.
+        holder.previewJob?.cancel()
+        holder.previewJob = null
+        holder.itemView.tag = null
     }
 
     override fun getItemCount(): Int {
@@ -195,6 +216,8 @@ class SaveImageListAdapter(
     }
 
     class ImageHolder(itemView: View) : BaseViewHolder(itemView) {
+        var previewJob: Job? = null
+
         fun ready() {
             ivIcon.ready()
             ivDone.animate().cancel()

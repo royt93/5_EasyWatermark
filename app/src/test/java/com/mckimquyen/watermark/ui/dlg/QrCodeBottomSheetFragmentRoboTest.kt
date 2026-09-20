@@ -94,4 +94,27 @@ class QrCodeBottomSheetFragmentRoboTest {
         awaitPreviewGenerated(fragment)
         assertThat(previewDrawableIsSet(fragment)).isTrue()
     }
+
+    @Test
+    fun saveBitmapToCache_prunesOldQrTempFiles() {
+        val fragment = launchFragment()
+        val cacheDir = java.io.File(fragment.requireContext().cacheDir, "qrcodes")
+        cacheDir.mkdirs()
+
+        // Tạo sẵn 5 file QR cũ
+        for (i in 1..5) {
+            val oldFile = java.io.File(cacheDir, "qr_temp_$i.png")
+            oldFile.writeText("fake qr $i")
+            oldFile.setLastModified(1000L * i)
+        }
+        assertThat(cacheDir.listFiles()?.filter { it.name.contains("_temp_") }?.size).isEqualTo(5)
+
+        val bmp = android.graphics.Bitmap.createBitmap(20, 20, android.graphics.Bitmap.Config.ARGB_8888)
+        val uri = fragment.saveBitmapToCache(bmp)
+
+        assertThat(uri).isNotNull()
+        val remaining = cacheDir.listFiles()?.filter { it.name.contains("_temp_") } ?: emptyList()
+        // ENH-29: Giữ tối đa 3 file cũ mới nhất + 1 file mới tạo = tối đa 4
+        assertThat(remaining.size).isAtMost(4)
+    }
 }

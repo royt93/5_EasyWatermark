@@ -20,6 +20,7 @@ import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.FQrCodeBottomSheetBinding
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
+import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.QrCodeGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -94,10 +95,12 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
         }
     }
 
-    private fun saveBitmapToCache(bitmap: Bitmap): Uri? {
+    internal fun saveBitmapToCache(bitmap: Bitmap): Uri? {
         return try {
             val cachePath = File(requireContext().cacheDir, "qrcodes")
             cachePath.mkdirs()
+            // ENH-29: Dọn dẹp các file QR tạm cũ (giữ tối đa 3 file gần nhất, xoá file > 24h)
+            FileUtils.cleanOldTempFiles(cachePath, maxRetainedFiles = 3)
             val file = File(cachePath, "qr_temp_${System.currentTimeMillis()}.png")
             FileOutputStream(file).use { fos ->
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)

@@ -92,6 +92,9 @@ object BitmapCache {
             }
         }
 
+        @androidx.annotation.VisibleForTesting
+        internal fun getRefCount(): Int = refCount.get()
+
         internal fun markEvictedAndRecycleIfUnused() {
             evictedFromCache.set(true)
             if (refCount.get() <= 0) {

@@ -108,4 +108,66 @@ class SaveImageListAdapterPreviewRoboTest {
 
         assertThat(generatePreviewCallCount).isEqualTo(1)
     }
+
+    @Test
+    fun onViewRecycled_cancelsOngoingPreviewJobAndClearsTag() {
+        val completer = kotlinx.coroutines.CompletableDeferred<BatchExportEngine.PreviewResult?>()
+        val adapter = SaveImageListAdapter(
+            context = context,
+            scope = CoroutineScope(Dispatchers.Default),
+            generatePreview = { _, _ -> completer.await() },
+            estimateOutput = { w, h -> (w to h) to 1L }
+        )
+        adapter.submitList(listOf(ImageInfo(Uri.parse("content://media/a"))))
+        val holder = createBoundHolder(adapter, 0)
+
+        assertThat(holder.previewJob).isNotNull()
+        assertThat(holder.previewJob?.isActive).isTrue()
+
+        adapter.onViewRecycled(holder)
+
+        assertThat(holder.previewJob).isNull()
+        assertThat(holder.itemView.tag).isNull()
+        completer.complete(null)
+    }
+
+    @Test
+    fun rebind_differentUriWhileGenerating_cancelsOldJobAndRecyclesOrphanBitmap() = kotlinx.coroutines.runBlocking {
+        val orphanBitmap = previewBitmap()
+        val completer = kotlinx.coroutines.CompletableDeferred<BatchExportEngine.PreviewResult?>()
+
+        val adapter = SaveImageListAdapter(
+            context = context,
+            scope = CoroutineScope(Dispatchers.Default),
+            generatePreview = { info, _ ->
+                if (info.uri == Uri.parse("content://media/a")) {
+                    completer.await()
+                } else {
+                    BatchExportEngine.PreviewResult(previewBitmap(), 200, 200)
+                }
+            },
+            estimateOutput = { w, h -> (w to h) to 1L }
+        )
+        adapter.submitList(listOf(
+            ImageInfo(Uri.parse("content://media/a")),
+            ImageInfo(Uri.parse("content://media/b"))
+        ))
+
+        val holder = createBoundHolder(adapter, 0)
+        val oldJob = holder.previewJob
+        assertThat(oldJob?.isActive).isTrue()
+
+        // Rebind holder sang ảnh "b" trong khi "a" vẫn đang pending
+        adapter.onBindViewHolder(holder, 1)
+
+        assertThat(oldJob?.isCancelled).isTrue()
+        assertThat(holder.itemView.tag).isEqualTo(Uri.parse("content://media/b"))
+
+        // Bây giờ cho completer của "a" trả về orphanBitmap
+        completer.complete(BatchExportEngine.PreviewResult(orphanBitmap, 100, 100))
+
+        // Chờ coroutine "a" kết thúc và thực hiện recycle
+        oldJob?.join()
+        assertThat(orphanBitmap.isRecycled).isTrue()
+    }
 }

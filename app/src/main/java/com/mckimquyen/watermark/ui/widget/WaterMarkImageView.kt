@@ -418,11 +418,38 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
     }
 
     fun reset() {
+        // BUG-28: giống onDetachedFromWindow(), khi MainActivity.resetView() gọi reset() để quay về
+        // LaunchMode (View không bị detach), phải release refcount của mainImageBitmapValue và
+        // iconBitmapValue để BitmapCache không tích luỹ bitmap mồ côi giữ refCount > 0.
+        generateBitmapJob?.cancel()
+        mainImageBitmapValue?.release()
+        mainImageBitmapValue = null
+        iconBitmapValue?.release()
+        iconBitmapValue = null
+        iconBitmap = null
+        layoutShader = null
+        layoutPaint.shader = null
         curImageInfo = ImageInfo(Uri.EMPTY)
         localIconUri = Uri.EMPTY
         setImageBitmap(null)
         setBackgroundColor(Color.TRANSPARENT)
         decodedUri = Uri.EMPTY
+    }
+
+    @androidx.annotation.VisibleForTesting
+    internal fun getMainImageBitmapValue(): BitmapCache.BitmapValue? = mainImageBitmapValue
+
+    @androidx.annotation.VisibleForTesting
+    internal fun getIconBitmapValue(): BitmapCache.BitmapValue? = iconBitmapValue
+
+    @androidx.annotation.VisibleForTesting
+    internal fun setMainImageBitmapValueForTesting(value: BitmapCache.BitmapValue?) {
+        mainImageBitmapValue = value
+    }
+
+    @androidx.annotation.VisibleForTesting
+    internal fun setIconBitmapValueForTesting(value: BitmapCache.BitmapValue?) {
+        iconBitmapValue = value
     }
 
     /**

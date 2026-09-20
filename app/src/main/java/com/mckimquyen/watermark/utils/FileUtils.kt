@@ -60,5 +60,36 @@ class FileUtils {
             val mimeType = getFileTypeFromUri(resolver, uri)
             return isImage(mimeType)
         }
+
+        /**
+         * ENH-29: Dọn dẹp các file cache tạm (*_temp_*) để tránh tích luỹ rác không giới hạn.
+         * Giữ lại tối đa [maxRetainedFiles] file mới nhất và xoá các file cũ hơn [maxAgeMs].
+         *
+         * @return Số lượng file đã được xoá thành công.
+         */
+        @JvmStatic
+        fun cleanOldTempFiles(
+            directory: java.io.File,
+            maxRetainedFiles: Int = 3,
+            maxAgeMs: Long = 24 * 60 * 60 * 1000L,
+            nowMs: Long = System.currentTimeMillis()
+        ): Int {
+            if (!directory.exists() || !directory.isDirectory) return 0
+            val files = directory.listFiles() ?: return 0
+            val tempFiles = files.filter { it.isFile && it.name.contains("_temp_") }
+                .sortedByDescending { it.lastModified() }
+
+            var deletedCount = 0
+            tempFiles.forEachIndexed { index, file ->
+                val isOld = (nowMs - file.lastModified()) > maxAgeMs
+                val exceedsRetainedCount = index >= maxRetainedFiles
+                if (isOld || exceedsRetainedCount) {
+                    if (file.delete()) {
+                        deletedCount++
+                    }
+                }
+            }
+            return deletedCount
+        }
     }
 }

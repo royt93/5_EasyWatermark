@@ -12,6 +12,7 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentManager
 import com.mckimquyen.watermark.databinding.FSignatureBottomSheetBinding
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
+import com.mckimquyen.watermark.utils.FileUtils
 import java.io.File
 import java.io.FileOutputStream
 
@@ -50,14 +51,17 @@ class SignatureBottomSheetFragment : BaseBindBSDFragment<FSignatureBottomSheetBi
         }
     }
 
-    private fun saveBitmapToCache(bitmap: Bitmap): Uri? {
+    internal fun saveBitmapToCache(bitmap: Bitmap): Uri? {
         return try {
             val cachePath = File(requireContext().cacheDir, "signatures")
             cachePath.mkdirs()
+            // ENH-29: Dọn dẹp các file chữ ký tạm cũ (giữ tối đa 3 file gần nhất, xoá file > 24h)
+            FileUtils.cleanOldTempFiles(cachePath, maxRetainedFiles = 3)
             val file = File(cachePath, "sig_temp_${System.currentTimeMillis()}.png")
-            val fos = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-            fos.close()
+            // ENH-28: Dùng .use {} để đảm bảo đóng FileOutputStream kể cả khi compress() ném Exception
+            FileOutputStream(file).use { fos ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+            }
             FileProvider.getUriForFile(requireContext(), "${requireContext().packageName}.fileprovider", file)
         } catch (e: Exception) {
             e.printStackTrace()
