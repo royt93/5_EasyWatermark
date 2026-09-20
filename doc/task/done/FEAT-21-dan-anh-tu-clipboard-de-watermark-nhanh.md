@@ -5,6 +5,14 @@ effort: S
 sources: Claude
 files:
   - app/src/main/java/com/mckimquyen/watermark/ui/MainActivity.kt
+  - app/src/main/java/com/mckimquyen/watermark/ui/widget/LaunchView.kt
+  - app/src/main/java/com/mckimquyen/watermark/utils/ClipboardImageHelper.kt
+  - app/src/main/java/com/mckimquyen/watermark/utils/FileUtils.kt
+  - app/src/main/res/menu/menu.xml
+  - app/src/main/res/values/strings.xml
+  - app/src/main/res/values-vi/strings.xml
+  - app/src/test/java/com/mckimquyen/watermark/utils/ClipboardImageHelperTest.kt
+  - app/src/test/java/com/mckimquyen/watermark/ui/MainActivityPasteClipboardRoboTest.kt
 ---
 
 # Dán ảnh từ Clipboard để watermark nhanh
@@ -16,8 +24,8 @@ files:
 Thêm entry point "Paste from clipboard" đọc `ClipboardManager.primaryClip` tìm URI ảnh (`ClipData.Item.uri`/`contentResolver` MIME kiểm tra `image/*`), đẩy thẳng vào luồng watermark hiện có (tái dùng pipeline `ACTION_SEND` đã có).
 
 ## Acceptance Criteria
-- [ ] Copy 1 ảnh từ app khác (vd trình duyệt, save-image-as vào clipboard), mở app, bấm "Paste" — ảnh vào editor đúng như luồng `ACTION_SEND`.
-- [ ] Clipboard không có ảnh (chỉ có text) — nút Paste disable hoặc báo rõ không có ảnh để dán.
+- [x] Copy 1 ảnh từ app khác (vd trình duyệt, save-image-as vào clipboard), mở app, bấm "Paste" — ảnh vào editor đúng như luồng `ACTION_SEND`.
+- [x] Clipboard không có ảnh (chỉ có text) — nút Paste disable hoặc báo rõ không có ảnh để dán.
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `FEAT-21`, file ticket = `todo/FEAT-21-dan-anh-tu-clipboard-de-watermark-nhanh.md`.

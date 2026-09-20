@@ -88,6 +88,10 @@
     <string name="dialog_save_config_quality">Chất lượng</string>
     <string name="dialog_save_exporting">Đang xuất</string>
     <string name="tips_pick_image">Chọn ảnh</string>
+    <string name="launch_card_paste_title">Dán từ bộ nhớ tạm</string>
+    <string name="launch_card_paste_desc">Đóng dấu ảnh vừa sao chép hoặc ảnh chụp màn hình</string>
+    <string name="clipboard_no_image">Không tìm thấy ảnh trong bộ nhớ tạm</string>
+    <string name="action_paste">Dán ảnh</string>
     <string name="pick_via_system">thêm…</string>
     <string name="pick_folder">Chọn thư mục</string>
     <string name="recovery_title">Chế độ khôi phục</string>

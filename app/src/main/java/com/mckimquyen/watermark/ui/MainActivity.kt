@@ -71,6 +71,7 @@ import com.mckimquyen.watermark.ui.panel.VerticalPbFragment
 import com.mckimquyen.watermark.ui.widget.CenterLayoutManager
 import com.mckimquyen.watermark.ui.widget.LaunchView
 import com.mckimquyen.watermark.ui.widget.onItemClick
+import com.mckimquyen.watermark.utils.ClipboardImageHelper
 import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.PickImageContract
 import com.mckimquyen.watermark.utils.ShareIntentResolver
@@ -607,6 +608,10 @@ class MainActivity : BaseActivity() {
                 performFileSearch(REQ_CODE_PICK_IMAGE)
             }
         }
+        // FEAT-21: Paste image directly from clipboard
+        launchView.ivPasteFromClipboard.setOnClickListener {
+            pasteImageFromClipboard()
+        }
         // setting bg
         launchView.ivPhoto.apply {
             onBgReady { palette ->
@@ -921,6 +926,11 @@ class MainActivity : BaseActivity() {
             true
         }
 
+        R.id.actionPaste -> {
+            pasteImageFromClipboard()
+            true
+        }
+
         R.id.actionSave -> {
             SaveImageBSDialogFragment.safetyShow(supportFragmentManager)
             rateAppInApp(BuildConfig.DEBUG)
@@ -1012,6 +1022,37 @@ class MainActivity : BaseActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
+
+    /**
+     * FEAT-21: Đọc ảnh từ Clipboard hệ thống và nạp vào trình biên tập watermark.
+     */
+    private fun pasteImageFromClipboard() {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+        val clipData = clipboard?.primaryClip
+        handlePasteClipData(clipData)
+    }
+
+    private fun handlePasteClipData(clipData: ClipData?) {
+        val imageUris = ClipboardImageHelper.extractImageUris(this, clipData)
+        if (imageUris.isNotEmpty()) {
+            dealWithImage(imageUris)
+        } else {
+            Toast.makeText(
+                this,
+                getString(R.string.clipboard_no_image),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    @androidx.annotation.VisibleForTesting
+    internal fun performPasteFromClipboard(clipDataOverride: ClipData? = null) {
+        val clipData = clipDataOverride ?: run {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            clipboard?.primaryClip
+        }
+        handlePasteClipData(clipData)
     }
 
     private fun handleActivityResult(requestCode: Int, list: List<Uri?>?) {

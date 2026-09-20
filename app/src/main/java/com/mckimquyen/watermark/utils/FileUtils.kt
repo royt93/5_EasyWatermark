@@ -52,13 +52,19 @@ class FileUtils {
             }
         }
 
+        private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "bmp", "gif", "heic", "heif")
+
         private fun isImage(mimeType: String?): Boolean {
             return mimeType?.startsWith("image") ?: false
         }
 
         fun isImage(resolver: ContentResolver, uri: Uri?): Boolean {
+            if (uri == null) return false
             val mimeType = getFileTypeFromUri(resolver, uri)
-            return isImage(mimeType)
+            if (isImage(mimeType)) return true
+            val ext = MimeTypeMap.getFileExtensionFromUrl(uri.toString()).lowercase()
+            val path = uri.path?.lowercase().orEmpty()
+            return ext in IMAGE_EXTENSIONS || IMAGE_EXTENSIONS.any { path.endsWith(".$it") }
         }
 
         /**

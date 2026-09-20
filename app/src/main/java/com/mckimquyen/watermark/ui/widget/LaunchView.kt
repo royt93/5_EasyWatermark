@@ -284,6 +284,14 @@ class LaunchView : CustomViewGroup {
         )
     }
 
+    val ivPasteFromClipboard: MaterialCardView by lazy {
+        createActionCard(
+            iconRes = R.drawable.sharp_content_paste_search_24,
+            titleRes = R.string.launch_card_paste_title,
+            descRes = R.string.launch_card_paste_desc
+        )
+    }
+
     val ivGoAboutPage: MaterialCardView by lazy {
         createActionCard(
             iconRes = R.drawable.ic_settings_glass,
@@ -424,7 +432,15 @@ class LaunchView : CustomViewGroup {
 
     //region 3 private field
     private val launchViews by lazy {
-        listOf(logoContainer, tvAppBrand, tvAppTagline, ivSelectedPhotoTips, ivGoAboutPage, tvVersionCopyright)
+        listOf(
+            logoContainer,
+            tvAppBrand,
+            tvAppTagline,
+            ivSelectedPhotoTips,
+            ivPasteFromClipboard,
+            ivGoAboutPage,
+            tvVersionCopyright
+        )
     }
 
     private val editorViews by lazy {
@@ -528,15 +544,19 @@ class LaunchView : CustomViewGroup {
         tvAppTagline.layoutHorizontallyCentered(subtitleY)
 
         // 4. "Choose Images" primary CTA
-        val ctaY = tvAppTagline.bottom + 48.dp
+        val ctaY = tvAppTagline.bottom + 32.dp
         ivSelectedPhotoTips.layoutHorizontallyCentered(ctaY)
 
-        // 5. "Information & Settings" secondary button
-        val aboutY = ivSelectedPhotoTips.bottom + 16.dp
+        // 5. "Paste from clipboard" secondary CTA
+        val pasteY = ivSelectedPhotoTips.bottom + 12.dp
+        ivPasteFromClipboard.layoutHorizontallyCentered(pasteY)
+
+        // 6. "Information & Settings" secondary button
+        val aboutY = ivPasteFromClipboard.bottom + 12.dp
         ivGoAboutPage.layoutHorizontallyCentered(aboutY)
 
-        // 6. Version & Copyright footer safely placed above navigation bar inset
-        val footerY = usableBottom - tvVersionCopyright.measuredHeight - 20.dp
+        // 7. Version & Copyright footer safely placed above navigation bar inset
+        val footerY = usableBottom - tvVersionCopyright.measuredHeight - 16.dp
         tvVersionCopyright.layoutHorizontallyCentered(footerY)
     }
 
