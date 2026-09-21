@@ -25,12 +25,12 @@ Build có 2 trục: flavor (`appTest`, `appRelease`) × buildType (`debug`, `rel
 ./gradlew clean
 ```
 
-- **Unit test (`app/src/test`, 17 file)**: `data/db/DateConverterTest`, `data/model/ExifFrameStyleTest`, `data/model/ExifModelTest`, `data/model/JobStateResolverTest`, `data/model/MediaStoreInsertResolverTest`, `ui/MainViewModelExifBorderRoboTest`, `ui/MainViewModelResolvePreviewTextRoboTest`, `ui/adapter/FuncPanelAdapterRoboTest`, `ui/dlg/ExifFrameStyleHighlighterRoboTest`, `ui/widget/DetectedPerformanceSeekBarListenerRoboTest`, `ui/widget/QrPreviewWidgetTest`, `utils/QrCodeGeneratorTest`, `utils/TextTokenResolverTest`, `utils/bitmap/BitmapCacheTest`, `utils/bitmap/BitmapUtilsTest`, `utils/bitmap/ImageFormatRoboTest`, `utils/bitmap/OutputImageUtilsTest` (nhiều test Robolectric, hậu tố `*RoboTest`).
+- **Unit test (`app/src/test`, 121 file)**: rải khắp `data/{backup,db,model,repo}`, `di`, `export`, `feature/vip`, `ui/{about,adapter,dlg,panel,widget}`, `utils/{bitmap,ktx}`. Test Robolectric mang hậu tố `*RoboTest`.
   ```bash
   ./gradlew testAppReleaseDebugUnitTest                                    # toàn bộ unit test
   ./gradlew testAppReleaseDebugUnitTest --tests "*.DateConverterTest"      # 1 class
   ```
-- **Instrumentation test (`app/src/androidTest`, 4 file)**: `data/db/TemplateDaoIntegrationTest` (Room), `data/repo/WaterMarkRepositoryIntegrationTest` (DataStore), `utils/bitmap/BitmapUtilsContextThreadingIntegrationTest`, `utils/bitmap/BitmapUtilsDecodeFailureIntegrationTest`. Chạy bằng `./gradlew connectedAppReleaseDebugAndroidTest` (cần thiết bị/emulator).
+- **Instrumentation test (`app/src/androidTest`, 6 file)**: `ui/MainViewModelCompressImgIntegrationTest`, `e2e/BatchWatermarkE2EAndroidTest`, `utils/bitmap/BitmapUtilsContextThreadingIntegrationTest`, `utils/bitmap/BitmapUtilsDecodeFailureIntegrationTest`, `data/db/TemplateDaoIntegrationTest` (Room), `data/repo/WaterMarkRepositoryIntegrationTest` (DataStore). Chạy bằng `./gradlew connectedAppReleaseDebugAndroidTest` (cần thiết bị/emulator).
 - 2 module benchmark (`baseBenchmarks`, `macrobenchmark`) vẫn bị comment trong `settings.gradle.kts` — chưa dùng được.
 - Release ký bằng các property `KEY_ALIAS` / `KEY_PASSWORD` / `STORE_FILE` / `STORE_PASSWORD` (hiện đặt trong `gradle.properties`, store `keystore.jks`).
 
@@ -84,4 +84,5 @@ Build có 2 trục: flavor (`appTest`, `appRelease`) × buildType (`debug`, `rel
 - `doc/AD.MD` — kế hoạch migrate Ad sang AdmobWrapper.
 - `doc/AD_PROMPT_AOS.MD` — prompt/ghi chú liên quan cấu hình Ad Android.
 - `doc/memory_leak.md` & `doc/todo.md` — các vấn đề kỹ thuật cần xử lý (memory leak ở `WaterMarkImageView`, dọn code comment, hardcoded strings như log tag `roy93~`).
+- `doc/task/` — hàng đợi ticket kỹ thuật (`BACKLOG.md` là bảng tổng, mỗi ticket 1 file `.md` prefix `BUG-`/`ENH-`/`FEAT-`/`IDEA-`, di chuyển giữa `todo/` → `inprogress/` → `done/` khi đổi trạng thái). `PROMPT_TEMPLATE.md` định nghĩa Definition of Done chung: audit >9/10 theo quy tắc R5 ở trên, test đủ mọi case sửa, smoke test thật trên device đã khoá (R3) mới được move `done/`.
 - Các file rời ở gốc repo (`old_launch.kt`, `sim.kt`, `test_anim.kt`, `translate.py`, `build_log.txt`...) là file nháp/tham khảo, **không** thuộc source build.
