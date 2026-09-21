@@ -146,6 +146,17 @@ class WaterMarkRepository @Inject constructor(
         updateImageList(list)
     }
 
+    /**
+     * FEAT-17: bật/tắt loại ảnh này khỏi batch export ngay tại grid preview — [BatchExportEngine]
+     * bỏ qua (giữ nguyên `JobState.Ready`, không render/ghi file) item có `isSkippedInExport=true`.
+     */
+    suspend fun toggleSkipExport(uri: Uri) {
+        val list = imageInfoList.map { info ->
+            if (info.uri == uri) info.copy(isSkippedInExport = !info.isSkippedInExport) else info
+        }
+        updateImageList(list)
+    }
+
     suspend fun updateText(text: String) {
         dataStore.edit {
             it[KEY_MODE] = MarkMode.Text.value

@@ -29,6 +29,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- FEAT-17: toggle skip/active — góc trên-phải, không đè lên ivDone (giữa) hay tvPreviewInfo (dưới). -->
+    <ImageView
+        android:id="@+id/ivSkipToggle"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_margin="4dp"
+        android:background="@drawable/bg_preview_badge"
+        android:contentDescription="@string/action_toggle_skip_export"
+        android:padding="4dp"
+        android:src="@drawable/baseline_check_circle_outline_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <!-- FEAT-07: ước tính kích thước/dung lượng output — chỉ hiện khi preview đã render xong. -->
     <TextView
         android:id="@+id/tvPreviewInfo"

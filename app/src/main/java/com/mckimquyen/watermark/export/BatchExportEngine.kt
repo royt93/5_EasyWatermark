@@ -107,6 +107,12 @@ class BatchExportEngine @Inject constructor(
                 return@withContext Result.failure(null, MainViewModel.TYPE_ERROR_NOT_IMG)
             }
             val updatedList = infoList.mapIndexed { index, original ->
+                // FEAT-17: ảnh bị skip tại grid preview — giữ nguyên (JobState.Ready), không render/ghi
+                // file, không tính vào doneCount (onProgress(null) là no-op ở BatchExportWorker).
+                if (original.isSkippedInExport) {
+                    onProgress(null)
+                    return@mapIndexed original
+                }
                 var info = original
                 try {
                     info = info.copy(jobState = JobState.Ing)

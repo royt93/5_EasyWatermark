@@ -211,6 +211,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             slideQuality.isVisible = supportsQuality(shareViewModel.outputFormat)
 
             rvResult.apply {
+                lateinit var adapterRef: SaveImageListAdapter
                 adapter = SaveImageListAdapter(
                     context = requireContext(),
                     scope = viewLifecycleOwner.lifecycleScope,
@@ -219,8 +220,17 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                     },
                     estimateOutput = { width, height ->
                         shareViewModel.estimateExportOutput(width, height)
+                    },
+                    // FEAT-17: cập nhật UI ngay tại chỗ (cùng cơ chế `updateJobState` dùng cho tiến
+                    // trình export — tìm theo uri, submit lại, notify payload "state"), đồng thời
+                    // ghi vào repo (nguồn thật `BatchExportWorker` đọc khi export) — không cần quay
+                    // lại Gallery để bỏ chọn ảnh.
+                    onToggleSkip = { info ->
+                        adapterRef.updateJobState(info.copy(isSkippedInExport = !info.isSkippedInExport))
+                        shareViewModel.toggleSkipExport(info.uri)
                     }
                 ).also {
+                    adapterRef = it
                     it.submitList(imageList)
                 }
                 itemAnimator = null

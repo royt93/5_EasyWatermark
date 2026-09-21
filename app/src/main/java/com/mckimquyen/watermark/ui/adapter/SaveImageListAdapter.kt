@@ -40,7 +40,10 @@ class SaveImageListAdapter(
     private val context: Context,
     private val scope: CoroutineScope,
     private val generatePreview: suspend (ImageInfo, Int) -> BatchExportEngine.PreviewResult?,
-    private val estimateOutput: (Int, Int) -> Pair<Pair<Int, Int>, Long>
+    private val estimateOutput: (Int, Int) -> Pair<Pair<Int, Int>, Long>,
+    // FEAT-17: user bấm nút skip/active trên 1 card — nơi gọi chịu trách nhiệm cập nhật nguồn sự
+    // thật (repo) rồi submitList() lại, adapter không tự giữ state skip.
+    private val onToggleSkip: (ImageInfo) -> Unit = {}
 ) : RecyclerView.Adapter<SaveImageListAdapter.ImageHolder>() {
 
     val data: List<ImageInfo>
@@ -72,7 +75,7 @@ class SaveImageListAdapter(
             }
 
             override fun areContentsTheSame(oldItem: ImageInfo, newItem: ImageInfo): Boolean {
-                return oldItem.jobState == newItem.jobState
+                return oldItem.jobState == newItem.jobState && oldItem.isSkippedInExport == newItem.isSkippedInExport
             }
         }
     }
@@ -130,6 +133,10 @@ class SaveImageListAdapter(
                 holder.success(isPayLoad)
             }
         }
+        // FEAT-17: cập nhật mỗi lần bind (không gate theo tag/uri như preview bên dưới) — đổi trạng
+        // thái skip không đổi uri nên phải luôn refresh icon/độ mờ + rebind listener đúng item hiện tại.
+        holder.updateSkipState(info.isSkippedInExport)
+        holder.ivSkipToggle.setOnClickListener { onToggleSkip(info) }
         // FEAT-07: chỉ render preview watermark 1 LẦN cho mỗi uri — payload "state" (đổi jobState
         // lúc export chạy) rebind CÙNG uri liên tục (Ready→Ing→Success), không cần build lại canvas
         // + shader tốn kém mỗi lần. `itemView.tag` vừa là khoá "đã render/đang render uri nào" vừa
@@ -272,8 +279,21 @@ class SaveImageListAdapter(
             tvPreviewInfo.text = text.orEmpty()
         }
 
+        /** FEAT-17: icon đổi check↔cancel + làm mờ thumbnail khi ảnh bị loại khỏi batch export. */
+        fun updateSkipState(isSkipped: Boolean) {
+            ivSkipToggle.setImageResource(
+                if (isSkipped) R.drawable.baseline_cancel_24 else R.drawable.baseline_check_circle_outline_24
+            )
+            itemView.alpha = if (isSkipped) SKIPPED_ALPHA else 1f
+        }
+
         val ivIcon: ProgressImageView = itemView.findViewById(R.id.ivIcon)
+        val ivSkipToggle: ImageView = itemView.findViewById(R.id.ivSkipToggle)
         private val ivDone: ImageView = itemView.findViewById(R.id.ivDone)
         private val tvPreviewInfo: TextView = itemView.findViewById(R.id.tvPreviewInfo)
+
+        private companion object {
+            const val SKIPPED_ALPHA = 0.4f
+        }
     }
 }

@@ -4,6 +4,7 @@
     <string name="app_copyright">© SAIGON PHANTOM LABS</string>
     <string name="action_pick">Choose picture</string>
     <string name="action_save">Save</string>
+    <string name="action_toggle_skip_export">Include/skip this image in export</string>
     <string name="action_settings">About</string>
     <string name="launch_card_pick_desc">Protect photos with text, icons or Leica EXIF</string>
     <string name="launch_card_about_desc">Settings, backup &amp; Material You theme</string>

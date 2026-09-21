@@ -29,7 +29,9 @@ data class ImageInfo(
     @FloatRange(from = 0.0, to = 1.0) val offsetX: Float = 0.5f,
     @FloatRange(from = 0.0, to = 1.0) val offsetY: Float = 0.5f,
     val exifModel: ExifModel? = null,
-    val caption: String? = null
+    val caption: String? = null,
+    // FEAT-17: bật = loại ảnh này khỏi batch export (giữ trong danh sách, user có thể bật lại).
+    val isSkippedInExport: Boolean = false
 ) {
     val shareUri: Uri?
         get() = result?.data as? Uri?

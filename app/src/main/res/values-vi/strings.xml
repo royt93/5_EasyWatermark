@@ -4,6 +4,7 @@
     <string name="app_copyright">© SAIGON PHANTOM LABS</string>
     <string name="action_pick">Chọn ảnh</string>
     <string name="action_save">Lưu</string>
+    <string name="action_toggle_skip_export">Bao gồm/bỏ qua ảnh này khi export</string>
     <string name="action_settings">Thông tin</string>
     <string name="launch_card_pick_desc">Chèn chữ, logo bản quyền hoặc khung Leica EXIF</string>
     <string name="launch_card_about_desc">Cài đặt, sao lưu &amp; chủ đề Material You</string>

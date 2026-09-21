@@ -605,6 +605,11 @@ class MainViewModel @Inject constructor(
         launch { waterMarkRepo.updateImageCaptions(captions) }
     }
 
+    /** FEAT-17: bật/tắt loại 1 ảnh khỏi batch export ngay tại grid preview. */
+    fun toggleSkipExport(uri: Uri) {
+        launch { waterMarkRepo.toggleSkipExport(uri) }
+    }
+
     fun removeImage(
         imageInfo: ImageInfo?,
         curSelectedPos: Int
