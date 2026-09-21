@@ -30,7 +30,7 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
   ./gradlew testDebugUnitTest                                    # toàn bộ unit test
   ./gradlew testDebugUnitTest --tests "*.DateConverterTest"      # 1 class
   ```
-- **Instrumentation test (`app/src/androidTest`, 6 file)**: `ui/MainViewModelCompressImgIntegrationTest`, `e2e/BatchWatermarkE2EAndroidTest`, `utils/bitmap/BitmapUtilsContextThreadingIntegrationTest`, `utils/bitmap/BitmapUtilsDecodeFailureIntegrationTest`, `data/db/TemplateDaoIntegrationTest` (Room), `data/repo/WaterMarkRepositoryIntegrationTest` (DataStore). Chạy bằng `./gradlew connectedDebugAndroidTest` (cần thiết bị/emulator).
+- **Instrumentation test (`app/src/androidTest`, 7 file)**: `ui/MainViewModelCompressImgIntegrationTest`, `e2e/BatchWatermarkE2EAndroidTest`, `utils/bitmap/BitmapUtilsContextThreadingIntegrationTest`, `utils/bitmap/BitmapUtilsDecodeFailureIntegrationTest`, `data/db/TemplateDaoIntegrationTest` (Room), `data/repo/WaterMarkRepositoryIntegrationTest` (DataStore), `data/repo/SignatureRepositoryImportIntegrationTest` (decode Skia thật — Robolectric không mô phỏng đúng decode-failure cho bytes rác). Chạy bằng `./gradlew connectedDebugAndroidTest` (cần thiết bị/emulator).
 - 2 module benchmark (`baseBenchmarks`, `macrobenchmark`) vẫn bị comment trong `settings.gradle.kts` — chưa dùng được.
 - Release ký bằng các property `KEY_ALIAS` / `KEY_PASSWORD` / `STORE_FILE` / `STORE_PASSWORD` (hiện đặt trong `gradle.properties`, store `keystore.jks`).
 
