@@ -21,7 +21,7 @@ Nếu tính năng rewarded ad được bật ở bản release, app production s
 ## Acceptance Criteria
 - [ ] `ADMOB_REWARDED_ID` ở `release` buildConfigField là ID thật, khác ID test hiện tại.
 - [ ] `ADMOB_REWARDED_ID` ở `debug` vẫn giữ ID test (đúng hành vi hiện có, không đổi).
-- [ ] Build `assembleAppReleaseRelease` thành công, không lộ ID test nào trong `BuildConfig` của biến thể release.
+- [ ] Build `assembleRelease` thành công, không lộ ID test nào trong `BuildConfig` của biến thể release. (Tên task đổi từ `assembleAppReleaseRelease` sau khi gộp bỏ flavor ở ENH-26.)
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-15`, file ticket = `todo/BUG-15-admob-rewarded-release-dung-test-id.md`.

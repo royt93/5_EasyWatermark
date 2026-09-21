@@ -13,24 +13,24 @@ Kiến trúc MVVM + Hilt DI, không dùng Jetpack Compose.
 
 ## Lệnh thường dùng
 
-Build có 2 trục: flavor (`appTest`, `appRelease`) × buildType (`debug`, `release`) → biến thể như `appReleaseDebug`, `appReleaseRelease`...
+Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlavors` (2 flavor rỗng `appTest`/`appRelease` đã gộp bỏ ở ENH-26).
 
 ```bash
-./gradlew assembleAppReleaseDebug      # build APK debug (flavor appRelease)
-./gradlew assembleAppReleaseRelease    # build APK release (minify + shrink + ký)
-./gradlew installAppReleaseDebug       # cài lên thiết bị/emulator
-./gradlew lint                         # Android lint (baseline: app/lint-baseline.xml)
-./gradlew ktlintCheck                  # kiểm tra style (ktlint áp cho mọi module)
-./gradlew ktlintFormat                 # tự sửa style
+./gradlew assembleDebug     # build APK debug
+./gradlew assembleRelease   # build APK release (minify + shrink + ký)
+./gradlew installDebug      # cài lên thiết bị/emulator
+./gradlew lint               # Android lint (baseline: app/lint-baseline.xml)
+./gradlew ktlintCheck        # kiểm tra style (ktlint áp cho mọi module)
+./gradlew ktlintFormat       # tự sửa style
 ./gradlew clean
 ```
 
 - **Unit test (`app/src/test`, 121 file)**: rải khắp `data/{backup,db,model,repo}`, `di`, `export`, `feature/vip`, `ui/{about,adapter,dlg,panel,widget}`, `utils/{bitmap,ktx}`. Test Robolectric mang hậu tố `*RoboTest`.
   ```bash
-  ./gradlew testAppReleaseDebugUnitTest                                    # toàn bộ unit test
-  ./gradlew testAppReleaseDebugUnitTest --tests "*.DateConverterTest"      # 1 class
+  ./gradlew testDebugUnitTest                                    # toàn bộ unit test
+  ./gradlew testDebugUnitTest --tests "*.DateConverterTest"      # 1 class
   ```
-- **Instrumentation test (`app/src/androidTest`, 6 file)**: `ui/MainViewModelCompressImgIntegrationTest`, `e2e/BatchWatermarkE2EAndroidTest`, `utils/bitmap/BitmapUtilsContextThreadingIntegrationTest`, `utils/bitmap/BitmapUtilsDecodeFailureIntegrationTest`, `data/db/TemplateDaoIntegrationTest` (Room), `data/repo/WaterMarkRepositoryIntegrationTest` (DataStore). Chạy bằng `./gradlew connectedAppReleaseDebugAndroidTest` (cần thiết bị/emulator).
+- **Instrumentation test (`app/src/androidTest`, 6 file)**: `ui/MainViewModelCompressImgIntegrationTest`, `e2e/BatchWatermarkE2EAndroidTest`, `utils/bitmap/BitmapUtilsContextThreadingIntegrationTest`, `utils/bitmap/BitmapUtilsDecodeFailureIntegrationTest`, `data/db/TemplateDaoIntegrationTest` (Room), `data/repo/WaterMarkRepositoryIntegrationTest` (DataStore). Chạy bằng `./gradlew connectedDebugAndroidTest` (cần thiết bị/emulator).
 - 2 module benchmark (`baseBenchmarks`, `macrobenchmark`) vẫn bị comment trong `settings.gradle.kts` — chưa dùng được.
 - Release ký bằng các property `KEY_ALIAS` / `KEY_PASSWORD` / `STORE_FILE` / `STORE_PASSWORD` (hiện đặt trong `gradle.properties`, store `keystore.jks`).
 

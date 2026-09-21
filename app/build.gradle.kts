@@ -51,14 +51,6 @@ android {
             storePassword = findProperty("STORE_PASSWORD") as String?
         }
     }
-    flavorDimensions.add("default")
-    productFlavors {
-        create("appTest") {
-        }
-        create("appRelease") {
-        }
-    }
-
     buildTypes {
         val debug by getting {
 //            applicationIdSuffix = ".debug"
