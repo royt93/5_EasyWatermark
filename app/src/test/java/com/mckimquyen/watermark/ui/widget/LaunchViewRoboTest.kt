@@ -49,6 +49,41 @@ class LaunchViewRoboTest {
     }
 
     @Test
+    fun layoutLaunch_arranges4ActionCardsAsGrid() {
+        launchView.setPadding(0, 120, 0, 168)
+        launchView.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(2400, View.MeasureSpec.EXACTLY)
+        )
+        launchView.layout(0, 0, 1080, 2400)
+
+        val pick = launchView.ivSelectedPhotoTips
+        val camera = launchView.ivCaptureFromCamera
+        val paste = launchView.ivPasteFromClipboard
+        val about = launchView.ivGoAboutPage
+
+        // 2 card cùng hàng phải cùng top/bottom, khác cột (left/right).
+        assertThat(pick.top).isEqualTo(camera.top)
+        assertThat(pick.bottom).isEqualTo(camera.bottom)
+        assertThat(pick.right).isLessThan(camera.left)
+
+        assertThat(paste.top).isEqualTo(about.top)
+        assertThat(paste.bottom).isEqualTo(about.bottom)
+        assertThat(paste.right).isLessThan(about.left)
+
+        // 2 cột phải cùng vị trí left/right giữa hàng trên và hàng dưới (grid, không phải list dọc).
+        assertThat(pick.left).isEqualTo(paste.left)
+        assertThat(camera.left).isEqualTo(about.left)
+
+        // Hàng dưới nằm dưới hàng trên, không chồng lấn.
+        assertThat(paste.top).isAtLeast(pick.bottom)
+
+        // 4 card cùng kích thước (lưới đều, không phải card to nhỏ khác nhau).
+        assertThat(pick.width).isEqualTo(camera.width)
+        assertThat(pick.height).isEqualTo(paste.height)
+    }
+
+    @Test
     fun layoutEditor_respectsSystemInsets_forToolbarAndTabLayout() {
         launchView.toEditorMode()
         launchView.setPadding(0, 120, 0, 168)

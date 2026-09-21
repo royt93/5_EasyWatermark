@@ -47,6 +47,11 @@ class LaunchView : CustomViewGroup {
 
     companion object {
         private const val TAG = "LaunchView"
+
+        // 4 action card (chọn ảnh/chụp ảnh/dán clipboard/thông tin) xếp lưới 2x2 thay vì list dọc.
+        private const val GRID_CARD_WIDTH_DP = 156
+        private const val GRID_CARD_HEIGHT_DP = 168
+        private const val GRID_GUTTER_DP = 12
     }
 
     //region 1 constructor
@@ -134,8 +139,7 @@ class LaunchView : CustomViewGroup {
         descRes: Int
     ): MaterialCardView {
         val card = MaterialCardView(context).apply {
-            val cardWidth = 320.dp
-            layoutParams = MarginLayoutParams(cardWidth, ViewGroup.LayoutParams.WRAP_CONTENT)
+            layoutParams = MarginLayoutParams(GRID_CARD_WIDTH_DP.dp, GRID_CARD_HEIGHT_DP.dp)
             radius = 24.dp.toFloat()
             isClickable = true
             isFocusable = true
@@ -171,13 +175,14 @@ class LaunchView : CustomViewGroup {
             }
         }
 
+        // Bố cục lưới 2x2: icon badge trên, tiêu đề + mô tả căn giữa dưới (thay layout ngang cũ).
         val rootLayout = LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(16.dp, 16.dp, 16.dp, 16.dp)
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setPadding(12.dp, 16.dp, 12.dp, 16.dp)
             layoutParams = android.widget.FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                ViewGroup.LayoutParams.MATCH_PARENT
             )
         }
 
@@ -185,7 +190,8 @@ class LaunchView : CustomViewGroup {
         val iconBadge = android.widget.FrameLayout(context).apply {
             val badgeSize = 48.dp
             layoutParams = LinearLayout.LayoutParams(badgeSize, badgeSize).apply {
-                marginEnd = 14.dp
+                gravity = Gravity.CENTER_HORIZONTAL
+                bottomMargin = 12.dp
             }
 
             val badgeBg = GradientDrawable().apply {
@@ -217,19 +223,10 @@ class LaunchView : CustomViewGroup {
         }
         rootLayout.addView(iconBadge)
 
-        // 2. Text Content (Headline + Subhead)
-        val textContainer = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(
-                0,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                1f
-            )
-        }
-
+        // 2. Text Content (Headline + Subhead), căn giữa cho hợp ô vuông
         val tvTitle = MaterialTextView(context).apply {
             setText(titleRes)
-            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleMedium)
+            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleSmall)
             typeface = Typeface.DEFAULT_BOLD
             val onSurfaceColor = MaterialColors.getColor(
                 context,
@@ -237,7 +234,12 @@ class LaunchView : CustomViewGroup {
                 Color.BLACK
             )
             setTextColor(onSurfaceColor)
+            gravity = Gravity.CENTER
+            textAlignment = TEXT_ALIGNMENT_CENTER
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
         }
+        rootLayout.addView(tvTitle)
 
         val tvDesc = MaterialTextView(context).apply {
             setText(descRes)
@@ -249,28 +251,12 @@ class LaunchView : CustomViewGroup {
             )
             setTextColor(onSurfaceVariant)
             setPadding(0, 2.dp, 0, 0)
+            gravity = Gravity.CENTER
+            textAlignment = TEXT_ALIGNMENT_CENTER
+            maxLines = 2
+            ellipsize = android.text.TextUtils.TruncateAt.END
         }
-
-        textContainer.addView(tvTitle)
-        textContainer.addView(tvDesc)
-        rootLayout.addView(textContainer)
-
-        // 3. Trailing Arrow Chevron
-        val ivArrow = ImageView(context).apply {
-            val arrowSize = 20.dp
-            layoutParams = LinearLayout.LayoutParams(arrowSize, arrowSize).apply {
-                marginStart = 8.dp
-            }
-            setImageResource(R.drawable.ic_arrow_forward)
-            val arrowTint = MaterialColors.getColor(
-                context,
-                com.google.android.material.R.attr.colorPrimary,
-                Color.BLACK
-            )
-            imageTintList = ColorStateList.valueOf(arrowTint)
-            alpha = 0.75f
-        }
-        rootLayout.addView(ivArrow)
+        rootLayout.addView(tvDesc)
 
         card.addView(rootLayout)
         return card
@@ -552,21 +538,19 @@ class LaunchView : CustomViewGroup {
         val subtitleY = tvAppBrand.bottom + 8.dp
         tvAppTagline.layoutHorizontallyCentered(subtitleY)
 
-        // 4. "Choose Images" primary CTA
-        val ctaY = tvAppTagline.bottom + 20.dp
-        ivSelectedPhotoTips.layoutHorizontallyCentered(ctaY)
+        // 4-7. 4 action card xếp lưới 2x2 (chọn ảnh / chụp ảnh / dán clipboard / thông tin)
+        val gridTop = tvAppTagline.bottom + 20.dp
+        val cardW = GRID_CARD_WIDTH_DP.dp
+        val cardH = GRID_CARD_HEIGHT_DP.dp
+        val gridWidth = 2 * cardW + GRID_GUTTER_DP.dp
+        val gridStartX = (measuredWidth - gridWidth) / 2
+        val row2Top = gridTop + cardH + GRID_GUTTER_DP.dp
+        val col2Left = gridStartX + cardW + GRID_GUTTER_DP.dp
 
-        // 5. "Capture from camera" secondary CTA
-        val cameraY = ivSelectedPhotoTips.bottom + 10.dp
-        ivCaptureFromCamera.layoutHorizontallyCentered(cameraY)
-
-        // 6. "Paste from clipboard" secondary CTA
-        val pasteY = ivCaptureFromCamera.bottom + 10.dp
-        ivPasteFromClipboard.layoutHorizontallyCentered(pasteY)
-
-        // 7. "Information & Settings" secondary button
-        val aboutY = ivPasteFromClipboard.bottom + 10.dp
-        ivGoAboutPage.layoutHorizontallyCentered(aboutY)
+        ivSelectedPhotoTips.layout(gridStartX, gridTop, gridStartX + cardW, gridTop + cardH)
+        ivCaptureFromCamera.layout(col2Left, gridTop, col2Left + cardW, gridTop + cardH)
+        ivPasteFromClipboard.layout(gridStartX, row2Top, gridStartX + cardW, row2Top + cardH)
+        ivGoAboutPage.layout(col2Left, row2Top, col2Left + cardW, row2Top + cardH)
 
         // 8. Version & Copyright footer safely placed above navigation bar inset
         val footerY = usableBottom - tvVersionCopyright.measuredHeight - 16.dp
