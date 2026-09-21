@@ -2,6 +2,7 @@ package com.mckimquyen.watermark.data.repo
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.mckimquyen.watermark.BuildConfig
@@ -44,6 +45,21 @@ class SignatureRepository @Inject constructor(@ApplicationContext private val co
                 file.delete()
             }
             return compressSucceeded
+        }
+
+        /** Giới hạn cạnh ảnh hợp lý — chặn decompression bomb giả danh signature trong backup giả mạo. */
+        private const val MAX_SIGNATURE_DIMENSION_PX = 8_000
+
+        /**
+         * ENH-31: `importSignatureBytes()` ghi thẳng bytes từ zip backup (không tin cậy) ra đĩa mà
+         * không kiểm tra NỘI DUNG — chỉ decode bounds (không decode pixel thật, rẻ) để xác nhận
+         * đúng là ảnh hợp lệ trước khi ghi, từ chối bytes rác/giả danh `.webp`.
+         */
+        internal fun isValidImageBytes(bytes: ByteArray): Boolean {
+            val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+            return options.outWidth in 1..MAX_SIGNATURE_DIMENSION_PX &&
+                options.outHeight in 1..MAX_SIGNATURE_DIMENSION_PX
         }
     }
 
@@ -113,6 +129,11 @@ class SignatureRepository @Inject constructor(@ApplicationContext private val co
      */
     suspend fun importSignatureBytes(fileName: String, bytes: ByteArray): SignatureModel? = withContext(Dispatchers.IO) {
         try {
+            // ENH-31: entry zip có thể giả danh ảnh (bytes bất kỳ đặt tên .webp) — từ chối trước khi
+            // đụng tới đĩa, thay vì để WaterMarkImageView decode fail/crash mơ hồ sau này.
+            if (!isValidImageBytes(bytes)) {
+                return@withContext null
+            }
             // Zip-slip guard: fileName đến từ tên entry trong file zip backup do user chọn qua SAF
             // (không tin cậy) — File(...).name chỉ lấy phần tên cuối cùng, loại bỏ mọi "../" hay
             // đường dẫn tuyệt đối, không cho ghi ra ngoài signatureDir.
