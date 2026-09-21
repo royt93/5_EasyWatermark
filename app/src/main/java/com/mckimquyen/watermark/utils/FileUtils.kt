@@ -11,15 +11,29 @@ class FileUtils {
 
         const val outPutFolderName = "WaterMarkCreator"
 
+        // ENH-33: giới hạn đệ quy khi bật "Include subfolders" — tránh quét quá sâu/quá nhiều ảnh
+        // gây treo UI trên cây thư mục lớn (vd toàn bộ DCIM).
+        const val RECURSIVE_SCAN_MAX_DEPTH = 5
+        const val RECURSIVE_SCAN_MAX_FILES = 500
+
         /**
-         * FEAT-08: liệt kê ảnh TRỰC TIẾP trong 1 cây thư mục SAF (không đệ quy subfolder, đúng AC) —
-         * dùng [DocumentFile.getType] (đã có sẵn từ cursor liệt kê cây, không cần query
-         * `ContentResolver` thêm lần nữa cho từng file như [isImage]).
+         * FEAT-08: liệt kê ảnh trong 1 cây thư mục SAF — mặc định chỉ lấy ảnh TRỰC TIẾP (không đệ
+         * quy, đúng AC gốc). ENH-33: [includeSubfolders] bật đệ quy có giới hạn tầng/số ảnh (tuỳ
+         * chọn "Include subfolders" ở dialog chọn thư mục, mặc định TẮT để giữ hành vi cũ).
          */
         @JvmStatic
-        fun listImagesInTree(context: Context, treeUri: Uri): List<Uri> {
+        fun listImagesInTree(
+            context: Context,
+            treeUri: Uri,
+            includeSubfolders: Boolean = false,
+            maxDepth: Int = RECURSIVE_SCAN_MAX_DEPTH,
+            maxFiles: Int = RECURSIVE_SCAN_MAX_FILES
+        ): List<Uri> {
             val root = DocumentFile.fromTreeUri(context, treeUri) ?: return emptyList()
-            return filterImageUris(root.listFiles().toList())
+            if (!includeSubfolders) {
+                return filterImageUris(root.listFiles().toList())
+            }
+            return collectImagesRecursively(root, maxDepth, maxFiles)
         }
 
         /** Tách riêng khỏi [listImagesInTree] để test được logic lọc mà không cần SAF/DocumentsProvider thật. */
@@ -28,6 +42,30 @@ class FileUtils {
             return children
                 .filter { it.isFile && isImage(it.type) }
                 .map { it.uri }
+        }
+
+        /**
+         * ENH-33: duyệt BFS cây thư mục SAF, dừng khi đạt [maxFiles] ảnh hoặc quá [maxDepth] tầng
+         * con — dừng sớm (không duyệt tiếp cây con khi đã đủ ảnh) thay vì thu thập hết rồi cắt, để
+         * thật sự tránh quét quá sâu/quá nhiều trên cây lớn.
+         */
+        @JvmStatic
+        internal fun collectImagesRecursively(root: DocumentFile, maxDepth: Int, maxFiles: Int): List<Uri> {
+            val result = mutableListOf<Uri>()
+            val queue = ArrayDeque<Pair<DocumentFile, Int>>()
+            queue.add(root to 0)
+            while (queue.isNotEmpty() && result.size < maxFiles) {
+                val (dir, depth) = queue.removeFirst()
+                for (child in dir.listFiles()) {
+                    if (result.size >= maxFiles) break
+                    if (child.isFile && isImage(child.type)) {
+                        result.add(child.uri)
+                    } else if (child.isDirectory && depth < maxDepth) {
+                        queue.add(child to depth + 1)
+                    }
+                }
+            }
+            return result
         }
 
         /**

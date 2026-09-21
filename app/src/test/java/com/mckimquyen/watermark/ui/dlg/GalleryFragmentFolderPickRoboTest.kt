@@ -30,6 +30,9 @@ import org.robolectric.Shadows.shadowOf
  * FEAT-08: nút "Choose folder" (`ivPickFolder`) trong `GalleryFragment` phải mở
  * `ACTION_OPEN_DOCUMENT_TREE` (SAF) — dùng lại pattern `TestHostActivity` từ
  * [GalleryFragmentPhotoPickerRoboTest]/BUG-10 để launch `GalleryFragment` không phụ thuộc Hilt.
+ *
+ * ENH-33: click `ivPickFolder` giờ mở dialog hỏi "Include subfolders" trước — chỉ launch
+ * `ACTION_OPEN_DOCUMENT_TREE` sau khi user bấm nút xác nhận (`tips_confirm_dialog`) trong dialog.
  */
 @RunWith(RobolectricTestRunner::class)
 class GalleryFragmentFolderPickRoboTest {
@@ -65,7 +68,7 @@ class GalleryFragmentFolderPickRoboTest {
     }
 
     @Test
-    fun `choose folder menu item launches ACTION_OPEN_DOCUMENT_TREE`() {
+    fun `choose folder menu item shows dialog then launches ACTION_OPEN_DOCUMENT_TREE on confirm`() {
         val activity = Robolectric.buildActivity(TestHostActivity::class.java).setup().get()
         val containerId = FrameLayout(activity).let {
             it.id = android.view.View.generateViewId()
@@ -80,11 +83,90 @@ class GalleryFragmentFolderPickRoboTest {
             R.id.topAppBar
         ).menu.performIdentifierAction(R.id.ivPickFolder, 0)
         assertThat(handled).isTrue()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // ENH-33: dialog "Include subfolders" hiện ra trước, SAF picker CHƯA launch ngay.
+        val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog() as? androidx.appcompat.app.AlertDialog
+        assertThat(dialog).isNotNull()
+        assertThat(shadowOf(activity).nextStartedActivityForResult).isNull()
+        assertThat(shadowOf(activity).nextStartedActivity).isNull()
+        val switch = findMaterialSwitch(dialog!!)
+        assertThat(switch).isNotNull()
+        assertThat(switch!!.isChecked).isFalse()
+
+        // Bấm nút xác nhận (mặc định KHÔNG bật subfolder) — mới launch SAF picker.
+        dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick()
+        shadowOf(Looper.getMainLooper()).idle()
 
         val started = shadowOf(activity).nextStartedActivityForResult?.intent
             ?: shadowOf(activity).nextStartedActivity
         assertThat(started).isNotNull()
         assertThat(started!!.action).isEqualTo(Intent.ACTION_OPEN_DOCUMENT_TREE)
+    }
+
+    /** ENH-33: bật switch trong dialog trước khi confirm phải phản ánh đúng vào [GalleryFragment.pendingIncludeSubfolders]. */
+    @Test
+    fun `toggling include-subfolders switch before confirm sets pendingIncludeSubfolders`() {
+        val activity = Robolectric.buildActivity(TestHostActivity::class.java).setup().get()
+        val containerId = FrameLayout(activity).let {
+            it.id = android.view.View.generateViewId()
+            activity.setContentView(it)
+            it.id
+        }
+        val fragment = GalleryFragment().apply { setShowsDialog(false) }
+        activity.supportFragmentManager.beginTransaction().add(containerId, fragment, "gallery").commit()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        fragment.requireView().findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.topAppBar)
+            .menu.performIdentifierAction(R.id.ivPickFolder, 0)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
+        val switch = findMaterialSwitch(dialog)!!
+        switch.isChecked = true
+        dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(fragment.pendingIncludeSubfolders).isTrue()
+    }
+
+    /** ENH-33: bấm Huỷ trong dialog KHÔNG được launch SAF picker. */
+    @Test
+    fun `cancelling include-subfolders dialog does not launch SAF picker`() {
+        val activity = Robolectric.buildActivity(TestHostActivity::class.java).setup().get()
+        val containerId = FrameLayout(activity).let {
+            it.id = android.view.View.generateViewId()
+            activity.setContentView(it)
+            it.id
+        }
+        val fragment = GalleryFragment().apply { setShowsDialog(false) }
+        activity.supportFragmentManager.beginTransaction().add(containerId, fragment, "gallery").commit()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        fragment.requireView().findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.topAppBar)
+            .menu.performIdentifierAction(R.id.ivPickFolder, 0)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
+        dialog.getButton(android.content.DialogInterface.BUTTON_NEGATIVE).performClick()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(shadowOf(activity).nextStartedActivityForResult).isNull()
+        assertThat(shadowOf(activity).nextStartedActivity).isNull()
+    }
+
+    /** [dialog]'s view tree chỉ có 1 MaterialSwitch — duyệt đệ quy tìm thay vì cần fix id. */
+    private fun findMaterialSwitch(dialog: androidx.appcompat.app.AlertDialog): com.google.android.material.materialswitch.MaterialSwitch? {
+        fun search(view: android.view.View): com.google.android.material.materialswitch.MaterialSwitch? {
+            if (view is com.google.android.material.materialswitch.MaterialSwitch) return view
+            if (view is android.view.ViewGroup) {
+                for (i in 0 until view.childCount) {
+                    search(view.getChildAt(i))?.let { return it }
+                }
+            }
+            return null
+        }
+        return search(dialog.window!!.decorView)
     }
 
     /** Nút multi-pick từng ảnh (`ivSysImage`) vẫn phải hoạt động song song — AC thứ 2 của ticket. */

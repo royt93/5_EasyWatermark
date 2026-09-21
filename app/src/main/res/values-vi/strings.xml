@@ -11,6 +11,9 @@
     <string name="title_style">Kiểu dáng</string>
     <string name="title_content">Nội dung</string>
     <string name="tips_do_not_choose_image">Chưa chọn ảnh</string>
+    <string name="pick_folder_dialog_title">Chọn thư mục</string>
+    <string name="pick_folder_dialog_message">Quét ảnh trực tiếp trong thư mục đã chọn, hoặc gồm cả thư mục con.</string>
+    <string name="pick_folder_include_subfolders">Bao gồm thư mục con</string>
     <string name="tips_choose_color_dialog">Chọn màu</string>
     <string name="tips_confirm_dialog">Xác nhận</string>
     <string name="tips_cancel_dialog">Huỷ</string>

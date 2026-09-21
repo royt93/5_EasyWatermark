@@ -14,15 +14,19 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
@@ -33,6 +37,10 @@ import com.mckimquyen.watermark.ui.widget.UniformScrollGridLayoutManager
 import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.MultiPickContract
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
+import com.mckimquyen.watermark.utils.ktx.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
@@ -62,6 +70,10 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
     /** FEAT-08: chọn cả thư mục (SAF tree) — đưa toàn bộ ảnh trực tiếp trong đó vào batch. */
     private lateinit var pickFolderLauncher: ActivityResultLauncher<Uri?>
+
+    /** ENH-33: lựa chọn "Include subfolders" ở dialog trước khi mở SAF picker, đọc lại lúc xử lý kết quả. */
+    internal var pendingIncludeSubfolders: Boolean = false
+        private set
 
     private var doOnDismiss: () -> Unit = {}
 
@@ -218,7 +230,8 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                 R.id.ivPickFolder -> {
                     // FEAT-08: chọn cả thư mục — ảnh hợp lệ trực tiếp trong đó (không đệ quy
                     // subfolder) đưa hết vào batch, song song với multi-pick từng ảnh ở trên.
-                    pickFolderLauncher.launch(null)
+                    // ENH-33: hỏi trước có muốn quét luôn subfolder (đệ quy có giới hạn) hay không.
+                    showPickFolderOptionsDialog()
                     return@setOnMenuItemClickListener true
                 }
 
@@ -347,6 +360,29 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         shareViewModel.resetGalleryData()
     }
 
+    /** ENH-33: dialog hỏi có quét luôn ảnh trong subfolder trước khi mở SAF tree picker. */
+    private fun showPickFolderOptionsDialog() {
+        val switch = MaterialSwitch(requireContext()).apply {
+            text = getString(R.string.pick_folder_include_subfolders)
+            isChecked = false
+        }
+        val container = FrameLayout(requireContext()).apply {
+            setPadding(24.dp, 8.dp, 24.dp, 0)
+            addView(switch)
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.pick_folder_dialog_title)
+            .setMessage(R.string.pick_folder_dialog_message)
+            .setView(container)
+            .setNegativeButton(R.string.tips_cancel_dialog) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.tips_confirm_dialog) { dialog, _ ->
+                pendingIncludeSubfolders = switch.isChecked
+                pickFolderLauncher.launch(null)
+                dialog.dismiss()
+            }
+            .show()
+    }
+
     internal fun handleTreeUriResult(treeUri: Uri?) {
         if (treeUri == null) return
         // Giữ quyền đọc qua lần khởi động app sau — ảnh trong thư mục vẫn cần đọc lại lúc
@@ -360,7 +396,19 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         }.onFailure { e ->
             AppLog.w(LOG_TAG, "Failed to persist treeUri permission: $treeUri", e)
         }
-        handleActivityResult(FileUtils.listImagesInTree(requireContext(), treeUri))
+        // ENH-33: liệt kê cây thư mục là chuỗi lệnh gọi ContentResolver (IPC) đồng bộ — với
+        // includeSubfolders bật, có thể là nhiều lệnh gọi lồng nhau (tới maxDepth tầng), đủ chậm
+        // để treo UI nếu chạy thẳng trên main thread. Chạy trên Dispatchers.IO, cập nhật UI lại
+        // trên main thread sau khi có kết quả.
+        val context = requireContext()
+        viewLifecycleOwner.lifecycleScope.launch {
+            val images = withContext(Dispatchers.IO) {
+                FileUtils.listImagesInTree(context, treeUri, includeSubfolders = pendingIncludeSubfolders)
+            }
+            if (isAdded) {
+                handleActivityResult(images)
+            }
+        }
     }
 
     private fun handleActivityResult(list: List<Uri?>?) {

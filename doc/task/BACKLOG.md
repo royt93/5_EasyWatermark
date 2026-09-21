@@ -22,15 +22,14 @@
 
 **Đã DONE** (xem `doc/task/done/`): BUG-01..13, 16..27, 28 (release bitmap refcount in reset), 29..31, 32 (outputNamePattern save sync), 33 (safe gallery/share in failed batch), 34, 35 (SAF folder pick SecurityException catch fallback), 36.
 
-## ENHANCEMENTS (2 todo, 1 deferred + 29 done) — cải tiến tính năng có sẵn
+## ENHANCEMENTS (1 todo, 1 deferred + 30 done) — cải tiến tính năng có sẵn
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [ENH-17](todo/ENH-17-vip-key-device-bound.md) | S | VIP key gắn thiết bị (device-bound) — mitigation cho BUG-14 (mới 2026-09-10) — **deferred cùng BUG-14/15** |
-| [ENH-33](todo/ENH-33-ho-tro-quet-thu-muc-saf-de-quy-co-gioi-han-tuy-chon-include.md) | M | Hỗ trợ quét thư mục SAF đệ quy có giới hạn (tuỳ chọn "Include subfolders") |
 | [ENH-34](todo/ENH-34-chuan-hoa-lua-chon-webp-theo-api-moi-webplossywebplossless.md) | S | Chuẩn hoá lựa chọn WEBP theo API mới (`WEBP_LOSSY`/`WEBP_LOSSLESS`) |
 
-**Đã DONE**: ENH-01..16, ENH-18..20, ENH-21 (gate SimpleSp debug log), ENH-22 (xoá 167 dòng dead code Applovin.kt), ENH-23 (gỡ @Named nhầm ở provideMemorySettingRepository), ENH-24 (gỡ saveVersionCode/KEY_CHANGE_LOG vô ích), ENH-25 (compileSdk đã tự đồng bộ 37, xoá dead `Apps`/`Dependencies.kt` khỏi buildSrc), ENH-26 (gộp bỏ 2 flavor rỗng `appTest`/`appRelease`, đổi tên task Gradle), ENH-27 (sửa selectedPos khi xoá ảnh cuối), ENH-28..29 (fix fd leak + dọn temp cache), ENH-30 (dọn field et thừa TextWatermarkBSDFragment), ENH-31 (validate bounds ảnh thật trước khi ghi signature restore từ backup), ENH-32 (cancel preview job per ViewHolder), ENH-35 (PreviewResult flag ảnh lỗi).
+**Đã DONE**: ENH-01..16, ENH-18..20, ENH-21 (gate SimpleSp debug log), ENH-22 (xoá 167 dòng dead code Applovin.kt), ENH-23 (gỡ @Named nhầm ở provideMemorySettingRepository), ENH-24 (gỡ saveVersionCode/KEY_CHANGE_LOG vô ích), ENH-25 (compileSdk đã tự đồng bộ 37, xoá dead `Apps`/`Dependencies.kt` khỏi buildSrc), ENH-26 (gộp bỏ 2 flavor rỗng `appTest`/`appRelease`, đổi tên task Gradle), ENH-27 (sửa selectedPos khi xoá ảnh cuối), ENH-28..29 (fix fd leak + dọn temp cache), ENH-30 (dọn field et thừa TextWatermarkBSDFragment), ENH-31 (validate bounds ảnh thật trước khi ghi signature restore từ backup), ENH-32 (cancel preview job per ViewHolder), ENH-33 (quét SAF đệ quy có giới hạn + dialog switch + fix chạy background thread tránh treo UI), ENH-35 (PreviewResult flag ảnh lỗi).
 
 ## NEW_FEATURES (11 todo + 1 inprogress + 13 done) — tính năng mới thực dụng, 1-2 tuần
 

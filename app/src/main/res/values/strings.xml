@@ -11,6 +11,9 @@
     <string name="title_style">Style</string>
     <string name="title_content">Content</string>
     <string name="tips_do_not_choose_image">No picture selected</string>
+    <string name="pick_folder_dialog_title">Choose folder</string>
+    <string name="pick_folder_dialog_message">Scan images directly in the selected folder, or include subfolders too.</string>
+    <string name="pick_folder_include_subfolders">Include subfolders</string>
     <string name="tips_choose_color_dialog">Choose color</string>
     <string name="tips_confirm_dialog">Confirm</string>
     <string name="tips_cancel_dialog">Cancel</string>
