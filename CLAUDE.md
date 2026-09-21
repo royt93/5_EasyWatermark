@@ -37,7 +37,7 @@ Build có 2 trục: flavor (`appTest`, `appRelease`) × buildType (`debug`, `rel
 ## Cấu hình build & dependency (lưu ý đặc biệt)
 
 - **Version catalog được khai báo inline trong `settings.gradle.kts`** (khối `dependencyResolutionManagement { versionCatalogs { create("libs") {...} } }`), **không phải** `gradle/libs.versions.toml`. Thêm/sửa thư viện ở đây.
-- `buildSrc/` chỉ chứa `Apps.kt` (hằng `targetSdk`) và `Dependencies.kt`.
+- `buildSrc/` chỉ có `build.gradle.kts` (plugin `kotlin-dsl`), không còn file Kotlin nguồn nào — `Apps`/`Dependencies` dead object đã xoá (ENH-25), `compileSdk` mọi module đọc trực tiếp giá trị số (37).
 - App phụ thuộc nhiều bản vá `resolutionStrategy.force(...)` trong `app/build.gradle.kts` để khóa version (coroutines-android/core, core-ktx, core, kotlin-stdlib) — cẩn trọng khi nâng cấp.
 - `app/build.gradle.kts` có 2 khối `compileOptions` (khối đầu set `VERSION_11`, khối sau set `VERSION_17`) — khối sau ghi đè, hiệu lực thật là JVM 17. Đây là artifact còn sót lại trong file, không phải bug cần fix ngay.
 - Dùng **kapt** cho Hilt / Room / Glide compiler.
