@@ -25,12 +25,12 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
 ./gradlew clean
 ```
 
-- **Unit test (`app/src/test`, 132 file)**: rải khắp `data/{backup,db,model,repo}`, `di`, `export`, `feature/vip`, `ui/{about,adapter,dlg,panel,widget}`, `utils/{bitmap,ktx}`. Test Robolectric mang hậu tố `*RoboTest`.
+- **Unit test (`app/src/test`, 138 file)**: rải khắp `data/{backup,db,model,repo}`, `di`, `export`, `feature/vip`, `ui/{about,adapter,dlg,panel,widget}`, `utils/{bitmap,ktx}`. Test Robolectric mang hậu tố `*RoboTest`.
   ```bash
   ./gradlew testDebugUnitTest                                    # toàn bộ unit test
   ./gradlew testDebugUnitTest --tests "*.DateConverterTest"      # 1 class
   ```
-- **Instrumentation test (`app/src/androidTest`, 9 file)**: `ui/MainViewModelCompressImgIntegrationTest`, `e2e/BatchWatermarkE2EAndroidTest`, `utils/bitmap/BitmapUtilsContextThreadingIntegrationTest`, `utils/bitmap/BitmapUtilsDecodeFailureIntegrationTest`, `data/db/TemplateDaoIntegrationTest` (Room), `data/db/BatchHistoryDaoIntegrationTest` (Room, FEAT-04), `data/repo/WaterMarkRepositoryIntegrationTest` (DataStore), `data/repo/SignatureRepositoryImportIntegrationTest` (decode Skia thật — Robolectric không mô phỏng đúng decode-failure cho bytes rác), `export/BatchExportEngineCustomDirectoryIntegrationTest` (ghi file SAF thật qua `DocumentFile.fromFile()`). Chạy bằng `./gradlew connectedDebugAndroidTest` (cần thiết bị/emulator).
+- **Instrumentation test (`app/src/androidTest`, 10 file)**: `ui/MainViewModelCompressImgIntegrationTest`, `e2e/BatchWatermarkE2EAndroidTest`, `utils/bitmap/BitmapUtilsContextThreadingIntegrationTest`, `utils/bitmap/BitmapUtilsDecodeFailureIntegrationTest`, `data/db/TemplateDaoIntegrationTest` (Room), `data/db/BatchHistoryDaoIntegrationTest` (Room, FEAT-04), `data/db/WatermarkProfileDaoIntegrationTest` (Room, FEAT-06), `data/repo/WaterMarkRepositoryIntegrationTest` (DataStore), `data/repo/SignatureRepositoryImportIntegrationTest` (decode Skia thật — Robolectric không mô phỏng đúng decode-failure cho bytes rác), `export/BatchExportEngineCustomDirectoryIntegrationTest` (ghi file SAF thật qua `DocumentFile.fromFile()`). Chạy bằng `./gradlew connectedDebugAndroidTest` (cần thiết bị/emulator).
 - 2 module benchmark (`baseBenchmarks`, `macrobenchmark`) vẫn bị comment trong `settings.gradle.kts` — chưa dùng được.
 - Release ký bằng các property `KEY_ALIAS` / `KEY_PASSWORD` / `STORE_FILE` / `STORE_PASSWORD` (hiện đặt trong `gradle.properties`, store `keystore.jks`).
 
@@ -60,7 +60,7 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
 - Tầng repo trong `data/repo/`, mỗi repo bọc **một DataStore Preferences riêng** (đặt tên qua `@Named`, ví dụ `WaterMarkPreferences`):
   - `WaterMarkRepository` — toàn bộ cấu hình watermark (text/icon uri, màu, alpha, góc xoay, gap, mode...) dưới dạng `Flow<WaterMark>`.
   - `UserConfigRepository`, `MemorySettingRepo`, `TemplateRepository`, `SignatureRepository`.
-- Persistence: **Room** cho `Template` (`AppDatabase` v1, asset-seeded `ewm-db`, `TemplateDao`, `DateConverter`) và `BatchHistory` (FEAT-04 — `BatchHistoryDatabase` v1, DB riêng KHÔNG asset, tránh rủi ro migration lên `AppDatabase`, `BatchHistoryDao`). Mọi cấu hình khác nằm ở DataStore, **không** ở Room.
+- Persistence: **Room** cho `Template` (`AppDatabase` v1, asset-seeded `ewm-db`, `TemplateDao`, `DateConverter`), `BatchHistory` (FEAT-04 — `BatchHistoryDatabase` v1, DB riêng KHÔNG asset, `BatchHistoryDao`) và `WatermarkProfile` (FEAT-06 — `WatermarkProfileDatabase` v1, DB riêng KHÔNG asset, `WatermarkProfileDao`) — cả 2 DB sau tách khỏi `AppDatabase` để tránh rủi ro migration lên asset DB. Mọi cấu hình khác nằm ở DataStore, **không** ở Room.
 - DI module: `di/AppModule.kt`, `di/DataStoreModule.kt`, `di/RepositoryModule.kt`.
 
 ### Rendering watermark

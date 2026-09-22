@@ -4,6 +4,8 @@
     <string name="app_copyright">© SAIGON PHANTOM LABS</string>
     <string name="action_pick">Choose picture</string>
     <string name="action_save">Save</string>
+    <!-- FEAT-12: undo/redo watermark editor -->
+    <string name="action_redo">Redo</string>
     <string name="action_toggle_skip_export">Include/skip this image in export</string>
     <string name="action_settings">About</string>
     <string name="launch_card_pick_desc">Protect photos with text, icons or Leica EXIF</string>
@@ -325,4 +327,17 @@
     <string name="batch_history_rerun_confirm_message">The image list and export settings of this history entry will be restored to the editor.</string>
     <string name="batch_history_rerun_done">Restored, review and tap Export again</string>
     <string name="batch_history_delete_confirm_message">Delete this history entry?</string>
+
+    <!-- FEAT-06: watermark profile -->
+    <string name="watermark_profile_title">Watermark profiles</string>
+    <string name="watermark_profile_empty">No saved profile yet</string>
+    <string name="watermark_profile_action_save_current">Save current as profile</string>
+    <string name="watermark_profile_action_apply">Apply</string>
+    <string name="watermark_profile_action_delete">Delete</string>
+    <string name="watermark_profile_name_hint">Profile name (e.g. Instagram)</string>
+    <string name="watermark_profile_saved">Profile saved</string>
+    <string name="watermark_profile_applied">Applied, back to editor</string>
+    <string name="watermark_profile_apply_confirm_title">Apply this profile?</string>
+    <string name="watermark_profile_apply_confirm_message">Current watermark settings will be replaced by "%1$s".</string>
+    <string name="watermark_profile_delete_confirm_message">Delete this profile?</string>
 </resources>

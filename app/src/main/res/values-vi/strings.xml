@@ -4,6 +4,8 @@
     <string name="app_copyright">© SAIGON PHANTOM LABS</string>
     <string name="action_pick">Chọn ảnh</string>
     <string name="action_save">Lưu</string>
+    <!-- FEAT-12: undo/redo chỉnh sửa watermark -->
+    <string name="action_redo">Làm lại</string>
     <string name="action_toggle_skip_export">Bao gồm/bỏ qua ảnh này khi export</string>
     <string name="action_settings">Thông tin</string>
     <string name="launch_card_pick_desc">Chèn chữ, logo bản quyền hoặc khung Leica EXIF</string>
@@ -306,4 +308,17 @@
     <string name="batch_history_rerun_confirm_message">Danh sách ảnh và cấu hình xuất của lần này sẽ được khôi phục vào màn hình chỉnh sửa.</string>
     <string name="batch_history_rerun_done">Đã khôi phục, kiểm tra rồi bấm Xuất lại</string>
     <string name="batch_history_delete_confirm_message">Xóa mục lịch sử này?</string>
+
+    <!-- FEAT-06: hồ sơ watermark -->
+    <string name="watermark_profile_title">Hồ sơ watermark</string>
+    <string name="watermark_profile_empty">Chưa có hồ sơ nào được lưu</string>
+    <string name="watermark_profile_action_save_current">Lưu cấu hình hiện tại thành hồ sơ</string>
+    <string name="watermark_profile_action_apply">Áp dụng</string>
+    <string name="watermark_profile_action_delete">Xóa</string>
+    <string name="watermark_profile_name_hint">Tên hồ sơ (vd: Instagram)</string>
+    <string name="watermark_profile_saved">Đã lưu hồ sơ</string>
+    <string name="watermark_profile_applied">Đã áp dụng, quay lại màn hình chỉnh sửa</string>
+    <string name="watermark_profile_apply_confirm_title">Áp dụng hồ sơ này?</string>
+    <string name="watermark_profile_apply_confirm_message">Cấu hình watermark hiện tại sẽ bị thay bằng "%1$s".</string>
+    <string name="watermark_profile_delete_confirm_message">Xóa hồ sơ này?</string>
 </resources>

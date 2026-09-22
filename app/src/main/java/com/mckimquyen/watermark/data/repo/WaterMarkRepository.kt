@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -124,6 +125,66 @@ class WaterMarkRepository @Inject constructor(
             )
         }
 
+    // FEAT-12: Undo/Redo cho chỉnh sửa watermark trong editor.
+    private val undoStack = ArrayDeque<WaterMark>()
+    private val redoStack = ArrayDeque<WaterMark>()
+    private var lastUndoSnapshotAtMs = 0L
+    private val _canUndo = MutableStateFlow(false)
+    val canUndo: StateFlow<Boolean> = _canUndo
+    private val _canRedo = MutableStateFlow(false)
+    val canRedo: StateFlow<Boolean> = _canRedo
+
+    /**
+     * FEAT-12: gọi ở ĐẦU mọi `updateXxx()` có ý nghĩa với Undo/Redo (không gọi trong
+     * [applyWaterMark] — cố tình để "áp dụng profile" (FEAT-06) và bản thân [undo]/[redo] không tự
+     * đẩy thêm entry, tránh vòng lặp/đẩy chồng lên nhau).
+     *
+     * Luôn xoá [redoStack] (bất kỳ edit mới nào cũng huỷ nhánh "redo" cũ — đúng ngữ nghĩa undo/redo
+     * chuẩn). Việc ĐẨY entry vào [undoStack] thì debounce theo thời gian
+     * ([UNDO_SNAPSHOT_DEBOUNCE_MS]) — nhiều lần gọi liên tục trong CÙNG 1 gesture (kéo slider,
+     * pinch...) chỉ tạo ra 1 entry duy nhất thay vì 1 entry/frame, tránh stack phình to bất thường
+     * (cùng tinh thần debounce ghi DataStore đã áp dụng ở ENH-02, nhưng ở đây debounce cho STACK
+     * chứ KHÔNG debounce chính lần ghi DataStore — ghi vẫn xảy ra ngay để preview tức thời).
+     */
+    private suspend fun snapshotForUndoIfDue() {
+        redoStack.clear()
+        val now = System.currentTimeMillis()
+        if (now - lastUndoSnapshotAtMs < UNDO_SNAPSHOT_DEBOUNCE_MS && undoStack.isNotEmpty()) {
+            updateUndoRedoFlags()
+            return
+        }
+        lastUndoSnapshotAtMs = now
+        val current = waterMark.first()
+        if (undoStack.lastOrNull() != current) {
+            undoStack.addLast(current)
+            if (undoStack.size > MAX_UNDO_STACK) undoStack.removeFirst()
+        }
+        updateUndoRedoFlags()
+    }
+
+    private fun updateUndoRedoFlags() {
+        _canUndo.value = undoStack.isNotEmpty()
+        _canRedo.value = redoStack.isNotEmpty()
+    }
+
+    /** Hoàn tác thay đổi gần nhất — no-op nếu stack rỗng. */
+    suspend fun undo() {
+        val previous = undoStack.removeLastOrNull() ?: return
+        val currentBeforeUndo = waterMark.first()
+        redoStack.addLast(currentBeforeUndo)
+        applyWaterMark(previous)
+        updateUndoRedoFlags()
+    }
+
+    /** Làm lại thay đổi vừa undo — no-op nếu redo stack rỗng. */
+    suspend fun redo() {
+        val next = redoStack.removeLastOrNull() ?: return
+        val currentBeforeRedo = waterMark.first()
+        undoStack.addLast(currentBeforeRedo)
+        applyWaterMark(next)
+        updateUndoRedoFlags()
+    }
+
     private val _imageMapFlow: MutableStateFlow<List<ImageInfo>> = MutableStateFlow(emptyList())
     private val imageInfoMap: MutableMap<Uri, Int> = ArrayMap(_imageMapFlow.value.size)
 
@@ -161,6 +222,7 @@ class WaterMarkRepository @Inject constructor(
     }
 
     suspend fun updateText(text: String) {
+        snapshotForUndoIfDue()
         dataStore.edit {
             it[KEY_MODE] = MarkMode.Text.value
             it[KEY_TEXT] = text
@@ -168,41 +230,50 @@ class WaterMarkRepository @Inject constructor(
     }
 
     suspend fun updateTextSize(size: Float) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[KEY_TEXT_SIZE] = size }
     }
 
     suspend fun updateColor(color: Int) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[KEY_TEXT_COLOR] = color }
     }
 
     suspend fun updateTextStyle(style: TextPaintStyle) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[KEY_TEXT_STYLE] = style.serializeKey() }
     }
 
     suspend fun updateTypeFace(typeface: TextTypeface) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[KEY_TEXT_TYPEFACE] = typeface.serializeKey() }
     }
 
     suspend fun updateAlpha(alpha: Int) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[KEY_ALPHA] = alpha.coerceAtLeast(0).coerceAtMost(255) }
     }
 
     suspend fun updateHorizon(gap: Int) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[KEY_HORIZON_GAP] = gap.coerceAtLeast(0).coerceAtMost(MAX_HORIZON_GAP) }
     }
 
     suspend fun updateVertical(gap: Int) {
+        snapshotForUndoIfDue()
         dataStore.edit {
             it[KEY_VERTICAL_GAP] = gap.coerceAtLeast(0).coerceAtMost(MAX_VERTICAL_GAP)
         }
     }
 
     suspend fun updateDegree(degree: Float) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[KEY_DEGREE] = degree.coerceAtLeast(0f).coerceAtMost(MAX_DEGREE) }
     }
 
     /** FEAT-24: mỗi lần đổi icon, đẩy uri lên đầu danh sách MRU (dùng lại nếu trùng, giới hạn [MAX_RECENT_ICONS]). */
     suspend fun updateIcon(iconUri: Uri) {
+        snapshotForUndoIfDue()
         dataStore.edit {
             it[KEY_MODE] = MarkMode.Image.value
             it[KEY_ICON_URI] = iconUri.toString()
@@ -216,12 +287,14 @@ class WaterMarkRepository @Inject constructor(
     }
 
     suspend fun updateEnableExif(enable: Boolean) {
+        snapshotForUndoIfDue()
         dataStore.edit {
             it[PreferenceKeys.KEY_ENABLE_EXIF] = enable
         }
     }
 
     suspend fun updateExifFrameStyle(style: ExifFrameStyle) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[PreferenceKeys.KEY_EXIF_FRAME_STYLE] = style.ordinal }
     }
 
@@ -259,24 +332,33 @@ class WaterMarkRepository @Inject constructor(
         _selectedImage.emit(imageInfo)
     }
 
+    /**
+     * Chỉ gọi từ [com.mckimquyen.watermark.MyApplication.onCreate] (reset mode mỗi lần app khởi
+     * động lại) — KHÔNG đẩy Undo snapshot (FEAT-12): đây là reset nội bộ lúc khởi động app, không
+     * phải hành động chỉnh sửa của user trong editor, không nên hiện ra như 1 bước có thể "Undo".
+     */
     suspend fun resetModeToText() {
         dataStore.edit { it[KEY_MODE] = MarkMode.Text.value }
     }
 
     suspend fun toggleBounds(enable: Boolean) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[KEY_ENABLE_BOUNDS] = enable }
     }
 
     suspend fun updateAnchor(anchor: Anchor) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[PreferenceKeys.KEY_ANCHOR] = anchor.ordinal }
     }
 
     suspend fun updateMargin(percent: Float) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[PreferenceKeys.KEY_MARGIN] = percent.coerceIn(MIN_MARGIN_PERCENT, MAX_MARGIN_PERCENT) }
     }
 
     /** FEAT-14 — null = xoá override, quay lại màu mặc định của style đang chọn. */
     suspend fun updateExifBandColor(color: Int?) {
+        snapshotForUndoIfDue()
         dataStore.edit {
             if (color == null) it.remove(PreferenceKeys.KEY_EXIF_BAND_COLOR) else it[PreferenceKeys.KEY_EXIF_BAND_COLOR] = color
         }
@@ -284,6 +366,7 @@ class WaterMarkRepository @Inject constructor(
 
     /** FEAT-14 — null = xoá override, quay lại tỉ lệ mặc định của style đang chọn. Có giá trị thì clamp trong khoảng an toàn (tránh band cao 0px, xem BUG-17). */
     suspend fun updateExifBandThicknessPercent(percent: Float?) {
+        snapshotForUndoIfDue()
         dataStore.edit {
             if (percent == null) {
                 it.remove(PreferenceKeys.KEY_EXIF_BAND_THICKNESS)
@@ -296,6 +379,7 @@ class WaterMarkRepository @Inject constructor(
 
     /** FEAT-14 — null = xoá override, quay lại font mặc định của style đang chọn. */
     suspend fun updateExifUseSerifCaption(useSerif: Boolean?) {
+        snapshotForUndoIfDue()
         dataStore.edit {
             if (useSerif == null) it.remove(PreferenceKeys.KEY_EXIF_SERIF_CAPTION) else it[PreferenceKeys.KEY_EXIF_SERIF_CAPTION] = useSerif
         }
@@ -303,25 +387,66 @@ class WaterMarkRepository @Inject constructor(
 
     /** FEAT-11 — bật/tắt viền tương phản cho text watermark, độc lập với shadow/pill. */
     suspend fun updateTextEffectStroke(enable: Boolean) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[PreferenceKeys.KEY_TEXT_EFFECT_STROKE] = enable }
     }
 
     /** FEAT-11 — bật/tắt đổ bóng cho text watermark, độc lập với stroke/pill. */
     suspend fun updateTextEffectShadow(enable: Boolean) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[PreferenceKeys.KEY_TEXT_EFFECT_SHADOW] = enable }
     }
 
     /** FEAT-11 — bật/tắt nền pill cho text watermark, độc lập với stroke/shadow. */
     suspend fun updateTextEffectPillBackground(enable: Boolean) {
+        snapshotForUndoIfDue()
         dataStore.edit { it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] = enable }
     }
 
     /** FEAT-14 — xoá cả 3 override cùng lúc (nút "Reset" trong UI). */
     suspend fun resetExifCustomization() {
+        snapshotForUndoIfDue()
         dataStore.edit {
             it.remove(PreferenceKeys.KEY_EXIF_BAND_COLOR)
             it.remove(PreferenceKeys.KEY_EXIF_BAND_THICKNESS)
             it.remove(PreferenceKeys.KEY_EXIF_SERIF_CAPTION)
+        }
+    }
+
+    /**
+     * FEAT-06: áp dụng lại 1 "hồ sơ" watermark đã lưu — ghi TOÀN BỘ field của [mark] trong 1
+     * `edit{}` (atomic, tránh nhiều lần `updateXxx()` riêng lẻ khiến các Flow collector khác nhận
+     * hàng loạt emit trung gian không nhất quán). KHÔNG đụng [KEY_RECENT_ICON_URIS] — đó là MRU
+     * icon dùng chung toàn app (FEAT-24), không thuộc về riêng 1 profile.
+     */
+    suspend fun applyWaterMark(mark: WaterMark) {
+        dataStore.edit {
+            it[KEY_TEXT] = mark.text
+            it[KEY_TEXT_SIZE] = mark.textSize
+            it[KEY_TEXT_COLOR] = mark.textColor
+            it[KEY_TEXT_STYLE] = mark.textStyle.serializeKey()
+            it[KEY_TEXT_TYPEFACE] = mark.textTypeface.serializeKey()
+            it[KEY_ALPHA] = mark.alpha
+            it[KEY_DEGREE] = mark.degree
+            it[KEY_HORIZON_GAP] = mark.hGap
+            it[KEY_VERTICAL_GAP] = mark.vGap
+            it[KEY_ICON_URI] = mark.iconUri.toString()
+            it[KEY_MODE] = mark.markMode.value
+            it[PreferenceKeys.KEY_ENABLE_BOUNDS] = mark.enableBounds
+            it[PreferenceKeys.KEY_ENABLE_EXIF] = mark.enableExif
+            it[PreferenceKeys.KEY_EXIF_FRAME_STYLE] = mark.exifFrameStyle
+            it[PreferenceKeys.KEY_ANCHOR] = mark.anchor
+            it[PreferenceKeys.KEY_MARGIN] = mark.marginPercent
+            if (mark.exifBandColor == null) it.remove(PreferenceKeys.KEY_EXIF_BAND_COLOR) else it[PreferenceKeys.KEY_EXIF_BAND_COLOR] = mark.exifBandColor
+            if (mark.exifBandThicknessPercent == null) {
+                it.remove(PreferenceKeys.KEY_EXIF_BAND_THICKNESS)
+            } else {
+                it[PreferenceKeys.KEY_EXIF_BAND_THICKNESS] = mark.exifBandThicknessPercent
+            }
+            if (mark.exifUseSerifCaption == null) it.remove(PreferenceKeys.KEY_EXIF_SERIF_CAPTION) else it[PreferenceKeys.KEY_EXIF_SERIF_CAPTION] = mark.exifUseSerifCaption
+            it[PreferenceKeys.KEY_TEXT_EFFECT_STROKE] = mark.textEffectStroke
+            it[PreferenceKeys.KEY_TEXT_EFFECT_SHADOW] = mark.textEffectShadow
+            it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] = mark.textEffectPillBackground
         }
     }
 
@@ -386,6 +511,12 @@ class WaterMarkRepository @Inject constructor(
 
         /** FEAT-24: số icon/logo gần đây tối đa giữ lại cho quick-pick. */
         const val MAX_RECENT_ICONS = 8
+
+        /** FEAT-12: số bước Undo tối đa giữ lại (entry cũ nhất bị bỏ khi vượt). */
+        const val MAX_UNDO_STACK = 20
+
+        /** FEAT-12: gộp nhiều lần gọi update liên tục (vd 1 gesture kéo slider) thành 1 entry Undo. */
+        const val UNDO_SNAPSHOT_DEBOUNCE_MS = 400L
 
         /** Uri không thể chứa newline thật (chỉ %0A percent-encode) — an toàn làm delimiter. */
         private const val RECENT_ICON_URI_DELIMITER = "\n"

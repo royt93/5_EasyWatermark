@@ -3,6 +3,8 @@ package com.mckimquyen.watermark.ui
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -43,6 +45,23 @@ class BatchHistoryActivity : BaseActivity() {
         binding.topAppBar.setNavigationOnClickListener { finish() }
         binding.rvHistory.layoutManager = LinearLayoutManager(this)
         binding.rvHistory.adapter = adapter
+
+        // Edge-to-edge (BaseActivity.applyEdgeToEdge): xem giải thích chi tiết ở
+        // WatermarkProfileActivity — bug thật phát hiện lúc smoke test FEAT-06 (nút đáy màn hình bị
+        // navigation bar/gesture hệ thống che tap), fix chung ở đây phòng ngừa cùng lớp bug cho
+        // item cuối của rvHistory trên màn hình nhỏ.
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val statusBarTop = insets.getInsets(
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+            ).top
+            val navBarBottom = insets.getInsets(
+                WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.displayCutout()
+            ).bottom
+            binding.topAppBar.setPadding(0, statusBarTop, 0, 0)
+            binding.rvHistory.setPadding(0, binding.rvHistory.paddingTop, 0, navBarBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(binding.root)
 
         lifecycleScope.launch {
             viewModel.historyFlow.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED).collect { list ->

@@ -79,6 +79,10 @@ class MainViewModel @Inject constructor(
 
     val waterMark: LiveData<WaterMark> = waterMarkRepo.waterMark.asLiveData()
 
+    /** FEAT-12: trạng thái nút Undo/Redo trên toolbar editor. */
+    val canUndo: LiveData<Boolean> = waterMarkRepo.canUndo.asLiveData()
+    val canRedo: LiveData<Boolean> = waterMarkRepo.canRedo.asLiveData()
+
     private val uiState: MutableStateFlow<UiState> = MutableStateFlow(UiState.None)
 
     val uiStateFlow: StateFlow<UiState> = uiState.asStateFlow()
@@ -380,6 +384,20 @@ class MainViewModel @Inject constructor(
     fun updateText(text: String) {
         launch {
             waterMarkRepo.updateText(text)
+        }
+    }
+
+    /** FEAT-12 */
+    fun undo() {
+        launch {
+            waterMarkRepo.undo()
+        }
+    }
+
+    /** FEAT-12 */
+    fun redo() {
+        launch {
+            waterMarkRepo.redo()
         }
     }
 

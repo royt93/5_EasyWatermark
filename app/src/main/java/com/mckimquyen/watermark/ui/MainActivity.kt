@@ -478,6 +478,9 @@ class MainActivity : BaseActivity() {
             }
             viewModel.resetJobStatus()
         }
+        // FEAT-12: bật/tắt Undo/Redo trên toolbar theo trạng thái stack hiện tại.
+        viewModel.canUndo.observe(this) { refreshUndoRedoState() }
+        viewModel.canRedo.observe(this) { refreshUndoRedoState() }
         viewModel.selectedImage.observe(this) {
             if (it == null || it.uri.toString().isBlank()) {
                 return@observe
@@ -966,7 +969,23 @@ class MainActivity : BaseActivity() {
         )
         applyToolbarIconColor(iconColor)
         refreshVipBadge()
+        refreshUndoRedoState()
         return true
+    }
+
+    /** FEAT-12: bật/tắt 2 nút Undo/Redo theo `canUndo`/`canRedo` hiện tại — gọi lại mỗi khi 2 giá
+     * trị này đổi (xem observer trong onCreate) vì Android không tự re-invoke `onCreateOptionsMenu`
+     * khi state thay đổi, chỉ khi menu được tạo lại. */
+    private fun refreshUndoRedoState() {
+        if (!this::launchView.isInitialized) return
+        val toolbar = launchView.toolbar
+        val canUndo = viewModel.canUndo.value ?: false
+        val canRedo = viewModel.canRedo.value ?: false
+        toolbar.post {
+            if (isFinishing || isDestroyed) return@post
+            toolbar.menu.findItem(R.id.actionUndo)?.isEnabled = canUndo
+            toolbar.menu.findItem(R.id.actionRedo)?.isEnabled = canRedo
+        }
     }
 
     /** Badge VIP vàng trên icon crown khi gói VIP còn hiệu lực; tự gỡ khi hết VIP. */
@@ -1006,6 +1025,21 @@ class MainActivity : BaseActivity() {
 
         R.id.actionBatchHistory -> {
             startActivity(Intent(this, BatchHistoryActivity::class.java))
+            true
+        }
+
+        R.id.actionWatermarkProfile -> {
+            startActivity(Intent(this, WatermarkProfileActivity::class.java))
+            true
+        }
+
+        R.id.actionUndo -> {
+            viewModel.undo()
+            true
+        }
+
+        R.id.actionRedo -> {
+            viewModel.redo()
             true
         }
 

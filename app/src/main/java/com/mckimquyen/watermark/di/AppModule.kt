@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.mckimquyen.watermark.data.db.AppDatabase
 import com.mckimquyen.watermark.data.db.BatchHistoryDatabase
+import com.mckimquyen.watermark.data.db.WatermarkProfileDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -54,4 +55,19 @@ object AppModule {
     @Singleton
     @Provides
     fun provideBatchHistoryDao(db: BatchHistoryDatabase) = db.batchHistoryDao()
+
+    /** FEAT-06: DB riêng (không seed từ asset) — xem doc ở `WatermarkProfileEntity`. */
+    @Singleton
+    @Provides
+    fun provideWatermarkProfileDatabase(
+        @ApplicationContext app: Context
+    ): WatermarkProfileDatabase = Room.databaseBuilder(
+        context = app,
+        klass = WatermarkProfileDatabase::class.java,
+        name = "watermark-profile-db"
+    ).build()
+
+    @Singleton
+    @Provides
+    fun provideWatermarkProfileDao(db: WatermarkProfileDatabase) = db.watermarkProfileDao()
 }
