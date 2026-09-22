@@ -88,6 +88,9 @@
         <activity
             android:name=".feature.vip.VipManagementActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.BatchHistoryActivity"
+            android:screenOrientation="portrait" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

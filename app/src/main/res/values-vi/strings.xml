@@ -290,4 +290,20 @@
     <string name="close">Đóng</string>
     <string name="action_close">Đóng</string>
     <string name="gallery_photo_item_desc">Ảnh %1$d</string>
+
+    <!-- FEAT-04: lịch sử batch export -->
+    <string name="batch_history_title">Lịch sử xuất ảnh</string>
+    <string name="batch_history_empty">Chưa có lần xuất ảnh nào</string>
+    <string name="batch_history_summary">%1$d thành công · %2$d lỗi</string>
+    <string name="batch_history_action_view">Xem</string>
+    <string name="batch_history_action_rerun">Chạy lại</string>
+    <string name="batch_history_action_delete">Xóa</string>
+    <string name="batch_history_detail_title">Chi tiết lần xuất</string>
+    <string name="batch_history_detail_success_header">Thành công (%1$d)</string>
+    <string name="batch_history_detail_failed_header">Lỗi (%1$d)</string>
+    <string name="batch_history_detail_none">Không có</string>
+    <string name="batch_history_rerun_confirm_title">Chạy lại lần xuất này?</string>
+    <string name="batch_history_rerun_confirm_message">Danh sách ảnh và cấu hình xuất của lần này sẽ được khôi phục vào màn hình chỉnh sửa.</string>
+    <string name="batch_history_rerun_done">Đã khôi phục, kiểm tra rồi bấm Xuất lại</string>
+    <string name="batch_history_delete_confirm_message">Xóa mục lịch sử này?</string>
 </resources>

@@ -18,8 +18,10 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.mckimquyen.watermark.R
+import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
 import com.mckimquyen.watermark.data.model.ViewInfo
+import com.mckimquyen.watermark.data.repo.BatchHistoryRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import dagger.assisted.Assisted
@@ -40,7 +42,8 @@ class BatchExportWorker @AssistedInject constructor(
     @Assisted params: WorkerParameters,
     private val waterMarkRepo: WaterMarkRepository,
     private val userRepo: UserConfigRepository,
-    private val engine: BatchExportEngine
+    private val engine: BatchExportEngine,
+    private val batchHistoryRepo: BatchHistoryRepository
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): WorkResult {
@@ -89,8 +92,30 @@ class BatchExportWorker @AssistedInject constructor(
         // Failure). Ghi thẳng danh sách cuối vào repo (nguồn sự thật bền, sống sót qua
         // backgrounding/process death — đúng mục tiêu AC1) để ViewModel đọc lại khi work xong,
         // thay vì chỉ dựa vào progress Data tạm thời.
-        waterMarkRepo.updateImageList(result.data ?: infoList)
+        val finalList = result.data ?: infoList
+        waterMarkRepo.updateImageList(finalList)
+        recordHistory(infoList, finalList, settings)
         return if (result.isFailure()) WorkResult.failure() else WorkResult.success()
+    }
+
+    /**
+     * FEAT-04: ghi 1 entry lịch sử sau mỗi batch export chạy xong (kể cả lỗi 1 phần) — dùng
+     * [infoList] gốc (trước export) làm `inputUris` để khôi phục đúng nguyên batch khi "chạy lại",
+     * KHÔNG dùng [finalList] vì ảnh bị skip (FEAT-17) giữ nguyên `jobState = Ready` trong cả 2 list.
+     */
+    private suspend fun recordHistory(
+        infoList: List<ImageInfo>,
+        finalList: List<ImageInfo>,
+        settings: BatchExportEngine.ExportSettings
+    ) {
+        val outputUris = finalList.mapNotNull { it.shareUri }
+        val failedInputUris = finalList.filter { it.jobState is JobState.Failure }.map { it.uri }
+        batchHistoryRepo.record(
+            inputUris = infoList.map { it.uri },
+            outputUris = outputUris,
+            failedInputUris = failedInputUris,
+            settings = settings
+        )
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo = createForegroundInfo(0, waterMarkRepo.imageInfoList.size)

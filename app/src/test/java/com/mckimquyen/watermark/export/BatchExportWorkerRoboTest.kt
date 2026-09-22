@@ -13,11 +13,16 @@ import androidx.work.WorkerParameters
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.common.truth.Truth.assertThat
+import com.mckimquyen.watermark.data.db.dao.BatchHistoryDao
 import com.mckimquyen.watermark.data.model.ImageInfo
+import com.mckimquyen.watermark.data.model.entity.BatchHistoryEntity
+import com.mckimquyen.watermark.data.repo.BatchHistoryRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -40,6 +45,20 @@ class BatchExportWorkerRoboTest {
     private val userDataStore = newTestUserDataStore(context)
     private lateinit var waterMarkRepo: WaterMarkRepository
     private lateinit var userRepo: UserConfigRepository
+    private lateinit var fakeHistoryDao: FakeBatchHistoryDao
+    private lateinit var batchHistoryRepo: BatchHistoryRepository
+
+    /** FEAT-04: fake nhẹ thay vì Room thật — Room DAO test dành cho androidTest theo quy ước repo này. */
+    private class FakeBatchHistoryDao : BatchHistoryDao {
+        val inserted = mutableListOf<BatchHistoryEntity>()
+        override fun getAll(): Flow<List<BatchHistoryEntity>> = flowOf(emptyList())
+        override suspend fun insert(entity: BatchHistoryEntity): Long {
+            inserted.add(entity)
+            return inserted.size.toLong()
+        }
+        override suspend fun deleteById(id: Long) = Unit
+        override suspend fun trimOldest(keepCount: Int) = Unit
+    }
 
     @Before
     fun setUp() {
@@ -49,6 +68,8 @@ class BatchExportWorkerRoboTest {
         }
         waterMarkRepo = WaterMarkRepository(context, waterMarkDataStore)
         userRepo = UserConfigRepository(userDataStore)
+        fakeHistoryDao = FakeBatchHistoryDao()
+        batchHistoryRepo = BatchHistoryRepository(fakeHistoryDao)
 
         val engine = BatchExportEngine(context, ExportNaming())
         val testWorkerFactory = object : WorkerFactory() {
@@ -58,7 +79,7 @@ class BatchExportWorkerRoboTest {
                 workerParameters: WorkerParameters
             ): ListenableWorker? {
                 return if (workerClassName == BatchExportWorker::class.java.name) {
-                    BatchExportWorker(appContext, workerParameters, waterMarkRepo, userRepo, engine)
+                    BatchExportWorker(appContext, workerParameters, waterMarkRepo, userRepo, engine, batchHistoryRepo)
                 } else {
                     null
                 }
@@ -91,6 +112,9 @@ class BatchExportWorkerRoboTest {
 
         val info = awaitTerminalWorkInfo()
         assertThat(info?.state).isEqualTo(WorkInfo.State.FAILED)
+        // FEAT-04: infoList rỗng return sớm TRƯỚC recordHistory() — không có batch thật nào chạy,
+        // không đáng ghi lịch sử.
+        assertThat(fakeHistoryDao.inserted).isEmpty()
     }
 
     @Test
@@ -119,6 +143,13 @@ class BatchExportWorkerRoboTest {
         val finalList = waterMarkRepo.imageInfoList
         assertThat(finalList).hasSize(1)
         assertThat(finalList.first().jobState).isInstanceOf(com.mckimquyen.watermark.data.model.JobState.Failure::class.java)
+
+        // FEAT-04 AC1: 1 entry lịch sử mới xuất hiện sau batch, kể cả khi ảnh trong batch lỗi hết.
+        assertThat(fakeHistoryDao.inserted).hasSize(1)
+        val entry = fakeHistoryDao.inserted.single()
+        assertThat(BatchHistoryRepository.decodeUriList(entry.inputUris)).containsExactly(original.uri)
+        assertThat(BatchHistoryRepository.decodeUriList(entry.outputUris)).isEmpty()
+        assertThat(BatchHistoryRepository.decodeUriList(entry.failedInputUris)).containsExactly(original.uri)
     }
 
     private fun awaitTerminalWorkInfo(timeoutMs: Long = 5_000): WorkInfo? {

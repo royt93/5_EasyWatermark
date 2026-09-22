@@ -14,9 +14,12 @@ import androidx.work.WorkerParameters
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.common.truth.Truth.assertThat
+import com.mckimquyen.watermark.data.db.dao.BatchHistoryDao
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
 import com.mckimquyen.watermark.data.model.ViewInfo
+import com.mckimquyen.watermark.data.model.entity.BatchHistoryEntity
+import com.mckimquyen.watermark.data.repo.BatchHistoryRepository
 import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
@@ -26,6 +29,8 @@ import com.mckimquyen.watermark.export.BatchExportWorker
 import com.mckimquyen.watermark.export.ExportNaming
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -47,6 +52,14 @@ import org.robolectric.Shadows.shadowOf
  */
 @RunWith(RobolectricTestRunner::class)
 class MainViewModelSaveImageImmutabilityRoboTest {
+
+    /** FEAT-04: fake nhẹ — Room DAO test dành cho androidTest theo quy ước repo này. */
+    private class NoopBatchHistoryDao : BatchHistoryDao {
+        override fun getAll(): Flow<List<BatchHistoryEntity>> = flowOf(emptyList())
+        override suspend fun insert(entity: BatchHistoryEntity): Long = 0
+        override suspend fun deleteById(id: Long) = Unit
+        override suspend fun trimOldest(keepCount: Int) = Unit
+    }
 
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val waterMarkDataStore = newTestWaterMarkDataStore(context)
@@ -80,7 +93,7 @@ class MainViewModelSaveImageImmutabilityRoboTest {
                 workerParameters: WorkerParameters
             ): ListenableWorker? {
                 return if (workerClassName == BatchExportWorker::class.java.name) {
-                    BatchExportWorker(appContext, workerParameters, waterMarkRepo, userRepo, engine)
+                    BatchExportWorker(appContext, workerParameters, waterMarkRepo, userRepo, engine, BatchHistoryRepository(NoopBatchHistoryDao()))
                 } else {
                     null
                 }

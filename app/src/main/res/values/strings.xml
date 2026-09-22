@@ -309,4 +309,20 @@
     <string name="close">Close</string>
     <string name="action_close">Close</string>
     <string name="gallery_photo_item_desc">Photo %1$d</string>
+
+    <!-- FEAT-04: batch export history -->
+    <string name="batch_history_title">Export history</string>
+    <string name="batch_history_empty">No batch export yet</string>
+    <string name="batch_history_summary">%1$d success · %2$d failed</string>
+    <string name="batch_history_action_view">View</string>
+    <string name="batch_history_action_rerun">Rerun</string>
+    <string name="batch_history_action_delete">Delete</string>
+    <string name="batch_history_detail_title">Export detail</string>
+    <string name="batch_history_detail_success_header">Success (%1$d)</string>
+    <string name="batch_history_detail_failed_header">Failed (%1$d)</string>
+    <string name="batch_history_detail_none">None</string>
+    <string name="batch_history_rerun_confirm_title">Rerun this export?</string>
+    <string name="batch_history_rerun_confirm_message">The image list and export settings of this history entry will be restored to the editor.</string>
+    <string name="batch_history_rerun_done">Restored, review and tap Export again</string>
+    <string name="batch_history_delete_confirm_message">Delete this history entry?</string>
 </resources>

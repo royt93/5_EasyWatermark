@@ -1004,6 +1004,11 @@ class MainActivity : BaseActivity() {
             true
         }
 
+        R.id.actionBatchHistory -> {
+            startActivity(Intent(this, BatchHistoryActivity::class.java))
+            true
+        }
+
         R.id.actionPick -> {
             preCheckStoragePermission {
                 performFileSearch(REQ_CODE_PICK_IMAGE)

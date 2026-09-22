@@ -3,6 +3,7 @@ package com.mckimquyen.watermark.di
 import android.content.Context
 import androidx.room.Room
 import com.mckimquyen.watermark.data.db.AppDatabase
+import com.mckimquyen.watermark.data.db.BatchHistoryDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,4 +39,19 @@ object AppModule {
     @Singleton
     @Provides
     fun provideTemplateDao(db: AppDatabase?) = db?.templateDao()
+
+    /** FEAT-04: DB riêng (không seed từ asset) — xem doc ở `BatchHistoryEntity`. */
+    @Singleton
+    @Provides
+    fun provideBatchHistoryDatabase(
+        @ApplicationContext app: Context
+    ): BatchHistoryDatabase = Room.databaseBuilder(
+        context = app,
+        klass = BatchHistoryDatabase::class.java,
+        name = "batch-history-db"
+    ).build()
+
+    @Singleton
+    @Provides
+    fun provideBatchHistoryDao(db: BatchHistoryDatabase) = db.batchHistoryDao()
 }
