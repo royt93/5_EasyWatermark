@@ -25,7 +25,7 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
 ./gradlew clean
 ```
 
-- **Unit test (`app/src/test`, 125 file)**: rải khắp `data/{backup,db,model,repo}`, `di`, `export`, `feature/vip`, `ui/{about,adapter,dlg,panel,widget}`, `utils/{bitmap,ktx}`. Test Robolectric mang hậu tố `*RoboTest`.
+- **Unit test (`app/src/test`, 126 file)**: rải khắp `data/{backup,db,model,repo}`, `di`, `export`, `feature/vip`, `ui/{about,adapter,dlg,panel,widget}`, `utils/{bitmap,ktx}`. Test Robolectric mang hậu tố `*RoboTest`.
   ```bash
   ./gradlew testDebugUnitTest                                    # toàn bộ unit test
   ./gradlew testDebugUnitTest --tests "*.DateConverterTest"      # 1 class

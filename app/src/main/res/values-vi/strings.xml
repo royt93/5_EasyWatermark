@@ -81,6 +81,8 @@
     <string name="text_typeface_italic">Nghiêng</string>
     <string name="text_typeface_bold_italic">Đậm nghiêng</string>
     <string name="dialog_save_export_list_title">Danh sách xuất (%1$s)</string>
+    <string name="format_label_webp_lossy">WEBP (Nén mất chất lượng)</string>
+    <string name="format_label_webp_lossless">WEBP (Không mất chất lượng)</string>
     <string name="dialog_save_export_count_with_failures">%1$d/%2$d · %3$d lỗi</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d · ~%3$s</string>
     <string name="dialog_open_in_gallery">Xem trong thư viện</string>

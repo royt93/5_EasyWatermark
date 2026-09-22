@@ -2,6 +2,7 @@ package com.mckimquyen.watermark.ui.dlg
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -40,14 +41,27 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     private val imageList: List<ImageInfo>
         get() = (requireContext() as MainActivity).getImageList()
 
-    private val popArray = arrayOf("JPEG", "PNG", "WEBP")
+    // ENH-34: API 30+ tách WEBP_LOSSY/WEBP_LOSSLESS rõ ràng (WEBP cũ đã deprecated, không cho
+    // chọn lossless thật) — API <30 giữ nguyên 1 lựa chọn "WEBP" như cũ (field WEBP_LOSSY/
+    // WEBP_LOSSLESS không tồn tại trên framework thiết bị cũ, KHÔNG được tham chiếu ngoài nhánh này).
+    private val supportsModernWebp = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 
-    @Suppress("DEPRECATION")
-    private val formatByIndex = arrayOf(
-        Bitmap.CompressFormat.JPEG,
-        Bitmap.CompressFormat.PNG,
-        Bitmap.CompressFormat.WEBP
-    )
+    // `by lazy` (không phải giá trị ngay lúc field khởi tạo) — Fragment chưa attach Context lúc
+    // constructor chạy, `getString()` gọi ngay tại đây sẽ crash "Fragment not attached to a context".
+    private val popArray: Array<String> by lazy {
+        if (supportsModernWebp) {
+            arrayOf("JPEG", "PNG", getString(R.string.format_label_webp_lossy), getString(R.string.format_label_webp_lossless))
+        } else {
+            arrayOf("JPEG", "PNG", "WEBP")
+        }
+    }
+
+    private val formatByIndex: Array<Bitmap.CompressFormat> = if (supportsModernWebp) {
+        arrayOf(Bitmap.CompressFormat.JPEG, Bitmap.CompressFormat.PNG, Bitmap.CompressFormat.WEBP_LOSSY, Bitmap.CompressFormat.WEBP_LOSSLESS)
+    } else {
+        @Suppress("DEPRECATION")
+        arrayOf(Bitmap.CompressFormat.JPEG, Bitmap.CompressFormat.PNG, Bitmap.CompressFormat.WEBP)
+    }
 
     // Resize cạnh dài: nhãn ↔ giá trị px (0 = giữ nguyên) — nguồn từ OutputImageUtils.resizePresets
     // (gồm preset px thuần + preset đặt tên theo nền tảng mạng xã hội, xem FEAT-09).
@@ -62,9 +76,9 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         com.mckimquyen.watermark.data.model.ConflictPolicy.SKIP
     )
 
-    /** PNG là lossless nên ẩn slider chất lượng; JPEG/WEBP có dùng. */
+    /** PNG/WEBP_LOSSLESS là lossless nên ẩn slider chất lượng; JPEG/WEBP/WEBP_LOSSY có dùng. */
     private fun supportsQuality(format: Bitmap.CompressFormat): Boolean =
-        format != Bitmap.CompressFormat.PNG
+        !OutputImageUtils.resolveIsLossless(format, Build.VERSION.SDK_INT)
 
     /**
      * ENH-13: hiển thị rõ số ảnh lỗi khi có, giữ nguyên format "X/Y" cũ khi mọi ảnh đều thành

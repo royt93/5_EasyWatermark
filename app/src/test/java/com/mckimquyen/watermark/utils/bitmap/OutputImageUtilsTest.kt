@@ -1,6 +1,7 @@
 package com.mckimquyen.watermark.utils.bitmap
 
 import android.graphics.Bitmap
+import android.os.Build
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
@@ -114,5 +115,46 @@ class OutputImageUtilsTest {
     @Test
     fun estimateOutputBytes_zeroDimensions_neverReturnsBelowFloor() {
         assertThat(OutputImageUtils.estimateOutputBytes(0, 0, Bitmap.CompressFormat.JPEG, 80)).isAtLeast(1024L)
+    }
+
+    // ── ENH-34: WEBP_LOSSY/WEBP_LOSSLESS (API 30+) ─────────────────────────────────────────
+
+    @Test
+    fun resolveIsLossless_png_alwaysTrue_regardlessOfSdk() {
+        assertThat(OutputImageUtils.resolveIsLossless(Bitmap.CompressFormat.PNG, sdkInt = Build.VERSION_CODES.LOLLIPOP)).isTrue()
+        assertThat(OutputImageUtils.resolveIsLossless(Bitmap.CompressFormat.PNG, sdkInt = Build.VERSION_CODES.R)).isTrue()
+    }
+
+    @Test
+    fun resolveIsLossless_jpeg_alwaysFalse() {
+        assertThat(OutputImageUtils.resolveIsLossless(Bitmap.CompressFormat.JPEG, sdkInt = Build.VERSION_CODES.R)).isFalse()
+    }
+
+    @Test
+    fun resolveIsLossless_webpLossless_onModernSdk_isTrue() {
+        assertThat(OutputImageUtils.resolveIsLossless(Bitmap.CompressFormat.WEBP_LOSSLESS, sdkInt = Build.VERSION_CODES.R)).isTrue()
+    }
+
+    @Suppress("DEPRECATION")
+    @Test
+    fun resolveIsLossless_webpLossy_isFalse() {
+        assertThat(OutputImageUtils.resolveIsLossless(Bitmap.CompressFormat.WEBP_LOSSY, sdkInt = Build.VERSION_CODES.R)).isFalse()
+        assertThat(OutputImageUtils.resolveIsLossless(Bitmap.CompressFormat.WEBP, sdkInt = Build.VERSION_CODES.LOLLIPOP)).isFalse()
+    }
+
+    @Test
+    fun estimateOutputBytes_webpLossless_onModernSdk_ignoresQuality_sameAsPng() {
+        val q30 = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.WEBP_LOSSLESS, 30, sdkInt = Build.VERSION_CODES.R)
+        val q100 = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.WEBP_LOSSLESS, 100, sdkInt = Build.VERSION_CODES.R)
+        val png = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.PNG, 30)
+        assertThat(q30).isEqualTo(q100)
+        assertThat(q30).isEqualTo(png)
+    }
+
+    @Test
+    fun estimateOutputBytes_webpLossy_stillRespectsQuality() {
+        val low = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.WEBP_LOSSY, 30, sdkInt = Build.VERSION_CODES.R)
+        val high = OutputImageUtils.estimateOutputBytes(1080, 1920, Bitmap.CompressFormat.WEBP_LOSSY, 95, sdkInt = Build.VERSION_CODES.R)
+        assertThat(high).isGreaterThan(low)
     }
 }

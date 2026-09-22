@@ -1,6 +1,7 @@
 package com.mckimquyen.watermark.utils.bitmap
 
 import android.graphics.Bitmap
+import android.os.Build
 
 /**
  * Tiện ích thuần liên quan tới định dạng & kích thước ảnh xuất.
@@ -75,14 +76,35 @@ object OutputImageUtils {
      * KHÔNG chính xác tuyệt đối (phụ thuộc nội dung ảnh thật, không nén thử thật sự), chỉ đủ để
      * user có khái niệm tương đối trước khi export cả batch lớn. Hàm thuần — test trực tiếp trên JVM.
      */
-    fun estimateOutputBytes(width: Int, height: Int, format: Bitmap.CompressFormat, quality: Int): Long {
+    /**
+     * ENH-34: [sdkInt] tham số hoá (mặc định `Build.VERSION.SDK_INT` thật) thay vì đọc thẳng —
+     * để test được nhánh WEBP_LOSSLESS (chỉ tồn tại field API 30+, xem [resolveIsLossless]) bằng
+     * JUnit thuần mà không cần Robolectric mock `Build.VERSION.SDK_INT`.
+     */
+    fun estimateOutputBytes(
+        width: Int,
+        height: Int,
+        format: Bitmap.CompressFormat,
+        quality: Int,
+        sdkInt: Int = Build.VERSION.SDK_INT
+    ): Long {
         val pixels = width.toLong() * height.toLong()
-        val bitsPerPixel = if (format == Bitmap.CompressFormat.PNG) {
+        val bitsPerPixel = if (resolveIsLossless(format, sdkInt)) {
             PNG_ESTIMATED_BITS_PER_PIXEL
         } else {
             JPEG_MIN_BITS_PER_PIXEL + (quality.coerceIn(0, 100) / 100.0) * JPEG_QUALITY_BITS_PER_PIXEL_RANGE
         }
         return (pixels * bitsPerPixel / 8.0).toLong().coerceAtLeast(MIN_ESTIMATED_BYTES)
+    }
+
+    /**
+     * PNG luôn lossless. WEBP_LOSSLESS cũng lossless nhưng field đó chỉ tồn tại trên framework
+     * thiết bị API 30+ — `sdkInt >= R &&` đứng trước để short-circuit, tránh tham chiếu field
+     * không tồn tại (`NoSuchFieldError`) trên thiết bị cũ.
+     */
+    internal fun resolveIsLossless(format: Bitmap.CompressFormat, sdkInt: Int): Boolean {
+        if (format == Bitmap.CompressFormat.PNG) return true
+        return sdkInt >= Build.VERSION_CODES.R && format == Bitmap.CompressFormat.WEBP_LOSSLESS
     }
 
     /** PNG lossless — ước lượng trung bình cho ảnh chụp thường (không phải icon/flat color). */

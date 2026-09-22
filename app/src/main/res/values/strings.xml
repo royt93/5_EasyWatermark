@@ -89,6 +89,8 @@
     <string name="text_typeface_italic">Italic</string>
     <string name="text_typeface_bold_italic">Bold Italic</string>
     <string name="dialog_save_export_list_title">Export list(%1$s)</string>
+    <string name="format_label_webp_lossy">WEBP (Lossy)</string>
+    <string name="format_label_webp_lossless">WEBP (Lossless)</string>
     <string name="dialog_save_export_count_with_failures">%1$d/%2$d · %3$d failed</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d · ~%3$s</string>
     <string name="dialog_open_in_gallery">View in gallery</string>
