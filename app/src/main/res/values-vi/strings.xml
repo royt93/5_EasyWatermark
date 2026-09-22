@@ -131,6 +131,10 @@
     <string name="position_anchor_button">Vị trí</string>
     <string name="position_anchor_title">Vị trí watermark</string>
     <string name="position_anchor_margin">Khoảng cách mép</string>
+    <!-- FEAT-18: slider so sánh trước/sau -->
+    <string name="compare_title">So sánh trước/sau</string>
+    <string name="compare_hint">Kéo để xem lại ảnh gốc</string>
+    <string name="action_compare">So sánh</string>
     <string name="position_anchor_margin_value">%d%%</string>
     <string name="anchor_top_left">Trên trái</string>
     <string name="anchor_top_center">Trên giữa</string>

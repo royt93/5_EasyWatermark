@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet_surface"
+    android:paddingStart="16dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="16dp">
+
+    <View
+        android:id="@+id/vHandle"
+        android:layout_width="32dp"
+        android:layout_height="4dp"
+        android:alpha="0.4"
+        android:background="@drawable/bg_m3_drag_handle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="@string/compare_title"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@id/tvValue"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/vHandle" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/vHandle"
+        tools:text="100%" />
+
+    <FrameLayout
+        android:id="@+id/flPreview"
+        android:layout_width="match_parent"
+        android:layout_height="360dp"
+        android:layout_marginTop="12dp"
+        android:background="?attr/colorSurfaceContainer"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle">
+
+        <ImageView
+            android:id="@+id/ivOriginal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/compare_hint"
+            android:scaleType="fitCenter" />
+
+        <ImageView
+            android:id="@+id/ivWatermarked"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/compare_title"
+            android:scaleType="fitCenter" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:indeterminate="true" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/save_failed"
+            android:textColor="?attr/colorError"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/slCompare"
+        style="@style/MySeekBarStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/compare_title"
+        android:focusable="true"
+        android:stepSize="1"
+        android:value="100"
+        android:valueFrom="0"
+        android:valueTo="100"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/flPreview" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -57,6 +57,7 @@ import com.mckimquyen.watermark.rateAppInApp
 import com.mckimquyen.watermark.ui.about.AboutActivity
 import com.mckimquyen.watermark.ui.adapter.FuncPanelAdapter
 import com.mckimquyen.watermark.ui.adapter.PhotoListPreviewAdapter
+import com.mckimquyen.watermark.ui.dlg.CompareBottomSheetFragment
 import com.mckimquyen.watermark.ui.dlg.CompressImageDialogFragment
 import com.mckimquyen.watermark.ui.dlg.GalleryFragment
 import com.mckimquyen.watermark.ui.dlg.SaveImageBSDialogFragment
@@ -481,6 +482,11 @@ class MainActivity : BaseActivity() {
         // FEAT-12: bật/tắt Undo/Redo trên toolbar theo trạng thái stack hiện tại.
         viewModel.canUndo.observe(this) { refreshUndoRedoState() }
         viewModel.canRedo.observe(this) { refreshUndoRedoState() }
+        // FEAT-18: slider so sánh trước/sau — chỉ đổi cách VẼ tạm thời trên view live, không đụng
+        // cấu hình watermark thật.
+        viewModel.compareReveal.observe(this) { fraction ->
+            launchView.ivPhoto.compareRevealFraction = fraction ?: 1f
+        }
         viewModel.selectedImage.observe(this) {
             if (it == null || it.uri.toString().isBlank()) {
                 return@observe
@@ -1040,6 +1046,11 @@ class MainActivity : BaseActivity() {
 
         R.id.actionRedo -> {
             viewModel.redo()
+            true
+        }
+
+        R.id.actionCompare -> {
+            CompareBottomSheetFragment.safetyShow(supportFragmentManager)
             true
         }
 

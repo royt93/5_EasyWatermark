@@ -767,6 +767,116 @@ class BatchExportEngine @Inject constructor(
         }
     }
 
+    /** FEAT-18: 2 bitmap ĐỘC LẬP (copy riêng, không chia sẻ buffer với BitmapCache) — an toàn để UI giữ/hiển thị mà không cần biết cơ chế cache/refcount. */
+    data class CompareBitmaps(val original: Bitmap, val watermarked: Bitmap)
+
+    /**
+     * FEAT-18: decode 1 LẦN rồi tạo 2 bitmap ĐỘC LẬP — 1 bản gốc (before) và 1 bản đã vẽ watermark
+     * (after) — cho màn so sánh trượt (before/after) trong preview batch, KHÔNG ghi MediaStore/
+     * export thật. Cùng kích thước decode [PREVIEW_MAX_SIZE] và cùng pipeline vẽ watermark với
+     * [generatePreviewBitmap] — cố tình KHÔNG tách hàm dùng chung để không đổi hành vi hàm đã
+     * test/dùng thật (FEAT-07/ENH-35), chấp nhận trùng lặp logic vẽ shader.
+     */
+    suspend fun generateCompareBitmaps(
+        contentResolver: ContentResolver,
+        imageInfo: ImageInfo,
+        config: WaterMark,
+        index: Int
+    ): CompareBitmaps? = withContext(Dispatchers.IO) {
+        val decodeResult = decodeSampledBitmapFromResource(
+            appContext,
+            contentResolver,
+            imageInfo.uri,
+            PREVIEW_MAX_SIZE,
+            PREVIEW_MAX_SIZE
+        )
+        val bitmapValue = decodeResult.data
+        if (decodeResult.isFailure() || bitmapValue == null) {
+            return@withContext null
+        }
+        bitmapValue.retain()
+        try {
+            val srcBitmap = bitmapValue.bitmap ?: return@withContext null
+            val originalCopy = srcBitmap.copy(Bitmap.Config.ARGB_8888, true) ?: return@withContext null
+            val watermarkedCopy = srcBitmap.copy(Bitmap.Config.ARGB_8888, true) ?: run {
+                originalCopy.recycle()
+                return@withContext null
+            }
+
+            val baseText = resolveBaseText(imageInfo, config)
+            if (shouldSkipTextWatermark(config.markMode, baseText)) {
+                return@withContext CompareBitmaps(originalCopy, watermarkedCopy)
+            }
+
+            val previewInfo = imageInfo.copy(
+                width = watermarkedCopy.width,
+                height = watermarkedCopy.height,
+                inSample = bitmapValue.inSampleSize,
+                exifModel = bitmapValue.exifModel
+            )
+            val textPaint = TextPaint().applyConfig(previewInfo, config)
+            val shader = when (config.markMode) {
+                WaterMarkRepository.MarkMode.Text -> {
+                    val resolvedText = exportNaming.resolveTextTokens(baseText, previewInfo, contentResolver, index)
+                    WaterMarkImageView.buildTextBitmapShader(
+                        imageInfo = previewInfo,
+                        config = config.copy(text = resolvedText),
+                        textPaint = textPaint,
+                        coroutineContext = Dispatchers.IO
+                    )
+                }
+
+                WaterMarkRepository.MarkMode.Image -> {
+                    val iconResult = decodeSampledBitmapFromResource(
+                        appContext,
+                        contentResolver,
+                        config.iconUri,
+                        watermarkedCopy.width,
+                        watermarkedCopy.height
+                    )
+                    val iconValue = iconResult.data
+                    val iconBitmap = iconValue?.bitmap
+                    if (iconValue == null || iconBitmap == null) {
+                        return@withContext CompareBitmaps(originalCopy, watermarkedCopy)
+                    }
+                    iconValue.retain()
+                    try {
+                        WaterMarkImageView.buildIconBitmapShader(
+                            imageInfo = previewInfo,
+                            srcBitmap = iconBitmap,
+                            config = config,
+                            textPaint = textPaint,
+                            scale = false,
+                            coroutineContext = Dispatchers.IO
+                        )
+                    } finally {
+                        iconValue.release()
+                    }
+                }
+            }
+
+            val layoutPaint = Paint().apply { this.shader = shader?.bitmapShader }
+            val canvas = Canvas(watermarkedCopy)
+            if (previewInfo.obtainTileMode() == Shader.TileMode.CLAMP) {
+                canvas.translate(
+                    previewInfo.offsetX * watermarkedCopy.width,
+                    previewInfo.offsetY * watermarkedCopy.height
+                )
+                canvas.drawRect(0f, 0f, (shader?.width ?: 0).toFloat(), (shader?.height ?: 0).toFloat(), layoutPaint)
+            } else {
+                canvas.drawRect(0f, 0f, watermarkedCopy.width.toFloat(), watermarkedCopy.height.toFloat(), layoutPaint)
+            }
+            CompareBitmaps(originalCopy, watermarkedCopy)
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        } finally {
+            bitmapValue.release()
+        }
+    }
+
     companion object {
         /** FEAT-07: cạnh dài tối đa (px) khi decode cho grid preview — đủ nét cho thumbnail, rẻ hơn nhiều so với full-res. */
         const val PREVIEW_MAX_SIZE = 480

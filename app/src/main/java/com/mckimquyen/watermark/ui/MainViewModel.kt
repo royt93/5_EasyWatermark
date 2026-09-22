@@ -83,6 +83,19 @@ class MainViewModel @Inject constructor(
     val canUndo: LiveData<Boolean> = waterMarkRepo.canUndo.asLiveData()
     val canRedo: LiveData<Boolean> = waterMarkRepo.canRedo.asLiveData()
 
+    /**
+     * FEAT-18: state THUẦN UI cho slider so sánh trước/sau trong editor — CỐ TÌNH không đụng
+     * `waterMarkRepo`/DataStore (đây không phải 1 thay đổi cấu hình watermark thật, chỉ là cách
+     * xem tạm thời), nên KHÔNG tham gia Undo/Redo (FEAT-12) hay bất kỳ persist nào. Reset về 1f
+     * (hiện watermark đầy đủ) khi đóng sheet so sánh.
+     */
+    private val _compareReveal = MutableLiveData(1f)
+    val compareReveal: LiveData<Float> = _compareReveal
+
+    fun updateCompareReveal(fraction: Float) {
+        _compareReveal.value = fraction.coerceIn(0f, 1f)
+    }
+
     private val uiState: MutableStateFlow<UiState> = MutableStateFlow(UiState.None)
 
     val uiStateFlow: StateFlow<UiState> = uiState.asStateFlow()
@@ -220,6 +233,19 @@ class MainViewModel @Inject constructor(
     ): com.mckimquyen.watermark.export.BatchExportEngine.PreviewResult? {
         val config = waterMark.value ?: return null
         return batchExportEngine.generatePreviewBitmap(contentResolver, imageInfo, config, index)
+    }
+
+    /**
+     * FEAT-18: cặp bitmap gốc/đã-watermark cho 1 ảnh trong preview batch — dùng cho màn so sánh
+     * trượt (before/after), KHÔNG export thật. `null` nếu chưa có cấu hình hoặc decode lỗi.
+     */
+    suspend fun generateCompareBitmaps(
+        contentResolver: ContentResolver,
+        imageInfo: ImageInfo,
+        index: Int
+    ): com.mckimquyen.watermark.export.BatchExportEngine.CompareBitmaps? {
+        val config = waterMark.value ?: return null
+        return batchExportEngine.generateCompareBitmaps(contentResolver, imageInfo, config, index)
     }
 
     /**

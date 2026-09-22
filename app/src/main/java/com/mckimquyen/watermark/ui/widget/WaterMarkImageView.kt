@@ -90,6 +90,20 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
 
     private var enableWaterMark = AtomicBoolean(false)
 
+    /**
+     * FEAT-18: 0f..1f — 1f (mặc định) = watermark hiện ĐẦY ĐỦ (hành vi cũ, không đổi gì khi tính
+     * năng so sánh trước/sau không dùng). Giá trị nhỏ hơn giới hạn vùng vẽ watermark ở BÊN TRÁI
+     * theo tỉ lệ này (tính từ mép trái View), để lộ ảnh gốc (đã vẽ sẵn bởi `super.onDraw()`) ở
+     * phần còn lại bên phải — không cần layer/bitmap riêng, chỉ clip canvas lúc vẽ watermark.
+     */
+    var compareRevealFraction: Float = 1f
+        set(value) {
+            val coerced = value.coerceIn(0f, 1f)
+            if (field == coerced) return
+            field = coerced
+            invalidate()
+        }
+
     private val drawableBounds = RectF()
 
     private var onBgReady: (palette: Palette) -> Unit = {}
@@ -365,6 +379,11 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         AppLog.d(LOG_TAG, "[WMIV] onDraw: layoutPaint alpha=${layoutPaint.alpha}")
         layoutPaint.shader = layoutShader?.bitmapShader
         canvas?.withSave {
+            // FEAT-18: clip TRƯỚC translate — toạ độ theo hệ View gốc (không bị dịch theo tile),
+            // giữ đường phân cách thẳng đứng cố định theo tỉ lệ chiều rộng View.
+            if (compareRevealFraction < 1f) {
+                clipRect(0f, 0f, width * compareRevealFraction, height.toFloat())
+            }
             if (curImageInfo.obtainTileMode() == Shader.TileMode.CLAMP) {
                 val dx = drawableBounds.left + curImageInfo.offsetX * drawableBounds.width()
                 val dy = drawableBounds.top + curImageInfo.offsetY * drawableBounds.height()

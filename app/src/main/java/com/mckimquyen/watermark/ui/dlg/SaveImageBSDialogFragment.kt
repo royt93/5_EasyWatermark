@@ -296,6 +296,10 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                     onToggleSkip = { info ->
                         adapterRef.updateJobState(info.copy(isSkippedInExport = !info.isSkippedInExport))
                         shareViewModel.toggleSkipExport(info.uri)
+                    },
+                    // FEAT-18 AC2: bấm vào 1 card mở so sánh trước/sau cho ĐÚNG ảnh đó, không cần export thật.
+                    onItemClick = { info, index ->
+                        ComparePreviewBottomSheetFragment.safetyShow(childFragmentManager, info.uri, index)
                     }
                 ).also {
                     adapterRef = it

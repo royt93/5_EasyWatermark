@@ -43,7 +43,9 @@ class SaveImageListAdapter(
     private val estimateOutput: (Int, Int) -> Pair<Pair<Int, Int>, Long>,
     // FEAT-17: user bấm nút skip/active trên 1 card — nơi gọi chịu trách nhiệm cập nhật nguồn sự
     // thật (repo) rồi submitList() lại, adapter không tự giữ state skip.
-    private val onToggleSkip: (ImageInfo) -> Unit = {}
+    private val onToggleSkip: (ImageInfo) -> Unit = {},
+    // FEAT-18: bấm vào card (khác nút skip) mở màn so sánh trước/sau cho ĐÚNG ảnh này.
+    private val onItemClick: (ImageInfo, Int) -> Unit = { _, _ -> }
 ) : RecyclerView.Adapter<SaveImageListAdapter.ImageHolder>() {
 
     val data: List<ImageInfo>
@@ -137,6 +139,7 @@ class SaveImageListAdapter(
         // thái skip không đổi uri nên phải luôn refresh icon/độ mờ + rebind listener đúng item hiện tại.
         holder.updateSkipState(info.isSkippedInExport)
         holder.ivSkipToggle.setOnClickListener { onToggleSkip(info) }
+        holder.itemView.setOnClickListener { onItemClick(info, position) }
         // FEAT-07: chỉ render preview watermark 1 LẦN cho mỗi uri — payload "state" (đổi jobState
         // lúc export chạy) rebind CÙNG uri liên tục (Ready→Ing→Success), không cần build lại canvas
         // + shader tốn kém mỗi lần. `itemView.tag` vừa là khoá "đã render/đang render uri nào" vừa

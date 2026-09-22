@@ -140,6 +140,10 @@
     <string name="position_anchor_button">Position</string>
     <string name="position_anchor_title">Watermark Position</string>
     <string name="position_anchor_margin">Margin from edge</string>
+    <!-- FEAT-18: before/after compare slider -->
+    <string name="compare_title">Compare before/after</string>
+    <string name="compare_hint">Drag to reveal the original photo</string>
+    <string name="action_compare">Compare</string>
     <string name="position_anchor_margin_value">%d%%</string>
     <string name="anchor_top_left">Top Left</string>
     <string name="anchor_top_center">Top Center</string>
