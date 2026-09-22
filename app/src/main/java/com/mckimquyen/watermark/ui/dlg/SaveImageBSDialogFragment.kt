@@ -319,6 +319,12 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     ) {
         when (saveResult?.code) {
             MainViewModel.TYPE_SAVING -> {
+                // Batch export có thể chạy vài chục giây tới vài phút với ảnh lớn/nhiều ảnh —
+                // giữ màn hình sáng để user thấy tiến trình, không bị khoá màn hình giữa chừng.
+                // FLAG_KEEP_SCREEN_ON (không phải PowerManager.WakeLock) là đủ: chỉ giữ MÀN HÌNH,
+                // không cần permission WAKE_LOCK — export thật chạy qua BatchExportWorker (foreground
+                // service của WorkManager), CPU đã được giữ sẵn dù màn hình tắt/khoá.
+                dialog?.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 binding.btnSave.apply {
                     // ENH-01 AC2: vẫn bấm được — dùng để huỷ batch export giữa chừng.
                     isEnabled = true
@@ -334,6 +340,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             }
 
             MainViewModel.TYPE_JOB_FINISH -> {
+                dialog?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 // BUG-33: Kiểm tra xem có ít nhất 1 ảnh thành công (shareUri != null) hay không
                 val successfulList = shareViewModel.imageList.value?.first?.filter { it.shareUri != null } ?: emptyList()
                 val hasSuccess = successfulList.isNotEmpty()
@@ -356,6 +363,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             }
 
             else -> {
+                dialog?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 binding.btnSave.apply {
                     isEnabled = true
                     text = getString(R.string.dialog_export_to_gallery)
