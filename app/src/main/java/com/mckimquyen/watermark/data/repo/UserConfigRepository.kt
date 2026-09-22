@@ -1,6 +1,7 @@
 package com.mckimquyen.watermark.data.repo
 
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -14,6 +15,7 @@ import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KE
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_CONFLICT_POLICY
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_COPYRIGHT
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_MAX_LONG_EDGE
+import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_OUTPUT_DIRECTORY_URI
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_OUTPUT_FORMAT
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_OUTPUT_NAME_PATTERN
 import kotlinx.coroutines.flow.Flow
@@ -35,6 +37,7 @@ class UserConfigRepository @Inject constructor(
         val KEY_COPYRIGHT = stringPreferencesKey(SP_KEY_COPYRIGHT)
         val KEY_OUTPUT_NAME_PATTERN = stringPreferencesKey(SP_KEY_OUTPUT_NAME_PATTERN)
         val KEY_CONFLICT_POLICY = intPreferencesKey(SP_KEY_CONFLICT_POLICY)
+        val KEY_OUTPUT_DIRECTORY_URI = stringPreferencesKey(SP_KEY_OUTPUT_DIRECTORY_URI)
     }
 
     val userPreferences: Flow<UserPreferences> = dataStore.data
@@ -54,7 +57,9 @@ class UserConfigRepository @Inject constructor(
             val copyright = it[KEY_COPYRIGHT] ?: ""
             val outputNamePattern = it[KEY_OUTPUT_NAME_PATTERN] ?: ""
             val conflictPolicy = ConflictPolicy.fromId(it[KEY_CONFLICT_POLICY] ?: ConflictPolicy.KEEP_BOTH.id)
-            UserPreferences(outputFormat, compressLevel, maxLongEdge, copyright, outputNamePattern, conflictPolicy)
+            // FEAT-15: null/rỗng = hành vi cũ (MediaStore Pictures/WaterMarkCreator/ cố định).
+            val outputDirectoryUri = it[KEY_OUTPUT_DIRECTORY_URI]?.takeIf { uri -> uri.isNotBlank() }?.let(Uri::parse)
+            UserPreferences(outputFormat, compressLevel, maxLongEdge, copyright, outputNamePattern, conflictPolicy, outputDirectoryUri)
         }
 
     suspend fun updateFormat(
@@ -105,6 +110,17 @@ class UserConfigRepository @Inject constructor(
         }
     }
 
+    /** FEAT-15: `null` = quay lại hành vi mặc định (MediaStore Pictures/WaterMarkCreator/). */
+    suspend fun updateOutputDirectoryUri(uri: Uri?) {
+        dataStore.edit {
+            if (uri == null) {
+                it.remove(KEY_OUTPUT_DIRECTORY_URI)
+            } else {
+                it[KEY_OUTPUT_DIRECTORY_URI] = uri.toString()
+            }
+        }
+    }
+
     companion object {
         const val DEFAULT_COMPRESS_LEVEL = 80
 
@@ -118,6 +134,7 @@ class UserConfigRepository @Inject constructor(
         const val SP_KEY_COPYRIGHT = "${SP_NAME}_key_copyright"
         const val SP_KEY_OUTPUT_NAME_PATTERN = "${SP_NAME}_key_output_name_pattern"
         const val SP_KEY_CONFLICT_POLICY = "${SP_NAME}_key_conflict_policy"
+        const val SP_KEY_OUTPUT_DIRECTORY_URI = "${SP_NAME}_key_output_directory_uri"
 
         // ENH-34: ordinal thật của Bitmap.CompressFormat.WEBP_LOSSY/WEBP_LOSSLESS (API 30+) — dùng
         // hằng số Int thay vì tham chiếu thẳng field enum ở đây, để so khớp ordinal đọc từ DataStore

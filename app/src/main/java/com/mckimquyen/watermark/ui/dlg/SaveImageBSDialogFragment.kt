@@ -2,6 +2,7 @@ package com.mckimquyen.watermark.ui.dlg
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,8 +10,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -40,6 +44,26 @@ import java.io.File
 class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     private val imageList: List<ImageInfo>
         get() = (requireContext() as MainActivity).getImageList()
+
+    /** FEAT-15: chọn thư mục ĐÍCH lưu ảnh xuất (khác GalleryFragment.pickFolderLauncher — thư mục NGUỒN). */
+    private lateinit var pickOutputDirectoryLauncher: ActivityResultLauncher<Uri?>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        pickOutputDirectoryLauncher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+            if (uri == null) return@registerForActivityResult
+            runCatching {
+                requireContext().contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+            }.onFailure { e -> AppLog.w(TAG, "Failed to persist output directory permission: $uri", e) }
+            shareViewModel.saveOutputDirectoryUri(uri)
+            // Callback chạy SAU khi dialog đã hiện (user quay lại từ picker) — `binding` lúc này
+            // đã được gán an toàn, khác lúc gọi trong bindView() (xem doc updateOutputDirectoryUi).
+            updateOutputDirectoryUi(binding, uri)
+        }
+    }
 
     // ENH-34: API 30+ tách WEBP_LOSSY/WEBP_LOSSLESS rõ ràng (WEBP cũ đã deprecated, không cho
     // chọn lossless thật) — API <30 giữ nguyên 1 lựa chọn "WEBP" như cũ (field WEBP_LOSSY/
@@ -79,6 +103,31 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     /** PNG/WEBP_LOSSLESS là lossless nên ẩn slider chất lượng; JPEG/WEBP/WEBP_LOSSY có dùng. */
     private fun supportsQuality(format: Bitmap.CompressFormat): Boolean =
         !OutputImageUtils.resolveIsLossless(format, Build.VERSION.SDK_INT)
+
+    /**
+     * FEAT-15: `null` ẩn dòng hiển thị đường dẫn + nút "Đặt lại mặc định" (đang dùng
+     * Pictures/WaterMarkCreator/ mặc định). Khác `null` hiện tên thư mục (qua `DocumentFile`, dễ
+     * đọc hơn raw content:// uri) kèm nút đặt lại.
+     *
+     * Nhận [dlgBinding] qua tham số (không đọc property `binding` của [BaseBindBSDFragment]) —
+     * `bindView()` gọi hàm này TRƯỚC KHI trả về, lúc đó `_binding` chưa được gán (base class chỉ
+     * gán `binding = bindView(...)` SAU KHI `bindView()` return), đọc `binding` lúc này crash NPE.
+     */
+    private fun updateOutputDirectoryUi(dlgBinding: DlgSaveFileBinding, uri: Uri?) {
+        if (uri == null) {
+            dlgBinding.tvOutputDirectoryPath.isVisible = false
+            return
+        }
+        val folderName = DocumentFile.fromTreeUri(requireContext(), uri)?.name ?: uri.lastPathSegment.orEmpty()
+        dlgBinding.tvOutputDirectoryPath.apply {
+            text = "$folderName  ·  ${getString(R.string.dialog_save_output_directory_reset)}"
+            isVisible = true
+            setOnClickListener {
+                shareViewModel.saveOutputDirectoryUri(null)
+                updateOutputDirectoryUi(dlgBinding, null)
+            }
+        }
+    }
 
     /**
      * ENH-13: hiển thị rõ số ảnh lỗi khi có, giữ nguyên format "X/Y" cũ khi mọi ảnh đều thành
@@ -150,6 +199,11 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             btnBatchCaptions.setOnClickListener {
                 BatchCaptionBSDialogFragment.safetyShow(childFragmentManager)
             }
+
+            btnOutputDirectory.setOnClickListener {
+                pickOutputDirectoryLauncher.launch(null)
+            }
+            updateOutputDirectoryUi(root, shareViewModel.outputDirectoryUri)
 
             atvFormat.also {
                 val adapter = ArrayAdapter(

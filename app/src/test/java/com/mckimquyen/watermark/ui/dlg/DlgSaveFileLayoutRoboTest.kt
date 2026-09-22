@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.material.textfield.TextInputEditText
@@ -111,5 +112,20 @@ class DlgSaveFileLayoutRoboTest {
         assertThat(btn).isNotNull()
         assertThat((btn as com.google.android.material.button.MaterialButton).text.toString())
             .isEqualTo(root.context.getString(R.string.batch_caption_entry))
+    }
+
+    /** FEAT-15: nút chọn thư mục lưu + dòng hiển thị đường dẫn (ẩn mặc định, chưa chọn gì). */
+    @Test
+    fun outputDirectoryButton_existsInLayout_pathRowHiddenByDefault() {
+        val root = inflateRoot() as ViewGroup
+
+        val btn = root.findViewById<View>(R.id.btnOutputDirectory)
+        assertThat(btn).isNotNull()
+        assertThat((btn as com.google.android.material.button.MaterialButton).text.toString())
+            .isEqualTo(root.context.getString(R.string.dialog_save_config_output_directory))
+
+        val pathRow = root.findViewById<View>(R.id.tvOutputDirectoryPath)
+        assertThat(pathRow).isNotNull()
+        assertThat(pathRow.isVisible).isFalse()
     }
 }

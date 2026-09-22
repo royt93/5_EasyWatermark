@@ -275,6 +275,34 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- ══ SECTION: OUTPUT DIRECTORY (FEAT-15) — mặc định Pictures/WaterMarkCreator/ ═══════ -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnOutputDirectory"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="4dp"
+        android:text="@string/dialog_save_config_output_directory"
+        android:textColor="?attr/colorPrimary"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_folder_24"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp"
+        app:iconTint="?attr/colorPrimary" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvOutputDirectoryPath"
+        style="@style/TextAppearance.Material3.BodySmall"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone"
+        tools:text="content://.../Documents/MyFolder  ·  Đặt lại mặc định"
+        tools:visibility="visible" />
+
     <!-- ══ FEAT-13: entry point cho caption riêng từng ảnh ═════════════════════ -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBatchCaptions"

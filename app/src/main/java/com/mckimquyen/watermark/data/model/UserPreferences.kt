@@ -1,6 +1,7 @@
 package com.mckimquyen.watermark.data.model
 
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.annotation.Keep
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 
@@ -13,7 +14,9 @@ data class UserPreferences(
     /** Pattern tên file xuất, vd "{filename}_wm_{seq}" (xem [TextTokenResolver]). Rỗng = hành vi mặc định "ewm_{timestamp}". */
     val outputNamePattern: String = "",
     /** FEAT-19: Chính sách xử lý trùng tên file khi export lại. */
-    val conflictPolicy: ConflictPolicy = ConflictPolicy.KEEP_BOTH
+    val conflictPolicy: ConflictPolicy = ConflictPolicy.KEEP_BOTH,
+    /** FEAT-15: null = xuất vào Pictures/WaterMarkCreator/ (mặc định); khác null = thư mục SAF user tự chọn. */
+    val outputDirectoryUri: Uri? = null
 ) {
     companion object {
         val DEFAULT = UserPreferences(

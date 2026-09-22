@@ -189,6 +189,8 @@
     <string name="dialog_save_config_name_pattern">File name pattern</string>
     <string name="dialog_save_config_name_pattern_hint">e.g. {filename}_wm_{seq} — leave empty for default</string>
     <string name="dialog_save_config_conflict_policy">If file exists</string>
+    <string name="dialog_save_config_output_directory">Choose save folder</string>
+    <string name="dialog_save_output_directory_reset">Reset to default</string>
     <string name="conflict_policy_keep_both">Keep both (MediaStore)</string>
     <string name="conflict_policy_rename_version">Auto rename (_v2, _v3)</string>
     <string name="conflict_policy_overwrite">Overwrite</string>

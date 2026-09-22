@@ -57,7 +57,8 @@ class BatchExportWorker @AssistedInject constructor(
             maxOutputLongEdge = prefs.maxOutputLongEdge,
             copyright = prefs.copyright,
             outputNamePattern = prefs.outputNamePattern,
-            conflictPolicy = prefs.conflictPolicy
+            conflictPolicy = prefs.conflictPolicy,
+            outputDirectoryUri = prefs.outputDirectoryUri
         )
         val total = infoList.size
         var doneCount = 0

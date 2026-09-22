@@ -16,7 +16,9 @@ import android.provider.MediaStore
 import android.text.TextPaint
 import android.util.Log
 import androidx.core.content.FileProvider
+import androidx.documentfile.provider.DocumentFile
 import com.mckimquyen.watermark.BuildConfig
+import com.mckimquyen.watermark.data.model.ConflictPolicy
 import com.mckimquyen.watermark.data.model.ExifFrameStyle
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
@@ -82,7 +84,10 @@ class BatchExportEngine @Inject constructor(
         val maxOutputLongEdge: Int,
         val copyright: String,
         val outputNamePattern: String,
-        val conflictPolicy: com.mckimquyen.watermark.data.model.ConflictPolicy = com.mckimquyen.watermark.data.model.ConflictPolicy.KEEP_BOTH
+        val conflictPolicy: com.mckimquyen.watermark.data.model.ConflictPolicy = com.mckimquyen.watermark.data.model.ConflictPolicy.KEEP_BOTH,
+        // FEAT-15: null = hành vi cũ (MediaStore Pictures/WaterMarkCreator/); khác null = ghi qua
+        // SAF (DocumentFile) vào đúng thư mục user đã chọn thay vì luôn cố định.
+        val outputDirectoryUri: Uri? = null
     )
 
     /**
@@ -358,7 +363,9 @@ class BatchExportEngine @Inject constructor(
                     settings.outputFormat
                 )
 
-                return@withContext if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                return@withContext if (settings.outputDirectoryUri != null) {
+                    writeToCustomDirectory(contentResolver, exportBitmap, rawOutputName, settings, bitmapGuard)
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     val imageCollection =
                         MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
                     val existingUri = if (conflictPolicy != com.mckimquyen.watermark.data.model.ConflictPolicy.KEEP_BOTH) {
@@ -522,6 +529,95 @@ class BatchExportEngine @Inject constructor(
                 bitmapGuard.recycleIfOwned()
             }
         }
+
+    /**
+     * FEAT-15: ghi ảnh qua SAF (`DocumentFile`) vào thư mục user tự chọn thay vì cố định
+     * `Pictures/WaterMarkCreator/` — cùng ngữ nghĩa conflict-policy với 2 nhánh MediaStore/legacy
+     * File phía trên (tái dùng thẳng [ExportNaming.resolveVersionedName], không viết lại logic).
+     * Mã lỗi tái dùng `TYPE_ERROR_SAVE_MEDIASTORE_*` cho nhất quán UI báo lỗi (cùng ý nghĩa người
+     * dùng "ghi file thất bại", không cần thêm mã lỗi riêng cho 1 đường ghi khác).
+     */
+    private fun writeToCustomDirectory(
+        contentResolver: ContentResolver,
+        exportBitmap: Bitmap,
+        rawOutputName: String,
+        settings: ExportSettings,
+        bitmapGuard: BitmapRecycleGuard
+    ): Result<Uri> {
+        val treeUri = settings.outputDirectoryUri!!
+        val root = DocumentFile.fromTreeUri(appContext, treeUri)
+        if (root == null || !root.canWrite()) {
+            return Result.failure(
+                data = null,
+                code = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_INSERT,
+                message = "Custom output folder not accessible."
+            )
+        }
+        return writeIntoDocumentTree(root, contentResolver, exportBitmap, rawOutputName, settings, bitmapGuard)
+    }
+
+    /**
+     * Tách khỏi [writeToCustomDirectory] để test được logic conflict-policy/ghi file thật (qua
+     * `DocumentFile.fromFile()` trỏ 1 thư mục thật trong instrumentation test) mà không cần user
+     * thao tác chọn cây SAF thật — cùng tinh thần [com.mckimquyen.watermark.utils.FileUtils.collectImagesRecursively]
+     * (ENH-33) nhận thẳng `root: DocumentFile` thay vì tự resolve từ Uri bên trong.
+     */
+    internal fun writeIntoDocumentTree(
+        root: DocumentFile,
+        contentResolver: ContentResolver,
+        exportBitmap: Bitmap,
+        rawOutputName: String,
+        settings: ExportSettings,
+        bitmapGuard: BitmapRecycleGuard
+    ): Result<Uri> {
+        val conflictPolicy = settings.conflictPolicy
+        val existing = if (conflictPolicy != ConflictPolicy.KEEP_BOTH) root.findFile(rawOutputName) else null
+
+        if (existing != null && conflictPolicy == ConflictPolicy.SKIP) {
+            exportBitmap.recycle()
+            bitmapGuard.release()
+            return Result.success(existing.uri)
+        }
+
+        val finalOutputName = if (existing != null && conflictPolicy == ConflictPolicy.RENAME_VERSION) {
+            exportNaming.resolveVersionedName(rawOutputName) { candidate -> root.findFile(candidate) != null }
+        } else {
+            rawOutputName
+        }
+
+        val targetDoc = if (existing != null && conflictPolicy == ConflictPolicy.OVERWRITE) {
+            existing
+        } else {
+            val mimeType = "image/${exportNaming.trapOutputExtension(settings.outputFormat)}"
+            root.createFile(mimeType, finalOutputName) ?: return Result.failure(
+                data = null,
+                code = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_INSERT,
+                message = "Failed to create file in custom output folder."
+            )
+        }
+
+        val writeOk = try {
+            contentResolver.openOutputStream(targetDoc.uri)?.use { out ->
+                exportBitmap.compress(settings.outputFormat, settings.compressLevel, out)
+            } ?: false
+        } catch (e: Exception) {
+            false
+        }
+        if (!writeOk) {
+            // existing == null nghĩa là file mới TỰ TẠO ở trên (không phải ghi đè file cũ) — chỉ
+            // dọn rác khi chính lần ghi này tạo ra nó, không đụng file cũ nếu đang OVERWRITE.
+            if (existing == null) targetDoc.delete()
+            return Result.failure(
+                data = null,
+                code = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_WRITE,
+                message = "Bitmap.compress() returned false."
+            )
+        }
+        exportBitmap.recycle()
+        bitmapGuard.release()
+        exportNaming.applyCopyrightExif(contentResolver, targetDoc.uri, settings.copyright, settings.outputFormat)
+        return Result.success(targetDoc.uri)
+    }
 
     /** FEAT-07 & ENH-35: kết quả preview NHẸ cho 1 ảnh trong grid xem trước batch. */
     sealed interface PreviewResult {

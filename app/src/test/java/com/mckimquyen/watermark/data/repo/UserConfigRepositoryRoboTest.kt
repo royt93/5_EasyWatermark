@@ -2,6 +2,7 @@ package com.mckimquyen.watermark.data.repo
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.datastore.preferences.core.edit
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -76,5 +77,33 @@ class UserConfigRepositoryRoboTest {
         repo.updateOutputNamePattern("{filename}_wm_{seq}")
         val prefs = repo.userPreferences.first()
         assertThat(prefs.outputNamePattern).isEqualTo("{filename}_wm_{seq}")
+    }
+
+    /** FEAT-15: mặc định null = xuất vào Pictures/WaterMarkCreator/ (không chọn thư mục riêng). */
+    @Test
+    fun testDefaultOutputDirectoryUri_isNull() = runBlocking {
+        val prefs = repo.userPreferences.first()
+        assertThat(prefs.outputDirectoryUri).isNull()
+    }
+
+    @Test
+    fun testUpdateOutputDirectoryUri_persistsChosenFolder() = runBlocking {
+        val uri = Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FMyExports")
+
+        repo.updateOutputDirectoryUri(uri)
+
+        val prefs = repo.userPreferences.first()
+        assertThat(prefs.outputDirectoryUri).isEqualTo(uri)
+    }
+
+    @Test
+    fun testUpdateOutputDirectoryUri_withNull_resetsToDefault() = runBlocking {
+        val uri = Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ADocuments")
+        repo.updateOutputDirectoryUri(uri)
+        assertThat(repo.userPreferences.first().outputDirectoryUri).isEqualTo(uri)
+
+        repo.updateOutputDirectoryUri(null)
+
+        assertThat(repo.userPreferences.first().outputDirectoryUri).isNull()
     }
 }

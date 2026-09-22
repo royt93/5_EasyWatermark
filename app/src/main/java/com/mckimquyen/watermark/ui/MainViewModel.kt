@@ -120,6 +120,10 @@ class MainViewModel @Inject constructor(
     val conflictPolicy: com.mckimquyen.watermark.data.model.ConflictPolicy
         get() = userPreferences.value.conflictPolicy
 
+    /** FEAT-15: null = xuất vào Pictures/WaterMarkCreator/ (mặc định); khác null = thư mục SAF user tự chọn. */
+    val outputDirectoryUri: Uri?
+        get() = userPreferences.value.outputDirectoryUri
+
     val colorPalette: MutableLiveData<Palette> = MutableLiveData()
 
     private val projection = arrayOf(
@@ -597,6 +601,13 @@ class MainViewModel @Inject constructor(
     fun saveConflictPolicy(policy: com.mckimquyen.watermark.data.model.ConflictPolicy) {
         viewModelScope.launch {
             userRepo.updateConflictPolicy(policy)
+        }
+    }
+
+    /** FEAT-15: `null` xoá lựa chọn — quay lại xuất vào Pictures/WaterMarkCreator/ mặc định. */
+    fun saveOutputDirectoryUri(uri: Uri?) {
+        viewModelScope.launch {
+            userRepo.updateOutputDirectoryUri(uri)
         }
     }
 
