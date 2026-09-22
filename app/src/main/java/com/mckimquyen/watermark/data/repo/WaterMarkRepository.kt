@@ -27,6 +27,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_HORIZON_GAP
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_ICON_URI
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_MODE
+import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_RECENT_ICON_URIS
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_TEXT
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_TEXT_COLOR
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_TEXT_SIZE
@@ -77,6 +78,7 @@ class WaterMarkRepository @Inject constructor(
         val KEY_TEXT_EFFECT_STROKE = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_STROKE)
         val KEY_TEXT_EFFECT_SHADOW = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_SHADOW)
         val KEY_TEXT_EFFECT_PILL_BACKGROUND = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_PILL_BACKGROUND)
+        val KEY_RECENT_ICON_URIS = stringPreferencesKey(SP_KEY_RECENT_ICON_URIS)
 //        val KEY_TILE_MODE = intPreferencesKey(SP_KEY_TILE_MODEL)
 //        val KEY_OFFSET_X = floatPreferencesKey(SP_KEY_OFFSET_X)
 //        val KEY_OFFSET_Y = floatPreferencesKey(SP_KEY_OFFSET_Y)
@@ -117,7 +119,8 @@ class WaterMarkRepository @Inject constructor(
                 exifUseSerifCaption = it[PreferenceKeys.KEY_EXIF_SERIF_CAPTION],
                 textEffectStroke = it[PreferenceKeys.KEY_TEXT_EFFECT_STROKE] ?: false,
                 textEffectShadow = it[PreferenceKeys.KEY_TEXT_EFFECT_SHADOW] ?: false,
-                textEffectPillBackground = it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] ?: false
+                textEffectPillBackground = it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] ?: false,
+                recentIconUris = parseRecentIconUris(it[KEY_RECENT_ICON_URIS])
             )
         }
 
@@ -198,10 +201,17 @@ class WaterMarkRepository @Inject constructor(
         dataStore.edit { it[KEY_DEGREE] = degree.coerceAtLeast(0f).coerceAtMost(MAX_DEGREE) }
     }
 
+    /** FEAT-24: mỗi lần đổi icon, đẩy uri lên đầu danh sách MRU (dùng lại nếu trùng, giới hạn [MAX_RECENT_ICONS]). */
     suspend fun updateIcon(iconUri: Uri) {
         dataStore.edit {
             it[KEY_MODE] = MarkMode.Image.value
             it[KEY_ICON_URI] = iconUri.toString()
+            val updatedRecents = pushToFrontOfRecentIcons(
+                current = parseRecentIconUris(it[KEY_RECENT_ICON_URIS]).map(Uri::toString),
+                newUri = iconUri.toString(),
+                maxSize = MAX_RECENT_ICONS
+            )
+            it[KEY_RECENT_ICON_URIS] = serializeRecentIconUris(updatedRecents)
         }
     }
 
@@ -361,6 +371,7 @@ class WaterMarkRepository @Inject constructor(
         const val SP_KEY_TEXT_EFFECT_STROKE = "${SP_NAME}_key_text_effect_stroke"
         const val SP_KEY_TEXT_EFFECT_SHADOW = "${SP_NAME}_key_text_effect_shadow"
         const val SP_KEY_TEXT_EFFECT_PILL_BACKGROUND = "${SP_NAME}_key_text_effect_pill_background"
+        const val SP_KEY_RECENT_ICON_URIS = "${SP_NAME}_key_recent_icon_uris"
         const val MIN_EXIF_BAND_THICKNESS_PERCENT = 0.04f
         const val MAX_EXIF_BAND_THICKNESS_PERCENT = 0.30f
         const val MAX_TEXT_SIZE = 100f
@@ -372,5 +383,29 @@ class WaterMarkRepository @Inject constructor(
         const val MIN_MARGIN_PERCENT = 0f
         const val MAX_MARGIN_PERCENT = 0.2f
         const val DEFAULT_MARGIN_PERCENT = 0.05f
+
+        /** FEAT-24: số icon/logo gần đây tối đa giữ lại cho quick-pick. */
+        const val MAX_RECENT_ICONS = 8
+
+        /** Uri không thể chứa newline thật (chỉ %0A percent-encode) — an toàn làm delimiter. */
+        private const val RECENT_ICON_URI_DELIMITER = "\n"
+
+        /** Hàm thuần — parse chuỗi lưu trong DataStore thành danh sách Uri, bỏ qua entry rỗng. */
+        internal fun parseRecentIconUris(raw: String?): List<Uri> {
+            if (raw.isNullOrBlank()) return emptyList()
+            return raw.split(RECENT_ICON_URI_DELIMITER).filter { it.isNotBlank() }.map { Uri.parse(it) }
+        }
+
+        private fun serializeRecentIconUris(uris: List<String>): String = uris.joinToString(RECENT_ICON_URI_DELIMITER)
+
+        /**
+         * FEAT-24: đẩy [newUri] lên đầu danh sách MRU — nếu đã có trong [current] thì di chuyển
+         * lên đầu (không nhân đôi) thay vì thêm mới, cắt còn tối đa [maxSize] phần tử. Hàm thuần
+         * (không phụ thuộc DataStore) để dễ unit test.
+         */
+        internal fun pushToFrontOfRecentIcons(current: List<String>, newUri: String, maxSize: Int): List<String> {
+            val withoutDuplicate = current.filterNot { it == newUri }
+            return (listOf(newUri) + withoutDuplicate).take(maxSize)
+        }
     }
 }

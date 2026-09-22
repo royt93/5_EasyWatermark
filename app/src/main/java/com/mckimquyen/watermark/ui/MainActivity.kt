@@ -21,6 +21,7 @@ import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -83,6 +84,7 @@ import com.mckimquyen.watermark.utils.ktx.bgColor
 import com.mckimquyen.watermark.utils.ktx.colorPrimary
 import com.mckimquyen.watermark.utils.ktx.colorSurface
 import com.mckimquyen.watermark.utils.ktx.commitWithAnimation
+import com.mckimquyen.watermark.utils.ktx.dp
 import com.mckimquyen.watermark.utils.ktx.isNight
 import com.mckimquyen.watermark.utils.ktx.openLink
 import com.mckimquyen.watermark.utils.ktx.preCheckStoragePermission
@@ -784,6 +786,63 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    /** ENH-10: Photo Picker không cần quyền storage — chỉ gate quyền khi phải fallback về ACTION_PICK. */
+    private fun launchIconPicker() {
+        if (ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(this)) {
+            performFileSearch(REQ_PICK_ICON)
+        } else {
+            preCheckStoragePermission {
+                performFileSearch(REQ_PICK_ICON)
+            }
+        }
+    }
+
+    /**
+     * FEAT-24: dialog quick-pick hàng ngang N icon/logo gần đây nhất — bấm 1 icon dùng ngay (đẩy
+     * icon đó lên đầu MRU qua [MainViewModel.updateIcon]), hoặc "Chọn ảnh khác" mở picker như cũ.
+     */
+    private fun showIconQuickPickDialog(recentIcons: List<Uri>) {
+        val row = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setPadding(24.dp, 8.dp, 24.dp, 0)
+        }
+        val thumbs = recentIcons.map { uri ->
+            com.google.android.material.imageview.ShapeableImageView(this).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(64.dp, 64.dp).apply {
+                    marginEnd = 12.dp
+                }
+                shapeAppearanceModel = com.google.android.material.shape.ShapeAppearanceModel.Builder()
+                    .setAllCornerSizes(12.dp.toFloat())
+                    .build()
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                isClickable = true
+                isFocusable = true
+                contentDescription = getString(R.string.water_mark_mode_image)
+            }.also {
+                com.bumptech.glide.Glide.with(this@MainActivity).load(uri).into(it)
+                row.addView(it)
+            }
+        }
+        val scroll = android.widget.HorizontalScrollView(this).apply { addView(row) }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.icon_quick_pick_title)
+            .setView(scroll)
+            .setNegativeButton(R.string.tips_cancel_dialog) { d, _ -> d.dismiss() }
+            .setPositiveButton(R.string.icon_quick_pick_open_gallery) { d, _ ->
+                d.dismiss()
+                launchIconPicker()
+            }
+            .create()
+        thumbs.forEachIndexed { index, thumb ->
+            thumb.setOnClickListener {
+                viewModel.updateIcon(recentIcons[index])
+                dialog.dismiss()
+            }
+        }
+        dialog.show()
+    }
+
     private fun handleFuncItem(item: FuncTitleModel) {
 //        Log.i("handleFuncItem", "item = $item")
         when (item.type) {
@@ -792,14 +851,13 @@ class MainActivity : BaseActivity() {
             }
 
             FuncTitleModel.FuncType.Icon -> {
-                // ENH-10: Photo Picker không cần quyền storage — chỉ gate quyền khi phải fallback
-                // về ACTION_PICK (thiết bị/Android version không hỗ trợ Photo Picker).
-                if (ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(this)) {
-                    performFileSearch(REQ_PICK_ICON)
+                // FEAT-24: có MRU thì hỏi quick-pick trước; batch đầu tiên (chưa có icon nào từng
+                // dùng) đi thẳng vào picker như cũ, không thêm bước thừa.
+                val recentIcons = viewModel.waterMark.value?.recentIconUris.orEmpty()
+                if (recentIcons.isNotEmpty()) {
+                    showIconQuickPickDialog(recentIcons)
                 } else {
-                    preCheckStoragePermission {
-                        performFileSearch(REQ_PICK_ICON)
-                    }
+                    launchIconPicker()
                 }
             }
 

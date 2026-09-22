@@ -51,6 +51,8 @@
     <string name="backup_file_name">watermark_creator_backup.zip</string>
     <string name="water_mark_mode_text">Văn bản</string>
     <string name="water_mark_mode_image">Hình ảnh / Biểu tượng</string>
+    <string name="icon_quick_pick_title">Icon gần đây</string>
+    <string name="icon_quick_pick_open_gallery">Chọn ảnh khác</string>
     <string name="tips_ok">Xác nhận</string>
     <string name="tips_cancel_output">Huỷ</string>
     <string name="tips_need_compress_img">Bộ nhớ không đủ hoặc ảnh quá lớn</string>

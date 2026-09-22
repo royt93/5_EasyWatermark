@@ -50,6 +50,8 @@
     <string name="backup_file_name">watermark_creator_backup.zip</string>
     <string name="water_mark_mode_text">Text</string>
     <string name="water_mark_mode_image">Icon</string>
+    <string name="icon_quick_pick_title">Recently used icons</string>
+    <string name="icon_quick_pick_open_gallery">Choose another</string>
     <string name="tips_ok">Confirm</string>
     <string name="tips_cancel_output">Cancel</string>
     <string name="tips_need_compress_img">Insufficient storage or the image is too large</string>

@@ -29,5 +29,7 @@ data class WaterMark(
     /** FEAT-11 — viền/bóng/nền pill cho text watermark, độc lập, kết hợp tự do. */
     val textEffectStroke: Boolean = false,
     val textEffectShadow: Boolean = false,
-    val textEffectPillBackground: Boolean = false
+    val textEffectPillBackground: Boolean = false,
+    /** FEAT-24: N icon/logo gần đây nhất user đã chọn, mới nhất đứng đầu — cho quick-pick. */
+    val recentIconUris: List<Uri> = emptyList()
 )
