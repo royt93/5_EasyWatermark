@@ -48,9 +48,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         android:text="@string/dialog_export_to_gallery"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.App.Title20Bold"
         tools:text="Export to Album" />
 
     <!-- ══ SECTION: FORMAT ══════════════════════════════════════════════════ -->
@@ -62,9 +60,7 @@
         android:letterSpacing="0.1"
         android:text="@string/about_title_output"
         android:textAllCaps="true"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="11sp"
-        android:textStyle="bold" />
+        android:textAppearance="@style/TextAppearance.App.Label11VariantBold" />
 
     <!-- Format dropdown card -->
     <com.google.android.material.textfield.TextInputLayout
@@ -91,8 +87,7 @@
             android:minWidth="120dp"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="15sp" />
+            android:textAppearance="@style/TextAppearance.App.Body15" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -121,8 +116,7 @@
             android:minWidth="120dp"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="15sp" />
+            android:textAppearance="@style/TextAppearance.App.Body15" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -150,9 +144,8 @@
             android:maxLines="1"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?attr/colorOnSurface"
             android:textColorHint="?attr/colorOnSurfaceVariant"
-            android:textSize="15sp" />
+            android:textAppearance="@style/TextAppearance.App.Body15" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -181,8 +174,7 @@
             android:minWidth="120dp"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="15sp" />
+            android:textAppearance="@style/TextAppearance.App.Body15" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -210,9 +202,8 @@
             android:maxLines="1"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?attr/colorOnSurface"
             android:textColorHint="?attr/colorOnSurfaceVariant"
-            android:textSize="15sp" />
+            android:textAppearance="@style/TextAppearance.App.Body15" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -230,9 +221,7 @@
             android:letterSpacing="0.1"
             android:text="@string/dialog_save_config_quality"
             android:textAllCaps="true"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="11sp"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.App.Label11VariantBold" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvQualityValue"
@@ -240,9 +229,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="12sp"
-            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.App.Label12Bold"
             tools:text="80" />
 
     </FrameLayout>
@@ -327,9 +314,7 @@
         android:layout_marginBottom="8dp"
         android:letterSpacing="0.1"
         android:textAllCaps="true"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="11sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.App.Label11VariantBold"
         tools:text="EXPORT LIST 0/3" />
 
     <!-- Image preview grid -->
@@ -359,11 +344,8 @@
         android:layout_width="match_parent"
         android:layout_height="52dp"
         app:backgroundTint="?attr/colorPrimary"
-        android:fontFamily="sans-serif-medium"
         android:text="@string/dialog_export_to_gallery"
-        android:textColor="?attr/colorOnPrimary"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.App.Label16OnPrimaryMedium"
         app:cornerRadius="26dp"
         app:elevation="0dp"
         app:icon="@drawable/ic_save"

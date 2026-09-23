@@ -38,8 +38,7 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:text="@string/recovery_mode_tips"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="14sp"
+            android:textAppearance="@style/TextAppearance.App.Body14Variant"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvTitle" />

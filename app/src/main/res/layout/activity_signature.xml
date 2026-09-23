@@ -143,8 +143,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:text="@string/neon_glow"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="14sp" />
+                android:textAppearance="@style/TextAppearance.App.Body14" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/swGlow"
@@ -172,11 +171,8 @@
             android:layout_height="52dp"
             android:layout_marginTop="8dp"
             app:backgroundTint="?attr/colorPrimary"
-            android:fontFamily="sans-serif-medium"
             android:text="@string/apply_signature"
-            android:textColor="?attr/colorOnPrimary"
-            android:textSize="16sp"
-            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.App.Label16OnPrimaryMedium"
             app:cornerRadius="26dp"
             app:elevation="2dp"
             app:rippleColor="?attr/colorOnPrimary"

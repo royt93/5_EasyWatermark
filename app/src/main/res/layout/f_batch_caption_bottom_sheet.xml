@@ -28,9 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
         android:text="@string/batch_caption_title"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.App.Title20Bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/vHandle" />
 
@@ -40,8 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="13sp"
+        android:textAppearance="@style/TextAppearance.App.Body13Variant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"

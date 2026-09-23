@@ -77,9 +77,7 @@
                         android:id="@+id/tvVipStatus"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
+                        android:textAppearance="@style/TextAppearance.App.Title22Bold"
                         tools:text="VIP Active" />
 
                     <TextView
@@ -87,8 +85,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="14sp"
+                        android:textAppearance="@style/TextAppearance.App.Body14"
                         tools:text="First install gift" />
 
                     <!-- #3 Expiry row -->
@@ -97,8 +94,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="13sp"
+                        android:textAppearance="@style/TextAppearance.App.Body13Variant"
                         tools:text="Expires Jun 15, 2026" />
                 </LinearLayout>
             </LinearLayout>
@@ -119,8 +115,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/vip_time_left"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.App.Body13Variant" />
 
                 <TextView
                     android:id="@+id/tvCountdown"
@@ -148,8 +143,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="12sp"
+                    android:textAppearance="@style/TextAppearance.App.Label12Variant"
                     tools:text="Activated: Jun 14, 2026 10:00" />
             </LinearLayout>
 
@@ -166,9 +160,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/vip_redeem_title"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/TextAppearance.App.Title16Bold" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilVipKey"
@@ -221,17 +213,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/vip_reward_title"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/TextAppearance.App.Title16Bold" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:text="@string/vip_reward_desc"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="14sp" />
+                    android:textAppearance="@style/TextAppearance.App.Body14Variant" />
 
                 <com.facebook.shimmer.ShimmerFrameLayout
                     android:id="@+id/shimmerWatch"
@@ -277,17 +266,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/vip_active_card_title"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/TextAppearance.App.Title16Bold" />
 
                 <TextView
                     android:id="@+id/tvActiveEntryLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="15sp"
+                    android:textAppearance="@style/TextAppearance.App.Body15"
                     tools:text="🎁 First install gift" />
 
                 <TextView
@@ -295,8 +281,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp"
+                    android:textAppearance="@style/TextAppearance.App.Body13Variant"
                     tools:text="Expires Jun 15, 2026" />
 
                 <com.google.android.material.button.MaterialButton
@@ -327,9 +312,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/vip_buy_title"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/TextAppearance.App.Title16Bold" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnBuy30"
@@ -398,8 +381,7 @@
                 android:background="?attr/selectableItemBackground"
                 android:contentDescription="@string/vip_privacy_footer"
                 android:text="@string/vip_privacy_footer"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="12sp" />
+                android:textAppearance="@style/TextAppearance.App.Label12Variant" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

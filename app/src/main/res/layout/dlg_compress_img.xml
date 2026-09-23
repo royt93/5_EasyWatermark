@@ -17,9 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/tips_tip_title"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.App.Title20Bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -48,8 +46,7 @@
         android:accessibilityLiveRegion="polite"
         android:text="@string/tips_need_compress_img"
         android:textAlignment="center"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="14sp"
+        android:textAppearance="@style/TextAppearance.App.Body14Variant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cpbCompress" />

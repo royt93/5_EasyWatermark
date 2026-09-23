@@ -27,9 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
         android:text="@string/qr_code_title"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.App.Title20Bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/vHandle" />
 
@@ -97,11 +95,9 @@
         android:layout_marginTop="16dp"
         android:text="@string/qr_code_use"
         android:textAllCaps="false"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.App.Label16OnPrimaryBold"
         app:cornerRadius="26dp"
         app:backgroundTint="?attr/colorPrimary"
-        android:textColor="?attr/colorOnPrimary"
         app:icon="@drawable/ic_func_qr_code"
         app:iconGravity="textStart"
         app:iconTint="?attr/colorOnPrimary"

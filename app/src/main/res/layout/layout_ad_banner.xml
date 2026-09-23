@@ -21,9 +21,7 @@
         android:paddingEnd="12dp"
         android:paddingBottom="2dp"
         android:text="Ad"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="11sp"
-        android:textStyle="bold" />
+        android:textAppearance="@style/TextAppearance.App.Label11VariantBold" />
 
     <!-- Banner slot -->
     <FrameLayout

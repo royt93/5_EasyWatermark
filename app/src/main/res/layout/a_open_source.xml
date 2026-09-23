@@ -75,9 +75,7 @@
                         android:paddingEnd="8dp"
                         android:paddingBottom="2dp"
                         android:text="Apache-2.0"
-                        android:textColor="?attr/colorPrimary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textAppearance="@style/TextAppearance.App.Label11PrimaryBold" />
 
                     <ImageView
                         android:layout_width="20dp"
@@ -147,9 +145,7 @@
                         android:paddingEnd="8dp"
                         android:paddingBottom="2dp"
                         android:text="BSD-2-Clause"
-                        android:textColor="?attr/colorPrimary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textAppearance="@style/TextAppearance.App.Label11PrimaryBold" />
 
                     <ImageView
                         android:layout_width="20dp"
@@ -219,9 +215,7 @@
                         android:paddingEnd="8dp"
                         android:paddingBottom="2dp"
                         android:text="Apache-2.0"
-                        android:textColor="?attr/colorPrimary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textAppearance="@style/TextAppearance.App.Label11PrimaryBold" />
 
                     <ImageView
                         android:layout_width="20dp"
@@ -291,9 +285,7 @@
                         android:paddingEnd="8dp"
                         android:paddingBottom="2dp"
                         android:text="Apache-2.0"
-                        android:textColor="?attr/colorPrimary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:textAppearance="@style/TextAppearance.App.Label11PrimaryBold" />
 
                     <ImageView
                         android:layout_width="20dp"

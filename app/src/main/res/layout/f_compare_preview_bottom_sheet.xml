@@ -26,9 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
         android:text="@string/compare_title"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.App.Title20Bold"
         app:layout_constraintEnd_toStartOf="@id/tvValue"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/vHandle" />
@@ -38,8 +36,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="14sp"
+        android:textAppearance="@style/TextAppearance.App.Body14Variant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/vHandle"
         tools:text="100%" />

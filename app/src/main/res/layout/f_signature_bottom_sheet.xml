@@ -27,9 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
         android:text="@string/draw_signature"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.App.Title20Bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/vHandle" />
 
@@ -77,9 +75,7 @@
         app:backgroundTint="?attr/colorPrimary"
         android:text="@string/apply_signature"
         android:textAllCaps="false"
-        android:textColor="?attr/colorOnPrimary"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.App.Label16OnPrimaryBold"
         app:cornerRadius="26dp"
         app:elevation="0dp"
         app:rippleColor="?attr/colorOnPrimary"

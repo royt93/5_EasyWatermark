@@ -35,8 +35,7 @@
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:text="@string/tile_mode_title_repeat"
-            android:textColor="@color/selector_toggle_button_text"
-            android:textSize="13sp"
+            android:textAppearance="@style/TextAppearance.App.Body13Selector"
             app:backgroundTint="@color/selector_toggle_button_bg"
             app:shapeAppearance="@style/ShapeAppearance.App.PillInner.Start"
             app:strokeWidth="0dp" />
@@ -53,8 +52,7 @@
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:text="@string/tile_mode_title_decal"
-            android:textColor="@color/selector_toggle_button_text"
-            android:textSize="13sp"
+            android:textAppearance="@style/TextAppearance.App.Body13Selector"
             app:backgroundTint="@color/selector_toggle_button_bg"
             app:shapeAppearance="@style/ShapeAppearance.App.PillInner.End"
             app:strokeWidth="0dp" />

@@ -70,9 +70,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/leica_exif_border"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:textAppearance="@style/TextAppearance.App.Title18Bold" />
 
                 <com.google.android.material.textview.MaterialTextView
                     style="@style/TextAppearance.Material3.BodySmall"
@@ -80,8 +78,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="@string/leica_exif_border_desc"
-                    android:textSize="13sp"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    android:textAppearance="@style/TextAppearance.App.Body13Variant" />
 
             </LinearLayout>
 
@@ -109,8 +106,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:text="@string/exif_frame_style_label"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="13sp" />
+            android:textAppearance="@style/TextAppearance.App.Body13Variant" />
 
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -131,8 +127,7 @@
                     android:layout_marginEnd="8dp"
                     android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_classic"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp"
+                    android:textAppearance="@style/TextAppearance.App.Body13"
                     app:cornerRadius="20dp"
                     app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp" />
@@ -146,8 +141,7 @@
                     android:layout_marginEnd="8dp"
                     android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_polaroid"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp"
+                    android:textAppearance="@style/TextAppearance.App.Body13"
                     app:cornerRadius="20dp"
                     app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp" />
@@ -161,8 +155,7 @@
                     android:layout_marginEnd="8dp"
                     android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_film_strip"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp"
+                    android:textAppearance="@style/TextAppearance.App.Body13"
                     app:cornerRadius="20dp"
                     app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp" />
@@ -175,8 +168,7 @@
                     android:minHeight="48dp"
                     android:backgroundTint="?attr/colorSurfaceContainerHigh"
                     android:text="@string/exif_frame_style_minimal"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp"
+                    android:textAppearance="@style/TextAppearance.App.Body13"
                     app:cornerRadius="20dp"
                     app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp" />
@@ -208,8 +200,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/exif_customize_label"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="13sp" />
+                android:textAppearance="@style/TextAppearance.App.Body13Variant" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvExifCustomizeReset"
@@ -240,8 +231,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/exif_customize_band_color"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="14sp" />
+                android:textAppearance="@style/TextAppearance.App.Body14" />
 
             <FrameLayout
                 android:id="@+id/flExifBandColor"
@@ -275,16 +265,14 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/exif_customize_band_thickness"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="14sp" />
+                android:textAppearance="@style/TextAppearance.App.Body14" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvExifBandThicknessValue"
                 style="@style/TextAppearance.Material3.LabelMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="13sp"
+                android:textAppearance="@style/TextAppearance.App.Body13Variant"
                 tools:text="12%" />
 
         </LinearLayout>
@@ -314,8 +302,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/exif_customize_serif_caption"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="14sp" />
+                android:textAppearance="@style/TextAppearance.App.Body14" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/swExifSerifCaption"
