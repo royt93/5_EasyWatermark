@@ -10,6 +10,13 @@
         <item name="cornerSize">8dp</item>
     </style>
 
+    <!-- FEAT-23 (nhân tiện): dành riêng cho nút NẰM TRONG pill bo 28dp (bg_floating_pill) —
+         bo nhỏ hơn corner cha nhưng lớn hơn 8dp mặc định, tránh 2 lớp bo góc lệch nhau. -->
+    <style name="ShapeAppearance.App.PillInner" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+
     <style name="ShapeAppearance.App.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">12dp</item>

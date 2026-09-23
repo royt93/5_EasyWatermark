@@ -68,7 +68,6 @@ class TileModeFragment : BaseBindFragment<FTileModeBinding>() {
         }
         shareViewModel.colorPalette.observe(this.viewLifecycleOwner) {
             val color = it.titleTextColor(requireContext())
-            binding?.btnPositionAnchor?.setTextColor(color)
             binding?.btnPositionAnchor?.iconTint = android.content.res.ColorStateList.valueOf(color)
         }
         binding?.btnPositionAnchor?.contentDescription = getString(R.string.position_anchor_button)

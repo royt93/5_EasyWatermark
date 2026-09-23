@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     f_tile_mode — Repeat/Single toggle (Style tab)
-    Dark frosted pill, radio buttons with white text
+    Pill nền M3 chuẩn (bg_floating_pill: ?attr/colorSurfaceContainerHigh, bo 28dp).
 -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -19,7 +19,7 @@
         app:singleSelection="true"
         app:selectionRequired="true"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/btnPositionAnchor"
+        app:layout_constraintEnd_toStartOf="@id/vDividerAnchor"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -38,6 +38,7 @@
             android:textColor="@color/selector_toggle_button_text"
             android:textSize="13sp"
             app:backgroundTint="@color/selector_toggle_button_bg"
+            app:shapeAppearance="@style/ShapeAppearance.App.PillInner"
             app:strokeColor="@color/selector_toggle_button_stroke"
             app:strokeWidth="1dp" />
 
@@ -56,30 +57,36 @@
             android:textColor="@color/selector_toggle_button_text"
             android:textSize="13sp"
             app:backgroundTint="@color/selector_toggle_button_bg"
+            app:shapeAppearance="@style/ShapeAppearance.App.PillInner"
             app:strokeColor="@color/selector_toggle_button_stroke"
             app:strokeWidth="1dp" />
 
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
+    <!-- Tách trực quan: đây là action mở bottom sheet Vị trí, KHÔNG phải lựa chọn thứ 3
+         cùng nhóm với Lặp lại/Đơn lẻ. -->
+    <View
+        android:id="@+id/vDividerAnchor"
+        android:layout_width="1dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="?attr/colorOutlineVariant"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btnPositionAnchor"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnPositionAnchor"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_marginEnd="8dp"
-        android:minWidth="48dp"
-        android:minHeight="48dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:text="@string/position_anchor_button"
-        android:textAllCaps="false"
-        android:textSize="12sp"
+        android:contentDescription="@string/position_anchor_button"
         app:icon="@drawable/ic_anchor_center"
-        app:iconGravity="textStart"
-        app:iconPadding="4dp"
-        app:iconSize="16dp"
+        app:iconSize="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
