@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.PorterDuff
@@ -18,7 +17,6 @@ import androidx.core.graphics.drawable.toBitmap
 import com.mckimquyen.watermark.utils.ktx.colorPrimary
 import com.mckimquyen.watermark.utils.ktx.colorSecondary
 import com.mckimquyen.watermark.utils.ktx.colorTertiary
-import com.mckimquyen.watermark.utils.ktx.supportDynamicColor
 
 class ColoredImageVIew : AppCompatImageView {
     constructor(context: Context) : super(context)
@@ -34,21 +32,12 @@ class ColoredImageVIew : AppCompatImageView {
     private val paint by lazy { Paint() }
     private var enable = true
 
-    private val colorList = if (supportDynamicColor()) {
-        arrayOf(
-            context.colorPrimary,
-            context.colorSecondary,
-            context.colorTertiary,
-            context.colorTertiary
-        ).toIntArray()
-    } else {
-        arrayOf(
-            Color.parseColor("#FFA51F"),
-            Color.parseColor("#FFD703"),
-            Color.parseColor("#C0FF39"),
-            Color.parseColor("#00FFE0")
-        ).toIntArray()
-    }
+    private val colorList = arrayOf(
+        context.colorPrimary,
+        context.colorSecondary,
+        context.colorTertiary,
+        context.colorTertiary
+    ).toIntArray()
 
     private val posList = arrayOf(0f, 0.5f, 0.7f, 0.99f).toFloatArray()
 
