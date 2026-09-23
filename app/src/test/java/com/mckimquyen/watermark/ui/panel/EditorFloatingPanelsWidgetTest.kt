@@ -101,11 +101,12 @@ class EditorFloatingPanelsWidgetTest {
         assertThat(btnDecal.minHeight).isAtLeast(40)
         assertThat(btnDecal.minWidth).isAtLeast(64)
 
-        // Position anchor button has icon and minimum touch target
+        // Position anchor button: icon-only (không còn text, dùng contentDescription) + touch target chuẩn 48dp
         assertThat(btnAnchor.icon).isNotNull()
-        assertThat(btnAnchor.minHeight).isAtLeast(40)
+        assertThat(btnAnchor.minHeight).isAtLeast(48)
         assertThat(btnAnchor.minWidth).isAtLeast(48)
-        assertThat(btnAnchor.text.toString()).isEqualTo(context.getString(R.string.position_anchor_button))
+        assertThat(btnAnchor.contentDescription.toString())
+            .isEqualTo(context.getString(R.string.position_anchor_button))
     }
 
     @Test

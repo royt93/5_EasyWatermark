@@ -11,11 +11,12 @@
     android:paddingStart="8dp"
     android:paddingEnd="8dp">
 
-    <!-- Icon with M3 tonal container -->
+    <!-- Icon with M3 tonal container — nền đổi màu theo trạng thái chọn (xem FuncPanelAdapter) -->
     <FrameLayout
+        android:id="@+id/flIconBg"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:background="@drawable/bg_m3_item_func">
+        android:background="@drawable/bg_m3_item_func_selector">
 
         <ImageView
             android:id="@+id/ivIcon"

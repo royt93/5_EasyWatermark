@@ -67,6 +67,7 @@ class FuncPanelAdapter(
         with(dataSet[position]) {
             holder.tvTitle.text = title
             holder.ivIcon.setImageResource(iconRes)
+            holder.flIconBg.isSelected = position == selectedPos
             if (position == selectedPos) {
                 holder.ivIcon.drawable.setTint(
                     MaterialColors.harmonize(textColor, holder.tvTitle.context.colorPrimary)
@@ -115,5 +116,6 @@ class FuncPanelAdapter(
     class FuncTitleHolder(view: View) : BaseViewHolder(view) {
         val tvTitle: TextView = view.findViewById(R.id.tvTitle)
         val ivIcon: ImageView = view.findViewById(R.id.ivIcon)
+        val flIconBg: View = view.findViewById(R.id.flIconBg)
     }
 }

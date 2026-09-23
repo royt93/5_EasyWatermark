@@ -38,9 +38,8 @@
             android:textColor="@color/selector_toggle_button_text"
             android:textSize="13sp"
             app:backgroundTint="@color/selector_toggle_button_bg"
-            app:shapeAppearance="@style/ShapeAppearance.App.PillInner"
-            app:strokeColor="@color/selector_toggle_button_stroke"
-            app:strokeWidth="1dp" />
+            app:shapeAppearance="@style/ShapeAppearance.App.PillInner.Start"
+            app:strokeWidth="0dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnTileModeDecal"
@@ -57,9 +56,8 @@
             android:textColor="@color/selector_toggle_button_text"
             android:textSize="13sp"
             app:backgroundTint="@color/selector_toggle_button_bg"
-            app:shapeAppearance="@style/ShapeAppearance.App.PillInner"
-            app:strokeColor="@color/selector_toggle_button_stroke"
-            app:strokeWidth="1dp" />
+            app:shapeAppearance="@style/ShapeAppearance.App.PillInner.End"
+            app:strokeWidth="0dp" />
 
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
@@ -79,8 +77,10 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnPositionAnchor"
         style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:minWidth="48dp"
+        android:minHeight="48dp"
         android:layout_marginEnd="8dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"

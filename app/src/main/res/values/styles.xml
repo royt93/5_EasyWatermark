@@ -17,6 +17,20 @@
         <item name="cornerSize">20dp</item>
     </style>
 
+    <!-- Bo góc CHỈ cạnh trái — dùng cho nút ĐẦU trong MaterialButtonToggleGroup. Tự set cứng cạnh
+         phải = 0dp thay vì trông cậy cơ chế tự "cắt phẳng cạnh trong" của ToggleGroup — cơ chế đó
+         render sai (cả 2 cạnh đều bo) khi nút dùng shapeAppearance tuỳ biến + strokeColor riêng. -->
+    <style name="ShapeAppearance.App.PillInner.Start" parent="ShapeAppearance.App.PillInner">
+        <item name="cornerSizeTopRight">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <!-- Bo góc CHỈ cạnh phải — dùng cho nút CUỐI trong MaterialButtonToggleGroup. -->
+    <style name="ShapeAppearance.App.PillInner.End" parent="ShapeAppearance.App.PillInner">
+        <item name="cornerSizeTopLeft">0dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+    </style>
+
     <style name="ShapeAppearance.App.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">12dp</item>
