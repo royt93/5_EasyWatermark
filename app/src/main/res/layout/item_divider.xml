@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- item_divider — vạch ngăn mảnh giữa các nhóm chip trong rvColor.
      marginStart/End 4dp để khoảng cách chip→divider = 4(margin chip)+4(margin divider) = 8dp,
-     bằng đúng khoảng cách chip→chip (4dp+4dp) — tránh spacing không đều quanh divider. -->
+     bằng đúng khoảng cách chip→chip (4dp+4dp) — tránh spacing không đều quanh divider.
+     layout_height PHẢI bằng đúng item_typeface_style/item_text_effect (48dp) — trước đây 56dp
+     khiến RecyclerView (wrap_content, cao theo item cao nhất) bị kéo cao hơn item chip, đẩy lệch
+     canh dọc cả hàng trong pill 52dp (gây khoảng trắng thừa phía trên). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="1dp"
-    android:layout_height="56dp"
+    android:layout_height="48dp"
     android:layout_marginStart="4dp"
     android:layout_marginEnd="4dp"
-    android:paddingTop="16dp"
-    android:paddingBottom="16dp">
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
 
     <View
         android:layout_width="match_parent"
