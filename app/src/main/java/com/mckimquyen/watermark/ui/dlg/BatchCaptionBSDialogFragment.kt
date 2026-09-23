@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.FragmentManager
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.BatchCaptionParser
@@ -13,6 +12,7 @@ import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.databinding.FBatchCaptionBottomSheetBinding
 import com.mckimquyen.watermark.ui.MainActivity
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
+import com.mckimquyen.watermark.utils.ktx.toast
 
 /**
  * FEAT-13: nhập/dán danh sách caption nhiều dòng (1 dòng = 1 ảnh, đúng thứ tự batch hiện tại) —
@@ -61,19 +61,14 @@ class BatchCaptionBSDialogFragment : BaseBindBSDFragment<FBatchCaptionBottomShee
                 }
 
                 is BatchCaptionParser.Validation.CountMismatch -> {
-                    Toast.makeText(
-                        requireContext(),
+                    toast(
                         getString(R.string.batch_caption_count_mismatch, result.actual, result.expected),
-                        Toast.LENGTH_LONG
-                    ).show()
+                        long = true
+                    )
                 }
 
                 is BatchCaptionParser.Validation.InvalidCsv -> {
-                    Toast.makeText(
-                        requireContext(),
-                        getString(R.string.batch_caption_invalid_csv, result.lineNumber),
-                        Toast.LENGTH_LONG
-                    ).show()
+                    toast(getString(R.string.batch_caption_invalid_csv, result.lineNumber), long = true)
                 }
             }
         }

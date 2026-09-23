@@ -14,7 +14,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,6 +37,7 @@ import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.MultiPickContract
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.dp
+import com.mckimquyen.watermark.utils.ktx.toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -425,7 +425,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         } ?: emptyList()
         AppLog.d(LOG_TAG, "GalleryFragment handleActivityResult — validImageCount=${finalList.size}")
         if (finalList.isEmpty()) {
-            Toast.makeText(requireContext(), getString(R.string.tips_do_not_choose_image), Toast.LENGTH_SHORT).show()
+            toast(R.string.tips_do_not_choose_image)
             return
         }
         if (FileUtils.isImage(requireContext().contentResolver, finalList.first())) {
@@ -434,7 +434,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
             dismissAllowingStateLoss()
         } else {
             AppLog.d(LOG_TAG, "GalleryFragment handleActivityResult — unsupported file type chosen")
-            Toast.makeText(requireContext(), getString(R.string.tips_choose_other_file_type), Toast.LENGTH_SHORT).show()
+            toast(R.string.tips_choose_other_file_type)
         }
     }
 }

@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isInvisible
@@ -37,6 +36,7 @@ import com.mckimquyen.watermark.utils.ExportZipHelper
 import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
 import com.mckimquyen.watermark.utils.ktx.preCheckStoragePermission
+import com.mckimquyen.watermark.utils.ktx.toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -446,7 +446,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         // BUG-33: Tìm ảnh thành công ĐẦU TIÊN (có shareUri != null), không lấy index 0 thô
         val list = shareViewModel.imageList.value?.first ?: return
         val successfulItem = list.firstOrNull { it.shareUri != null } ?: run {
-            Toast.makeText(requireContext(), R.string.save_failed, Toast.LENGTH_SHORT).show()
+            toast(R.string.save_failed)
             return
         }
         val outputUri = successfulItem.shareUri ?: return
@@ -459,7 +459,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             startActivity(intent)
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(requireContext(), R.string.share_error, Toast.LENGTH_SHORT).show()
+            toast(R.string.share_error)
         }
     }
 
@@ -468,7 +468,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         val list = shareViewModel.imageList.value?.first ?: emptyList()
         val successfulUris = ArrayList(list.mapNotNull { it.shareUri })
         if (successfulUris.isEmpty()) {
-            Toast.makeText(requireContext(), R.string.save_failed, Toast.LENGTH_SHORT).show()
+            toast(R.string.save_failed)
             return
         }
         val intent = Intent().apply {
@@ -499,11 +499,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             startActivity(intent)
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.share_error, e.message),
-                Toast.LENGTH_SHORT
-            ).show()
+            toast(getString(R.string.share_error, e.message))
         }
     }
 
@@ -511,11 +507,11 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         val list = shareViewModel.imageList.value?.first ?: emptyList()
         val successfulUris = list.mapNotNull { it.shareUri }
         if (successfulUris.isEmpty()) {
-            Toast.makeText(requireContext(), R.string.save_failed, Toast.LENGTH_SHORT).show()
+            toast(R.string.save_failed)
             return
         }
         binding.btnShareZip.isEnabled = false
-        Toast.makeText(requireContext(), R.string.zipping_images, Toast.LENGTH_SHORT).show()
+        toast(R.string.zipping_images)
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             val context = requireContext().applicationContext
@@ -535,14 +531,10 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                         startActivity(shareIntent)
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        Toast.makeText(
-                            context,
-                            getString(R.string.share_error, e.message),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        toast(getString(R.string.share_error, e.message))
                     }
                 } else {
-                    Toast.makeText(context, R.string.share_zip_failed, Toast.LENGTH_SHORT).show()
+                    toast(R.string.share_zip_failed)
                 }
             }
         }
@@ -559,7 +551,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         val list = shareViewModel.imageList.value?.first ?: emptyList()
         val successfulUris = list.mapNotNull { it.shareUri }
         if (successfulUris.isEmpty()) {
-            Toast.makeText(requireContext(), R.string.save_failed, Toast.LENGTH_SHORT).show()
+            toast(R.string.save_failed)
             return
         }
         val context = requireContext().applicationContext
@@ -577,14 +569,10 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 startActivity(shareIntent)
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(
-                    context,
-                    getString(R.string.share_error, e.message),
-                    Toast.LENGTH_SHORT
-                ).show()
+                toast(getString(R.string.share_error, e.message))
             }
         } else {
-            Toast.makeText(context, R.string.share_zip_failed, Toast.LENGTH_SHORT).show()
+            toast(R.string.share_zip_failed)
         }
     }
 

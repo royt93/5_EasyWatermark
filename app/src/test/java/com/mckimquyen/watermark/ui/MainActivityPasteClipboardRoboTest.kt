@@ -9,14 +9,12 @@ import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.ui.widget.LaunchView
 import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.fakes.RoboMenuItem
-import org.robolectric.shadows.ShadowToast
 import java.io.File
 
 /**
@@ -26,11 +24,6 @@ import java.io.File
 class MainActivityPasteClipboardRoboTest {
 
     private lateinit var testTempDir: File
-
-    @Before
-    fun setUp() {
-        ShadowToast.reset()
-    }
 
     @After
     fun tearDown() {
@@ -105,9 +98,11 @@ class MainActivityPasteClipboardRoboTest {
         assertThat(viewModel.imageList.value?.first).isEmpty()
         assertThat(launchView.mode).isEqualTo(LaunchView.ViewMode.LaunchMode)
 
-        // Có thông báo Toast báo không tìm thấy ảnh
-        val latestToast = ShadowToast.getTextOfLatestToast()
-        assertThat(latestToast).isEqualTo(activity.getString(R.string.clipboard_no_image))
+        // Co thong bao Snackbar (M3, thay Toast) bao khong tim thay anh
+        val snackbarText = activity.window.decorView
+            .findViewById<android.widget.TextView>(com.google.android.material.R.id.snackbar_text)
+        assertThat(snackbarText).isNotNull()
+        assertThat(snackbarText.text.toString()).isEqualTo(activity.getString(R.string.clipboard_no_image))
     }
 
     @Test

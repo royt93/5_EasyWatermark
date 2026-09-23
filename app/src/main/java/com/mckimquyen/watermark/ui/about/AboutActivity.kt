@@ -4,7 +4,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.view.ViewCompat
@@ -23,6 +22,7 @@ import com.mckimquyen.watermark.feature.vip.VipManagementActivity
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.openLink
+import com.mckimquyen.watermark.utils.ktx.toast
 import com.roy.sdkadbmob.AdManager
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -48,14 +48,14 @@ class AboutActivity : BaseActivity() {
     private val backupLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
         if (uri == null) return@registerForActivityResult
         viewModel.backupTo(uri) { success ->
-            Toast.makeText(this, getString(if (success) R.string.backup_success else R.string.backup_failed), Toast.LENGTH_SHORT).show()
+            toast(if (success) R.string.backup_success else R.string.backup_failed)
         }
     }
 
     private val restoreLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri == null) return@registerForActivityResult
         viewModel.restoreFrom(uri) { success ->
-            Toast.makeText(this, getString(if (success) R.string.restore_success else R.string.restore_failed), Toast.LENGTH_SHORT).show()
+            toast(if (success) R.string.restore_success else R.string.restore_failed)
         }
     }
 
@@ -180,11 +180,7 @@ class AboutActivity : BaseActivity() {
             switchDynamicColor.setOnCheckedChangeListener { _, isChecked ->
                 AppLog.d(LOG_TAG, "AboutActivity switchDynamicColor changed -> isChecked=$isChecked — triggering rebirth")
                 viewModel.toggleSupportDynamicColor(isChecked)
-                Toast.makeText(
-                    /* context = */ this@AboutActivity,
-                    /* text = */ getString(R.string.you_ll_need_to_close_and_restart_the_app_to_switch_themes),
-                    /* duration = */ Toast.LENGTH_SHORT
-                ).show()
+                this@AboutActivity.toast(R.string.you_ll_need_to_close_and_restart_the_app_to_switch_themes)
                 ProcessPhoenix.triggerRebirth(this@AboutActivity)
             }
 

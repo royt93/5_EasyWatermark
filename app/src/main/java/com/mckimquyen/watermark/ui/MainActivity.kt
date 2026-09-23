@@ -23,7 +23,6 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -280,11 +279,9 @@ class MainActivity : BaseActivity() {
                     val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     val clip = ClipData.newPlainText(tvCrashInfo.text, tvCrashInfo.text)
                     clipboard.setPrimaryClip(clip)
-                    Toast.makeText(this@MainActivity, R.string.copy_success, Toast.LENGTH_SHORT)
-                        .show()
+                    this@MainActivity.toast(R.string.copy_success)
                 } catch (e: Exception) {
-                    Toast.makeText(this@MainActivity, R.string.copy_failed, Toast.LENGTH_SHORT)
-                        .show()
+                    this@MainActivity.toast(R.string.copy_failed)
                 }
             }
         }
@@ -296,8 +293,7 @@ class MainActivity : BaseActivity() {
         val btnStore = findViewById<Button>(R.id.btnStore).apply {
             setOnClickListener {
                 openLink(Uri.parse("market://details?id=com.mckimquyen.watermark")) {
-                    Toast.makeText(this@MainActivity, R.string.store_not_found, Toast.LENGTH_SHORT)
-                        .show()
+                    this@MainActivity.toast(R.string.store_not_found)
                 }
             }
         }
@@ -305,8 +301,7 @@ class MainActivity : BaseActivity() {
         findViewById<Button>(R.id.btnCloseRecoveryMode).apply {
             setOnClickListener {
                 (application as MyApplication).launchSuccess()
-                Toast.makeText(this@MainActivity, R.string.recovery_mode_closed, Toast.LENGTH_SHORT)
-                    .show()
+                this@MainActivity.toast(R.string.recovery_mode_closed)
             }
         }
     }
@@ -1114,11 +1109,7 @@ class MainActivity : BaseActivity() {
             }
 
             if (result.isFailure) {
-                Toast.makeText(
-                    this,
-                    getString(R.string.tips_not_app_can_open_images),
-                    Toast.LENGTH_LONG
-                ).show()
+                toast(R.string.tips_not_app_can_open_images, long = true)
                 Log.i("performFileSearch", result.exceptionOrNull()?.message ?: "No msg provided")
             }
         } else {
@@ -1144,11 +1135,7 @@ class MainActivity : BaseActivity() {
         when (requestCode) {
             REQ_CODE_REQ_WRITE_PERMISSION -> {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(
-                        this,
-                        getString(R.string.request_permission_failed),
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    toast(R.string.request_permission_failed)
                 } else {
                     AppLog.d(LOG_TAG, "onRequestPermissionsResult REQ_CODE_REQ_WRITE_PERMISSION")
                     launchView.ivSelectedPhotoTips.performClick()
@@ -1165,11 +1152,7 @@ class MainActivity : BaseActivity() {
         if (FileUtils.isImage(this.contentResolver, uri.first())) {
             viewModel.updateImageList(uri)
         } else {
-            Toast.makeText(
-                this,
-                getString(R.string.tips_choose_other_file_type),
-                Toast.LENGTH_SHORT
-            ).show()
+            toast(R.string.tips_choose_other_file_type)
         }
     }
 
@@ -1187,11 +1170,7 @@ class MainActivity : BaseActivity() {
         if (imageUris.isNotEmpty()) {
             dealWithImage(imageUris)
         } else {
-            Toast.makeText(
-                this,
-                getString(R.string.clipboard_no_image),
-                Toast.LENGTH_SHORT
-            ).show()
+            toast(R.string.clipboard_no_image)
         }
     }
 
@@ -1216,18 +1195,10 @@ class MainActivity : BaseActivity() {
             takePictureLauncher.launch(photoUri)
         } catch (e: ActivityNotFoundException) {
             CameraCaptureHelper.cleanupPhotoFile(currentCameraPhotoFile)
-            Toast.makeText(
-                this,
-                getString(R.string.camera_app_not_found),
-                Toast.LENGTH_SHORT
-            ).show()
+            toast(R.string.camera_app_not_found)
         } catch (e: Exception) {
             CameraCaptureHelper.cleanupPhotoFile(currentCameraPhotoFile)
-            Toast.makeText(
-                this,
-                "${getString(R.string.tips_error)}: ${e.message}",
-                Toast.LENGTH_SHORT
-            ).show()
+            toast("${getString(R.string.tips_error)}: ${e.message}")
         }
     }
 
@@ -1253,11 +1224,7 @@ class MainActivity : BaseActivity() {
             FileUtils.isImage(this.contentResolver, it)
         } ?: emptyList()
         if (finalList.isEmpty()) {
-            Toast.makeText(
-                this,
-                getString(R.string.tips_do_not_choose_image),
-                Toast.LENGTH_SHORT
-            ).show()
+            toast(R.string.tips_do_not_choose_image)
             if (requestCode == REQ_PICK_ICON && viewModel.waterMark.value?.markMode == WaterMarkRepository.MarkMode.Text) {
                 manuallySelectedItem(0)
             }

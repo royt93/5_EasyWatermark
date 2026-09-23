@@ -4,12 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.FragmentManager
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.entity.Template
 import com.mckimquyen.watermark.databinding.DlgEditTemplateBinding
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
+import com.mckimquyen.watermark.utils.ktx.toast
 import java.util.Date
 
 class EditTemplateContentFragment : BaseBindBSDFragment<DlgEditTemplateBinding>() {
@@ -59,12 +59,12 @@ class EditTemplateContentFragment : BaseBindBSDFragment<DlgEditTemplateBinding>(
             setOnClickListener {
                 val msg = binding.etWaterText.text.toString().trim()
                 if (msg.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.tips_input_text_can_not_be_empty, Toast.LENGTH_LONG).show()
+                    toast(R.string.tips_input_text_can_not_be_empty, long = true)
                     return@setOnClickListener
                 }
                 if (isEdit) {
                     val t = template?.copy(content = msg, lastModifiedDate = Date()) ?: kotlin.run {
-                        Toast.makeText(requireContext(), R.string.tips_error, Toast.LENGTH_LONG).show()
+                        toast(R.string.tips_error, long = true)
                         dismissAllowingStateLoss()
                         return@setOnClickListener
                     }

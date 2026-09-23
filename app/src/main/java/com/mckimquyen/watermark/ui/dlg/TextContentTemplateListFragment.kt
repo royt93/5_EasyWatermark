@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -17,6 +16,7 @@ import com.mckimquyen.watermark.ui.UiState
 import com.mckimquyen.watermark.ui.adapter.TextContentTemplateListAdapter
 import com.mckimquyen.watermark.ui.base.BaseBindFragment
 import com.mckimquyen.watermark.utils.ktx.commitWithAnimation
+import com.mckimquyen.watermark.utils.ktx.toast
 import kotlinx.coroutines.launch
 
 class TextContentTemplateListFragment : BaseBindFragment<DlgEditTextTemplateListBinding>() {
@@ -95,11 +95,7 @@ class TextContentTemplateListFragment : BaseBindFragment<DlgEditTextTemplateList
                 Lifecycle.State.STARTED
             ).collect {
                 if (it is UiState.DatabaseError) {
-                    Toast.makeText(
-                        requireContext(),
-                        getString(R.string.tips_database_init_error),
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    toast(R.string.tips_database_init_error)
                 }
             }
         }

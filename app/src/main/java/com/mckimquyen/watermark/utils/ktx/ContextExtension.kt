@@ -7,12 +7,16 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.util.TypedValue
+import android.view.View
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.material.snackbar.Snackbar
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.ui.MainActivity
@@ -644,7 +648,27 @@ fun Context.getColorFromAttr(
     }
 }
 
-fun Context.toast(msg: String?) {
+/**
+ * M3 Snackbar thay Toast (Toast khong theme, khong dung chuan Material You).
+ * Neo vao android.R.id.content - luon ton tai tren moi Activity, khong can biet id view cu the.
+ */
+fun Activity.toast(msg: String?, long: Boolean = false) {
     if (msg.isNullOrBlank()) return
-    android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
+    val anchor = findViewById<View>(android.R.id.content) ?: return
+    Snackbar.make(anchor, msg, if (long) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT).show()
+}
+
+fun Activity.toast(@StringRes msgRes: Int, long: Boolean = false) {
+    toast(getString(msgRes), long)
+}
+
+/** Fragment: neo vao root view cua chinh fragment - khong hien gi neu view da bi huy (an toan hon crash). */
+fun Fragment.toast(msg: String?, long: Boolean = false) {
+    if (msg.isNullOrBlank()) return
+    val anchor = view ?: return
+    Snackbar.make(anchor, msg, if (long) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT).show()
+}
+
+fun Fragment.toast(@StringRes msgRes: Int, long: Boolean = false) {
+    toast(getString(msgRes), long)
 }

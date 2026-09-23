@@ -9,7 +9,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +19,7 @@ import com.mckimquyen.watermark.databinding.FQrCodeBottomSheetBinding
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
 import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.QrCodeGenerator
+import com.mckimquyen.watermark.utils.ktx.toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -60,7 +60,7 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
             AppLog.d(LOG_TAG, "[QR] btnUse clicked: content='$content' previewBitmap=${bitmap != null}")
             if (content.isEmpty() || bitmap == null) {
                 Log.w(LOG_TAG, "[QR] abort: content empty or bitmap null")
-                Toast.makeText(requireContext(), R.string.qr_code_empty, Toast.LENGTH_SHORT).show()
+                toast(R.string.qr_code_empty)
                 return@setOnClickListener
             }
             val uri = saveBitmapToCache(bitmap)
@@ -70,7 +70,7 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
                 AppLog.d(LOG_TAG, "[QR] updateIcon called, dismissing")
                 dismissAllowingStateLoss()
             } else {
-                Toast.makeText(requireContext(), R.string.save_failed, Toast.LENGTH_SHORT).show()
+                toast(R.string.save_failed)
             }
         }
     }

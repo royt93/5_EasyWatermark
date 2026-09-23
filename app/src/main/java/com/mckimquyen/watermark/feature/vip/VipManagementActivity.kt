@@ -12,7 +12,6 @@ import android.text.format.DateFormat
 import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -24,6 +23,7 @@ import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.common.const.AdKeys
 import com.mckimquyen.watermark.databinding.ActivityVipManagementBinding
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
+import com.mckimquyen.watermark.utils.ktx.toast
 import com.roy.sdkadbmob.AdManager
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
@@ -149,7 +149,7 @@ class VipManagementActivity : BaseActivity() {
             .setPositiveButton(R.string.confirm) { _, _ ->
                 AdManager.clearVipByKey()
                 vipPrefs.clearGrantedAtMs()
-                Toast.makeText(this, R.string.vip_revoked, Toast.LENGTH_SHORT).show()
+                toast(R.string.vip_revoked)
                 refreshVipState()
             }
             .show()

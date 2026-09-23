@@ -11,7 +11,6 @@ import android.graphics.Shader
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -43,6 +42,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.export.BatchExportWorker
 import com.mckimquyen.watermark.utils.ktx.formatDate
 import com.mckimquyen.watermark.utils.ktx.launch
+import com.mckimquyen.watermark.utils.ktx.toast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import id.zelory.compressor.Compressor
@@ -808,11 +808,7 @@ ${System.currentTimeMillis().formatDate("yyy-MM-dd")}
             )
         } catch (e: ActivityNotFoundException) {
             e.printStackTrace()
-            Toast.makeText(
-                /* context = */ activity,
-                /* text = */ activity.getString(R.string.tip_not_mail_found),
-                /* duration = */ Toast.LENGTH_LONG
-            ).show()
+            activity.toast(R.string.tip_not_mail_found, long = true)
         }
     }
 
