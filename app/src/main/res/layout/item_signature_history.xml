@@ -7,7 +7,7 @@
     android:clickable="true"
     android:focusable="true"
     android:contentDescription="@string/signature_history_item"
-    android:background="@drawable/bg_glassmorphism_panel">
+    android:background="@drawable/bg_panel_outlined">
 
     <ImageView
         android:id="@+id/ivSignature"

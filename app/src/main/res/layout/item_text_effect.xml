@@ -7,7 +7,7 @@
     android:layout_width="wrap_content"
     android:layout_height="48dp"
     android:minWidth="52dp"
-    android:background="@drawable/bg_glass_button"
+    android:background="@drawable/bg_chip_selectable"
     android:layout_marginStart="4dp"
     android:layout_marginEnd="4dp">
 

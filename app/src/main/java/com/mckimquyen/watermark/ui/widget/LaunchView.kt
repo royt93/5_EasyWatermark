@@ -288,7 +288,7 @@ class LaunchView : CustomViewGroup {
 
     val ivGoAboutPage: MaterialCardView by lazy {
         createActionCard(
-            iconRes = R.drawable.ic_settings_glass,
+            iconRes = R.drawable.ic_settings_action,
             titleRes = R.string.about_title_info,
             descRes = R.string.launch_card_about_desc
         )

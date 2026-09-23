@@ -18,11 +18,11 @@ import com.mckimquyen.watermark.utils.ktx.dp
  * Enhanced RadioButton check indicator for gallery grid.
  *
  * Unselected: white circle with dark drop-shadow backdrop → always visible on any photo.
- * Selected: vivid iOS Blue (#007AFF) filled circle + white checkmark icon.
+ * Selected: Material You dynamic primary color filled circle + white checkmark icon.
  *
  * Visual contrast rules (WCAG AA+):
  * - Unselected: semi-transparent black backdrop (#80000000) + white stroke ring
- * - Selected: solid iOS Blue + white icon
+ * - Selected: solid dynamic primary color + white icon
  */
 class RadioButton : View {
 

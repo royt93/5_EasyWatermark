@@ -32,9 +32,9 @@ open class BaseActivity : AppCompatActivity() {
     /**
      * Edge-to-edge: unified for all SDK versions.
      * - WindowCompat.setDecorFitsSystemWindows(false) → content draws behind system bars
-     * - Status bar: transparent (blends with bg_glass_gradient)
+     * - Status bar: transparent
      * - Navigation bar: transparent
-     * - Icon tint: LIGHT icons on dark glass background
+     * - Icon tint: adapts to Light/Dark theme (see isAppearanceLight* below)
      */
     protected fun applyEdgeToEdge() {
         AppLog.d(LOG_TAG, "BaseActivity applyEdgeToEdge")

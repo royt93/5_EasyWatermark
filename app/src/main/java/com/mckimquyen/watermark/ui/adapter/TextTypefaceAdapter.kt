@@ -73,7 +73,7 @@ class TextTypefaceAdapter(
             }
             tvTitle?.text = model.title
             root.setBackgroundResource(
-                if (selected) R.drawable.bg_glass_button_checked else R.drawable.bg_glass_button
+                if (selected) R.drawable.bg_chip_selectable_checked else R.drawable.bg_chip_selectable
             )
             tvPreview.setTextColor(
                 if (selected) {

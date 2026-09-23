@@ -56,11 +56,11 @@ class TextStyleAndTypographyWidgetTest {
 
         // Selected item (pos 0)
         assertThat(holder0.tvPreview.currentTextColor).isEqualTo(expectedSelectedColor)
-        assertThat(shadowOf(holder0.root.background).createdFromResId).isEqualTo(R.drawable.bg_glass_button_checked)
+        assertThat(shadowOf(holder0.root.background).createdFromResId).isEqualTo(R.drawable.bg_chip_selectable_checked)
 
         // Unselected item (pos 1)
         assertThat(holder1.tvPreview.currentTextColor).isEqualTo(expectedUnselectedColor)
-        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_glass_button)
+        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_chip_selectable)
 
         // Click pos 1 to toggle
         holder1.root.performClick()
@@ -68,9 +68,9 @@ class TextStyleAndTypographyWidgetTest {
         adapter.onBindViewHolder(holder1, 1)
 
         assertThat(holder1.tvPreview.currentTextColor).isEqualTo(expectedSelectedColor)
-        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_glass_button_checked)
+        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_chip_selectable_checked)
         assertThat(holder0.tvPreview.currentTextColor).isEqualTo(expectedUnselectedColor)
-        assertThat(shadowOf(holder0.root.background).createdFromResId).isEqualTo(R.drawable.bg_glass_button)
+        assertThat(shadowOf(holder0.root.background).createdFromResId).isEqualTo(R.drawable.bg_chip_selectable)
     }
 
     @Test
@@ -101,11 +101,11 @@ class TextStyleAndTypographyWidgetTest {
 
         // Normal (selected)
         assertThat(holder0.tvPreview.currentTextColor).isEqualTo(expectedSelectedColor)
-        assertThat(shadowOf(holder0.root.background).createdFromResId).isEqualTo(R.drawable.bg_glass_button_checked)
+        assertThat(shadowOf(holder0.root.background).createdFromResId).isEqualTo(R.drawable.bg_chip_selectable_checked)
 
         // Bold (unselected)
         assertThat(holder1.tvPreview.currentTextColor).isEqualTo(expectedUnselectedColor)
-        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_glass_button)
+        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_chip_selectable)
 
         // Click pos 1
         holder1.root.performClick()
@@ -113,9 +113,9 @@ class TextStyleAndTypographyWidgetTest {
         adapter.onBindViewHolder(holder1, 1)
 
         assertThat(holder1.tvPreview.currentTextColor).isEqualTo(expectedSelectedColor)
-        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_glass_button_checked)
+        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_chip_selectable_checked)
         assertThat(holder0.tvPreview.currentTextColor).isEqualTo(expectedUnselectedColor)
-        assertThat(shadowOf(holder0.root.background).createdFromResId).isEqualTo(R.drawable.bg_glass_button)
+        assertThat(shadowOf(holder0.root.background).createdFromResId).isEqualTo(R.drawable.bg_chip_selectable)
     }
 
     @Test
@@ -151,18 +151,18 @@ class TextStyleAndTypographyWidgetTest {
 
         // Item 0 is enabled
         assertThat(holder0.tvLabel.currentTextColor).isEqualTo(expectedSelectedColor)
-        assertThat(shadowOf(holder0.root.background).createdFromResId).isEqualTo(R.drawable.bg_glass_button_checked)
+        assertThat(shadowOf(holder0.root.background).createdFromResId).isEqualTo(R.drawable.bg_chip_selectable_checked)
 
         // Item 1 is disabled
         assertThat(holder1.tvLabel.currentTextColor).isEqualTo(expectedUnselectedColor)
-        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_glass_button)
+        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_chip_selectable)
 
         // Toggle Item 1
         holder1.root.performClick()
         assertThat(toggledPos).isEqualTo(1)
         assertThat(toggledState).isTrue()
         assertThat(holder1.tvLabel.currentTextColor).isEqualTo(expectedSelectedColor)
-        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_glass_button_checked)
+        assertThat(shadowOf(holder1.root.background).createdFromResId).isEqualTo(R.drawable.bg_chip_selectable_checked)
     }
 
     @Test

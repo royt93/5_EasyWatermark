@@ -42,7 +42,7 @@ class TextEffectAdapter(
 
     private fun applyCheckedState(holder: EffectHolder, enabled: Boolean) {
         holder.root.setBackgroundResource(
-            if (enabled) R.drawable.bg_glass_button_checked else R.drawable.bg_glass_button
+            if (enabled) R.drawable.bg_chip_selectable_checked else R.drawable.bg_chip_selectable
         )
         val stateText = holder.root.context.getString(
             if (enabled) R.string.state_enabled else R.string.state_disabled

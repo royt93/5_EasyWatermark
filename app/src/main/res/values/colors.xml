@@ -59,55 +59,6 @@
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
 
-    <!-- ============================================================ -->
-    <!-- iOS Liquid Glass — Design Tokens v2                          -->
-    <!--                                                              -->
-    <!-- Strategy: Dark-tinted frosted panels (like real iOS).        -->
-    <!-- Dark panel (#B2000000) + white text = excellent contrast.    -->
-    <!-- Light CTA buttons (#F0FFFFFF) + dark text = excellent CTA.   -->
-    <!-- ============================================================ -->
-
-    <!-- Background gradient colors (vivid purple-blue) -->
-    <color name="glass_gradient_start">#4A148C</color>
-    <color name="glass_gradient_center">#6A1B9A</color>
-    <color name="glass_gradient_end">#283593</color>
-
-    <!-- Dark frosted panel — iOS Liquid Glass dark mode feel -->
-    <!-- #B2000000 = black 70% → panels look glassy dark -->
-    <color name="glass_surface">#B2000000</color>
-
-    <!-- Panel border: subtle white rim light -->
-    <color name="glass_border">#33FFFFFF</color>
-
-    <!-- Overlay tints -->
-    <color name="glass_overlay_light">#1AFFFFFF</color>
-    <color name="glass_overlay_medium">#33FFFFFF</color>
-    <color name="glass_overlay_strong">#4DFFFFFF</color>
-
-    <!-- Text on dark-frosted panel: WHITE is readable -->
-    <color name="glass_text_primary">#FFFFFF</color>
-    <color name="glass_text_secondary">#B3FFFFFF</color>
-    <color name="glass_text_hint">#66FFFFFF</color>
-
-    <!-- Text on light CTA button: DARK for contrast -->
-    <color name="glass_cta_text">#FFFFFF</color>
-
-    <!-- Icon tint on dark panel -->
-    <color name="glass_icon_primary">#FFFFFF</color>
-    <color name="glass_icon_secondary">#B3FFFFFF</color>
-
-    <!-- CTA Button: frosted white pill -->
-    <color name="glass_cta_bg">#FF007AFF</color>
-
-    <!-- Shimmer / ripple / glow -->
-    <color name="glass_shimmer">#1AFFFFFF</color>
-    <color name="glass_ripple">#33FFFFFF</color>
-    <color name="glass_glow">#4D7B67EE</color>
-
-    <!-- Accent: vivid purple for highlights, selected state -->
-    <color name="glass_accent">#7C4DFF</color>
-    <color name="glass_accent_light">#B39DFF</color>
-
     <!-- VIP -->
     <color name="vip_gold">#FFFFD60A</color>
     <color name="vip_gold_dark">#FFB8860B</color>
