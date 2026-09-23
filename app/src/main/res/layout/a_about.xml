@@ -194,11 +194,12 @@
                             tools:ignore="ContentDescription" />
                     </LinearLayout>
 
-                    <View
+                    <com.google.android.material.divider.MaterialDivider
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="56dp"
-                        android:background="?attr/colorOutlineVariant" />
+                        android:layout_height="wrap_content"
+                        app:dividerColor="?attr/colorOutlineVariant"
+                        app:dividerInsetStart="56dp"
+                        app:dividerThickness="1dp" />
 
                     <!-- Share app row -->
                     <LinearLayout
@@ -251,11 +252,12 @@
                             tools:ignore="ContentDescription" />
                     </LinearLayout>
 
-                    <View
+                    <com.google.android.material.divider.MaterialDivider
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="56dp"
-                        android:background="?attr/colorOutlineVariant" />
+                        android:layout_height="wrap_content"
+                        app:dividerColor="?attr/colorOutlineVariant"
+                        app:dividerInsetStart="56dp"
+                        app:dividerThickness="1dp" />
 
                     <!-- More apps row -->
                     <LinearLayout
@@ -395,11 +397,12 @@
                             tools:ignore="ContentDescription" />
                     </LinearLayout>
 
-                    <View
+                    <com.google.android.material.divider.MaterialDivider
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="56dp"
-                        android:background="?attr/colorOutlineVariant" />
+                        android:layout_height="wrap_content"
+                        app:dividerColor="?attr/colorOutlineVariant"
+                        app:dividerInsetStart="56dp"
+                        app:dividerThickness="1dp" />
 
                     <!-- Restore row -->
                     <LinearLayout
@@ -523,11 +526,12 @@
                     </LinearLayout>
 
                     <!-- Separator -->
-                    <View
+                    <com.google.android.material.divider.MaterialDivider
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="48dp"
-                        android:background="?attr/colorOutlineVariant" />
+                        android:layout_height="wrap_content"
+                        app:dividerColor="?attr/colorOutlineVariant"
+                        app:dividerInsetStart="48dp"
+                        app:dividerThickness="1dp" />
 
                     <!-- VIP row -->
                     <LinearLayout
@@ -565,11 +569,12 @@
 
                     </LinearLayout>
 
-                    <View
+                    <com.google.android.material.divider.MaterialDivider
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="48dp"
-                        android:background="?attr/colorOutlineVariant" />
+                        android:layout_height="wrap_content"
+                        app:dividerColor="?attr/colorOutlineVariant"
+                        app:dividerInsetStart="48dp"
+                        app:dividerThickness="1dp" />
 
                     <!-- Privacy row -->
                     <LinearLayout
@@ -607,11 +612,12 @@
 
                     </LinearLayout>
 
-                    <View
+                    <com.google.android.material.divider.MaterialDivider
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="48dp"
-                        android:background="?attr/colorOutlineVariant" />
+                        android:layout_height="wrap_content"
+                        app:dividerColor="?attr/colorOutlineVariant"
+                        app:dividerInsetStart="48dp"
+                        app:dividerThickness="1dp" />
 
                     <!-- Open Source Licenses row -->
                     <LinearLayout
@@ -652,11 +658,12 @@
 
                     </LinearLayout>
 
-                    <View
+                    <com.google.android.material.divider.MaterialDivider
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="48dp"
-                        android:background="?attr/colorOutlineVariant" />
+                        android:layout_height="wrap_content"
+                        app:dividerColor="?attr/colorOutlineVariant"
+                        app:dividerInsetStart="48dp"
+                        app:dividerThickness="1dp" />
 
                     <!-- Dynamic Color row -->
                     <LinearLayout
