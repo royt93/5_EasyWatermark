@@ -17,6 +17,7 @@ import androidx.core.view.isVisible
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
@@ -305,7 +306,9 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                     adapterRef = it
                     it.submitList(imageList)
                 }
-                itemAnimator = null
+                // Chỉ tắt change-animation (tránh flicker khi preview cập nhật dồn dập — FEAT-17),
+                // vẫn giữ add/remove animation mượt cho skip/undo-skip 1 ảnh.
+                itemAnimator = DefaultItemAnimator().apply { supportsChangeAnimations = false }
                 val spanCount = when {
                     imageList.size < 5 -> imageList.size.coerceAtLeast(1)
                     imageList.size < 20 && imageList.size % 2 == 0 -> imageList.size / 2

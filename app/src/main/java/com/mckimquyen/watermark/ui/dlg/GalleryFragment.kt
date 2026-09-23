@@ -13,13 +13,13 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -46,6 +46,13 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
     companion object {
         private val TAG = GalleryFragment::class.java.simpleName
+
+        // M3 Motion duration token (https://m3.material.io/styles/motion) — chuẩn hoá thay magic
+        // number rải rác, giữ nguyên giá trị hiện tại (đã khớp token gần nhất) để tránh đổi hành vi.
+        private const val MOTION_DURATION_SHORT2 = 120L // micro feedback (FAB pop-out khi bấm)
+        private const val MOTION_DURATION_SHORT3 = 150L // scale/fade feedback (slider, hint fade-out)
+        private const val MOTION_DURATION_SHORT4 = 200L // fade-in (hint pill xuất hiện)
+        private const val MOTION_DURATION_MEDIUM3 = 350L // pop-in nhấn mạnh (FAB xuất hiện)
 
         /**
          * BUG-29: tỉ lệ "px scroll thật / px kéo slider" — PHẢI dùng phép chia Float, không phải
@@ -165,7 +172,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
             // Pop-Out animation before dismiss
             rootView.fab.animate()
                 .scaleX(1.15f).scaleY(1.15f)
-                .setDuration(120)
+                .setDuration(MOTION_DURATION_SHORT2)
                 .withEndAction {
                     shareViewModel.selectGallery(selected)
                     rootView.fab.hide()
@@ -263,7 +270,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                         MotionEvent.ACTION_DOWN -> {
                             startX = event.x
                             startY = event.y
-                            this@apply.animate().scaleX(1.4f).scaleY(1.4f).setDuration(150).start()
+                            this@apply.animate().scaleX(1.4f).scaleY(1.4f).setDuration(MOTION_DURATION_SHORT3).start()
                             binding.rvContent.stopScroll()
                             isScrollSliderManually = true
                         }
@@ -276,7 +283,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                             binding.rvContent.scrollBy(0, targetPos.toInt())
                         }
                         MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
-                            this@apply.animate().scaleX(1f).scaleY(1f).setDuration(150).start()
+                            this@apply.animate().scaleX(1f).scaleY(1f).setDuration(MOTION_DURATION_SHORT3).start()
                             isScrollSliderManually = false
                         }
                     }
@@ -314,7 +321,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                     if (visibility != View.VISIBLE) {
                         visibility = View.VISIBLE
                         alpha = 0f
-                        animate().alpha(1f).setDuration(200).start()
+                        animate().alpha(1f).setDuration(MOTION_DURATION_SHORT4).start()
                     }
                 }
                 // Pop-in spring animation when FAB first appears or count changes
@@ -324,12 +331,12 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                     rootView.fab.scaleY = 0.6f
                     rootView.fab.animate()
                         .scaleX(1f).scaleY(1f)
-                        .setDuration(350)
-                        .setInterpolator(OvershootInterpolator(2f))
+                        .setDuration(MOTION_DURATION_MEDIUM3)
+                        .setInterpolator(FastOutSlowInInterpolator())
                         .start()
                 }
             } else {
-                rootView.tvSelectionHint?.animate()?.alpha(0f)?.setDuration(150)
+                rootView.tvSelectionHint?.animate()?.alpha(0f)?.setDuration(MOTION_DURATION_SHORT3)
                     ?.withEndAction { rootView.tvSelectionHint?.visibility = View.GONE }?.start()
                 rootView.fab.hide()
             }

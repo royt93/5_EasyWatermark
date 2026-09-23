@@ -100,4 +100,40 @@ class TextWatermarkBSDFragmentWidgetTest {
         assertThat(fragment).isNotNull()
         assertThat(fragment).isInstanceOf(TextWatermarkBSDFragment::class.java)
     }
+
+    /**
+     * Bug fix: `expandToTemplateList()`/`collapseToEdit()` từng gọi thêm `.animate().alpha(0f)`
+     * rồi `.animate().alpha(1f)` thủ công lên CHÍNH view đang được `MaterialFadeThrough` transition
+     * quản lý — 2 hệ animation tranh chấp cùng thuộc tính alpha. Sau khi bỏ code thủ công, đảm bảo
+     * chuyển đổi giữa panel Edit ↔ Template list vẫn hoạt động đúng và alpha luôn ổn định ở 1f
+     * (không bị kẹt mờ do animation tranh chấp/bị huỷ giữa chừng).
+     */
+    @Test
+    fun goTemplate_thenGoTemplateEdit_switchesChildFragment_andKeepsContainerFullyVisible() {
+        val activity = Robolectric.buildActivity(TestHostActivity::class.java).setup().get()
+        val containerId = FrameLayout(activity).let {
+            it.id = android.view.View.generateViewId()
+            activity.setContentView(it)
+            it.id
+        }
+        val fragment = TextWatermarkBSDFragment().apply { setShowsDialog(false) }
+        activity.supportFragmentManager.beginTransaction()
+            .add(containerId, fragment, TextWatermarkBSDFragment.TAG)
+            .commit()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        testViewModel.goTemplate()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(fragment.childFragmentManager.fragments.lastOrNull())
+            .isInstanceOf(TextContentTemplateListFragment::class.java)
+        assertThat(fragment.binding.fragmentContainerView.alpha).isEqualTo(1f)
+
+        testViewModel.goTemplateEdit()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(fragment.childFragmentManager.fragments.lastOrNull())
+            .isInstanceOf(EditTextContentFragment::class.java)
+        assertThat(fragment.binding.fragmentContainerView.alpha).isEqualTo(1f)
+    }
 }

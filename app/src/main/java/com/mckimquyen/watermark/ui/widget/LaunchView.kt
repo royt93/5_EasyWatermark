@@ -339,7 +339,10 @@ class LaunchView : CustomViewGroup {
             }
             isTabIndicatorFullWidth = false
             tabGravity = TabLayout.GRAVITY_FILL
-            tabIndicatorAnimationMode = TabLayout.INDICATOR_ANIMATION_MODE_ELASTIC
+            // ELASTIC morph co giãn indicator ngang qua tab bị bỏ qua khi bấm nhảy cóc (vd
+            // "Nội dung"→"Bố cục"), gây artifact khiến tab giữa trông nổi bật dù không được chọn
+            // (rõ nhất trên renderer OEM như TECNO HiOS). FADE không morph ngang nên không glitch.
+            tabIndicatorAnimationMode = TabLayout.INDICATOR_ANIMATION_MODE_FADE
             setBackgroundColor(Color.TRANSPARENT)
             val primaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorPrimary, Color.BLACK)
             val onSurfaceVariant = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.DKGRAY)

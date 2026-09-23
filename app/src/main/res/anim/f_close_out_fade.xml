@@ -4,10 +4,6 @@
     android:interpolator="@android:interpolator/linear_out_slow_in"
     android:shareInterpolator="true">
 
-    <!--    <translate-->
-    <!--        android:fromXDelta="0"-->
-    <!--        android:toXDelta="-100%" />-->
-
     <alpha
         android:fromAlpha="1"
         android:toAlpha="0" />

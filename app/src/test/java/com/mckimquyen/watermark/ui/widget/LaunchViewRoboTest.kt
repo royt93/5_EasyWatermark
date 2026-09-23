@@ -3,6 +3,7 @@ package com.mckimquyen.watermark.ui.widget
 import android.content.Context
 import android.view.View
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.material.tabs.TabLayout
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.R
@@ -99,5 +100,14 @@ class LaunchViewRoboTest {
         // TabLayout sits above navigation bar
         val usableBottom = 2400 - 168
         assertThat(launchView.tabLayout.bottom).isAtMost(usableBottom)
+    }
+
+    @Test
+    fun tabLayout_usesFadeIndicatorAnimation_notElastic() {
+        // Bug fix: ELASTIC morph co giãn ngang qua tab bị bỏ qua khi bấm nhảy cóc (0→2), gây
+        // artifact khiến tab giữa "Kiểu dáng" trông nổi bật dù không được chọn (rõ nhất trên
+        // renderer OEM như TECNO HiOS). FADE không morph ngang nên không glitch.
+        assertThat(launchView.tabLayout.tabIndicatorAnimationMode)
+            .isEqualTo(TabLayout.INDICATOR_ANIMATION_MODE_FADE)
     }
 }

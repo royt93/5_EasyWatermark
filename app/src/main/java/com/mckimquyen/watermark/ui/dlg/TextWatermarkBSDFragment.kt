@@ -79,10 +79,6 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
             addTransition(MaterialFadeThrough())
             addListener(object : Transition.TransitionListener {
                 override fun onTransitionStart(transition: Transition) {
-                    binding.fragmentContainerView.animate()
-                        .alpha(0f)
-                        .setDuration(300)
-                        .start()
                     childFragmentManager
                         .beginTransaction()
                         .replace(
@@ -94,10 +90,6 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
                 }
 
                 override fun onTransitionEnd(transition: Transition) {
-                    binding.fragmentContainerView.animate()
-                        .alpha(1f)
-                        .setDuration(300)
-                        .start()
                 }
 
                 override fun onTransitionCancel(transition: Transition) {
@@ -185,10 +177,10 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
         super.onViewCreated(view, savedInstanceState)
         childFragmentManager.beginTransaction()
             .setCustomAnimations(
-                R.anim.f_enter_in_slide,
-                R.anim.f_exit_slide,
-                R.anim.f_readd_in_slide,
-                R.anim.f_close_out_slide
+                R.anim.f_enter_in_fade,
+                R.anim.f_exit_fade,
+                R.anim.f_readd_in_fade,
+                R.anim.f_close_out_fade
             )
             .add(
                 R.id.fragmentContainerView,

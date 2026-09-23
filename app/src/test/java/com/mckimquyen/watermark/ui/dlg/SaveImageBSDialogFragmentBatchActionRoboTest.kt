@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Looper
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.DefaultItemAnimator
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
@@ -324,5 +325,16 @@ class SaveImageBSDialogFragmentBatchActionRoboTest {
             Thread.sleep(20)
         }
         assertThat(viewModel.conflictPolicy).isEqualTo(com.mckimquyen.watermark.data.model.ConflictPolicy.OVERWRITE)
+    }
+
+    @Test
+    fun rvResult_usesDefaultItemAnimatorWithChangeAnimationsDisabled() {
+        // Bug fix: itemAnimator = null tắt hẳn add/remove animation. Chỉ nên tắt change-animation
+        // (tránh flicker khi preview cập nhật dồn dập — FEAT-17), giữ add/remove mượt cho skip ảnh.
+        val (_, dialog) = setupDialog()
+
+        val itemAnimator = dialog.binding.rvResult.itemAnimator
+        assertThat(itemAnimator).isInstanceOf(DefaultItemAnimator::class.java)
+        assertThat((itemAnimator as DefaultItemAnimator).supportsChangeAnimations).isFalse()
     }
 }

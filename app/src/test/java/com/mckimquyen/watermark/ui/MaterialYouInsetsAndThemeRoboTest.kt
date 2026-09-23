@@ -42,7 +42,9 @@ class MaterialYouInsetsAndThemeRoboTest {
         // 2. Verify TabLayout pill indicator setup
         val tabLayout = launchView.tabLayout
         assertThat(tabLayout.tabCount).isEqualTo(3)
-        assertThat(tabLayout.tabIndicatorAnimationMode).isEqualTo(com.google.android.material.tabs.TabLayout.INDICATOR_ANIMATION_MODE_ELASTIC)
+        // FADE (không phải ELASTIC): ELASTIC gây artifact tab giữa "nổi bật" giả khi user bấm
+        // nhảy cóc giữa 2 tab không liền kề — xem LaunchView.kt.
+        assertThat(tabLayout.tabIndicatorAnimationMode).isEqualTo(com.google.android.material.tabs.TabLayout.INDICATOR_ANIMATION_MODE_FADE)
         assertThat(tabLayout.isTabIndicatorFullWidth).isFalse()
 
         controller.pause().stop().destroy()

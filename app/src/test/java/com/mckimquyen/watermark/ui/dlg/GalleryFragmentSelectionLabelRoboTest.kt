@@ -5,6 +5,7 @@ import android.os.Looper
 import android.widget.FrameLayout
 import androidx.datastore.preferences.core.edit
 import androidx.fragment.app.FragmentActivity
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ApplicationProvider
@@ -100,5 +101,19 @@ class GalleryFragmentSelectionLabelRoboTest {
 
         assertThat(fragment.binding.fab.text.toString()).isEqualTo("Select 2 photos")
         assertThat(fragment.binding.tvSelectionHint?.text.toString()).isEqualTo("2 selected")
+    }
+
+    @Test
+    fun firstSelection_fabPopIn_usesFastOutSlowInInterpolator_notOvershoot() {
+        // Bug fix: OvershootInterpolator(2f) nảy quá đà, lệch chuẩn M3 (không thuộc bộ easing
+        // standard/emphasized). FastOutSlowInInterpolator đúng chuẩn M3.
+        val fragment = launchFragment()
+        val adapter = fragment.binding.rvContent.adapter as GalleryAdapter
+
+        adapter.selectedCount.value = 1
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(fragment.binding.fab.animate().interpolator)
+            .isInstanceOf(FastOutSlowInInterpolator::class.java)
     }
 }
