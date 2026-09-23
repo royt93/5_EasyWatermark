@@ -567,8 +567,11 @@ class LaunchView : CustomViewGroup {
         ivPhoto.layout(0, toolbar.bottom)
         // bottom
         tabLayout.let {
-            // Place tabLayout at the bottom, above the navigation bar padding
-            val yOffset = measuredHeight - paddingBottom - it.measuredHeight - 16.dp
+            // Place tabLayout at the bottom, above the navigation bar padding. paddingBottom đã
+            // CHÍNH XÁC bằng chiều cao system nav bar (setOnApplyWindowInsetsListener ở
+            // MainActivity) — chỉ cần thêm 1 buffer nhỏ 8dp cho thẩm mỹ, không phải 16dp (cộng dồn
+            // với nav bar cao trên máy dùng 3-button nav tạo khoảng hở rất to — user phát hiện).
+            val yOffset = measuredHeight - paddingBottom - it.measuredHeight - 8.dp
             it.layout(it.marginStart, yOffset)
         }
         rvPanel.let {
