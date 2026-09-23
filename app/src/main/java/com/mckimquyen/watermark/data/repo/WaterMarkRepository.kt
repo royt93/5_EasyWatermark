@@ -73,6 +73,15 @@ class WaterMarkRepository @Inject constructor(
         val KEY_EXIF_FRAME_STYLE = intPreferencesKey(SP_KEY_EXIF_FRAME_STYLE)
         val KEY_ANCHOR = intPreferencesKey(SP_KEY_ANCHOR)
         val KEY_MARGIN = floatPreferencesKey(SP_KEY_MARGIN)
+
+        // FEAT-23: preset anchor/margin RIÊNG theo orientation ảnh (dọc/ngang) — [KEY_ANCHOR]/
+        // [KEY_MARGIN] ở trên vẫn là giá trị ĐANG ÁP DỤNG (không đổi tên/hành vi, mọi nơi đọc
+        // `WaterMark.anchor`/`marginPercent` không cần biết gì về preset), 4 key dưới chỉ là "bộ nhớ"
+        // để tự động khôi phục đúng preset mỗi khi đổi ảnh khác orientation.
+        val KEY_ANCHOR_PORTRAIT = intPreferencesKey(SP_KEY_ANCHOR_PORTRAIT)
+        val KEY_MARGIN_PORTRAIT = floatPreferencesKey(SP_KEY_MARGIN_PORTRAIT)
+        val KEY_ANCHOR_LANDSCAPE = intPreferencesKey(SP_KEY_ANCHOR_LANDSCAPE)
+        val KEY_MARGIN_LANDSCAPE = floatPreferencesKey(SP_KEY_MARGIN_LANDSCAPE)
         val KEY_EXIF_BAND_COLOR = intPreferencesKey(SP_KEY_EXIF_BAND_COLOR)
         val KEY_EXIF_BAND_THICKNESS = floatPreferencesKey(SP_KEY_EXIF_BAND_THICKNESS)
         val KEY_EXIF_SERIF_CAPTION = booleanPreferencesKey(SP_KEY_EXIF_SERIF_CAPTION)
@@ -348,12 +357,59 @@ class WaterMarkRepository @Inject constructor(
 
     suspend fun updateAnchor(anchor: Anchor) {
         snapshotForUndoIfDue()
-        dataStore.edit { it[PreferenceKeys.KEY_ANCHOR] = anchor.ordinal }
+        dataStore.edit {
+            it[PreferenceKeys.KEY_ANCHOR] = anchor.ordinal
+            // FEAT-23: lưu luôn vào preset của orientation ảnh ĐANG chọn (nếu đã biết) — user tự
+            // chỉnh vị trí cho ảnh này thì lần sau load lại ảnh CÙNG orientation phải nhớ đúng.
+            when (lastKnownIsPortrait) {
+                true -> it[PreferenceKeys.KEY_ANCHOR_PORTRAIT] = anchor.ordinal
+                false -> it[PreferenceKeys.KEY_ANCHOR_LANDSCAPE] = anchor.ordinal
+                null -> Unit
+            }
+        }
     }
 
     suspend fun updateMargin(percent: Float) {
         snapshotForUndoIfDue()
-        dataStore.edit { it[PreferenceKeys.KEY_MARGIN] = percent.coerceIn(MIN_MARGIN_PERCENT, MAX_MARGIN_PERCENT) }
+        val clamped = percent.coerceIn(MIN_MARGIN_PERCENT, MAX_MARGIN_PERCENT)
+        dataStore.edit {
+            it[PreferenceKeys.KEY_MARGIN] = clamped
+            when (lastKnownIsPortrait) {
+                true -> it[PreferenceKeys.KEY_MARGIN_PORTRAIT] = clamped
+                false -> it[PreferenceKeys.KEY_MARGIN_LANDSCAPE] = clamped
+                null -> Unit
+            }
+        }
+    }
+
+    /**
+     * FEAT-23: [isPortrait] = `null` nghĩa là CHƯA biết orientation ảnh đang chọn (chưa decode
+     * xong lần nào) — [updateAnchor]/[updateMargin] gọi trước khi biết orientation (hiếm, chỉ có
+     * thể xảy ra nếu user bấm nhanh trước khi ảnh đầu tiên decode xong) sẽ không lưu vào preset
+     * nào, chỉ ghi giá trị đang áp dụng — không mất dữ liệu, chỉ đơn giản chưa phân loại được.
+     */
+    private var lastKnownIsPortrait: Boolean? = null
+
+    /**
+     * FEAT-23: gọi mỗi khi 1 ảnh MỚI vừa decode xong trong editor và biết được tỉ lệ khung thật
+     * (`WaterMarkImageView.onImageOrientationKnown`) — áp lại preset anchor/margin đã lưu riêng
+     * cho orientation đó (nếu có, giữ nguyên giá trị đang áp dụng nếu chưa từng lưu preset nào cho
+     * orientation này), đồng thời ghi nhớ orientation hiện tại để [updateAnchor]/[updateMargin]
+     * sau đó lưu đúng preset. KHÔNG gọi [snapshotForUndoIfDue] — đây là hành động HỆ THỐNG tự động
+     * theo ảnh đang xem, không phải 1 chỉnh sửa của user (cùng nguyên tắc đã áp dụng cho
+     * `resetModeToText()` ở FEAT-12).
+     */
+    suspend fun applyOrientationPreset(isPortrait: Boolean) {
+        lastKnownIsPortrait = isPortrait
+        dataStore.edit { prefs ->
+            val anchorKey = if (isPortrait) PreferenceKeys.KEY_ANCHOR_PORTRAIT else PreferenceKeys.KEY_ANCHOR_LANDSCAPE
+            val marginKey = if (isPortrait) PreferenceKeys.KEY_MARGIN_PORTRAIT else PreferenceKeys.KEY_MARGIN_LANDSCAPE
+            // LUÔN ghi đè (không chỉ khi có preset) — nếu KHÔNG dùng mặc định làm fallback, đổi
+            // sang orientation CHƯA từng lưu preset sẽ vô tình giữ nguyên vị trí vừa chỉnh của
+            // orientation TRƯỚC ĐÓ (đúng lỗi AC muốn tránh: "vị trí không bị áp nhầm theo preset dọc").
+            prefs[PreferenceKeys.KEY_ANCHOR] = prefs[anchorKey] ?: Anchor.CENTER.ordinal
+            prefs[PreferenceKeys.KEY_MARGIN] = prefs[marginKey] ?: DEFAULT_MARGIN_PERCENT
+        }
     }
 
     /** FEAT-14 — null = xoá override, quay lại màu mặc định của style đang chọn. */
@@ -490,6 +546,12 @@ class WaterMarkRepository @Inject constructor(
 //        const val SP_KEY_OFFSET_Y = "${SP_NAME}_key_offset_y"
         const val SP_KEY_ANCHOR = "${SP_NAME}_key_anchor"
         const val SP_KEY_MARGIN = "${SP_NAME}_key_margin"
+
+        /** FEAT-23. */
+        const val SP_KEY_ANCHOR_PORTRAIT = "${SP_NAME}_key_anchor_portrait"
+        const val SP_KEY_MARGIN_PORTRAIT = "${SP_NAME}_key_margin_portrait"
+        const val SP_KEY_ANCHOR_LANDSCAPE = "${SP_NAME}_key_anchor_landscape"
+        const val SP_KEY_MARGIN_LANDSCAPE = "${SP_NAME}_key_margin_landscape"
         const val SP_KEY_EXIF_BAND_COLOR = "${SP_NAME}_key_exif_band_color"
         const val SP_KEY_EXIF_BAND_THICKNESS = "${SP_NAME}_key_exif_band_thickness"
         const val SP_KEY_EXIF_SERIF_CAPTION = "${SP_NAME}_key_exif_serif_caption"

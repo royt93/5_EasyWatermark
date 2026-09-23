@@ -661,21 +661,27 @@ class MainActivity : BaseActivity() {
             onScaleEnd {
                 viewModel.updateTextSize(it)
             }
+            // FEAT-23: mỗi lần biết tỉ lệ khung ảnh THẬT (ảnh mới decode xong) — tự áp preset
+            // anchor/margin đã lưu riêng cho orientation đó.
+            onImageOrientationKnown { isPortrait ->
+                viewModel.applyOrientationPreset(isPortrait)
+            }
         }
         // functional panel in recyclerView
         launchView.rvPanel.apply {
             adapter = funcAdapter
             setHasFixedSize(true)
             layoutManager = CenterLayoutManager(this@MainActivity, RecyclerView.HORIZONTAL, false)
-            onItemClick { _, pos, v ->
-                val snapView = snapHelper.findSnapView(launchView.rvPanel.layoutManager)
-                if (snapView == v) {
-                    val item = (this.adapter as FuncPanelAdapter).dataSet[pos]
-                    handleFuncItem(item)
-                    funcAdapter.selectedPos = pos
-                } else {
-                    smoothScrollToPosition(pos)
-                }
+            onItemClick { _, pos, _ ->
+                // Chạm chọn NGAY, không cần đợi item cuộn về đúng tâm màn hình trước — trước đây yêu
+                // cầu đó dựa vào phần đệm carousel rất lớn (đã bỏ để thanh icon tự co khít), nên với
+                // hàng icon vừa đủ chỗ hiển thị (không cần cuộn), item không nằm giữa sẽ không bao giờ
+                // trở thành "snap view" và chạm vào sẽ không có tác dụng. Không tự cuộn item vào giữa
+                // ở đây — nếu cuộn, listener SCROLL_STATE_IDLE có thể snap-chọn lại 1 item KHÁC (item
+                // gần tâm nhất) và ghi đè lựa chọn vừa chạm.
+                val item = (this.adapter as FuncPanelAdapter).dataSet[pos]
+                handleFuncItem(item)
+                funcAdapter.selectedPos = pos
             }
 
             onSnapViewPreview { snapView, _ ->

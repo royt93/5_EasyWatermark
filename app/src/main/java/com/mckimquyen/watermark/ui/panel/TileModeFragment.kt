@@ -42,8 +42,11 @@ class TileModeFragment : BaseBindFragment<FTileModeBinding>() {
                     binding?.btnTileModeDecal?.contentDescription = "${ctx.getString(R.string.tile_mode_title_decal)}, $decalState"
                 }
             }
-            binding?.btnPositionAnchor?.visibility =
-                if (it.tileMode == Shader.TileMode.CLAMP.ordinal) View.VISIBLE else View.GONE
+            // Luôn hiện nút Vị trí — chỉ mờ + khoá bấm khi chưa ở chế độ Đơn lẻ (CLAMP), tránh
+            // bố cục thanh toggle bị lệch trái/thay đổi độ rộng lúc ẩn/hiện nút này.
+            val positionAnchorEnabled = it.tileMode == Shader.TileMode.CLAMP.ordinal
+            binding?.btnPositionAnchor?.isEnabled = positionAnchorEnabled
+            binding?.btnPositionAnchor?.alpha = if (positionAnchorEnabled) 1f else 0.38f
             binding?.tgTileMode?.clearOnButtonCheckedListeners()
             binding?.tgTileMode?.check(checkedId)
             updateA11yDescriptions()

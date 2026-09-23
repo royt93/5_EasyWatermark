@@ -403,6 +403,8 @@ class LaunchView : CustomViewGroup {
             clipToOutline = true
             clipChildren = false
             clipToPadding = false
+            // Icon chức năng ít, không cần đệm lớn kiểu carousel — co khít theo tổng bề rộng icon.
+            enableCenterPadding = false
             edgeEffectFactory = BounceEdgeEffectFactory(context, this)
         }
     }

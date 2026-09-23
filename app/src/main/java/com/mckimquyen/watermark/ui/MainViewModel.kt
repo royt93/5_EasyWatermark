@@ -615,6 +615,13 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /** FEAT-23: gọi khi editor vừa biết tỉ lệ khung ảnh THẬT của ảnh mới chọn. */
+    fun applyOrientationPreset(isPortrait: Boolean) {
+        launch {
+            waterMarkRepo.applyOrientationPreset(isPortrait)
+        }
+    }
+
     fun saveOutput(format: Bitmap.CompressFormat, level: Int) {
         viewModelScope.launch {
             userRepo.updateFormat(format)

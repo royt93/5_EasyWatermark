@@ -68,9 +68,10 @@ class TileModeFragmentIntegrationRoboTest {
         val btnDecal = view.findViewById<MaterialButton>(R.id.btnTileModeDecal)
         val btnAnchor = view.findViewById<MaterialButton>(R.id.btnPositionAnchor)
 
-        // Initially in REPEAT mode:
+        // Initially in REPEAT mode: nút Vị trí vẫn hiện (luôn hiện) nhưng bị khoá + mờ đi.
         assertThat(tgTileMode.checkedButtonId).isEqualTo(R.id.btnTileModeRepeat)
-        assertThat(btnAnchor.visibility).isEqualTo(View.GONE)
+        assertThat(btnAnchor.visibility).isEqualTo(View.VISIBLE)
+        assertThat(btnAnchor.isEnabled).isFalse()
         assertThat(btnRepeat.contentDescription?.toString())
             .contains(activity.getString(R.string.state_enabled))
         assertThat(btnDecal.contentDescription?.toString())
@@ -85,6 +86,7 @@ class TileModeFragmentIntegrationRoboTest {
 
         assertThat(tgTileMode.checkedButtonId).isEqualTo(R.id.btnTileModeDecal)
         assertThat(btnAnchor.visibility).isEqualTo(View.VISIBLE)
+        assertThat(btnAnchor.isEnabled).isTrue()
         assertThat(btnDecal.contentDescription?.toString())
             .contains(activity.getString(R.string.state_enabled))
         assertThat(btnRepeat.contentDescription?.toString())

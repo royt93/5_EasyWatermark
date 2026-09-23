@@ -112,6 +112,9 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
 
     private var onScaleEnd: (textSize: Float) -> Unit = { _ -> }
 
+    /** FEAT-23: báo ra ngoài NGAY khi biết tỉ lệ khung ảnh thật (mỗi lần decode 1 ảnh MỚI). */
+    private var onImageOrientationKnown: (isPortrait: Boolean) -> Unit = { _ -> }
+
     private var exceptionHandler: CoroutineExceptionHandler =
         CoroutineExceptionHandler { _: CoroutineContext, throwable: Throwable ->
             Log.e(
@@ -258,6 +261,9 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                     height = drawableBounds.height().toInt()
                 )
                 decodedUri = uri
+                // FEAT-23: đúng lúc biết tỉ lệ khung ảnh THẬT (kích thước bitmap gốc, không phụ
+                // thuộc scale-to-fit) — bằng nhau (ảnh vuông) coi là dọc (tie-break tuỳ ý, ghi rõ).
+                this@WaterMarkImageView.onImageOrientationKnown(imageBitmap.height >= imageBitmap.width)
             } else {
                 AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: decodedUri == uri, skip main image decode")
             }
@@ -434,6 +440,11 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
 
     fun onScaleEnd(block: (textSize: Float) -> Unit) {
         this.onScaleEnd = block
+    }
+
+    /** FEAT-23. */
+    fun onImageOrientationKnown(block: (isPortrait: Boolean) -> Unit) {
+        this.onImageOrientationKnown = block
     }
 
     fun reset() {

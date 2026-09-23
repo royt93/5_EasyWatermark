@@ -45,6 +45,14 @@ class TouchSensitiveRv : RecyclerView {
 
     var enableBorder = false
 
+    /**
+     * true (mặc định) — giữ hành vi cũ: đệm 2 bên = (bề rộng khả dụng - bề rộng 1 item) / 2, để
+     * item bất kỳ (kể cả đầu/cuối) có thể cuộn tới giữa màn hình — dùng cho carousel ảnh (rvPhotoList).
+     * false — bỏ đệm lớn đó, danh sách tự co khít theo tổng bề rộng các item thật (như rvPanel,
+     * dãy icon chức năng) — tránh khoảng trắng lớn 2 bên khi số item ít hơn bề rộng khả dụng.
+     */
+    var enableCenterPadding = true
+
     private val glowRectF = RectF()
     private var glowRadius = 0f
 
@@ -149,7 +157,9 @@ class TouchSensitiveRv : RecyclerView {
         super.onMeasure(widthSpec, heightSpec)
         childWidth = children.firstOrNull()?.measuredWidth ?: 0
         childHeight = children.firstOrNull()?.measuredHeight ?: 0
-        setPadding((measuredWidth - childWidth) / 2, 0, (measuredWidth - childWidth) / 2, 0)
+        if (enableCenterPadding) {
+            setPadding((measuredWidth - childWidth) / 2, 0, (measuredWidth - childWidth) / 2, 0)
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
