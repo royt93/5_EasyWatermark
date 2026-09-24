@@ -143,6 +143,11 @@ class MainActivity : BaseActivity() {
                 type = FuncTitleModel.FuncType.ExifBorder,
                 title = getString(R.string.func_title_leica_exif),
                 iconRes = R.drawable.ic_func_frame
+            ),
+            FuncTitleModel(
+                type = FuncTitleModel.FuncType.Layers,
+                title = getString(R.string.func_title_layers),
+                iconRes = R.drawable.ic_func_layers
             )
         )
     }
@@ -940,6 +945,11 @@ class MainActivity : BaseActivity() {
 
             FuncTitleModel.FuncType.TileMode -> {
                 TileModeFragment.replaceShow(this, launchView.fcFunctionDetail.id)
+            }
+
+            FuncTitleModel.FuncType.Layers -> {
+                hideDetailPanel()
+                com.mckimquyen.watermark.ui.dlg.LayerManagerBSDFragment.safetyShow(supportFragmentManager)
             }
         }
     }

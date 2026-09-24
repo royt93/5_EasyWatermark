@@ -44,5 +44,7 @@ data class WatermarkProfileEntity(
     val exifUseSerifCaption: Boolean? = null,
     val textEffectStroke: Boolean = false,
     val textEffectShadow: Boolean = false,
-    val textEffectPillBackground: Boolean = false
+    val textEffectPillBackground: Boolean = false,
+    /** FEAT-03 (thêm ở schema version 2, xem [Migration] 1→2 ở `WatermarkProfileDatabase`) — chuỗi encode qua `WatermarkLayer.serializeList`. `null` = profile lưu trước FEAT-03, không có layer phụ. */
+    val extraLayersRaw: String? = null
 )

@@ -31,5 +31,11 @@ data class WaterMark(
     val textEffectShadow: Boolean = false,
     val textEffectPillBackground: Boolean = false,
     /** FEAT-24: N icon/logo gần đây nhất user đã chọn, mới nhất đứng đầu — cho quick-pick. */
-    val recentIconUris: List<Uri> = emptyList()
+    val recentIconUris: List<Uri> = emptyList(),
+    /**
+     * FEAT-03: lớp watermark PHỤ, chồng thêm ngoài layer chính (các field trên) — tối đa
+     * [WaterMarkRepository.MAX_EXTRA_LAYERS]. index 0 vẽ trước (dưới cùng), index cuối vẽ sau
+     * (trên cùng) — z-order = thứ tự trong list.
+     */
+    val extraLayers: List<WatermarkLayer> = emptyList()
 )

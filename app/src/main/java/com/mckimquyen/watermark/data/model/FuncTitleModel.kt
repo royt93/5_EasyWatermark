@@ -31,5 +31,8 @@ data class FuncTitleModel(
         object TileMode : FuncType() {
             const val tag = "TileMode"
         }
+
+        /** FEAT-03: mở LayerManagerBSDFragment — quản lý layer watermark PHỤ. */
+        object Layers : FuncType()
     }
 }

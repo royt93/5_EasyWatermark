@@ -8,6 +8,7 @@ import com.mckimquyen.watermark.data.model.ExifFrameStyle
 import com.mckimquyen.watermark.data.model.TextPaintStyle
 import com.mckimquyen.watermark.data.model.TextTypeface
 import com.mckimquyen.watermark.data.model.WaterMark
+import com.mckimquyen.watermark.data.model.WatermarkLayer
 import com.mckimquyen.watermark.data.model.entity.WatermarkProfileEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -61,7 +62,10 @@ class WatermarkProfileRepositoryRoboTest {
         textEffectStroke = true,
         textEffectShadow = true,
         textEffectPillBackground = true,
-        recentIconUris = listOf(Uri.parse("content://media/recent.png"))
+        recentIconUris = listOf(Uri.parse("content://media/recent.png")),
+        extraLayers = listOf(
+            WatermarkLayer(markMode = WaterMarkRepository.MarkMode.Image, iconUri = Uri.parse("content://media/logo.png"))
+        )
     )
 
     @Test
@@ -96,6 +100,18 @@ class WatermarkProfileRepositoryRoboTest {
         assertThat(restored.textEffectPillBackground).isEqualTo(original.textEffectPillBackground)
         // Cố ý KHÔNG round-trip — xem doc ở WatermarkProfileEntity.
         assertThat(restored.recentIconUris).isEmpty()
+        assertThat(restored.extraLayers).isEqualTo(original.extraLayers)
+    }
+
+    @Test
+    fun toWaterMark_entityWithNullExtraLayersRaw_returnsEmptyList() {
+        // FEAT-03 thêm SAU khi feature profile đã tồn tại — entity lưu trước đó có
+        // `extraLayersRaw = null` (default), phải đọc thành list rỗng, không crash.
+        val entity = WatermarkProfileRepository.toEntity("legacy", sampleWaterMark()).copy(extraLayersRaw = null)
+
+        val restored = WatermarkProfileRepository.toWaterMark(entity)
+
+        assertThat(restored.extraLayers).isEmpty()
     }
 
     @Test

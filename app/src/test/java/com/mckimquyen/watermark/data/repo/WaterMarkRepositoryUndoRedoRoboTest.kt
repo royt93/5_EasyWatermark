@@ -148,6 +148,21 @@ class WaterMarkRepositoryUndoRedoRoboTest {
     }
 
     @Test
+    fun undo_afterAddLayer_restoresPreviousLayerList() = runBlocking {
+        // FEAT-03: addLayer/removeLayer/updateLayer/reorderLayer ghi qua snapshotForUndoIfDue()
+        // như mọi updateXxx() khác — không cần logic Undo/Redo riêng, chỉ cần data class equals()
+        // (đã tự bao gồm extraLayers) hoạt động đúng.
+        assertThat(repo.waterMark.first().extraLayers).isEmpty()
+
+        repo.addLayer(com.mckimquyen.watermark.data.model.WatermarkLayer(markMode = WaterMarkRepository.MarkMode.Text, text = "logo"))
+        assertThat(repo.waterMark.first().extraLayers).hasSize(1)
+
+        repo.undo()
+
+        assertThat(repo.waterMark.first().extraLayers).isEmpty()
+    }
+
+    @Test
     fun resetModeToText_doesNotPushUndoEntry() = runBlocking {
         // Bug thật phát hiện qua smoke test: MyApplication.onCreate() gọi resetModeToText() mỗi
         // lần app khởi động (không phải hành động editor của user) — trước fix, lệnh gọi này khiến

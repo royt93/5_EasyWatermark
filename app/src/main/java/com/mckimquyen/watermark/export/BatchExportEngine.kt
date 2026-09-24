@@ -16,8 +16,10 @@ import android.provider.MediaStore
 import android.text.TextPaint
 import android.util.Log
 import androidx.core.content.FileProvider
+import androidx.core.graphics.withSave
 import androidx.documentfile.provider.DocumentFile
 import com.mckimquyen.watermark.BuildConfig
+import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ConflictPolicy
 import com.mckimquyen.watermark.data.model.ExifFrameStyle
 import com.mckimquyen.watermark.data.model.ImageInfo
@@ -28,6 +30,7 @@ import com.mckimquyen.watermark.data.model.MediaStoreWriteResolver
 import com.mckimquyen.watermark.data.model.Result
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.model.WaterMark
+import com.mckimquyen.watermark.data.model.WatermarkLayer
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.ui.MainViewModel
 import com.mckimquyen.watermark.ui.widget.WaterMarkImageView
@@ -75,6 +78,83 @@ class BatchExportEngine @Inject constructor(
     /** Xem [resolveBaseText] — cùng lý do `internal`. */
     internal fun shouldSkipTextWatermark(markMode: WaterMarkRepository.MarkMode, baseText: String): Boolean =
         markMode == WaterMarkRepository.MarkMode.Text && baseText.isBlank()
+
+    /**
+     * FEAT-03: vẽ toàn bộ layer PHỤ lên [canvas] theo đúng z-order (index 0 = dưới cùng), SAU
+     * layer chính mà caller đã vẽ xong. Dùng CHUNG cho cả 3 nơi vẽ watermark
+     * ([generateImage]/[generatePreviewBitmap]/[generateCompareBitmaps]) — 3 hàm này CỐ TÌNH
+     * không dùng chung logic layer CHÍNH (xem doc ở [generateCompareBitmaps]) để không đổi hành
+     * vi code cũ đã test, nhưng đây là logic HOÀN TOÀN MỚI nên dùng chung an toàn, tránh viết lặp
+     * 3 lần. Lỗi decode icon của 1 layer phụ → bỏ qua layer đó, KHÔNG fail cả export (khác layer
+     * chính) — layer phụ là tính năng cộng thêm.
+     *
+     * Yêu cầu caller: khối vẽ layer CHÍNH ở nhánh CLAMP phải bọc trong `canvas.withSave { }`
+     * (không còn để `translate()` trần) — nếu không, offset của layer phụ tính từ đây sẽ cộng dồn
+     * lên transform layer chính thay vì tính từ gốc toạ độ ảnh.
+     */
+    private suspend fun drawExtraLayers(
+        canvas: Canvas,
+        bitmapWidth: Int,
+        bitmapHeight: Int,
+        imageInfo: ImageInfo,
+        extraLayers: List<WatermarkLayer>,
+        contentResolver: ContentResolver
+    ) {
+        if (extraLayers.isEmpty()) return
+        val tileMode = imageInfo.obtainTileMode()
+        extraLayers.forEach { layer ->
+            val layerConfig = layer.toWaterMark()
+            val textPaint = TextPaint().applyConfig(imageInfo, layerConfig, isScale = false)
+            val shader = when (layer.markMode) {
+                WaterMarkRepository.MarkMode.Text -> WaterMarkImageView.buildTextBitmapShader(
+                    imageInfo = imageInfo,
+                    config = layerConfig,
+                    textPaint = textPaint,
+                    coroutineContext = Dispatchers.IO
+                )
+
+                WaterMarkRepository.MarkMode.Image -> {
+                    val iconResult = decodeSampledBitmapFromResource(
+                        context = appContext,
+                        resolver = contentResolver,
+                        uri = layer.iconUri,
+                        reqWidth = bitmapWidth,
+                        reqHeight = bitmapHeight
+                    )
+                    val iconValue = iconResult.data ?: return@forEach
+                    iconValue.retain()
+                    try {
+                        val srcBitmap = iconValue.bitmap ?: return@forEach
+                        WaterMarkImageView.buildIconBitmapShader(
+                            imageInfo = imageInfo,
+                            srcBitmap = srcBitmap,
+                            config = layerConfig,
+                            textPaint = textPaint,
+                            scale = true,
+                            coroutineContext = Dispatchers.IO
+                        )
+                    } finally {
+                        iconValue.release()
+                    }
+                }
+            } ?: return@forEach
+
+            val paint = Paint().apply { this.shader = shader.bitmapShader }
+            if (tileMode == Shader.TileMode.CLAMP) {
+                val (offsetX, offsetY) = Anchor.obtain(layer.anchor).toOffset(
+                    layer.marginPercent,
+                    shader.width / bitmapWidth.toFloat(),
+                    shader.height / bitmapHeight.toFloat()
+                )
+                canvas.withSave {
+                    translate(offsetX * bitmapWidth, offsetY * bitmapHeight)
+                    drawRect(0f, 0f, shader.width.toFloat(), shader.height.toFloat(), paint)
+                }
+            } else {
+                canvas.drawRect(0f, 0f, bitmapWidth.toFloat(), bitmapHeight.toFloat(), paint)
+            }
+        }
+    }
 
     /** Snapshot cấu hình cho 1 lần export batch — đọc 1 lần trước khi loop, không đổi giữa chừng. */
     data class ExportSettings(
@@ -302,17 +382,21 @@ class BatchExportEngine @Inject constructor(
                     layoutPaint.shader = shader?.bitmapShader
 
                     if (imageInfo.obtainTileMode() == Shader.TileMode.CLAMP) {
-                        canvas.translate(
-                            0 + imageInfo.offsetX * mutableBitmap.width,
-                            0 + imageInfo.offsetY * mutableBitmap.height
-                        )
-                        canvas.drawRect(
-                            /* left = */ 0f,
-                            /* top = */ 0f,
-                            /* right = */ (shader?.width ?: 0).toFloat(),
-                            /* bottom = */ (shader?.height ?: 0).toFloat(),
-                            /* paint = */ layoutPaint
-                        )
+                        // FEAT-03: bọc withSave — offset layer PHỤ (drawExtraLayers) tính từ gốc
+                        // toạ độ ảnh, không được cộng dồn lên translate của layer chính này.
+                        canvas.withSave {
+                            translate(
+                                0 + imageInfo.offsetX * mutableBitmap.width,
+                                0 + imageInfo.offsetY * mutableBitmap.height
+                            )
+                            drawRect(
+                                /* left = */ 0f,
+                                /* top = */ 0f,
+                                /* right = */ (shader?.width ?: 0).toFloat(),
+                                /* bottom = */ (shader?.height ?: 0).toFloat(),
+                                /* paint = */ layoutPaint
+                            )
+                        }
                     } else {
                         canvas.drawRect(
                             /* left = */ 0f,
@@ -323,6 +407,17 @@ class BatchExportEngine @Inject constructor(
                         )
                     }
                 }
+
+                // FEAT-03: layer PHỤ vẽ SAU layer chính (dù layer chính có bị skip do rỗng text
+                // hay không) — trước khi build khung EXIF (khung phải bao trọn mọi layer).
+                drawExtraLayers(
+                    canvas = canvas,
+                    bitmapWidth = mutableBitmap.width,
+                    bitmapHeight = mutableBitmap.height,
+                    imageInfo = imageInfo,
+                    extraLayers = tmpConfig.extraLayers,
+                    contentResolver = contentResolver
+                )
 
                 val finalExportBitmap = if (tmpConfig.enableExif && imageInfo.exifModel != null && !imageInfo.exifModel!!.isEmpty()) {
                     val expandedBitmap = ExifBorderRenderer.buildExifBorderBitmap(
@@ -689,6 +784,8 @@ class BatchExportEngine @Inject constructor(
             // với generateImage(), không tự suy diễn lại rule.
             val baseText = resolveBaseText(imageInfo, config)
             if (shouldSkipTextWatermark(config.markMode, baseText)) {
+                // FEAT-03: layer chính bị skip (text rỗng) không có nghĩa layer PHỤ cũng phải ẩn.
+                drawExtraLayers(Canvas(mutableBitmap), mutableBitmap.width, mutableBitmap.height, imageInfo, config.extraLayers, contentResolver)
                 return@withContext PreviewResult.Success(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
             }
 
@@ -721,6 +818,8 @@ class BatchExportEngine @Inject constructor(
                     val iconValue = iconResult.data
                     val iconBitmap = iconValue?.bitmap
                     if (iconValue == null || iconBitmap == null) {
+                        // FEAT-03: icon layer chính lỗi decode không có nghĩa layer PHỤ cũng ẩn.
+                        drawExtraLayers(Canvas(mutableBitmap), mutableBitmap.width, mutableBitmap.height, imageInfo, config.extraLayers, contentResolver)
                         return@withContext PreviewResult.Success(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
                     }
                     iconValue.retain()
@@ -742,20 +841,25 @@ class BatchExportEngine @Inject constructor(
             val layoutPaint = Paint().apply { this.shader = shader?.bitmapShader }
             val canvas = Canvas(mutableBitmap)
             if (previewInfo.obtainTileMode() == Shader.TileMode.CLAMP) {
-                canvas.translate(
-                    previewInfo.offsetX * mutableBitmap.width,
-                    previewInfo.offsetY * mutableBitmap.height
-                )
-                canvas.drawRect(
-                    0f,
-                    0f,
-                    (shader?.width ?: 0).toFloat(),
-                    (shader?.height ?: 0).toFloat(),
-                    layoutPaint
-                )
+                // FEAT-03: bọc withSave — offset layer PHỤ (drawExtraLayers) tính từ gốc toạ độ
+                // ảnh, không được cộng dồn lên translate của layer chính này.
+                canvas.withSave {
+                    translate(
+                        previewInfo.offsetX * mutableBitmap.width,
+                        previewInfo.offsetY * mutableBitmap.height
+                    )
+                    drawRect(
+                        0f,
+                        0f,
+                        (shader?.width ?: 0).toFloat(),
+                        (shader?.height ?: 0).toFloat(),
+                        layoutPaint
+                    )
+                }
             } else {
                 canvas.drawRect(0f, 0f, mutableBitmap.width.toFloat(), mutableBitmap.height.toFloat(), layoutPaint)
             }
+            drawExtraLayers(canvas, mutableBitmap.width, mutableBitmap.height, imageInfo, config.extraLayers, contentResolver)
             PreviewResult.Success(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
         } catch (ce: CancellationException) {
             throw ce
@@ -805,6 +909,8 @@ class BatchExportEngine @Inject constructor(
 
             val baseText = resolveBaseText(imageInfo, config)
             if (shouldSkipTextWatermark(config.markMode, baseText)) {
+                // FEAT-03: layer chính bị skip (text rỗng) không có nghĩa layer PHỤ cũng phải ẩn.
+                drawExtraLayers(Canvas(watermarkedCopy), watermarkedCopy.width, watermarkedCopy.height, imageInfo, config.extraLayers, contentResolver)
                 return@withContext CompareBitmaps(originalCopy, watermarkedCopy)
             }
 
@@ -837,6 +943,8 @@ class BatchExportEngine @Inject constructor(
                     val iconValue = iconResult.data
                     val iconBitmap = iconValue?.bitmap
                     if (iconValue == null || iconBitmap == null) {
+                        // FEAT-03: icon layer chính lỗi decode không có nghĩa layer PHỤ cũng ẩn.
+                        drawExtraLayers(Canvas(watermarkedCopy), watermarkedCopy.width, watermarkedCopy.height, imageInfo, config.extraLayers, contentResolver)
                         return@withContext CompareBitmaps(originalCopy, watermarkedCopy)
                     }
                     iconValue.retain()
@@ -858,14 +966,19 @@ class BatchExportEngine @Inject constructor(
             val layoutPaint = Paint().apply { this.shader = shader?.bitmapShader }
             val canvas = Canvas(watermarkedCopy)
             if (previewInfo.obtainTileMode() == Shader.TileMode.CLAMP) {
-                canvas.translate(
-                    previewInfo.offsetX * watermarkedCopy.width,
-                    previewInfo.offsetY * watermarkedCopy.height
-                )
-                canvas.drawRect(0f, 0f, (shader?.width ?: 0).toFloat(), (shader?.height ?: 0).toFloat(), layoutPaint)
+                // FEAT-03: bọc withSave — offset layer PHỤ (drawExtraLayers) tính từ gốc toạ độ
+                // ảnh, không được cộng dồn lên translate của layer chính này.
+                canvas.withSave {
+                    translate(
+                        previewInfo.offsetX * watermarkedCopy.width,
+                        previewInfo.offsetY * watermarkedCopy.height
+                    )
+                    drawRect(0f, 0f, (shader?.width ?: 0).toFloat(), (shader?.height ?: 0).toFloat(), layoutPaint)
+                }
             } else {
                 canvas.drawRect(0f, 0f, watermarkedCopy.width.toFloat(), watermarkedCopy.height.toFloat(), layoutPaint)
             }
+            drawExtraLayers(canvas, watermarkedCopy.width, watermarkedCopy.height, imageInfo, config.extraLayers, contentResolver)
             CompareBitmaps(originalCopy, watermarkedCopy)
         } catch (ce: CancellationException) {
             throw ce

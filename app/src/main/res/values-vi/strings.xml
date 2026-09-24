@@ -236,6 +236,19 @@
     <string name="vip_failed_title">Thất bại</string>
     <string name="func_title_signature">Chữ ký</string>
     <string name="func_title_leica_exif">Khung EXIF</string>
+
+    <!-- FEAT-03: watermark đa lớp -->
+    <string name="func_title_layers">Lớp</string>
+    <string name="layer_manager_title">Lớp watermark</string>
+    <string name="layer_manager_add">Thêm lớp</string>
+    <string name="layer_manager_max_reached">Đã đạt tối đa %1$d lớp phụ</string>
+    <string name="layer_manager_empty">Chưa có lớp phụ nào — nhấn \"Thêm lớp\" để chồng thêm logo hoặc text</string>
+    <string name="layer_manager_delete_cd">Xoá lớp</string>
+    <string name="layer_manager_move_up_cd">Đưa lớp lên trên</string>
+    <string name="layer_manager_move_down_cd">Đưa lớp xuống dưới</string>
+    <string name="layer_edit_title">Sửa lớp</string>
+    <string name="layer_edit_pick_icon">Chọn icon</string>
+    <string name="layer_edit_text_hint">Nội dung lớp</string>
     <string name="about_version_display">v%1$s</string>
     <string name="share_error">Lỗi khi chia sẻ với %1$s</string>
     <plurals name="gallery_select_photo_count">

@@ -8,6 +8,7 @@ import com.mckimquyen.watermark.data.model.ExifFrameStyle
 import com.mckimquyen.watermark.data.model.TextPaintStyle
 import com.mckimquyen.watermark.data.model.TextTypeface
 import com.mckimquyen.watermark.data.model.WaterMark
+import com.mckimquyen.watermark.data.model.WatermarkLayer
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -56,7 +57,10 @@ class WaterMarkRepositoryApplyWaterMarkRoboTest {
         textEffectStroke = true,
         textEffectShadow = false,
         textEffectPillBackground = true,
-        recentIconUris = recentIconUris
+        recentIconUris = recentIconUris,
+        extraLayers = listOf(
+            WatermarkLayer(markMode = WaterMarkRepository.MarkMode.Text, text = "extra layer", anchor = Anchor.BOTTOM_RIGHT.ordinal)
+        )
     )
 
     @Test
@@ -88,6 +92,7 @@ class WaterMarkRepositoryApplyWaterMarkRoboTest {
         assertThat(readBack.textEffectStroke).isEqualTo(mark.textEffectStroke)
         assertThat(readBack.textEffectShadow).isEqualTo(mark.textEffectShadow)
         assertThat(readBack.textEffectPillBackground).isEqualTo(mark.textEffectPillBackground)
+        assertThat(readBack.extraLayers).isEqualTo(mark.extraLayers)
     }
 
     @Test

@@ -21,9 +21,11 @@ import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.TextPaintStyle
 import com.mckimquyen.watermark.data.model.TextTypeface
 import com.mckimquyen.watermark.data.model.WaterMark
+import com.mckimquyen.watermark.data.model.WatermarkLayer
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_ALPHA
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_DEGREE
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_ENABLE_BOUNDS
+import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_EXTRA_LAYERS
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_HORIZON_GAP
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_ICON_URI
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_MODE
@@ -89,6 +91,9 @@ class WaterMarkRepository @Inject constructor(
         val KEY_TEXT_EFFECT_SHADOW = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_SHADOW)
         val KEY_TEXT_EFFECT_PILL_BACKGROUND = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_PILL_BACKGROUND)
         val KEY_RECENT_ICON_URIS = stringPreferencesKey(SP_KEY_RECENT_ICON_URIS)
+
+        /** FEAT-03. */
+        val KEY_EXTRA_LAYERS = stringPreferencesKey(SP_KEY_EXTRA_LAYERS)
 //        val KEY_TILE_MODE = intPreferencesKey(SP_KEY_TILE_MODEL)
 //        val KEY_OFFSET_X = floatPreferencesKey(SP_KEY_OFFSET_X)
 //        val KEY_OFFSET_Y = floatPreferencesKey(SP_KEY_OFFSET_Y)
@@ -130,7 +135,8 @@ class WaterMarkRepository @Inject constructor(
                 textEffectStroke = it[PreferenceKeys.KEY_TEXT_EFFECT_STROKE] ?: false,
                 textEffectShadow = it[PreferenceKeys.KEY_TEXT_EFFECT_SHADOW] ?: false,
                 textEffectPillBackground = it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] ?: false,
-                recentIconUris = parseRecentIconUris(it[KEY_RECENT_ICON_URIS])
+                recentIconUris = parseRecentIconUris(it[KEY_RECENT_ICON_URIS]),
+                extraLayers = WatermarkLayer.parseList(it[KEY_EXTRA_LAYERS])
             )
         }
 
@@ -292,6 +298,47 @@ class WaterMarkRepository @Inject constructor(
                 maxSize = MAX_RECENT_ICONS
             )
             it[KEY_RECENT_ICON_URIS] = serializeRecentIconUris(updatedRecents)
+        }
+    }
+
+    /** FEAT-03: thêm 1 layer phụ mới — no-op (không ghi, không đẩy Undo) nếu đã đủ [MAX_EXTRA_LAYERS]. */
+    suspend fun addLayer(layer: WatermarkLayer) {
+        val current = waterMark.first().extraLayers
+        if (current.size >= MAX_EXTRA_LAYERS) return
+        snapshotForUndoIfDue()
+        dataStore.edit { it[KEY_EXTRA_LAYERS] = WatermarkLayer.serializeList(current + layer) }
+    }
+
+    /** FEAT-03: xoá layer phụ tại [index] — no-op nếu [index] ngoài phạm vi. */
+    suspend fun removeLayer(index: Int) {
+        val current = waterMark.first().extraLayers
+        if (index !in current.indices) return
+        snapshotForUndoIfDue()
+        dataStore.edit {
+            it[KEY_EXTRA_LAYERS] = WatermarkLayer.serializeList(current.toMutableList().apply { removeAt(index) })
+        }
+    }
+
+    /** FEAT-03: thay toàn bộ nội dung layer phụ tại [index] — no-op nếu [index] ngoài phạm vi. */
+    suspend fun updateLayer(index: Int, layer: WatermarkLayer) {
+        val current = waterMark.first().extraLayers
+        if (index !in current.indices) return
+        snapshotForUndoIfDue()
+        dataStore.edit {
+            it[KEY_EXTRA_LAYERS] = WatermarkLayer.serializeList(current.toMutableList().apply { this[index] = layer })
+        }
+    }
+
+    /** FEAT-03: đổi z-order — di chuyển layer tại [fromIndex] tới [toIndex]. No-op nếu 1 trong 2 index ngoài phạm vi. */
+    suspend fun reorderLayer(fromIndex: Int, toIndex: Int) {
+        val current = waterMark.first().extraLayers
+        if (fromIndex !in current.indices || toIndex !in current.indices || fromIndex == toIndex) return
+        snapshotForUndoIfDue()
+        dataStore.edit {
+            val mutable = current.toMutableList()
+            val moved = mutable.removeAt(fromIndex)
+            mutable.add(toIndex, moved)
+            it[KEY_EXTRA_LAYERS] = WatermarkLayer.serializeList(mutable)
         }
     }
 
@@ -503,6 +550,7 @@ class WaterMarkRepository @Inject constructor(
             it[PreferenceKeys.KEY_TEXT_EFFECT_STROKE] = mark.textEffectStroke
             it[PreferenceKeys.KEY_TEXT_EFFECT_SHADOW] = mark.textEffectShadow
             it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] = mark.textEffectPillBackground
+            it[KEY_EXTRA_LAYERS] = WatermarkLayer.serializeList(mark.extraLayers)
         }
     }
 
@@ -559,6 +607,12 @@ class WaterMarkRepository @Inject constructor(
         const val SP_KEY_TEXT_EFFECT_SHADOW = "${SP_NAME}_key_text_effect_shadow"
         const val SP_KEY_TEXT_EFFECT_PILL_BACKGROUND = "${SP_NAME}_key_text_effect_pill_background"
         const val SP_KEY_RECENT_ICON_URIS = "${SP_NAME}_key_recent_icon_uris"
+
+        /** FEAT-03. */
+        const val SP_KEY_EXTRA_LAYERS = "${SP_NAME}_key_extra_layers"
+
+        /** FEAT-03: số layer PHỤ tối đa (không tính layer chính) — tổng cộng tối đa 1 + [MAX_EXTRA_LAYERS] layer. */
+        const val MAX_EXTRA_LAYERS = 4
         const val MIN_EXIF_BAND_THICKNESS_PERCENT = 0.04f
         const val MAX_EXIF_BAND_THICKNESS_PERCENT = 0.30f
         const val MAX_TEXT_SIZE = 100f

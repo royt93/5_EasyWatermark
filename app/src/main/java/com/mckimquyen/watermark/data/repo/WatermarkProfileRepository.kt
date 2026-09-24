@@ -5,6 +5,7 @@ import com.mckimquyen.watermark.data.db.dao.WatermarkProfileDao
 import com.mckimquyen.watermark.data.model.TextPaintStyle
 import com.mckimquyen.watermark.data.model.TextTypeface
 import com.mckimquyen.watermark.data.model.WaterMark
+import com.mckimquyen.watermark.data.model.WatermarkLayer
 import com.mckimquyen.watermark.data.model.entity.WatermarkProfileEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -52,7 +53,8 @@ class WatermarkProfileRepository @Inject constructor(
             exifUseSerifCaption = mark.exifUseSerifCaption,
             textEffectStroke = mark.textEffectStroke,
             textEffectShadow = mark.textEffectShadow,
-            textEffectPillBackground = mark.textEffectPillBackground
+            textEffectPillBackground = mark.textEffectPillBackground,
+            extraLayersRaw = WatermarkLayer.serializeList(mark.extraLayers)
         )
 
         /**
@@ -87,7 +89,8 @@ class WatermarkProfileRepository @Inject constructor(
             textEffectStroke = entity.textEffectStroke,
             textEffectShadow = entity.textEffectShadow,
             textEffectPillBackground = entity.textEffectPillBackground,
-            recentIconUris = emptyList()
+            recentIconUris = emptyList(),
+            extraLayers = WatermarkLayer.parseList(entity.extraLayersRaw)
         )
     }
 }

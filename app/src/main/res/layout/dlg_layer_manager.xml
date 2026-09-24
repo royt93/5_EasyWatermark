@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FEAT-03: bottom sheet quản lý layer watermark PHỤ — 2 trạng thái (groupList/groupEdit) chuyển
+    bằng visibility trong CÙNG layout (không dùng child fragment, giữ đơn giản).
+-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet_surface"
+    android:paddingStart="16dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="16dp">
+
+    <View
+        android:id="@+id/vHandle"
+        android:layout_width="32dp"
+        android:layout_height="4dp"
+        android:alpha="0.4"
+        android:background="@drawable/bg_m3_drag_handle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="@string/layer_manager_title"
+        android:textAppearance="@style/TextAppearance.App.Title20Bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/vHandle" />
+
+    <!-- ═══ groupList ═══ -->
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:maxHeight="380dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/layer_manager_empty"
+                android:textAppearance="@style/TextAppearance.App.Body14"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvLayers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:itemCount="2"
+                tools:listitem="@layout/item_watermark_layer" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAddLayer"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/layer_manager_add"
+        android:textAllCaps="false"
+        app:icon="@drawable/ic_func_layers"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scrollList" />
+
+    <!-- ═══ groupEdit (ẩn mặc định) ═══ -->
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/groupList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="scrollList,btnAddLayer" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollEdit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:maxHeight="460dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/tgLayerMode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLayerModeText"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:minWidth="96dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="@string/water_mark_mode_text"
+                    android:textAppearance="@style/TextAppearance.App.Body13Selector"
+                    app:backgroundTint="@color/selector_toggle_button_bg"
+                    app:shapeAppearance="@style/ShapeAppearance.App.PillInner.Start"
+                    app:strokeWidth="0dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLayerModeImage"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:minWidth="96dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="@string/water_mark_mode_image"
+                    android:textAppearance="@style/TextAppearance.App.Body13Selector"
+                    app:backgroundTint="@color/selector_toggle_button_bg"
+                    app:shapeAppearance="@style/ShapeAppearance.App.PillInner.End"
+                    app:strokeWidth="0dp" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilLayerText"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:hint="@string/layer_edit_text_hint">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etLayerText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.App.Body16" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPickLayerIcon"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:text="@string/layer_edit_pick_icon"
+                android:textAllCaps="false"
+                android:visibility="gone"
+                app:icon="@drawable/ic_func_sticker"
+                tools:visibility="visible" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvLayerAlphaLabel"
+                style="@style/TextAppearance.App.Body14"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/style_alpha" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/slLayerAlpha"
+                style="@style/MySeekBarStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:stepSize="1"
+                android:valueFrom="0"
+                android:valueTo="255"
+                tools:value="255" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvLayerDegreeLabel"
+                style="@style/TextAppearance.App.Body14"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/title_text_rotate" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/slLayerDegree"
+                style="@style/MySeekBarStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:stepSize="1"
+                android:valueFrom="0"
+                android:valueTo="360"
+                tools:value="0" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/menuLayerAnchor"
+                style="@style/SaveDialogExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="12dp"
+                android:hint="@string/position_anchor_title"
+                app:boxStrokeColor="?attr/colorOutline"
+                app:boxStrokeWidth="1dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:hintTextColor="?attr/colorOnSurfaceVariant">
+
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/atvLayerAnchor"
+                    style="@style/SaveDialogAutoCompleteTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvLayerMarginLabel"
+                style="@style/TextAppearance.App.Body14"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/position_anchor_margin" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/slLayerMargin"
+                style="@style/MySeekBarStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:stepSize="1"
+                android:valueFrom="0"
+                android:valueTo="20"
+                tools:value="5" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSaveLayer"
+        style="@style/Widget.Material3.Button.FilledButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/confirm"
+        android:textAllCaps="false"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scrollEdit"
+        tools:visibility="visible" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/groupEdit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="scrollEdit,btnSaveLayer" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

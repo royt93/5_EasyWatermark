@@ -34,6 +34,7 @@ import com.mckimquyen.watermark.data.model.TextTypeface
 import com.mckimquyen.watermark.data.model.UserPreferences
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.model.WaterMark
+import com.mckimquyen.watermark.data.model.WatermarkLayer
 import com.mckimquyen.watermark.data.model.entity.Template
 import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
@@ -488,6 +489,26 @@ class MainViewModel @Inject constructor(
                 AppLog.d(LOG_TAG, "[VM] updateIcon: uri is EMPTY, skip")
             }
         }
+    }
+
+    /** FEAT-03. */
+    fun addLayer(layer: WatermarkLayer) {
+        launch { waterMarkRepo.addLayer(layer) }
+    }
+
+    /** FEAT-03. */
+    fun removeLayer(index: Int) {
+        launch { waterMarkRepo.removeLayer(index) }
+    }
+
+    /** FEAT-03. */
+    fun updateLayer(index: Int, layer: WatermarkLayer) {
+        launch { waterMarkRepo.updateLayer(index, layer) }
+    }
+
+    /** FEAT-03. */
+    fun reorderLayer(fromIndex: Int, toIndex: Int) {
+        launch { waterMarkRepo.reorderLayer(fromIndex, toIndex) }
     }
 
     /**

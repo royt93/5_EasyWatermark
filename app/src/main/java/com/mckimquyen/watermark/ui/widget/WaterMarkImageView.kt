@@ -30,6 +30,7 @@ import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.WaterMark
+import com.mckimquyen.watermark.data.model.WatermarkLayer
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.Companion.DEFAULT_TEXT_SIZE
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.Companion.MAX_TEXT_SIZE
@@ -143,6 +144,9 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         mainImageBitmapValue = null
         iconBitmapValue?.release()
         iconBitmapValue = null
+        // FEAT-03: bitmap trong shader layer phụ không qua BitmapCache (giống layoutShader layer
+        // chính) — tự GC được, chỉ cần bỏ tham chiếu.
+        extraLayerShaders = emptyList()
     }
 
     fun updateUri(init: Boolean, imageInfo: ImageInfo) {
@@ -327,7 +331,13 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                     }
                 }
             }
-            AppLog.d(LOG_TAG, "[WMIV] applyNewConfig done: layoutShader null=${layoutShader == null}, calling postInvalidate")
+            // FEAT-03: build shader cho từng layer PHỤ, tuần tự, trong CÙNG mutex với layer chính
+            // để tránh race giữa 2 job applyNewConfig chồng lấn — layer chính giữ nguyên hoàn
+            // toàn phía trên, đây là bước THÊM MỚI, không thay thế gì.
+            extraLayerShaders = generateBitmapMutex.withLock {
+                newConfig.extraLayers.mapNotNull { layer -> buildExtraLayerShader(layer, coroutineContext = generateBitmapCoroutineCtx) }
+            }
+            AppLog.d(LOG_TAG, "[WMIV] applyNewConfig done: layoutShader null=${layoutShader == null}, extraLayers=${extraLayerShaders.size}, calling postInvalidate")
             postInvalidate()
         }
     }
@@ -356,6 +366,69 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
 
     private var layoutShader: WaterMarkShader? = null
 
+    /** FEAT-03: 1 layer PHỤ đã build xong, sẵn sàng vẽ — [anchor]/[marginPercent] cần lại lúc vẽ vì vị trí layer phụ tính trực tiếp từ neo, không đi qua [curImageInfo]. */
+    private data class ExtraLayerRender(
+        val shader: WaterMarkShader,
+        val paint: Paint,
+        val anchor: Int,
+        val marginPercent: Float
+    )
+
+    /** FEAT-03: theo đúng z-order (index 0 = dưới cùng). */
+    private var extraLayerShaders: List<ExtraLayerRender> = emptyList()
+
+    /**
+     * FEAT-03: build shader cho 1 layer PHỤ — KHÔNG cache bitmap icon theo field như layer chính
+     * (đơn giản hoá: layer phụ không có pinch/drag realtime nên không cần tối ưu cache, chỉ decode
+     * lại mỗi lần [applyNewConfig] chạy, giống tần suất decode ảnh chính).
+     */
+    private suspend fun buildExtraLayerShader(
+        layer: WatermarkLayer,
+        coroutineContext: CoroutineContext
+    ): ExtraLayerRender? {
+        val layerConfig = layer.toWaterMark()
+        val paint = TextPaint().applyConfig(curImageInfo, layerConfig)
+        val shader = when (layer.markMode) {
+            WaterMarkRepository.MarkMode.Text -> buildTextBitmapShader(
+                imageInfo = curImageInfo,
+                config = layerConfig,
+                textPaint = paint,
+                coroutineContext = coroutineContext
+            )
+
+            WaterMarkRepository.MarkMode.Image -> {
+                val iconResult = decodeSampledBitmapFromResource(
+                    context = context,
+                    resolver = context.contentResolver,
+                    uri = layer.iconUri,
+                    reqWidth = measuredWidth,
+                    reqHeight = measuredHeight
+                )
+                val iconValue = iconResult.data ?: return null
+                iconValue.retain()
+                try {
+                    val srcBitmap = iconValue.bitmap ?: return null
+                    buildIconBitmapShader(
+                        imageInfo = curImageInfo,
+                        srcBitmap = srcBitmap,
+                        config = layerConfig,
+                        textPaint = paint,
+                        scale = false,
+                        coroutineContext = coroutineContext
+                    )
+                } finally {
+                    iconValue.release()
+                }
+            }
+        } ?: return null
+        return ExtraLayerRender(
+            shader = shader,
+            paint = Paint().apply { this.shader = shader.bitmapShader },
+            anchor = layer.anchor,
+            marginPercent = layer.marginPercent
+        )
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         Log.i("onSizeChanged", "$w, $h, $oldh, $oldh")
@@ -364,26 +437,43 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val currentConfig = config
-        // In Text mode: skip if there's no text content to render.
-        // In Image mode (icon / signature): text is irrelevant – never skip based on it.
-        val isTextModeWithNoContent =
-            currentConfig?.markMode == WaterMarkRepository.MarkMode.Text &&
-                currentConfig.text.isNullOrEmpty()
-        val skipReason = when {
-            isTextModeWithNoContent -> "TextMode+noContent"
+        // FEAT-03: 2 lý do dưới đây chặn TOÀN BỘ (kể cả layer phụ) — ảnh chưa decode xong/đang
+        // animate thì drawableBounds chưa sẵn sàng cho bất kỳ layer nào.
+        val hardSkipReason = when {
             decodedUri.toString().isEmpty() -> "decodedUri empty"
-            layoutShader == null -> "layoutShader null"
             drawableAlphaAnimator.isRunning -> "alphaAnim running"
             else -> null
         }
-        if (skipReason != null) {
-            AppLog.d(LOG_TAG, "[WMIV] onDraw SKIP: $skipReason  mode=${currentConfig?.markMode}")
+        if (hardSkipReason != null) {
+            AppLog.d(LOG_TAG, "[WMIV] onDraw SKIP: $hardSkipReason  mode=${currentConfig?.markMode}")
             return
         }
-        AppLog.d(LOG_TAG, "[WMIV] onDraw DRAWING: mode=${currentConfig?.markMode} shader=${layoutShader != null} tileMode=${curImageInfo.obtainTileMode()}")
-        AppLog.d(LOG_TAG, "[WMIV] onDraw: layoutShader sizes=${layoutShader?.width}x${layoutShader?.height} drawableBounds=$drawableBounds offsetX=${curImageInfo.offsetX} offsetY=${curImageInfo.offsetY}")
-        AppLog.d(LOG_TAG, "[WMIV] onDraw: layoutPaint alpha=${layoutPaint.alpha}")
-        layoutPaint.shader = layoutShader?.bitmapShader
+        // In Text mode: skip if there's no text content to render.
+        // In Image mode (icon / signature): text is irrelevant – never skip based on it.
+        // FEAT-03: 2 lý do dưới đây chỉ chặn LAYER CHÍNH — layer phụ (nếu có) vẫn phải vẽ, vd user
+        // để trống text watermark chính nhưng vẫn muốn hiện logo layer phụ.
+        val isTextModeWithNoContent =
+            currentConfig?.markMode == WaterMarkRepository.MarkMode.Text &&
+                currentConfig.text.isNullOrEmpty()
+        val skipPrimaryReason = when {
+            isTextModeWithNoContent -> "TextMode+noContent"
+            layoutShader == null -> "layoutShader null"
+            else -> null
+        }
+        if (skipPrimaryReason == null) {
+            AppLog.d(LOG_TAG, "[WMIV] onDraw DRAWING: mode=${currentConfig?.markMode} shader=${layoutShader != null} tileMode=${curImageInfo.obtainTileMode()}")
+            AppLog.d(LOG_TAG, "[WMIV] onDraw: layoutShader sizes=${layoutShader?.width}x${layoutShader?.height} drawableBounds=$drawableBounds offsetX=${curImageInfo.offsetX} offsetY=${curImageInfo.offsetY}")
+            AppLog.d(LOG_TAG, "[WMIV] onDraw: layoutPaint alpha=${layoutPaint.alpha}")
+            layoutPaint.shader = layoutShader?.bitmapShader
+            drawPrimaryLayer(canvas)
+        } else {
+            AppLog.d(LOG_TAG, "[WMIV] onDraw SKIP primary only: $skipPrimaryReason  mode=${currentConfig?.markMode}")
+        }
+        drawExtraLayers(canvas)
+    }
+
+    /** Layer CHÍNH — logic gốc, không đổi hành vi (chỉ tách thành hàm riêng để onDraw gọi có điều kiện, xem FEAT-03). */
+    private fun drawPrimaryLayer(canvas: Canvas) {
         canvas?.withSave {
             // FEAT-18: clip TRƯỚC translate — toạ độ theo hệ View gốc (không bị dịch theo tile),
             // giữ đường phân cách thẳng đứng cố định theo tỉ lệ chiều rộng View.
@@ -415,6 +505,44 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                     /* bottom = */ drawableBounds.bottom - drawableBounds.top,
                     /* paint = */ layoutPaint
                 )
+            }
+        }
+    }
+
+    /**
+     * FEAT-03: vẽ layer PHỤ theo đúng z-order (index 0 = dưới cùng), SAU layer chính — vị trí
+     * tính trực tiếp từ neo 9-grid + margin% (không ghi vào curImageInfo, layer phụ không có
+     * "vị trí đang kéo" như layer chính).
+     */
+    private fun drawExtraLayers(canvas: Canvas) {
+        if (extraLayerShaders.isEmpty()) return
+        val tileMode = curImageInfo.obtainTileMode()
+        extraLayerShaders.forEach { render ->
+            canvas?.withSave {
+                if (tileMode == Shader.TileMode.CLAMP) {
+                    val boundsW = drawableBounds.width()
+                    val boundsH = drawableBounds.height()
+                    if (boundsW <= 0f || boundsH <= 0f) return@withSave
+                    val (offsetX, offsetY) = Anchor.obtain(render.anchor).toOffset(
+                        render.marginPercent,
+                        render.shader.width / boundsW,
+                        render.shader.height / boundsH
+                    )
+                    translate(
+                        drawableBounds.left + offsetX * boundsW,
+                        drawableBounds.top + offsetY * boundsH
+                    )
+                    drawRect(0f, 0f, render.shader.width.toFloat(), render.shader.height.toFloat(), render.paint)
+                } else {
+                    translate(drawableBounds.left, drawableBounds.top)
+                    drawRect(
+                        0f,
+                        0f,
+                        drawableBounds.right - drawableBounds.left,
+                        drawableBounds.bottom - drawableBounds.top,
+                        render.paint
+                    )
+                }
             }
         }
     }
@@ -459,6 +587,7 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         iconBitmap = null
         layoutShader = null
         layoutPaint.shader = null
+        extraLayerShaders = emptyList()
         curImageInfo = ImageInfo(Uri.EMPTY)
         localIconUri = Uri.EMPTY
         setImageBitmap(null)

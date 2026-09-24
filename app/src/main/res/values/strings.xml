@@ -248,6 +248,19 @@
     <!-- ENH-09: string UI hardcode chuyển sang resources -->
     <string name="func_title_signature">Signature</string>
     <string name="func_title_leica_exif">Leica EXIF</string>
+
+    <!-- FEAT-03: watermark đa lớp -->
+    <string name="func_title_layers">Layers</string>
+    <string name="layer_manager_title">Watermark layers</string>
+    <string name="layer_manager_add">Add layer</string>
+    <string name="layer_manager_max_reached">Maximum %1$d extra layers reached</string>
+    <string name="layer_manager_empty">No extra layer yet — tap \"Add layer\" to overlay a logo or extra text</string>
+    <string name="layer_manager_delete_cd">Delete layer</string>
+    <string name="layer_manager_move_up_cd">Move layer up</string>
+    <string name="layer_manager_move_down_cd">Move layer down</string>
+    <string name="layer_edit_title">Edit layer</string>
+    <string name="layer_edit_pick_icon">Choose icon</string>
+    <string name="layer_edit_text_hint">Layer text</string>
     <string name="about_version_display">v%1$s</string>
     <string name="share_error">Share error with %1$s</string>
     <plurals name="gallery_select_photo_count">
