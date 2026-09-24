@@ -45,6 +45,15 @@ class MultiSelectRv : RecyclerView {
         this.onUnSelect = onUnSelect
     }
 
+    /**
+     * BUG phát hiện qua audit: trước đây `adapter!!.itemCount` force-unwrap trực tiếp trong
+     * touch-handler auto-scroll — nếu gesture chạy lúc `adapter` chưa gán/đã null (list rỗng,
+     * RecyclerView detach giữa lúc đang kéo chọn) → crash thật. `@VisibleForTesting internal` để
+     * test trực tiếp không cần mô phỏng cả chuỗi long-press + gesture thật.
+     */
+    @androidx.annotation.VisibleForTesting
+    internal fun lastItemIndex(): Int = (adapter?.itemCount ?: 0) - 1
+
     private var autoScroll: Runnable? = null
     private val handle = Handler(Looper.getMainLooper())
 
@@ -169,7 +178,7 @@ class MultiSelectRv : RecyclerView {
                                 }
                                 if (((scrollBottomArea && isIncreasing) || (scrollTopArea && !isIncreasing)) && isLongPress) {
                                     Log.i(TAG, "isLongPress = true")
-                                    var targetPos = if (scrollBottomArea) adapter!!.itemCount - 1 else 0
+                                    var targetPos = if (scrollBottomArea) lastItemIndex() else 0
                                     rv.stopScroll()
                                     rv.smoothScrollToPosition(targetPos)
                                     autoScroll?.let { it1 -> handle.removeCallbacks(it1) }
@@ -181,7 +190,7 @@ class MultiSelectRv : RecyclerView {
                                                     "rvGestureDetector onScroll detected event lost, manually scroll scrollBottomArea = $scrollBottomArea, isIncreasing = $isIncreasing"
                                                 )
                                                 targetPos =
-                                                    if (scrollBottomArea) adapter!!.itemCount - 1 else 0
+                                                    if (scrollBottomArea) lastItemIndex() else 0
                                                 latestMoveTs = System.currentTimeMillis()
                                                 if (scrollBottomArea) {
                                                     onSelect?.invoke(

@@ -205,7 +205,7 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
             changed = item.check != true
             list[i].check = true
             if (changed) {
-                selectedCount.value = selectedCount.value!! + 1
+                selectedCount.value = (selectedCount.value ?: 0) + 1
                 selectedPosSet.add(i)
             }
             (recyclerView.findViewHolderForAdapterPosition(i) as? GalleryItemHolder?)?.apply {
@@ -226,7 +226,7 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
             val item = list[i]
             if (item.check) {
                 list[i].check = false
-                selectedCount.value = selectedCount.value!! - 1
+                selectedCount.value = (selectedCount.value ?: 0) - 1
                 selectedPosSet.remove(i)
                 (recyclerView.findViewHolderForAdapterPosition(i) as? GalleryItemHolder?)?.apply {
                     cbImage.isChecked = false

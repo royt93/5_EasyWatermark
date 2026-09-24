@@ -125,7 +125,7 @@ class SplashActivity : BaseActivity() {
         if (isFinishing || isDestroyed) return
         startActivity(Intent(this@SplashActivity, MainActivity::class.java))
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-        window.decorView.postDelayed({ finish() }, 300)
+        window.decorView.postDelayed({ finish() }, FINISH_AFTER_TRANSITION_DELAY_MS)
     }
 
     companion object {
@@ -135,5 +135,8 @@ class SplashActivity : BaseActivity() {
         private const val MIN_SPLASH_DURATION_MS = 1_500L
         private const val CONSENT_TIMEOUT_MS = 6_000L
         private const val INIT_TIMEOUT_MS = 8_000L
+
+        /** Thời gian chờ hiệu ứng fade chuyển sang MainActivity chạy xong trước khi finish() Splash. */
+        private const val FINISH_AFTER_TRANSITION_DELAY_MS = 300L
     }
 }

@@ -58,6 +58,11 @@ class CropActivity : BaseActivity() {
         setupRatioChips()
         setupStraightenSlider()
         setupApplyButton()
+        // BUG phát hiện qua audit: loadImage() decode bất đồng bộ — nếu user bấm Áp dụng TRƯỚC
+        // khi decode xong, CropOverlayView chưa có bitmap nên computeCropRect()/rotationDegrees
+        // âm thầm trả về null/0f (không crop/không xoay) dù user đã chọn tỉ lệ/góc xoay, KHÔNG
+        // có thông báo lỗi nào — mất đúng mục đích tính năng. Khoá nút tới khi ảnh sẵn sàng.
+        binding.btnApplyCrop.isEnabled = false
         loadImage()
     }
 
@@ -134,6 +139,7 @@ class CropActivity : BaseActivity() {
                 return@launch
             }
             binding.cropOverlayView.setImageBitmap(bitmap)
+            binding.btnApplyCrop.isEnabled = true
         }
     }
 
