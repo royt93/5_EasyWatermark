@@ -63,6 +63,12 @@ class MainViewModelUndoRedoRoboTest {
 
     @Test
     fun undo_restoresPreviousText() {
+        // Bug tiềm ẩn phát hiện khi audit IDEA-07 (2026-09-24): đọc `.value` ngay sau
+        // `observeForever` ở setUp() có thể vẫn null (Flow→LiveData chưa kịp emit lần đầu qua
+        // DataStore đọc file thật, `idle()` không đảm bảo bắt kịp — cùng lý do `awaitTrue` bên
+        // dưới tồn tại) → `original` = null nhầm thay vì text mặc định thật, undo sau đó so sánh
+        // sai. Poll bằng `awaitTrue` giống các test khác trong file thay vì đọc `.value` trần.
+        awaitTrue { viewModel.waterMark.value != null }
         val original = viewModel.waterMark.value?.text
         viewModel.updateText("changed")
         awaitTrue { viewModel.waterMark.value?.text == "changed" }
