@@ -33,3 +33,19 @@ Thêm màn hình nhập multi-line/paste CSV, map theo index vào `ImageInfo` t�
 - Test: `BatchCaptionParserTest` (unit), `WaterMarkRepositoryCaptionRoboTest`, `MainViewModelBatchCaptionRoboTest`, `BatchCaptionLayoutRoboTest`, `BatchExportEngineCaptionRoboTest` (regression bug đen ảnh) — toàn bộ 271 unit test PASS.
 - **Chưa smoke test thật trên device cho riêng luồng Batch Caption** (chỉ verify qua Robolectric/unit test) — phiên fix code review có smoke test trên TECNO KJ7 (115333744A005844) nhưng cho tính năng Backup/Restore (FEAT-05), không phải luồng này. Cần smoke test tay thật (nhập caption nhiều dòng cho batch 2-3 ảnh, export, xác nhận đúng ảnh nào có caption riêng/ảnh nào giữ text chung, và riêng case caption rỗng phải verify KHÔNG bị đen kín trên file export thật — đúng bug vừa fix) ở phiên sau trước khi coi ticket này đạt đủ 3/3 điều kiện Definition of Done.
 - Commit: `32229a8` (feature gốc), `0d9b891`/`c3af54a` (fix bug đen ảnh + race, cùng đợt code review).
+
+## Kết quả kiểm chứng (2026-09-24) — ĐỦ 3/3 Definition of Done, move `done/`
+
+**Điểm tự audit: 9.5/10** (code không đổi từ đợt trước, chỉ bổ sung điều kiện 3/3 còn thiếu — smoke test thật).
+
+1. **Audit code**: giữ nguyên logic đã audit 9/10 ở đợt trước (`BatchCaptionBSDialogFragment`, `BatchCaptionParser`, `WaterMarkRepository.updateImageCaptions()`, fix `shouldSkipTextWatermark()` dùng chung `BatchExportEngine`). Không phát hiện thêm vấn đề mới.
+2. **Test**: `./gradlew :app:testDebugUnitTest --tests "*BatchCaption*"` PASS (UP-TO-DATE, giữ nguyên bộ test đã thêm từ trước: `BatchCaptionParserTest`, `WaterMarkRepositoryCaptionRoboTest`, `MainViewModelBatchCaptionRoboTest`, `BatchCaptionLayoutRoboTest`, `BatchExportEngineCaptionRoboTest`).
+3. **Smoke test thật trên TECNO KJ7 (115333744A005844)** — khoá qua `AskUserQuestion` do có 2 device (Pixel 7 Pro cắm cùng lúc), đúng CLAUDE.md R3. Batch 3 ảnh thật, chạy đủ 3 case qua UI thật (không crash, logcat sạch):
+   - **AC1+AC2**: nhập 3 dòng "Anh Dau/Anh Hai/Anh Ba" khớp đúng 3 ảnh → export ra 3 file JPEG thật, kéo về máy kiểm tra bằng mắt: đúng tile watermark riêng từng ảnh theo đúng thứ tự (`ewm_1790221639867.jpg`="Anh Dau", `...639409.jpg`="Anh Hai", `...639136.jpg`="Anh Ba").
+   - **AC3**: nhập 2 dòng cho 3 ảnh → dialog hiện đúng cảnh báo `batch_caption_count_mismatch` ("Đã nhập 2 dòng nhưng có 3 ảnh trong danh sách — vui lòng kiểm tra lại"), KHÔNG áp dụng âm thầm sai, dialog vẫn mở chờ sửa.
+   - **Case quan trọng nhất — caption rỗng (regression bug đen ảnh)**: nhập 3 dòng "TẽtA / (rỗng) / TẽtC" khớp 3 ảnh → export ra file thật, kéo về kiểm tra: ảnh ứng dòng rỗng **hoàn toàn sạch, không bị đen kín, không vẽ watermark nào** — đúng ý "cố ý không watermark ảnh này", bug đen ảnh đã fix ở commit `c3af54a` **không tái phát**. 2 ảnh còn lại đúng "TẽtA"/"TẽtC".
+   - Phát hiện phụ (không phải bug, hành vi cố ý theo code `SaveImageBSDialogFragment`): nút Export đổi thành "Chia sẻ" sau khi export xong 1 lần trong cùng phiên dialog — cần đổi 1 giá trị `waterMark` config (trigger `resetJobStatus()`, xem `MainActivity.kt:497`) để export lại lần 2 trong cùng session, không phải reset qua đổi caption. Không phải bug của ticket này, không sửa (ngoài phạm vi).
+
+Smoke test dùng `uiautomator dump` lấy bounds chính xác từng nút thay vì đoán toạ độ theo ảnh chụp màn hình scale — tránh tap nhầm giữa các session dialog lồng nhau (Save/Caption/SAF picker).
+
+Commit thêm (chỉ cập nhật doc, không đổi code): xem commit tạo cùng lúc move file.
