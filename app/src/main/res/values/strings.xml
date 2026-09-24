@@ -114,7 +114,7 @@
     <string name="launch_card_paste_desc">Watermark copied image or screenshot</string>
     <string name="clipboard_no_image">No image found in clipboard</string>
     <string name="action_paste">Paste image</string>
-    <string name="pick_via_system">more…</string>
+    <string name="pick_via_system">Choose from system</string>
     <!-- FEAT-08: chọn cả thư mục (SAF tree) đưa toàn bộ ảnh trong đó vào batch. -->
     <string name="pick_folder">Choose folder</string>
     <string name="recovery_title">Recovery Mode</string>

@@ -106,7 +106,7 @@
     <string name="launch_card_paste_desc">Đóng dấu ảnh vừa sao chép hoặc ảnh chụp màn hình</string>
     <string name="clipboard_no_image">Không tìm thấy ảnh trong bộ nhớ tạm</string>
     <string name="action_paste">Dán ảnh</string>
-    <string name="pick_via_system">thêm…</string>
+    <string name="pick_via_system">Chọn qua hệ thống</string>
     <string name="pick_folder">Chọn thư mục</string>
     <string name="recovery_title">Chế độ khôi phục</string>
     <string name="copy_success">Đã sao chép thành công</string>
