@@ -40,6 +40,13 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/actionCrop"
+        android:icon="@drawable/ic_crop"
+        android:title="@string/action_crop"
+        app:iconTint="?attr/colorOnSurface"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/actionCompare"
         android:icon="@drawable/ic_compare"
         android:title="@string/action_compare"

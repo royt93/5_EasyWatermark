@@ -2,6 +2,7 @@ package com.mckimquyen.watermark.data.repo
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.RectF
 import android.graphics.Shader
 import android.net.Uri
 import android.util.Log
@@ -232,6 +233,22 @@ class WaterMarkRepository @Inject constructor(
     suspend fun toggleSkipExport(uri: Uri) {
         val list = imageInfoList.map { info ->
             if (info.uri == uri) info.copy(isSkippedInExport = !info.isSkippedInExport) else info
+        }
+        updateImageList(list)
+    }
+
+    /**
+     * FEAT-16: gán crop rect + góc xoay riêng cho ảnh [uri] (kết quả trả về từ `CropActivity`) —
+     * mirror [toggleSkipExport], tìm đúng ảnh rồi copy() field mới, giữ nguyên state khác.
+     * [cropRect] null = bỏ crop (giữ nguyên khung ảnh gốc sau khi xoay).
+     */
+    suspend fun updateImageCrop(uri: Uri, cropRect: RectF?, rotationDegrees: Float) {
+        val list = imageInfoList.map { info ->
+            if (info.uri == uri) {
+                info.copy(cropRect = cropRect, rotationDegrees = rotationDegrees)
+            } else {
+                info
+            }
         }
         updateImageList(list)
     }

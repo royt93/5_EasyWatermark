@@ -1,5 +1,6 @@
 package com.mckimquyen.watermark.data.model
 
+import android.graphics.RectF
 import android.graphics.Shader
 import android.net.Uri
 import android.os.Build
@@ -31,7 +32,12 @@ data class ImageInfo(
     val exifModel: ExifModel? = null,
     val caption: String? = null,
     // FEAT-17: bật = loại ảnh này khỏi batch export (giữ trong danh sách, user có thể bật lại).
-    val isSkippedInExport: Boolean = false
+    val isSkippedInExport: Boolean = false,
+    // FEAT-16: khung crop normalized 0..1, tính theo bitmap ĐÃ xoay theo [rotationDegrees].
+    // null = không crop (giữ nguyên toàn bộ khung ảnh).
+    val cropRect: RectF? = null,
+    // FEAT-16: góc straighten/deskew user chỉnh (độc lập với EXIF auto-rotate đã xử lý lúc decode).
+    val rotationDegrees: Float = 0f
 ) {
     val shareUri: Uri?
         get() = result?.data as? Uri?

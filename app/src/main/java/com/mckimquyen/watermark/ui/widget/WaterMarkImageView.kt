@@ -38,6 +38,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository.Companion.MIN_TEXT
 import com.mckimquyen.watermark.ui.widget.utils.WaterMarkShader
 import com.mckimquyen.watermark.utils.TextEffectRenderer
 import com.mckimquyen.watermark.utils.bitmap.BitmapCache
+import com.mckimquyen.watermark.utils.bitmap.applyCropAndRotate
 import com.mckimquyen.watermark.utils.bitmap.decodeSampledBitmapFromResource
 import com.mckimquyen.watermark.utils.ktx.applyConfig
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -88,6 +89,10 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
     // phép BitmapCache tự recycle() bitmap bị evict an toàn (không đụng bitmap đang được vẽ).
     private var mainImageBitmapValue: BitmapCache.BitmapValue? = null
     private var iconBitmapValue: BitmapCache.BitmapValue? = null
+
+    // FEAT-16: bitmap SAU khi áp crop/rotate — KHÔNG qua BitmapCache (mỗi tổ hợp crop/rotate là
+    // duy nhất, không đáng cache dùng chung), View tự sở hữu + recycle bitmap này.
+    private var transformedMainBitmap: Bitmap? = null
 
     private var enableWaterMark = AtomicBoolean(false)
 
@@ -147,6 +152,8 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         // FEAT-03: bitmap trong shader layer phụ không qua BitmapCache (giống layoutShader layer
         // chính) — tự GC được, chỉ cần bỏ tham chiếu.
         extraLayerShaders = emptyList()
+        transformedMainBitmap?.let { if (!it.isRecycled) it.recycle() }
+        transformedMainBitmap = null
     }
 
     fun updateUri(init: Boolean, imageInfo: ImageInfo) {
@@ -194,9 +201,14 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: markMode=${newConfig.markMode} iconUri=${newConfig.iconUri} imageUri=$uri")
         generateBitmapJob?.cancel()
         generateBitmapJob = launch(exceptionHandler) {
+            // FEAT-16: crop/rotate đổi trên CÙNG uri (đang mở lại từ CropActivity) cũng phải
+            // decode lại — decodeSampledBitmapFromResource đã cache theo uri nên chi phí decode
+            // lại gần như 0, chỉ tốn lại bước applyCropAndRotate.
+            val geometryChanged = curImageInfo.cropRect != imageInfo.cropRect ||
+                curImageInfo.rotationDegrees != imageInfo.rotationDegrees
             // quick check is the same image
-            if (decodedUri != uri) {
-                AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: decodedUri($decodedUri) != uri($uri), decoding main image...")
+            if (decodedUri != uri || geometryChanged) {
+                AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: decodedUri($decodedUri) != uri($uri) or geometryChanged=$geometryChanged, decoding main image...")
                 // hide iv
                 this@WaterMarkImageView.drawable?.alpha = 0
                 drawableAlphaAnimator.cancel()
@@ -228,20 +240,27 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 bitmapValue.retain()
                 mainImageBitmapValue?.release()
                 mainImageBitmapValue = bitmapValue
+                // FEAT-16: crop/rotate áp lên bitmap TRƯỚC khi hiển thị — imageBitmap gốc vẫn
+                // thuộc sở hữu BitmapCache (retain/release ở trên), applyCropAndRotate không bao
+                // giờ recycle nó. Nếu có transform thật, kết quả là bitmap MỚI do View tự sở hữu.
+                val previousTransformed = transformedMainBitmap
+                val displayBitmap = applyCropAndRotate(imageBitmap, imageInfo.rotationDegrees, imageInfo.cropRect)
+                transformedMainBitmap = if (displayBitmap !== imageBitmap) displayBitmap else null
+                previousTransformed?.let { if (!it.isRecycled) it.recycle() }
                 // adjust bitmap via matrix
-                setImageBitmap(imageBitmap)
+                setImageBitmap(displayBitmap)
                 val matrix = adjustMatrix(
                     srcMatrix = imageMatrix,
                     viewWidth = measuredWidth,
                     viewHeight = measuredHeight,
                     paddingLeft = paddingLeft,
                     paddingTop = paddingTop,
-                    bitmapWidth = imageBitmap.width,
-                    bitmapHeight = imageBitmap.height
+                    bitmapWidth = displayBitmap.width,
+                    bitmapHeight = displayBitmap.height
                 )
                 imageMatrix = matrix
                 // setting background color via Palette
-                applyBg(imageBitmap)
+                applyBg(displayBitmap)
                 // animate to show
                 // when showing first bitmap we need to wait the imageview prepared.
                 if (isInit) {
@@ -267,7 +286,7 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 decodedUri = uri
                 // FEAT-23: đúng lúc biết tỉ lệ khung ảnh THẬT (kích thước bitmap gốc, không phụ
                 // thuộc scale-to-fit) — bằng nhau (ảnh vuông) coi là dọc (tie-break tuỳ ý, ghi rõ).
-                this@WaterMarkImageView.onImageOrientationKnown(imageBitmap.height >= imageBitmap.width)
+                this@WaterMarkImageView.onImageOrientationKnown(displayBitmap.height >= displayBitmap.width)
             } else {
                 AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: decodedUri == uri, skip main image decode")
             }
@@ -584,6 +603,8 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         mainImageBitmapValue = null
         iconBitmapValue?.release()
         iconBitmapValue = null
+        transformedMainBitmap?.let { if (!it.isRecycled) it.recycle() }
+        transformedMainBitmap = null
         iconBitmap = null
         layoutShader = null
         layoutPaint.shader = null

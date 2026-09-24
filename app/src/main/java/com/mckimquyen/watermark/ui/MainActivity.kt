@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.RectF
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
@@ -106,6 +107,9 @@ class MainActivity : BaseActivity() {
     /** ENH-10: Android Photo Picker — không cần quyền READ_MEDIA_IMAGES/READ_EXTERNAL_STORAGE. */
     private lateinit var pickIconVisualMediaLauncher: ActivityResultLauncher<PickVisualMediaRequest>
     private lateinit var signatureLauncher: ActivityResultLauncher<Intent>
+
+    /** FEAT-16: launcher mở [CropActivity] cho ảnh đang selected trong batch. */
+    private lateinit var cropLauncher: ActivityResultLauncher<Intent>
 
     /** FEAT-22: Launcher chụp ảnh trực tiếp từ ứng dụng Camera hệ thống. */
     private lateinit var takePictureLauncher: ActivityResultLauncher<Uri>
@@ -378,6 +382,19 @@ class MainActivity : BaseActivity() {
         takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             AppLog.d(LOG_TAG, "[MAIN] takePictureLauncher callback: success=$success")
             handleCameraResult(success)
+        }
+
+        cropLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode != android.app.Activity.RESULT_OK) return@registerForActivityResult
+            val data = result.data ?: return@registerForActivityResult
+            val uriString = data.getStringExtra(CropActivity.EXTRA_RESULT_URI) ?: return@registerForActivityResult
+            val cropRect = androidx.core.content.IntentCompat.getParcelableExtra(
+                data,
+                CropActivity.EXTRA_RESULT_CROP_RECT,
+                RectF::class.java
+            )
+            val rotationDegrees = data.getFloatExtra(CropActivity.EXTRA_RESULT_ROTATION, 0f)
+            viewModel.updateImageCrop(Uri.parse(uriString), cropRect, rotationDegrees)
         }
     }
 
@@ -1087,6 +1104,16 @@ class MainActivity : BaseActivity() {
 
         R.id.actionCompare -> {
             CompareBottomSheetFragment.safetyShow(supportFragmentManager)
+            true
+        }
+
+        R.id.actionCrop -> {
+            val uri = viewModel.selectedImage.value?.uri
+            if (uri == null || uri == Uri.EMPTY) {
+                toast(R.string.crop_no_image_selected)
+            } else {
+                cropLauncher.launch(CropActivity.createIntent(this, uri))
+            }
             true
         }
 

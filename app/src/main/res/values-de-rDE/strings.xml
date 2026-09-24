@@ -135,4 +135,16 @@
     <string name="vip_success_title">Erfolg</string>
     <string name="vip_failed_title">Fehlgeschlagen</string>
 
+    <!-- FEAT-16: man hinh crop/straighten -->
+    <string name="action_crop">Zuschneiden</string>
+    <string name="crop_title">Zuschneiden &amp; begradigen</string>
+    <string name="crop_ratio_free">Frei</string>
+    <string name="crop_ratio_square">1:1</string>
+    <string name="crop_ratio_4_5">4:5</string>
+    <string name="crop_ratio_16_9">16:9</string>
+    <string name="crop_ratio_9_16">9:16</string>
+    <string name="crop_ratio_3_4">3:4</string>
+    <string name="crop_straighten_label">Begradigen</string>
+    <string name="crop_apply">Anwenden</string>
+    <string name="crop_no_image_selected">Kein Bild zum Zuschneiden ausgewählt</string>
 </resources>

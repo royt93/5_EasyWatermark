@@ -38,6 +38,7 @@ import com.mckimquyen.watermark.utils.FileUtils.Companion.outPutFolderName
 import com.mckimquyen.watermark.utils.bitmap.BitmapRecycleGuard
 import com.mckimquyen.watermark.utils.bitmap.ExifBorderRenderer
 import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
+import com.mckimquyen.watermark.utils.bitmap.applyCropAndRotate
 import com.mckimquyen.watermark.utils.bitmap.calculateInSampleSize
 import com.mckimquyen.watermark.utils.bitmap.decodeBitmapFromUri
 import com.mckimquyen.watermark.utils.bitmap.decodeSampledBitmapFromResource
@@ -263,7 +264,7 @@ class BatchExportEngine @Inject constructor(
                 )
             // OOM-OPT: nếu decodedBitmap đã mutable (nhờ inMutable = true), tái dùng trực tiếp
             // thay vì copy tạo bản sao thứ hai gây spike RAM (tránh OOM trên ảnh 4K/8K/108MP).
-            val mutableBitmap = if (decodedBitmap.isMutable) {
+            var mutableBitmap = if (decodedBitmap.isMutable) {
                 decodedBitmap
             } else {
                 val copied = decodedBitmap.copy(Bitmap.Config.ARGB_8888, true)
@@ -276,6 +277,17 @@ class BatchExportEngine @Inject constructor(
                     decodedBitmap.recycle()
                 }
                 copied
+            }
+
+            // FEAT-16: crop/rotate áp NGAY khi có bitmap khả biến, TRƯỚC khi vẽ watermark — cùng
+            // thứ tự với WaterMarkImageView (preview) để export khớp preview. mutableBitmap ở đây
+            // do hàm này sở hữu hoàn toàn (không qua BitmapCache) nên tự recycle bản cũ an toàn.
+            if (imageInfo.rotationDegrees != 0f || imageInfo.cropRect != null) {
+                val transformed = applyCropAndRotate(mutableBitmap, imageInfo.rotationDegrees, imageInfo.cropRect)
+                if (transformed !== mutableBitmap && !mutableBitmap.isRecycled) {
+                    mutableBitmap.recycle()
+                }
+                mutableBitmap = transformed
             }
 
             // BUG-21: theo dõi bitmap đang "sở hữu" (chưa recycle) — mọi early-return lỗi bên
@@ -775,8 +787,17 @@ class BatchExportEngine @Inject constructor(
         bitmapValue.retain()
         try {
             val srcBitmap = bitmapValue.bitmap ?: return@withContext PreviewResult.DecodeFailure()
-            val mutableBitmap = srcBitmap.copy(Bitmap.Config.ARGB_8888, true)
+            var mutableBitmap = srcBitmap.copy(Bitmap.Config.ARGB_8888, true)
                 ?: return@withContext PreviewResult.DecodeFailure()
+            // FEAT-16: mutableBitmap ở đây là bản copy riêng (không qua BitmapCache) — áp
+            // crop/rotate TRƯỚC khi vẽ watermark, cùng thứ tự với generateImage()/preview editor.
+            if (imageInfo.rotationDegrees != 0f || imageInfo.cropRect != null) {
+                val transformed = applyCropAndRotate(mutableBitmap, imageInfo.rotationDegrees, imageInfo.cropRect)
+                if (transformed !== mutableBitmap && !mutableBitmap.isRecycled) {
+                    mutableBitmap.recycle()
+                }
+                mutableBitmap = transformed
+            }
             val approxOriginalWidth = mutableBitmap.width * bitmapValue.inSampleSize
             val approxOriginalHeight = mutableBitmap.height * bitmapValue.inSampleSize
 
@@ -901,10 +922,25 @@ class BatchExportEngine @Inject constructor(
         bitmapValue.retain()
         try {
             val srcBitmap = bitmapValue.bitmap ?: return@withContext null
-            val originalCopy = srcBitmap.copy(Bitmap.Config.ARGB_8888, true) ?: return@withContext null
-            val watermarkedCopy = srcBitmap.copy(Bitmap.Config.ARGB_8888, true) ?: run {
+            var originalCopy = srcBitmap.copy(Bitmap.Config.ARGB_8888, true) ?: return@withContext null
+            var watermarkedCopy = srcBitmap.copy(Bitmap.Config.ARGB_8888, true) ?: run {
                 originalCopy.recycle()
                 return@withContext null
+            }
+
+            // FEAT-16: áp crop/rotate cho CẢ 2 bản độc lập — so sánh trước/sau phải cùng khung
+            // đã crop, không riêng bản watermarked.
+            if (imageInfo.rotationDegrees != 0f || imageInfo.cropRect != null) {
+                val transformedOriginal = applyCropAndRotate(originalCopy, imageInfo.rotationDegrees, imageInfo.cropRect)
+                if (transformedOriginal !== originalCopy && !originalCopy.isRecycled) {
+                    originalCopy.recycle()
+                }
+                originalCopy = transformedOriginal
+                val transformedWatermarked = applyCropAndRotate(watermarkedCopy, imageInfo.rotationDegrees, imageInfo.cropRect)
+                if (transformedWatermarked !== watermarkedCopy && !watermarkedCopy.isRecycled) {
+                    watermarkedCopy.recycle()
+                }
+                watermarkedCopy = transformedWatermarked
             }
 
             val baseText = resolveBaseText(imageInfo, config)

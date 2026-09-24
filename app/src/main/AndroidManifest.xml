@@ -73,6 +73,10 @@
             android:screenOrientation="portrait" />
 
         <activity
+            android:name=".ui.CropActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".ui.about.AboutActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait" />

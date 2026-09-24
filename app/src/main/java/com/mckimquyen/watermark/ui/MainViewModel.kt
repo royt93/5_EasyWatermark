@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.Shader
 import android.net.Uri
 import android.os.Build
@@ -691,6 +692,11 @@ class MainViewModel @Inject constructor(
     /** FEAT-17: bật/tắt loại 1 ảnh khỏi batch export ngay tại grid preview. */
     fun toggleSkipExport(uri: Uri) {
         launch { waterMarkRepo.toggleSkipExport(uri) }
+    }
+
+    /** FEAT-16: áp crop rect + góc xoay (kết quả từ `CropActivity`) cho đúng ảnh [uri]. */
+    fun updateImageCrop(uri: Uri, cropRect: RectF?, rotationDegrees: Float) {
+        launch { waterMarkRepo.updateImageCrop(uri, cropRect, rotationDegrees) }
     }
 
     fun removeImage(

@@ -144,6 +144,18 @@
     <string name="compare_title">Compare before/after</string>
     <string name="compare_hint">Drag to reveal the original photo</string>
     <string name="action_compare">Compare</string>
+    <!-- FEAT-16: crop/straighten screen -->
+    <string name="action_crop">Crop</string>
+    <string name="crop_title">Crop &amp; straighten</string>
+    <string name="crop_ratio_free">Free</string>
+    <string name="crop_ratio_square">1:1</string>
+    <string name="crop_ratio_4_5">4:5</string>
+    <string name="crop_ratio_16_9">16:9</string>
+    <string name="crop_ratio_9_16">9:16</string>
+    <string name="crop_ratio_3_4">3:4</string>
+    <string name="crop_straighten_label">Straighten</string>
+    <string name="crop_apply">Apply</string>
+    <string name="crop_no_image_selected">No image selected to crop</string>
     <string name="position_anchor_margin_value">%d%%</string>
     <string name="anchor_top_left">Top Left</string>
     <string name="anchor_top_center">Top Center</string>

@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.RectF
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
@@ -67,6 +68,53 @@ fun decodeBitmapWithExifSync(
     }
     val rotateBitmapValue = BitmapCache.BitmapValue(rotatedBitmap, inSampleSize, exifModel)
     return Result.success(rotateBitmapValue)
+}
+
+/**
+ * FEAT-16: áp dụng straighten (xoay tự do theo [rotationDegrees]) RỒI crop theo [cropRect]
+ * (normalized 0..1, tính theo bitmap ĐÃ xoay) — dùng chung cho preview (`WaterMarkImageView`)
+ * lẫn 3 luồng export (`BatchExportEngine`) để khung ảnh nhất quán trước khi vẽ watermark.
+ * Fast-path trả nguyên [src] khi không xoay/không crop, tránh copy bitmap thừa cho ảnh chưa chỉnh.
+ *
+ * KHÔNG BAO GIỜ recycle [src]: bitmap này có thể đang được `BitmapCache` quản lý refcount
+ * (`WaterMarkImageView.mainImageBitmapValue.retain()/release()`) — caller vẫn là chủ sở hữu.
+ * Chỉ bitmap trung gian do CHÍNH hàm này tạo ra (kết quả xoay) mới bị recycle khi bị thay thế.
+ */
+fun applyCropAndRotate(src: Bitmap, rotationDegrees: Float, cropRect: RectF?): Bitmap {
+    if (rotationDegrees == 0f && cropRect == null) return src
+
+    var current = src
+    var ownsCurrent = false
+
+    if (rotationDegrees != 0f) {
+        val matrix = Matrix()
+        matrix.postRotate(rotationDegrees)
+        val rotated = Bitmap.createBitmap(current, 0, 0, current.width, current.height, matrix, true)
+        if (ownsCurrent && rotated !== current && !current.isRecycled) {
+            current.recycle()
+        }
+        current = rotated
+        ownsCurrent = true
+    }
+
+    if (cropRect != null) {
+        val left = (cropRect.left.coerceIn(0f, 1f) * current.width).toInt()
+        val top = (cropRect.top.coerceIn(0f, 1f) * current.height).toInt()
+        val right = (cropRect.right.coerceIn(0f, 1f) * current.width).toInt()
+        val bottom = (cropRect.bottom.coerceIn(0f, 1f) * current.height).toInt()
+        val cropWidth = (right - left).coerceAtLeast(1)
+        val cropHeight = (bottom - top).coerceAtLeast(1)
+        val safeLeft = left.coerceIn(0, current.width - cropWidth)
+        val safeTop = top.coerceIn(0, current.height - cropHeight)
+        val cropped = Bitmap.createBitmap(current, safeLeft, safeTop, cropWidth, cropHeight)
+        if (ownsCurrent && cropped !== current && !current.isRecycled) {
+            current.recycle()
+        }
+        current = cropped
+        ownsCurrent = true
+    }
+
+    return current
 }
 
 /**
