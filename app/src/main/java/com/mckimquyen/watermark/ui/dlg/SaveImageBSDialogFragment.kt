@@ -34,6 +34,7 @@ import com.mckimquyen.watermark.ui.adapter.SaveImageListAdapter
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
 import com.mckimquyen.watermark.utils.ExportZipHelper
 import com.mckimquyen.watermark.utils.FileUtils
+import com.mckimquyen.watermark.utils.VibrateHelper
 import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
 import com.mckimquyen.watermark.utils.ktx.preCheckStoragePermission
 import com.mckimquyen.watermark.utils.ktx.toast
@@ -45,6 +46,8 @@ import java.io.File
 class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     private val imageList: List<ImageInfo>
         get() = (requireContext() as MainActivity).getImageList()
+
+    private val vibrateHelper: VibrateHelper by lazy { VibrateHelper.get() }
 
     /** FEAT-15: chọn thư mục ĐÍCH lưu ảnh xuất (khác GalleryFragment.pickFolderLauncher — thư mục NGUỒN). */
     private lateinit var pickOutputDirectoryLauncher: ActivityResultLauncher<Uri?>
@@ -402,6 +405,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
 
             MainViewModel.TYPE_JOB_FINISH -> {
                 dialog?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                vibrateHelper.doVibrate(binding.root)
                 // BUG-33: Kiểm tra xem có ít nhất 1 ảnh thành công (shareUri != null) hay không
                 val successfulList = shareViewModel.imageList.value?.first?.filter { it.shareUri != null } ?: emptyList()
                 val hasSuccess = successfulList.isNotEmpty()

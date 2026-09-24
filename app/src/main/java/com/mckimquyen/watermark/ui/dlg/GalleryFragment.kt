@@ -14,6 +14,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.activity.addCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -113,18 +114,19 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val d = object : BottomSheetDialog(requireContext()) {
-            override fun onBackPressed() {
-                if (galleryAdapter.getSelectedList().isEmpty()) {
-                    dismiss()
-                } else {
-                    galleryAdapter.unSelectAll(binding.rvContent)
-                }
-            }
-        }.apply {
+        val d = BottomSheetDialog(requireContext()).apply {
             behavior.isDraggable = false
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
             isCancelable = false
+        }
+        // Predictive back (Android 13+): OnBackPressedCallback thay Dialog.onBackPressed() cu
+        // (deprecated) - BottomSheetDialog ke thua ComponentDialog tu Material 1.7+/AppCompat 1.6+.
+        d.onBackPressedDispatcher.addCallback(d) {
+            if (galleryAdapter.getSelectedList().isEmpty()) {
+                d.dismiss()
+            } else {
+                galleryAdapter.unSelectAll(binding.rvContent)
+            }
         }
         setupBottomSheet(d, expandFully = true)
         return d

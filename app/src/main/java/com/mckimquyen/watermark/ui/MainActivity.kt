@@ -23,6 +23,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.addCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -205,6 +206,24 @@ class MainActivity : BaseActivity() {
     private val photoListPreviewAdapter by lazy { PhotoListPreviewAdapter(this) }
 
     private val vibrateHelper: VibrateHelper by lazy { VibrateHelper.get() }
+
+    // Predictive back (Android 13+): OnBackPressedCallback thay onBackPressed() cu (deprecated).
+    // "Pass-through" bang cach tam tat callback nay roi goi lai dispatcher (khong con super.onBackPressed()).
+    private val onBackPressedCallback = onBackPressedDispatcher.addCallback(this) {
+        if (MyApplication.recoveryMode || launchView.mode == LaunchView.ViewMode.LaunchMode) {
+            isEnabled = false
+            onBackPressedDispatcher.onBackPressed()
+            isEnabled = true
+            return@addCallback
+        }
+        MaterialAlertDialogBuilder(this@MainActivity)
+            .setTitle(R.string.dialog_title_exist_confirm)
+            .setMessage(R.string.dialog_content_exist_confirm)
+            .setNegativeButton(R.string.tips_confirm_dialog) { _, _ -> resetView() }
+            .setPositiveButton(R.string.dialog_cancel_exist_confirm) { dialog, _ -> dialog.dismiss() }
+            .setCancelable(false)
+            .show()
+    }
 
     internal lateinit var launchView: LaunchView
     private var vipBadge: BadgeDrawable? = null
@@ -714,6 +733,7 @@ class MainActivity : BaseActivity() {
                 }
 
             photoListPreviewAdapter.onRemove { imageInfo ->
+                vibrateHelper.doVibrate(launchView.rvPhotoList)
                 viewModel.removeImage(imageInfo, photoListPreviewAdapter.selectedPos)
             }
 
@@ -1044,11 +1064,13 @@ class MainActivity : BaseActivity() {
         }
 
         R.id.actionUndo -> {
+            vibrateHelper.doVibrate(launchView.toolbar)
             viewModel.undo()
             true
         }
 
         R.id.actionRedo -> {
+            vibrateHelper.doVibrate(launchView.toolbar)
             viewModel.redo()
             true
         }
@@ -1249,33 +1271,6 @@ class MainActivity : BaseActivity() {
         funcAdapter.selectedPos = pos
         launchView.rvPanel.scrollToPosition(pos)
         launchView.rvPanel.canAutoSelected = true
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        if (MyApplication.recoveryMode) {
-            super.onBackPressed()
-            return
-        }
-        if (launchView.mode == LaunchView.ViewMode.LaunchMode) {
-            super.onBackPressed()
-            return
-        }
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.dialog_title_exist_confirm)
-            .setMessage(R.string.dialog_content_exist_confirm)
-            .setNegativeButton(
-                R.string.tips_confirm_dialog
-            ) { _, _ ->
-                resetView()
-            }
-            .setPositiveButton(
-                R.string.dialog_cancel_exist_confirm
-            ) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setCancelable(false)
-            .show()
     }
 
     private fun resetView() {

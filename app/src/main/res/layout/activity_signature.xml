@@ -49,7 +49,7 @@
         android:layout_height="0dp"
         android:layout_margin="16dp"
         app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
-        app:cardCornerRadius="24dp"
+        app:cardCornerRadius="28dp"
         app:cardElevation="0dp"
         app:strokeColor="?attr/colorOutlineVariant"
         app:strokeWidth="1dp"

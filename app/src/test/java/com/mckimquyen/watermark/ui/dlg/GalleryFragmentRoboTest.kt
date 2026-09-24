@@ -57,4 +57,29 @@ class GalleryFragmentRoboTest {
         fragment.dismiss()
         shadowOf(Looper.getMainLooper()).idle()
     }
+
+    /**
+     * Predictive back (2026-09-23): Dialog.onBackPressed() cu (deprecated) doi sang
+     * OnBackPressedCallback dang ky qua d.onBackPressedDispatcher.addCallback(d) { ... } trong
+     * onCreateDialog(). Test nay khoa lai: goi that su qua dispatcher (khong goi truc tiep
+     * ham cu da xoa) van dismiss dialog khi khong co anh nao dang chon.
+     */
+    @Test
+    fun galleryFragment_backPress_emptySelection_dismissesDialog() {
+        val activity = Robolectric.buildActivity(MainActivity::class.java).create().start().resume().get()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val fragment = GalleryFragment()
+        fragment.show(activity.supportFragmentManager, "test_gallery_back")
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val dialog = fragment.dialog as? com.google.android.material.bottomsheet.BottomSheetDialog
+        assertThat(dialog).isNotNull()
+        assertThat(dialog!!.isShowing).isTrue()
+
+        dialog.onBackPressedDispatcher.onBackPressed()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(fragment.dialog?.isShowing ?: false).isFalse()
+    }
 }

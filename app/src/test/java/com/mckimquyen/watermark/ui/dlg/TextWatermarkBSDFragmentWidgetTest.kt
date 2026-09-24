@@ -136,4 +136,33 @@ class TextWatermarkBSDFragmentWidgetTest {
             .isInstanceOf(EditTextContentFragment::class.java)
         assertThat(fragment.binding.fragmentContainerView.alpha).isEqualTo(1f)
     }
+
+    /**
+     * Predictive back (2026-09-23): `Dialog.onBackPressed()` cu (deprecated) doi sang
+     * `OnBackPressedCallback` dang ky qua `d.onBackPressedDispatcher.addCallback(d) { ... }` trong
+     * `onCreateDialog()`. Test nay khoa lai dung cascade cu (khong doi hanh vi, chi doi co che bat
+     * su kien): back tu man Edit -> else branch goi `goTemplateEdit()` -> collector cua Fragment
+     * (khong doi, van dang lang nghe `uiStateFlow`) thay state la GoEdit va child KHONG phai
+     * `TextContentTemplateListFragment` nen tu goi lai `dialog?.onBackPressed()` -> lan nay callback
+     * thay state DA la GoEdit nen pass-through (tat callback, goi lai dispatcher) -> dialog dismiss
+     * -> `onDismiss()` reset state ve `None`. Dung 1 lan back tu Edit view dong ca bottom sheet.
+     */
+    @Test
+    fun backPress_fromEditView_cascadesToFullDismissAndResetState() {
+        val activity = Robolectric.buildActivity(TestHostActivity::class.java).setup().get()
+        TextWatermarkBSDFragment.safetyShow(activity.supportFragmentManager)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val fragment = activity.supportFragmentManager
+            .findFragmentByTag(TextWatermarkBSDFragment.TAG) as TextWatermarkBSDFragment
+        val dialog = fragment.dialog as? com.google.android.material.bottomsheet.BottomSheetDialog
+        assertThat(dialog).isNotNull()
+        assertThat(dialog!!.isShowing).isTrue()
+
+        dialog.onBackPressedDispatcher.onBackPressed()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(testViewModel.uiStateFlow.value).isEqualTo(com.mckimquyen.watermark.ui.UiState.None)
+        assertThat(fragment.dialog?.isShowing ?: false).isFalse()
+    }
 }

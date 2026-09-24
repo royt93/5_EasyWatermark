@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.activity.addCallback
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -149,15 +150,20 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return object : BottomSheetDialog(requireContext()) {
-            override fun onBackPressed() {
-                if (shareViewModel.uiStateFlow.value is UiState.GoEdit) {
-                    super.onBackPressed()
-                } else {
-                    shareViewModel.goTemplateEdit()
-                }
+        val d = BottomSheetDialog(requireContext())
+        // Predictive back (Android 13+): OnBackPressedCallback thay Dialog.onBackPressed() cu
+        // (deprecated). Khi dang o GoEdit, cho phep back mac dinh xu ly (dong dialog) bang cach
+        // tam tat callback nay roi goi lai dispatcher.
+        d.onBackPressedDispatcher.addCallback(d) {
+            if (shareViewModel.uiStateFlow.value is UiState.GoEdit) {
+                isEnabled = false
+                d.onBackPressedDispatcher.onBackPressed()
+                isEnabled = true
+            } else {
+                shareViewModel.goTemplateEdit()
             }
-        }.apply {
+        }
+        return d.apply {
             window?.setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE or WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
             )
