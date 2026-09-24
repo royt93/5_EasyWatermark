@@ -192,6 +192,10 @@
     <string name="qr_code_hint">Nhập đường link hoặc văn bản…</string>
     <string name="qr_code_use">Dùng mã QR</string>
     <string name="qr_code_empty">Vui lòng nhập nội dung trước</string>
+    <string name="qr_code_dynamic_title">QR động theo từng ảnh</string>
+    <string name="qr_code_dynamic_desc">Mỗi ảnh xuất ra có QR riêng chứa hash SHA-256 + thời gian</string>
+    <string name="qr_code_template_hint">Template nội dung — dùng {hash} {date} {portfolio_link}</string>
+    <string name="qr_code_portfolio_link_hint">Link portfolio / mạng xã hội</string>
     <string name="dialog_save_config_resize">Đổi kích thước (cạnh dài)</string>
     <string name="dialog_save_config_resize_none">Gốc</string>
     <string name="dialog_save_config_copyright">Bản quyền (EXIF)</string>

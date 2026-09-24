@@ -52,13 +52,12 @@
 | [M3-08](done/M3-08-migrate-edit-panels-dialogs-bottom-sheets.md) | P1 | M | Migrate toàn bộ Dialogs, Bottom Sheets và Panels chỉnh sửa sang Material You M3 | **DONE** |
 | [M3-09](done/M3-09-cleanup-ios-glass-assets-lint-verification.md) | P2 | S | Dọn dẹp triệt để tài nguyên iOS Glass, Lint & Kiểm thử hồi quy toàn diện | **DONE** |
 
-## UNIQUE_IDEAS (17, +1 done) — tính năng độc quyền/đột phá, effort cao
+## UNIQUE_IDEAS (16, +2 done) — tính năng độc quyền/đột phá, effort cao
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [IDEA-01](todo/IDEA-01-ai-auto-placement-nhan-dien-chu-the.md) | L | Auto-placement bằng on-device ML (né mặt người/chủ thể) — **đồng thuận 4/4 agent (đợt gốc)** |
 | [IDEA-08](todo/IDEA-08-referral-vip-qua-share-app.md) | M | Referral VIP qua Share App — tái dùng hạ tầng sẵn có, không cần backend (mới 2026-09-10) |
-| [IDEA-07](todo/IDEA-07-batch-qr-smart-bridge.md) | M | Batch QR Smart-Bridge (hash SHA-256 + xác thực nguồn gốc) |
 | [IDEA-03](todo/IDEA-03-content-authenticity-stamp-c2pa.md) | L | Content authenticity stamp kiểu C2PA |
 | [IDEA-09](todo/IDEA-09-watermark-survivability-preview.md) | L | Watermark Survivability Preview — mô phỏng crop/recompress mạng xã hội (mới 2026-09-10) |
 | [IDEA-10](todo/IDEA-10-recipient-fingerprint-batch.md) | L | Recipient Fingerprint Batch — watermark riêng theo người nhận, truy nguồn rò rỉ (mới 2026-09-10) |
@@ -75,6 +74,7 @@
 | [IDEA-18](todo/IDEA-18-bo-sinh-khung-exif-border-moi-theo-bang-mau-anh-khong-gioi-h.md) | XL | Bộ sinh khung EXIF border mới theo bảng màu ảnh, không giới hạn 4 style cố định (mới 2026-09-16) |
 
 ✅ **[IDEA-06](done/IDEA-06-auto-contrast-opacity-harmonizer.md)** — Auto-contrast/opacity harmonizer theo từng ảnh — done 2026-09-24, smoke test TECNO KJ7.
+✅ **[IDEA-07](done/IDEA-07-batch-qr-smart-bridge.md)** — Batch QR Smart-Bridge (hash SHA-256 + xác thực nguồn gốc) — done 2026-09-24, smoke test TECNO BG6.
 
 ## ⏸️ Deferred theo quyết định user (2026-09-10)
 

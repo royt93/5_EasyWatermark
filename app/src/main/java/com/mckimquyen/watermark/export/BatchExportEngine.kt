@@ -35,6 +35,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.ui.MainViewModel
 import com.mckimquyen.watermark.ui.widget.WaterMarkImageView
 import com.mckimquyen.watermark.utils.FileUtils.Companion.outPutFolderName
+import com.mckimquyen.watermark.utils.QrCodeGenerator
 import com.mckimquyen.watermark.utils.bitmap.BitmapRecycleGuard
 import com.mckimquyen.watermark.utils.bitmap.ExifBorderRenderer
 import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
@@ -356,37 +357,79 @@ class BatchExportEngine @Inject constructor(
                         }
 
                         WaterMarkRepository.MarkMode.Image -> {
-                            val iconBitmapRect = decodeSampledBitmapFromResource(
-                                context = appContext,
-                                resolver = contentResolver,
-                                uri = tmpConfig.iconUri,
-                                reqWidth = viewInfo.width,
-                                reqHeight = viewInfo.height
-                            )
-                            if (iconBitmapRect.isFailure() || iconBitmapRect.data == null) {
-                                return@withContext Result.failure(
+                            // IDEA-07: QR động — sinh bitmap QR RIÊNG cho ảnh này ngay trong RAM
+                            // (khác `tmpConfig.iconUri` tĩnh dùng chung cả batch), dùng thẳng làm
+                            // srcBitmap thay vì đi qua decode/BitmapCache như nhánh tĩnh bên dưới
+                            // (không cần ghi file tạm, không cần retain/release cache).
+                            if (tmpConfig.qrDynamicEnabled) {
+                                val qrContent = exportNaming.resolveQrContent(
+                                    template = tmpConfig.qrContentTemplate.ifBlank {
+                                        ExportNaming.DEFAULT_QR_CONTENT_TEMPLATE
+                                    },
+                                    imageInfo = imageInfo,
+                                    contentResolver = contentResolver,
+                                    index = index,
+                                    portfolioLink = tmpConfig.qrPortfolioLink
+                                )
+                                val qrBitmap = QrCodeGenerator.generate(
+                                    content = qrContent,
+                                    size = QrCodeGenerator.DEFAULT_SIZE
+                                ) ?: return@withContext Result.failure(
                                     data = null,
                                     code = "-1",
-                                    message = "decodeSampledBitmapFromResource == null"
+                                    message = "QR dynamic content generate failed"
                                 )
-                            }
-                            // ENH-15: giữ (retain) bitmap này trong lúc dùng để BitmapCache không
-                            // recycle nó nếu bị evict giữa chừng (batch nhiều ảnh có thể evict entry
-                            // đang xử lý) — release ngay sau khi build shader xong (đã copy pixel vào
-                            // shader riêng, không cần iconBitmap gốc nữa).
-                            val iconBitmapValue = iconBitmapRect.data!!
-                            iconBitmapValue.retain()
-                            try {
-                                WaterMarkImageView.buildIconBitmapShader(
-                                    imageInfo = imageInfo,
-                                    srcBitmap = iconBitmapValue.bitmap!!,
-                                    config = tmpConfig,
-                                    textPaint = bitmapPaint,
-                                    scale = true,
-                                    coroutineContext = Dispatchers.IO
+                                // BUG-05/ENH-15: cùng nguyên tắc nhánh tĩnh bên dưới — pixel đã được
+                                // copy vào bitmap riêng của shader bên trong buildIconBitmapShader
+                                // (Bitmap.createScaledBitmap + vẽ vào targetBitmap), qrBitmap gốc
+                                // (512x512 ARGB_8888, ~1MB) không cần giữ sau đó — recycle ngay
+                                // tránh cộng dồn qua từng ảnh trong batch (nhiều ảnh = nhiều bitmap
+                                // rác chờ GC, có thể OOM native trên máy thấp cấu hình/API cũ).
+                                try {
+                                    WaterMarkImageView.buildIconBitmapShader(
+                                        imageInfo = imageInfo,
+                                        srcBitmap = qrBitmap,
+                                        config = tmpConfig,
+                                        textPaint = bitmapPaint,
+                                        scale = true,
+                                        coroutineContext = Dispatchers.IO
+                                    )
+                                } finally {
+                                    if (!qrBitmap.isRecycled) qrBitmap.recycle()
+                                }
+                            } else {
+                                val iconBitmapRect = decodeSampledBitmapFromResource(
+                                    context = appContext,
+                                    resolver = contentResolver,
+                                    uri = tmpConfig.iconUri,
+                                    reqWidth = viewInfo.width,
+                                    reqHeight = viewInfo.height
                                 )
-                            } finally {
-                                iconBitmapValue.release()
+                                if (iconBitmapRect.isFailure() || iconBitmapRect.data == null) {
+                                    return@withContext Result.failure(
+                                        data = null,
+                                        code = "-1",
+                                        message = "decodeSampledBitmapFromResource == null"
+                                    )
+                                }
+                                // ENH-15: giữ (retain) bitmap này trong lúc dùng để BitmapCache không
+                                // recycle nó nếu bị evict giữa chừng (batch nhiều ảnh có thể evict entry
+                                // đang xử lý) — release ngay sau khi build shader xong (đã copy pixel vào
+                                // shader riêng, không cần iconBitmap gốc nữa).
+                                val iconBitmapValue = iconBitmapRect.data!!
+                                iconBitmapValue.retain()
+                                try {
+                                    WaterMarkImageView.buildIconBitmapShader(
+                                        imageInfo = imageInfo,
+                                        srcBitmap = iconBitmapValue.bitmap!!,
+                                        config = tmpConfig,
+                                        textPaint = bitmapPaint,
+                                        scale = true,
+                                        coroutineContext = Dispatchers.IO
+                                    )
+                                } finally {
+                                    iconBitmapValue.release()
+                                }
                             }
                         }
                     }

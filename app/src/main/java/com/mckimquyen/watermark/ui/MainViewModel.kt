@@ -492,6 +492,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /** IDEA-07: bật QR động theo từng ảnh — xem [WaterMarkRepository.updateQrDynamicConfig]. */
+    fun updateQrDynamicConfig(iconUri: Uri, template: String, portfolioLink: String) {
+        launch { waterMarkRepo.updateQrDynamicConfig(iconUri, template, portfolioLink) }
+    }
+
     /** FEAT-03. */
     fun addLayer(layer: WatermarkLayer) {
         launch { waterMarkRepo.addLayer(layer) }

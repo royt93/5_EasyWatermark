@@ -44,5 +44,15 @@ data class WaterMark(
      * [textColor]/[alpha] đang lưu — chỉ ảnh hưởng bản render hiện tại (xem
      * `WaterMarkImageView.applyAutoContrastIfEnabled`).
      */
-    val autoContrastEnabled: Boolean = false
+    val autoContrastEnabled: Boolean = false,
+    /**
+     * IDEA-07 — chỉ có ý nghĩa khi [markMode] = [WaterMarkRepository.MarkMode.Image] và [iconUri]
+     * là 1 QR code: bật thì mỗi ảnh trong batch export sinh QR RIÊNG (nội dung theo
+     * [qrContentTemplate]), thay vì dùng chung 1 bitmap QR tĩnh ở [iconUri] cho cả batch.
+     */
+    val qrDynamicEnabled: Boolean = false,
+    /** IDEA-07 — template token cho nội dung QR động, vd "{hash}|{date}|{portfolio_link}". */
+    val qrContentTemplate: String = "",
+    /** IDEA-07 — link portfolio/MXH điền vào token {portfolio_link} của [qrContentTemplate]. */
+    val qrPortfolioLink: String = ""
 )

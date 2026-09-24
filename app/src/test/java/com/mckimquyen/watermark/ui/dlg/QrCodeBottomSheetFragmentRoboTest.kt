@@ -1,14 +1,31 @@
 package com.mckimquyen.watermark.ui.dlg
 
+import android.content.Context
 import android.os.Looper
 import android.widget.FrameLayout
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
+import com.mckimquyen.watermark.data.repo.MemorySettingRepo
+import com.mckimquyen.watermark.data.repo.TemplateRepository
+import com.mckimquyen.watermark.data.repo.UserConfigRepository
+import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.mckimquyen.watermark.export.ExportNaming
+import com.mckimquyen.watermark.testutil.newTestUserDataStore
+import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import com.mckimquyen.watermark.ui.MainViewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.android.controller.ActivityController
 import java.util.concurrent.TimeUnit
 
 /**
@@ -21,16 +38,96 @@ import java.util.concurrent.TimeUnit
  * chạy hết mọi task đang chờ kể cả task lên lịch ở tương lai (đã verify thực nghiệm: gọi `idle()`
  * ngay sau `setText` khiến `refreshPreview` chạy ngay lập tức, che mất hành vi debounce cần test).
  *
- * `QrCodeBottomSheetFragment` không chạm `shareViewModel` trong `onViewCreated`/`refreshPreview`
- * (chỉ dùng ở `btnUse` click, ngoài phạm vi test này) nên add thẳng vào `FragmentActivity` thường
- * với `setShowsDialog(false)` (bỏ qua `onCreateDialog`/BottomSheetDialog thật) — cùng kỹ thuật
- * `GalleryFragmentLifecycleRoboTest` dùng cho `BaseBindBSDFragment`.
+ * IDEA-07: `onViewCreated`/`refreshPreview` giờ ĐỌC `shareViewModel.waterMark`/`selectedImage`
+ * (restore state QR động khi mở lại sheet) — không còn tránh chạm `shareViewModel` như trước, nên
+ * dùng `TestHostActivity` cung cấp thẳng 1 `MainViewModel` dựng trực tiếp (không qua Hilt) — đúng
+ * pattern `GalleryFragmentLifecycleRoboTest`, thay vì `FragmentActivity` trần như code cũ.
  */
 @RunWith(RobolectricTestRunner::class)
 class QrCodeBottomSheetFragmentRoboTest {
 
+    companion object {
+        // Robolectric dựng Activity bằng constructor mặc định (reflection) nên không thể truyền
+        // viewModel qua constructor — dùng biến static tạm cho factory đọc lại.
+        lateinit var testViewModel: MainViewModel
+    }
+
+    class TestHostActivity : FragmentActivity() {
+        override val defaultViewModelProviderFactory: ViewModelProvider.Factory
+            get() = object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T = testViewModel as T
+            }
+    }
+
+    private val context: Context = ApplicationProvider.getApplicationContext()
+    private val waterMarkDataStore = newTestWaterMarkDataStore(context)
+    private lateinit var viewModel: MainViewModel
+    private var activityController: ActivityController<TestHostActivity>? = null
+
+    @Before
+    fun setUp() {
+        viewModel = MainViewModel(
+            appContext = context,
+            userRepo = UserConfigRepository(newTestUserDataStore(context)),
+            waterMarkRepo = WaterMarkRepository(context, waterMarkDataStore),
+            memorySettingRepo = MemorySettingRepo(),
+            templateRepo = TemplateRepository(null)
+        )
+        testViewModel = viewModel
+        // `waterMark`/`selectedImage` là LiveData bọc Flow lazy (`asLiveData()`) — chỉ bắt đầu
+        // collect khi có observer ACTIVE. App thật LUÔN có màn editor chính observe 2 LiveData này
+        // trước khi user mở được QrCodeBottomSheetFragment; observeForever ở đây mô phỏng đúng điều
+        // kiện đó (thiếu bước này, `restoreFromCurrentConfig()` đọc `.value` sẽ luôn là null).
+        viewModel.waterMark.observeForever { }
+        viewModel.selectedImage.observeForever { }
+        resetFileProviderStaticCache()
+    }
+
+    /**
+     * Robolectric bug thực nghiệm: `androidx.core.content.FileProvider` cache `PathStrategy` tĩnh
+     * theo authority (`sCache`), chỉ tự invalidate khi ContentProvider thật được `attachInfo()`
+     * (không xảy ra nếu code chỉ gọi `getUriForFile()` mà không query ngược qua ContentResolver).
+     * 2 test trong class này (`saveBitmapToCache_prunesOldQrTempFiles` và
+     * `btnUseQrCode_dynamicModeOn...`) đều gọi `getUriForFile()` — mỗi Robolectric sandbox có
+     * `cacheDir` MỚI nên PathStrategy cache từ sandbox trước trỏ nhầm thư mục, ném
+     * `IllegalArgumentException: Failed to find configured root`. Reset thủ công qua reflection
+     * trước mỗi test — chỉ ảnh hưởng môi trường test, không đụng code thật.
+     */
+    private fun resetFileProviderStaticCache() {
+        try {
+            val cacheField = androidx.core.content.FileProvider::class.java.getDeclaredField("sCache")
+            cacheField.isAccessible = true
+            (cacheField.get(null) as? MutableMap<*, *>)?.clear()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * IDEA-07: nhiều test trong class này gõ/toggle thứ khiến `refreshPreview()` lên lịch coroutine
+     * `delay(250) -> Dispatchers.Default thật`. Nếu test kết thúc mà KHÔNG huỷ đúng vòng đời
+     * (`onDestroyView` cancel `viewLifecycleOwner.lifecycleScope`), job đó có thể còn "treo" và
+     * tranh chấp real-thread với test chạy NGAY SAU trong cùng JVM (đã verify thực nghiệm gây flaky
+     * ngẫu nhiên ở `typing_doesNotGenerateImmediately_generatesAfterDebounceDelay` — false dương
+     * khoảng 30-60% khi chạy cả class, dù bản thân assertion đúng). `destroy()` activity ở `@After`
+     * đảm bảo MỌI job được huỷ sạch trước khi JVM chuyển sang test kế tiếp, thay vì chỉ đợi
+     * (`awaitPreviewGenerated`) — đợi không đủ vì có test không cần/không muốn CHỜ job chạy xong
+     * (`swQrDynamic_toggleOn/toggleOff` chỉ quan tâm state UI, không quan tâm bitmap).
+     */
+    @After
+    fun tearDown() {
+        try {
+            activityController?.pause()?.stop()?.destroy()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     private fun launchFragment(): QrCodeBottomSheetFragment {
-        val activity = Robolectric.buildActivity(FragmentActivity::class.java).setup().get()
+        val controller = Robolectric.buildActivity(TestHostActivity::class.java).setup()
+        activityController = controller
+        val activity = controller.get()
         val containerId = FrameLayout(activity).let {
             it.id = android.view.View.generateViewId()
             activity.setContentView(it)
@@ -116,5 +213,93 @@ class QrCodeBottomSheetFragmentRoboTest {
         val remaining = cacheDir.listFiles()?.filter { it.name.contains("_temp_") } ?: emptyList()
         // ENH-29: Giữ tối đa 3 file cũ mới nhất + 1 file mới tạo = tối đa 4
         assertThat(remaining.size).isAtMost(4)
+    }
+
+    // --- IDEA-07: QR động theo từng ảnh ---
+
+    @Test
+    fun swQrDynamic_toggleOn_showsPortfolioLinkAndPrefillsDefaultTemplate() {
+        val fragment = launchFragment()
+        assertThat(fragment.binding.tilPortfolioLink.visibility).isEqualTo(android.view.View.GONE)
+
+        fragment.binding.swQrDynamic.isChecked = true
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(fragment.binding.tilPortfolioLink.visibility).isEqualTo(android.view.View.VISIBLE)
+        assertThat(fragment.binding.etContent.text.toString()).isEqualTo(ExportNaming.DEFAULT_QR_CONTENT_TEMPLATE)
+        // Bật switch tự prefill template non-blank → tự kích refreshPreview() (debounce 250ms trên
+        // Dispatchers.Default THẬT) — đợi hoàn tất trước khi test kết thúc, tránh coroutine còn
+        // treo tranh chấp real-thread với test CHẠY SAU trong cùng class (đã từng gây flaky ở
+        // `typing_doesNotGenerateImmediately_generatesAfterDebounceDelay`).
+        shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        awaitPreviewGenerated(fragment)
+    }
+
+    @Test
+    fun swQrDynamic_toggleOff_hidesPortfolioLinkAgain() {
+        val fragment = launchFragment()
+        fragment.binding.swQrDynamic.isChecked = true
+        shadowOf(Looper.getMainLooper()).idle()
+
+        fragment.binding.swQrDynamic.isChecked = false
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(fragment.binding.tilPortfolioLink.visibility).isEqualTo(android.view.View.GONE)
+        // Xem comment ở `swQrDynamic_toggleOn_...` — cả bật lẫn tắt đều có thể kích refreshPreview()
+        // (còn nội dung không rỗng), đợi hoàn tất tránh coroutine treo qua test sau.
+        shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        awaitPreviewGenerated(fragment)
+    }
+
+    @Test
+    fun btnUseQrCode_dynamicModeOn_callsUpdateQrDynamicConfig_notUpdateIcon() = runBlocking {
+        val fragment = launchFragment()
+        fragment.binding.swQrDynamic.isChecked = true
+        shadowOf(Looper.getMainLooper()).idle()
+        fragment.binding.etPortfolioLink.setText("https://me.example")
+        fragment.binding.etContent.setText("{hash}|{portfolio_link}")
+        shadowOf(Looper.getMainLooper()).idleFor(400, TimeUnit.MILLISECONDS)
+        awaitPreviewGenerated(fragment)
+
+        fragment.binding.btnUseQrCode.performClick()
+
+        val dynamicEnabledKey = androidx.datastore.preferences.core.booleanPreferencesKey(
+            WaterMarkRepository.SP_KEY_QR_DYNAMIC_ENABLED
+        )
+        val portfolioLinkKey = androidx.datastore.preferences.core.stringPreferencesKey(
+            WaterMarkRepository.SP_KEY_QR_PORTFOLIO_LINK
+        )
+        // `shareViewModel.updateQrDynamicConfig()` ghi DataStore qua `viewModelScope.launch{}` —
+        // fire-and-forget từ click listener, không đợi được bằng 1 lần idle() (cùng lý do cần poll
+        // như `awaitPreviewGenerated`: DataStore.edit() thật chạy qua dispatcher riêng).
+        val deadline = System.currentTimeMillis() + 5_000
+        var waterMark = waterMarkDataStore.data.first()
+        while (waterMark[dynamicEnabledKey] != true && System.currentTimeMillis() < deadline) {
+            shadowOf(Looper.getMainLooper()).idle()
+            Thread.sleep(20)
+            waterMark = waterMarkDataStore.data.first()
+        }
+        assertThat(waterMark[dynamicEnabledKey]).isTrue()
+        assertThat(waterMark[portfolioLinkKey]).isEqualTo("https://me.example")
+    }
+
+    @Test
+    fun restoreFromCurrentConfig_reopeningWithDynamicAlreadyEnabled_restoresSwitchAndFields() = runBlocking {
+        viewModel.waterMarkRepo.updateQrDynamicConfig(
+            android.net.Uri.parse("content://media/prev_preview"),
+            "{hash}|{date}",
+            "https://old.example"
+        )
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val fragment = launchFragment()
+
+        assertThat(fragment.binding.swQrDynamic.isChecked).isTrue()
+        assertThat(fragment.binding.etContent.text.toString()).isEqualTo("{hash}|{date}")
+        assertThat(fragment.binding.etPortfolioLink.text.toString()).isEqualTo("https://old.example")
+        // restoreFromCurrentConfig() tự setText → tự kích refreshPreview() — đợi hoàn tất, xem
+        // comment ở `swQrDynamic_toggleOn_...` (tránh coroutine treo qua test chạy sau).
+        shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        awaitPreviewGenerated(fragment)
     }
 }

@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import com.mckimquyen.watermark.data.model.ImageInfo
+import com.mckimquyen.watermark.utils.HashUtils
 import com.mckimquyen.watermark.utils.TextTokenResolver
 import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
 import com.mckimquyen.watermark.utils.ktx.formatDate
@@ -36,10 +37,19 @@ class ExportNaming @Inject constructor() {
         index: Int
     ): String {
         if (!text.contains('{')) return text
+        return TextTokenResolver.resolve(text, buildBaseTokens(imageInfo, contentResolver, index))
+    }
+
+    /** Token dùng chung cho cả text watermark/tên file ([resolveTextTokens]) và QR động ([resolveQrContent]). */
+    private fun buildBaseTokens(
+        imageInfo: ImageInfo,
+        contentResolver: ContentResolver,
+        index: Int
+    ): Map<String, String> {
         val exif = imageInfo.exifModel
         val date = exif?.dateTime?.takeIf { it.isNotBlank() }
             ?: System.currentTimeMillis().formatDate("yyyy-MM-dd")
-        val tokens = mapOf(
+        return mapOf(
             "filename" to queryDisplayName(contentResolver, imageInfo.uri),
             "seq" to (index + 1).toString(),
             "date" to date,
@@ -51,7 +61,31 @@ class ExportNaming @Inject constructor() {
             "focal" to exif?.focalLength.orEmpty(),
             "exif" to exif?.getFormattedExif().orEmpty()
         )
-        return TextTokenResolver.resolve(text, tokens)
+    }
+
+    /**
+     * IDEA-07: resolve nội dung QR động cho 1 ảnh trong batch — thêm token {hash} (SHA-256 ảnh
+     * gốc, đọc trực tiếp qua [contentResolver], KHÔNG dùng bitmap đã decode/downsample để hash
+     * đúng nội dung file gốc) và {portfolio_link} vào cùng bộ token của [resolveTextTokens].
+     * Đọc/hash lỗi (file bị xoá, không mở được stream...) → token {hash} rỗng, không chặn export.
+     */
+    fun resolveQrContent(
+        template: String,
+        imageInfo: ImageInfo,
+        contentResolver: ContentResolver,
+        index: Int,
+        portfolioLink: String
+    ): String {
+        if (!template.contains('{')) return template
+        val hash = try {
+            contentResolver.openInputStream(imageInfo.uri)?.use { HashUtils.sha256(it) }.orEmpty()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ""
+        }
+        val tokens = buildBaseTokens(imageInfo, contentResolver, index) +
+            mapOf("hash" to hash, "portfolio_link" to portfolioLink)
+        return TextTokenResolver.resolve(template, tokens)
     }
 
     fun queryDisplayName(contentResolver: ContentResolver, uri: Uri): String {
@@ -218,5 +252,10 @@ class ExportNaming @Inject constructor() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    companion object {
+        /** IDEA-07: template mặc định cho nội dung QR động khi user chưa tự đặt. */
+        const val DEFAULT_QR_CONTENT_TEMPLATE = "{hash}|{date}|{portfolio_link}"
     }
 }

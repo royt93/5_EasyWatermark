@@ -98,6 +98,11 @@ class WaterMarkRepository @Inject constructor(
 
         /** FEAT-03. */
         val KEY_EXTRA_LAYERS = stringPreferencesKey(SP_KEY_EXTRA_LAYERS)
+
+        /** IDEA-07. */
+        val KEY_QR_DYNAMIC_ENABLED = booleanPreferencesKey(SP_KEY_QR_DYNAMIC_ENABLED)
+        val KEY_QR_CONTENT_TEMPLATE = stringPreferencesKey(SP_KEY_QR_CONTENT_TEMPLATE)
+        val KEY_QR_PORTFOLIO_LINK = stringPreferencesKey(SP_KEY_QR_PORTFOLIO_LINK)
 //        val KEY_TILE_MODE = intPreferencesKey(SP_KEY_TILE_MODEL)
 //        val KEY_OFFSET_X = floatPreferencesKey(SP_KEY_OFFSET_X)
 //        val KEY_OFFSET_Y = floatPreferencesKey(SP_KEY_OFFSET_Y)
@@ -141,7 +146,10 @@ class WaterMarkRepository @Inject constructor(
                 textEffectPillBackground = it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] ?: false,
                 recentIconUris = parseRecentIconUris(it[KEY_RECENT_ICON_URIS]),
                 extraLayers = WatermarkLayer.parseList(it[KEY_EXTRA_LAYERS]),
-                autoContrastEnabled = it[PreferenceKeys.KEY_AUTO_CONTRAST_ENABLED] ?: false
+                autoContrastEnabled = it[PreferenceKeys.KEY_AUTO_CONTRAST_ENABLED] ?: false,
+                qrDynamicEnabled = it[PreferenceKeys.KEY_QR_DYNAMIC_ENABLED] ?: false,
+                qrContentTemplate = it[PreferenceKeys.KEY_QR_CONTENT_TEMPLATE] ?: "",
+                qrPortfolioLink = it[PreferenceKeys.KEY_QR_PORTFOLIO_LINK] ?: ""
             )
         }
 
@@ -307,18 +315,40 @@ class WaterMarkRepository @Inject constructor(
         dataStore.edit { it[KEY_DEGREE] = degree.coerceAtLeast(0f).coerceAtMost(MAX_DEGREE) }
     }
 
-    /** FEAT-24: mỗi lần đổi icon, đẩy uri lên đầu danh sách MRU (dùng lại nếu trùng, giới hạn [MAX_RECENT_ICONS]). */
+    /**
+     * FEAT-24: mỗi lần đổi icon, đẩy uri lên đầu danh sách MRU (dùng lại nếu trùng, giới hạn
+     * [MAX_RECENT_ICONS]). IDEA-07: luôn tắt [KEY_QR_DYNAMIC_ENABLED] — pick icon/logo thường
+     * (không qua [updateQrDynamicConfig]) không được để lại cờ QR động của lần chọn trước.
+     */
     suspend fun updateIcon(iconUri: Uri) {
         snapshotForUndoIfDue()
         dataStore.edit {
             it[KEY_MODE] = MarkMode.Image.value
             it[KEY_ICON_URI] = iconUri.toString()
+            it[PreferenceKeys.KEY_QR_DYNAMIC_ENABLED] = false
             val updatedRecents = pushToFrontOfRecentIcons(
                 current = parseRecentIconUris(it[KEY_RECENT_ICON_URIS]).map(Uri::toString),
                 newUri = iconUri.toString(),
                 maxSize = MAX_RECENT_ICONS
             )
             it[KEY_RECENT_ICON_URIS] = serializeRecentIconUris(updatedRecents)
+        }
+    }
+
+    /**
+     * IDEA-07: bật QR động theo từng ảnh — [iconUri] là bitmap preview tĩnh (dùng làm fallback và
+     * hiển thị ở màn preview/compare không đi qua batch export thật), [template]/[portfolioLink]
+     * là nguồn sinh nội dung QR RIÊNG cho từng ảnh lúc export (xem
+     * `BatchExportEngine.generateImage`, `ExportNaming.resolveQrContent`).
+     */
+    suspend fun updateQrDynamicConfig(iconUri: Uri, template: String, portfolioLink: String) {
+        snapshotForUndoIfDue()
+        dataStore.edit {
+            it[KEY_MODE] = MarkMode.Image.value
+            it[KEY_ICON_URI] = iconUri.toString()
+            it[PreferenceKeys.KEY_QR_DYNAMIC_ENABLED] = true
+            it[PreferenceKeys.KEY_QR_CONTENT_TEMPLATE] = template
+            it[PreferenceKeys.KEY_QR_PORTFOLIO_LINK] = portfolioLink
         }
     }
 
@@ -579,6 +609,9 @@ class WaterMarkRepository @Inject constructor(
             it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] = mark.textEffectPillBackground
             it[KEY_EXTRA_LAYERS] = WatermarkLayer.serializeList(mark.extraLayers)
             it[PreferenceKeys.KEY_AUTO_CONTRAST_ENABLED] = mark.autoContrastEnabled
+            it[PreferenceKeys.KEY_QR_DYNAMIC_ENABLED] = mark.qrDynamicEnabled
+            it[PreferenceKeys.KEY_QR_CONTENT_TEMPLATE] = mark.qrContentTemplate
+            it[PreferenceKeys.KEY_QR_PORTFOLIO_LINK] = mark.qrPortfolioLink
         }
     }
 
@@ -641,6 +674,11 @@ class WaterMarkRepository @Inject constructor(
 
         /** FEAT-03. */
         const val SP_KEY_EXTRA_LAYERS = "${SP_NAME}_key_extra_layers"
+
+        /** IDEA-07. */
+        const val SP_KEY_QR_DYNAMIC_ENABLED = "${SP_NAME}_key_qr_dynamic_enabled"
+        const val SP_KEY_QR_CONTENT_TEMPLATE = "${SP_NAME}_key_qr_content_template"
+        const val SP_KEY_QR_PORTFOLIO_LINK = "${SP_NAME}_key_qr_portfolio_link"
 
         /** FEAT-03: số layer PHỤ tối đa (không tính layer chính) — tổng cộng tối đa 1 + [MAX_EXTRA_LAYERS] layer. */
         const val MAX_EXTRA_LAYERS = 4

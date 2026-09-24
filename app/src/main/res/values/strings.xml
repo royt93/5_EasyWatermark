@@ -202,6 +202,10 @@
     <string name="qr_code_hint">Enter URL or text…</string>
     <string name="qr_code_use">Use QR Code</string>
     <string name="qr_code_empty">Please enter content first</string>
+    <string name="qr_code_dynamic_title">Dynamic per-image QR</string>
+    <string name="qr_code_dynamic_desc">Each exported photo gets its own QR with SHA-256 hash + timestamp</string>
+    <string name="qr_code_template_hint">Content template — use {hash} {date} {portfolio_link}</string>
+    <string name="qr_code_portfolio_link_hint">Portfolio / social link</string>
     <string name="dialog_save_config_resize">Resize (long edge)</string>
     <string name="dialog_save_config_resize_none">Original</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>
