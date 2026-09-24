@@ -13,6 +13,8 @@
     <!-- ENH-01: batch export chạy foreground qua WorkManager (setForeground), sống sót khi app xuống nền. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- Giữ CPU thức trong lúc BatchExportWorker chạy foreground (xem BatchExportWorker.doWork). -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />

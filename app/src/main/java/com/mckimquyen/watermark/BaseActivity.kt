@@ -27,6 +27,7 @@ open class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         applyEdgeToEdge()
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     /**

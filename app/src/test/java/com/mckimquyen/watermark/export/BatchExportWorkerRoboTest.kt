@@ -107,6 +107,7 @@ class BatchExportWorkerRoboTest {
             scaleType = android.widget.ImageView.ScaleType.FIT_CENTER,
             matrix = android.graphics.Matrix()
         )
+        org.robolectric.shadows.ShadowPowerManager.clearWakeLocks()
         BatchExportWorker.enqueue(context, viewInfo)
         shadowOf(Looper.getMainLooper()).idle()
 
@@ -115,6 +116,8 @@ class BatchExportWorkerRoboTest {
         // FEAT-04: infoList rỗng return sớm TRƯỚC recordHistory() — không có batch thật nào chạy,
         // không đáng ghi lịch sử.
         assertThat(fakeHistoryDao.inserted).isEmpty()
+        // infoList rỗng return sớm TRƯỚC acquireWakeLock() — không tốn wake lock cho việc không làm gì.
+        assertThat(org.robolectric.shadows.ShadowPowerManager.getLatestWakeLock()).isNull()
     }
 
     @Test
@@ -150,6 +153,37 @@ class BatchExportWorkerRoboTest {
         assertThat(BatchHistoryRepository.decodeUriList(entry.inputUris)).containsExactly(original.uri)
         assertThat(BatchHistoryRepository.decodeUriList(entry.outputUris)).isEmpty()
         assertThat(BatchHistoryRepository.decodeUriList(entry.failedInputUris)).containsExactly(original.uri)
+    }
+
+    /**
+     * Wake lock giữ CPU thức trong `doWork()` (xem comment ở `BatchExportWorker.doWork`) phải được
+     * release ở `finally` — kể cả khi batch chạy xong (dù có ảnh lỗi decode bên trong, worker vẫn
+     * trả SUCCEEDED). Không release = leak wake lock, giữ CPU thức vô thời hạn sau khi export xong.
+     */
+    @Test
+    fun doWork_afterCompletion_releasesWakeLock_noLeak() {
+        org.robolectric.shadows.ShadowPowerManager.clearWakeLocks()
+        val original = ImageInfo(Uri.parse("content://does.not.exist/fake.jpg"))
+        runBlocking { waterMarkRepo.updateImageList(listOf(original)) }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val viewInfo = com.mckimquyen.watermark.data.model.ViewInfo(
+            width = 100,
+            height = 100,
+            paddingLeft = 0,
+            paddingTop = 0,
+            paddingRight = 0,
+            paddingBottom = 0,
+            scaleType = android.widget.ImageView.ScaleType.FIT_CENTER,
+            matrix = android.graphics.Matrix()
+        )
+        BatchExportWorker.enqueue(context, viewInfo)
+        shadowOf(Looper.getMainLooper()).idle()
+        awaitTerminalWorkInfo()
+
+        val wakeLock = org.robolectric.shadows.ShadowPowerManager.getLatestWakeLock()
+        assertThat(wakeLock).isNotNull()
+        assertThat(wakeLock!!.isHeld).isFalse()
     }
 
     private fun awaitTerminalWorkInfo(timeoutMs: Long = 5_000): WorkInfo? {

@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.ServiceInfo
 import android.graphics.Matrix
 import android.os.Build
+import android.os.PowerManager
 import android.widget.ImageView
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
@@ -67,35 +68,61 @@ class BatchExportWorker @AssistedInject constructor(
         var doneCount = 0
         setForeground(createForegroundInfo(doneCount, total))
 
-        val result = engine.generateList(applicationContext.contentResolver, viewInfo, infoList, settings) { info ->
-            if (info == null) return@generateList
-            val stateOrdinal = when (info.jobState) {
-                is JobState.Ing -> STATE_ING
-                is JobState.Success -> STATE_SUCCESS
-                is JobState.Failure -> STATE_FAILURE
-                else -> return@generateList
-            }
-            setProgressAsync(
-                workDataOf(
-                    KEY_PROGRESS_URI to info.uri.toString(),
-                    KEY_PROGRESS_STATE to stateOrdinal
+        // Foreground service KHÔNG tự giữ CPU thức — nếu màn hình tắt giữa batch (nhiều ảnh, tốn
+        // thời gian), thiết bị có thể đi ngủ sâu làm export chậm/dừng giữa chừng. Giữ PARTIAL wake
+        // lock (chỉ CPU, không giữ sáng màn hình — màn hình đã có FLAG_KEEP_SCREEN_ON riêng ở
+        // BaseActivity khi app đang mở) trong suốt doWork(), luôn release ở finally kể cả lỗi/huỷ.
+        val wakeLock = acquireWakeLock()
+        try {
+            val result = engine.generateList(applicationContext.contentResolver, viewInfo, infoList, settings) { info ->
+                if (info == null) return@generateList
+                val stateOrdinal = when (info.jobState) {
+                    is JobState.Ing -> STATE_ING
+                    is JobState.Success -> STATE_SUCCESS
+                    is JobState.Failure -> STATE_FAILURE
+                    else -> return@generateList
+                }
+                setProgressAsync(
+                    workDataOf(
+                        KEY_PROGRESS_URI to info.uri.toString(),
+                        KEY_PROGRESS_STATE to stateOrdinal
+                    )
                 )
-            )
-            if (stateOrdinal != STATE_ING) {
-                doneCount++
-                notifyProgress(doneCount, total)
+                if (stateOrdinal != STATE_ING) {
+                    doneCount++
+                    notifyProgress(doneCount, total)
+                }
             }
+            // WorkManager xoá progress Data ngay khi work chuyển sang trạng thái terminal — item cuối
+            // cùng vừa cập nhật progress (vd Failure) có thể KHÔNG BAO GIỜ tới được observer nếu
+            // race với lúc Worker return (đã thấy trong test: seenJobStates dừng ở Ing thay vì
+            // Failure). Ghi thẳng danh sách cuối vào repo (nguồn sự thật bền, sống sót qua
+            // backgrounding/process death — đúng mục tiêu AC1) để ViewModel đọc lại khi work xong,
+            // thay vì chỉ dựa vào progress Data tạm thời.
+            val finalList = result.data ?: infoList
+            waterMarkRepo.updateImageList(finalList)
+            recordHistory(infoList, finalList, settings)
+            return if (result.isFailure()) WorkResult.failure() else WorkResult.success()
+        } finally {
+            if (wakeLock?.isHeld == true) wakeLock.release()
         }
-        // WorkManager xoá progress Data ngay khi work chuyển sang trạng thái terminal — item cuối
-        // cùng vừa cập nhật progress (vd Failure) có thể KHÔNG BAO GIỜ tới được observer nếu
-        // race với lúc Worker return (đã thấy trong test: seenJobStates dừng ở Ing thay vì
-        // Failure). Ghi thẳng danh sách cuối vào repo (nguồn sự thật bền, sống sót qua
-        // backgrounding/process death — đúng mục tiêu AC1) để ViewModel đọc lại khi work xong,
-        // thay vì chỉ dựa vào progress Data tạm thời.
-        val finalList = result.data ?: infoList
-        waterMarkRepo.updateImageList(finalList)
-        recordHistory(infoList, finalList, settings)
-        return if (result.isFailure()) WorkResult.failure() else WorkResult.success()
+    }
+
+    /**
+     * Trả `null` nếu không lấy được [PowerManager] hoặc `newWakeLock` ném lỗi — export vẫn chạy
+     * tiếp, chỉ mất bảo vệ CPU-sleep. Tag chứa `packageName` thật (không hardcode) — đúng khuyến
+     * nghị Android `<package>:<tag>` (thiếu tiền tố package sẽ bị `PowerManager` log cảnh báo).
+     */
+    private fun acquireWakeLock(): PowerManager.WakeLock? {
+        return try {
+            val powerManager = applicationContext.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return null
+            powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "${applicationContext.packageName}:$WAKE_LOCK_TAG").apply {
+                acquire(MAX_WAKE_LOCK_DURATION_MS)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     /**
@@ -180,6 +207,11 @@ class BatchExportWorker @AssistedInject constructor(
 
     companion object {
         const val UNIQUE_WORK_NAME = "batch_export"
+
+        private const val WAKE_LOCK_TAG = "BatchExportWorker:wake_lock"
+
+        /** Trần an toàn cho wake lock — export dù rất nhiều ảnh cũng khó vượt 30 phút; tránh giữ CPU thức vô hạn nếu có bug treo. */
+        private const val MAX_WAKE_LOCK_DURATION_MS = 30 * 60 * 1000L
 
         private const val KEY_VIEW_WIDTH = "view_width"
         private const val KEY_VIEW_HEIGHT = "view_height"
