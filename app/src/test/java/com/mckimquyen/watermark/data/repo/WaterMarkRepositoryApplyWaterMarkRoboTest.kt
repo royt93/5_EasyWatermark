@@ -57,6 +57,7 @@ class WaterMarkRepositoryApplyWaterMarkRoboTest {
         textEffectStroke = true,
         textEffectShadow = false,
         textEffectPillBackground = true,
+        autoContrastEnabled = true,
         recentIconUris = recentIconUris,
         extraLayers = listOf(
             WatermarkLayer(markMode = WaterMarkRepository.MarkMode.Text, text = "extra layer", anchor = Anchor.BOTTOM_RIGHT.ordinal)
@@ -92,6 +93,7 @@ class WaterMarkRepositoryApplyWaterMarkRoboTest {
         assertThat(readBack.textEffectStroke).isEqualTo(mark.textEffectStroke)
         assertThat(readBack.textEffectShadow).isEqualTo(mark.textEffectShadow)
         assertThat(readBack.textEffectPillBackground).isEqualTo(mark.textEffectPillBackground)
+        assertThat(readBack.autoContrastEnabled).isEqualTo(mark.autoContrastEnabled)
         assertThat(readBack.extraLayers).isEqualTo(mark.extraLayers)
     }
 

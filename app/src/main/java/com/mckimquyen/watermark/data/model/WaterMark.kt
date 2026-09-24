@@ -37,5 +37,12 @@ data class WaterMark(
      * [WaterMarkRepository.MAX_EXTRA_LAYERS]. index 0 vẽ trước (dưới cùng), index cuối vẽ sau
      * (trên cùng) — z-order = thứ tự trong list.
      */
-    val extraLayers: List<WatermarkLayer> = emptyList()
+    val extraLayers: List<WatermarkLayer> = emptyList(),
+    /**
+     * IDEA-06 — chỉ áp dụng cho layer CHÍNH ở [WaterMarkRepository.MarkMode.Text]: tự đảo
+     * [textColor] đen/trắng + nâng sàn [alpha] theo độ sáng vùng ảnh dưới watermark, KHÔNG ghi đè
+     * [textColor]/[alpha] đang lưu — chỉ ảnh hưởng bản render hiện tại (xem
+     * `WaterMarkImageView.applyAutoContrastIfEnabled`).
+     */
+    val autoContrastEnabled: Boolean = false
 )

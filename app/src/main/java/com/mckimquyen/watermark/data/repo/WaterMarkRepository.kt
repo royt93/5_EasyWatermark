@@ -91,6 +91,9 @@ class WaterMarkRepository @Inject constructor(
         val KEY_TEXT_EFFECT_STROKE = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_STROKE)
         val KEY_TEXT_EFFECT_SHADOW = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_SHADOW)
         val KEY_TEXT_EFFECT_PILL_BACKGROUND = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_PILL_BACKGROUND)
+
+        /** IDEA-06. */
+        val KEY_AUTO_CONTRAST_ENABLED = booleanPreferencesKey(SP_KEY_AUTO_CONTRAST_ENABLED)
         val KEY_RECENT_ICON_URIS = stringPreferencesKey(SP_KEY_RECENT_ICON_URIS)
 
         /** FEAT-03. */
@@ -137,7 +140,8 @@ class WaterMarkRepository @Inject constructor(
                 textEffectShadow = it[PreferenceKeys.KEY_TEXT_EFFECT_SHADOW] ?: false,
                 textEffectPillBackground = it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] ?: false,
                 recentIconUris = parseRecentIconUris(it[KEY_RECENT_ICON_URIS]),
-                extraLayers = WatermarkLayer.parseList(it[KEY_EXTRA_LAYERS])
+                extraLayers = WatermarkLayer.parseList(it[KEY_EXTRA_LAYERS]),
+                autoContrastEnabled = it[PreferenceKeys.KEY_AUTO_CONTRAST_ENABLED] ?: false
             )
         }
 
@@ -523,6 +527,12 @@ class WaterMarkRepository @Inject constructor(
         dataStore.edit { it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] = enable }
     }
 
+    /** IDEA-06 — bật/tắt tự động đảo màu chữ/tăng sàn alpha theo độ sáng ảnh dưới watermark. */
+    suspend fun updateAutoContrastEnabled(enable: Boolean) {
+        snapshotForUndoIfDue()
+        dataStore.edit { it[PreferenceKeys.KEY_AUTO_CONTRAST_ENABLED] = enable }
+    }
+
     /** FEAT-14 — xoá cả 3 override cùng lúc (nút "Reset" trong UI). */
     suspend fun resetExifCustomization() {
         snapshotForUndoIfDue()
@@ -568,6 +578,7 @@ class WaterMarkRepository @Inject constructor(
             it[PreferenceKeys.KEY_TEXT_EFFECT_SHADOW] = mark.textEffectShadow
             it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] = mark.textEffectPillBackground
             it[KEY_EXTRA_LAYERS] = WatermarkLayer.serializeList(mark.extraLayers)
+            it[PreferenceKeys.KEY_AUTO_CONTRAST_ENABLED] = mark.autoContrastEnabled
         }
     }
 
@@ -623,6 +634,9 @@ class WaterMarkRepository @Inject constructor(
         const val SP_KEY_TEXT_EFFECT_STROKE = "${SP_NAME}_key_text_effect_stroke"
         const val SP_KEY_TEXT_EFFECT_SHADOW = "${SP_NAME}_key_text_effect_shadow"
         const val SP_KEY_TEXT_EFFECT_PILL_BACKGROUND = "${SP_NAME}_key_text_effect_pill_background"
+
+        /** IDEA-06. */
+        const val SP_KEY_AUTO_CONTRAST_ENABLED = "${SP_NAME}_key_auto_contrast_enabled"
         const val SP_KEY_RECENT_ICON_URIS = "${SP_NAME}_key_recent_icon_uris"
 
         /** FEAT-03. */

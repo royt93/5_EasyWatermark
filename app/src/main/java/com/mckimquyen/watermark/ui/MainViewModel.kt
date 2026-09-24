@@ -610,6 +610,11 @@ class MainViewModel @Inject constructor(
         launch { waterMarkRepo.updateTextEffectPillBackground(enable) }
     }
 
+    /** IDEA-06 — bật/tắt tự động đảo màu chữ/tăng sàn alpha theo độ sáng ảnh dưới watermark. */
+    fun updateAutoContrastEnabled(enable: Boolean) {
+        launch { waterMarkRepo.updateAutoContrastEnabled(enable) }
+    }
+
     fun updateTileMode(imageInfo: ImageInfo, tileMode: Shader.TileMode) {
         launch {
             autoScroll = false

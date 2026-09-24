@@ -49,20 +49,25 @@ class TextStyleFragment : BaseBindFragment<FTextStyleBinding>() {
         }
     }
 
-    /** FEAT-11 — viền/bóng/nền pill, mỗi chip bật/tắt độc lập (không loại trừ lẫn nhau như Fill/Stroke). */
+    /**
+     * FEAT-11 — viền/bóng/nền pill, mỗi chip bật/tắt độc lập (không loại trừ lẫn nhau như
+     * Fill/Stroke). IDEA-06 thêm chip thứ 4 "tự động tương phản", cùng cơ chế.
+     */
     private val effectAdapter by lazy {
         val wm = shareViewModel.waterMark.value
         TextEffectAdapter(
             listOf(
                 TextEffectAdapter.TextEffectModel(getString(R.string.text_effect_stroke), wm?.textEffectStroke ?: false),
                 TextEffectAdapter.TextEffectModel(getString(R.string.text_effect_shadow), wm?.textEffectShadow ?: false),
-                TextEffectAdapter.TextEffectModel(getString(R.string.text_effect_pill), wm?.textEffectPillBackground ?: false)
+                TextEffectAdapter.TextEffectModel(getString(R.string.text_effect_pill), wm?.textEffectPillBackground ?: false),
+                TextEffectAdapter.TextEffectModel(getString(R.string.text_effect_auto_contrast), wm?.autoContrastEnabled ?: false)
             )
         ) { pos, enabled ->
             when (pos) {
                 0 -> shareViewModel.updateTextEffectStroke(enabled)
                 1 -> shareViewModel.updateTextEffectShadow(enabled)
                 2 -> shareViewModel.updateTextEffectPillBackground(enabled)
+                3 -> shareViewModel.updateAutoContrastEnabled(enabled)
             }
         }
     }

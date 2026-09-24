@@ -80,6 +80,7 @@
     <string name="text_effect_stroke">Viền ngoài</string>
     <string name="text_effect_shadow">Đổ bóng</string>
     <string name="text_effect_pill">Nền viên thuốc</string>
+    <string name="text_effect_auto_contrast">Tự động tương phản</string>
     <string name="text_typeface_normal">Bình thường</string>
     <string name="text_typeface_bold">Đậm</string>
     <string name="text_typeface_italic">Nghiêng</string>

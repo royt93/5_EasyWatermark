@@ -291,15 +291,17 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: decodedUri == uri, skip main image decode")
             }
             curImageInfo = imageInfo
+            // IDEA-06: chỉ ảnh hưởng bản render hiện tại — KHÔNG ghi đè newConfig/DataStore gốc.
+            val effectiveConfig = applyAutoContrastIfEnabled(newConfig)
             // apply new config to paint
-            textPaint.applyConfig(curImageInfo, newConfig)
+            textPaint.applyConfig(curImageInfo, effectiveConfig)
             AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: building shader for mode=${newConfig.markMode}")
             layoutShader = when (newConfig.markMode) {
                 WaterMarkRepository.MarkMode.Text -> {
                     generateBitmapMutex.withLock {
                         buildTextBitmapShader(
                             imageInfo = curImageInfo,
-                            config = newConfig,
+                            config = effectiveConfig,
                             textPaint = textPaint,
                             coroutineContext = generateBitmapCoroutineCtx
                         )
@@ -374,6 +376,56 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         withContext(Dispatchers.Default) {
             return@withContext imageBitmap?.let { Palette.Builder(it).generate() }
         }
+
+    /**
+     * IDEA-06: khi [WaterMark.autoContrastEnabled] bật (layer chính, chế độ Text), tự đảo
+     * [WaterMark.textColor] đen/trắng theo độ sáng vùng ảnh NGAY DƯỚI watermark + nâng sàn
+     * [WaterMark.alpha] để chữ không bị chìm vào nền. Trả về bản copy chỉ dùng để RENDER —
+     * không ghi lại DataStore/[config] gốc.
+     *
+     * ponytail: vùng lấy mẫu là 1 ô vuông ước lượng quanh vị trí neo watermark (quy đổi
+     * [WaterMark.textSize] sang không gian pixel bitmap gốc qua tỉ lệ [drawableBounds]/bitmap),
+     * không phải đúng hình chữ nhật thật của watermark — đo chính xác cần build shader 2 lần
+     * (kích thước shader phụ thuộc text/gap/rotation, biết được SAU khi build). Đủ tốt cho mục
+     * đích chọn màu tương phản; nâng cấp nếu sau này cần chính xác pixel-perfect.
+     */
+    private suspend fun applyAutoContrastIfEnabled(newConfig: WaterMark): WaterMark {
+        if (!shouldApplyAutoContrast(newConfig)) return newConfig
+        val bitmap = transformedMainBitmap ?: mainImageBitmapValue?.bitmap
+        if (bitmap == null || bitmap.isRecycled) return newConfig
+        return withContext(Dispatchers.Default) {
+            val scaleToBitmap = if (drawableBounds.width() > 0f) {
+                bitmap.width / drawableBounds.width()
+            } else {
+                1f
+            }
+            val sampleSizePx = (newConfig.textSize * scaleToBitmap * AUTO_CONTRAST_SAMPLE_SIZE_MULTIPLIER)
+                .toInt()
+                .coerceAtLeast(1)
+            val region = computeAutoContrastSampleRegion(
+                tileMode = curImageInfo.obtainTileMode(),
+                offsetX = curImageInfo.offsetX,
+                offsetY = curImageInfo.offsetY,
+                sampleSizePx = sampleSizePx,
+                bitmapWidth = bitmap.width,
+                bitmapHeight = bitmap.height
+            )
+            if (!region.isValid) return@withContext newConfig
+            val dominantColor = try {
+                Palette.Builder(bitmap)
+                    .setRegion(region.left, region.top, region.right, region.bottom)
+                    .generate()
+                    .getDominantColor(Color.GRAY)
+            } catch (e: IllegalArgumentException) {
+                AppLog.d(LOG_TAG, "[WMIV] applyAutoContrastIfEnabled: invalid region $region, skip")
+                return@withContext newConfig
+            }
+            newConfig.copy(
+                textColor = TextEffectRenderer.contrastingColor(dominantColor, ALPHA_OPAQUE),
+                alpha = readableAlpha(newConfig.alpha)
+            )
+        }
+    }
 
     private val textPaint: TextPaint by lazy {
         TextPaint().applyConfig(curImageInfo, config)
@@ -893,6 +945,52 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         /** Hàm thuần để test biên giới không cần dựng View/ScaleGestureDetector thật. */
         fun shouldRebuildShader(nowMs: Long, lastRebuildAtMs: Long, throttleMs: Long = SHADER_REBUILD_THROTTLE_MS): Boolean =
             nowMs - lastRebuildAtMs >= throttleMs
+
+        /** IDEA-06: alpha đầy đủ (không trong suốt) — dùng khi chỉ cần lấy RGB đen/trắng thuần. */
+        const val ALPHA_OPAQUE = 255
+
+        /** IDEA-06: sàn alpha tối thiểu khi auto-contrast bật, đảm bảo chữ không quá mờ dù user để alpha thấp. */
+        const val AUTO_CONTRAST_MIN_ALPHA = 160
+
+        /** IDEA-06: hệ số quy đổi textSize → cạnh ô vuông lấy mẫu luminance (ước lượng, xem doc [applyAutoContrastIfEnabled]). */
+        const val AUTO_CONTRAST_SAMPLE_SIZE_MULTIPLIER = 6f
+
+        /** IDEA-06: alpha hiệu dụng khi auto-contrast bật — không bao giờ thấp hơn [AUTO_CONTRAST_MIN_ALPHA]. Hàm thuần, dễ test. */
+        fun readableAlpha(configAlpha: Int): Int = configAlpha.coerceAtLeast(AUTO_CONTRAST_MIN_ALPHA)
+
+        /** IDEA-06: auto-contrast chỉ áp dụng cho layer chính ở chế độ Text. Hàm thuần, dễ test. */
+        fun shouldApplyAutoContrast(config: WaterMark): Boolean =
+            config.autoContrastEnabled && config.markMode == WaterMarkRepository.MarkMode.Text
+
+        /** IDEA-06: vùng lấy mẫu luminance, toạ độ theo bitmap gốc (không phải toạ độ View). */
+        data class SampleRegion(val left: Int, val top: Int, val right: Int, val bottom: Int) {
+            val isValid: Boolean get() = right > left && bottom > top
+        }
+
+        /**
+         * IDEA-06: tính vùng lấy mẫu — REPEAT/MIRROR/DECAL (mọi tileMode khác CLAMP) coi như
+         * watermark phủ khắp ảnh nên lấy mẫu TOÀN BỘ bitmap; CLAMP (1 vị trí neo) lấy 1 ô vuông
+         * [sampleSizePx] cạnh, gốc tại (offsetX, offsetY) — đúng quy ước "toạ độ theo tỉ lệ
+         * drawableBounds" đã dùng ở [applyAnchor]/[updateWaterMarkOffset]. Hàm thuần, dễ test.
+         */
+        fun computeAutoContrastSampleRegion(
+            tileMode: Shader.TileMode,
+            offsetX: Float,
+            offsetY: Float,
+            sampleSizePx: Int,
+            bitmapWidth: Int,
+            bitmapHeight: Int
+        ): SampleRegion {
+            if (bitmapWidth <= 0 || bitmapHeight <= 0) return SampleRegion(0, 0, 0, 0)
+            if (tileMode != Shader.TileMode.CLAMP) {
+                return SampleRegion(0, 0, bitmapWidth, bitmapHeight)
+            }
+            val left = (offsetX * bitmapWidth).toInt().coerceIn(0, bitmapWidth - 1)
+            val top = (offsetY * bitmapHeight).toInt().coerceIn(0, bitmapHeight - 1)
+            val right = (left + sampleSizePx).coerceAtMost(bitmapWidth)
+            val bottom = (top + sampleSizePx).coerceAtMost(bitmapHeight)
+            return SampleRegion(left, top, right, bottom)
+        }
 
         /**
          * Very simple way to fit the image into the canvas
