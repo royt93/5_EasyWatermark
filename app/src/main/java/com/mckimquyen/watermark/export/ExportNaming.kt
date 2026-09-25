@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.utils.HashUtils
+import com.mckimquyen.watermark.utils.LocationNameResolver
 import com.mckimquyen.watermark.utils.TextTokenResolver
 import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
 import com.mckimquyen.watermark.utils.ktx.formatDate
@@ -20,7 +21,13 @@ import javax.inject.Inject
  * `viewModelScope`/`StateFlow` cache sẵn; `MainViewModel`/`BatchExportEngine` tự đọc 1 lần rồi
  * truyền vào, tránh query DataStore lặp lại không cần thiết mỗi ảnh trong batch.
  */
-class ExportNaming @Inject constructor() {
+class ExportNaming @Inject constructor(
+    /** IDEA-16: nguồn tên địa danh cho token {location}. */
+    private val locationNameResolver: LocationNameResolver
+) {
+
+    /** Cho nơi không có DI (test, fragment tự tạo) — {location} luôn rỗng. Không dùng default param: Kotlin sinh thêm constructor rỗng mang @Inject, Dagger báo 2 constructor. */
+    constructor() : this(LocationNameResolver.NONE)
 
     /** Cache theo uri hiện tại — preview gọi lại nhiều lần (mỗi ký tự gõ) không query lặp ContentResolver. */
     private var lastDisplayName: Pair<Uri, String>? = null
@@ -28,7 +35,7 @@ class ExportNaming @Inject constructor() {
     /**
      * Resolve dynamic text tokens in the watermark text for a given image, per-image at export time
      * so batch jobs get per-photo values. No-op when the text has no '{' token.
-     * Supported: {filename} {seq} {date} {model} {make} {iso} {fnumber} {exposure} {focal} {exif}
+     * Supported: {filename} {seq} {date} {model} {make} {iso} {fnumber} {exposure} {focal} {exif} {location}
      */
     fun resolveTextTokens(
         text: String,
@@ -37,11 +44,12 @@ class ExportNaming @Inject constructor() {
         index: Int
     ): String {
         if (!text.contains('{')) return text
-        return TextTokenResolver.resolve(text, buildBaseTokens(imageInfo, contentResolver, index))
+        return TextTokenResolver.resolve(text, buildBaseTokens(text, imageInfo, contentResolver, index))
     }
 
     /** Token dùng chung cho cả text watermark/tên file ([resolveTextTokens]) và QR động ([resolveQrContent]). */
     private fun buildBaseTokens(
+        text: String,
         imageInfo: ImageInfo,
         contentResolver: ContentResolver,
         index: Int
@@ -59,7 +67,9 @@ class ExportNaming @Inject constructor() {
             "fnumber" to exif?.fNumber.orEmpty(),
             "exposure" to exif?.exposureTime.orEmpty(),
             "focal" to exif?.focalLength.orEmpty(),
-            "exif" to exif?.getFormattedExif().orEmpty()
+            "exif" to exif?.getFormattedExif().orEmpty(),
+            // IDEA-16: reverse-geocode có thể gọi mạng — chỉ chạy khi text thật sự dùng token này.
+            "location" to if (text.contains(LOCATION_TOKEN)) locationNameResolver.resolve(exif?.latitude, exif?.longitude) else ""
         )
     }
 
@@ -83,7 +93,7 @@ class ExportNaming @Inject constructor() {
             e.printStackTrace()
             ""
         }
-        val tokens = buildBaseTokens(imageInfo, contentResolver, index) +
+        val tokens = buildBaseTokens(template, imageInfo, contentResolver, index) +
             mapOf("hash" to hash, "portfolio_link" to portfolioLink)
         return TextTokenResolver.resolve(template, tokens)
     }
@@ -255,6 +265,8 @@ class ExportNaming @Inject constructor() {
     }
 
     companion object {
+        const val LOCATION_TOKEN = "{location}"
+
         /** IDEA-07: template mặc định cho nội dung QR động khi user chưa tự đặt. */
         const val DEFAULT_QR_CONTENT_TEMPLATE = "{hash}|{date}|{portfolio_link}"
     }

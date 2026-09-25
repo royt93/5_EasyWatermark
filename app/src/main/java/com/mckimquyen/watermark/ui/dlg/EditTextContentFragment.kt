@@ -1,11 +1,16 @@
 package com.mckimquyen.watermark.ui.dlg
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
@@ -16,6 +21,7 @@ import com.mckimquyen.watermark.databinding.DlgEditTextBinding
 import com.mckimquyen.watermark.ui.UiState
 import com.mckimquyen.watermark.ui.base.BaseBindFragment
 import com.mckimquyen.watermark.utils.TextTokenResolver
+import com.mckimquyen.watermark.utils.bitmap.BitmapCache
 import com.mckimquyen.watermark.utils.ktx.commitWithAnimation
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,6 +31,16 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
 
     /** ENH-02: debounce ghi DataStore khi gõ liên tục — huỷ job cũ mỗi ký tự, chỉ ghi thật sau khi dừng gõ. */
     private var updateTextJob: Job? = null
+
+    /**
+     * IDEA-16: Android 10+ redact GPS khỏi EXIF nếu thiếu `ACCESS_MEDIA_LOCATION` → {location} luôn rỗng.
+     * Xin quyền lúc user chèn chip {location}; cấp xong thì xoá cache decode (EXIF cũ đọc lúc chưa có
+     * quyền, không có toạ độ) để lần decode sau đọc lại bản original.
+     */
+    private val mediaLocationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) BitmapCache.clearCache()
+        }
 
     override fun bindView(
         layoutInflater: LayoutInflater,
@@ -126,14 +142,27 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
                     val start = editText.selectionStart.coerceAtLeast(0)
                     val end = editText.selectionEnd.coerceAtLeast(0)
                     editText.text?.replace(minOf(start, end), maxOf(start, end), "{$token}")
+                    if (needsMediaLocationPermission(token)) {
+                        mediaLocationPermissionLauncher.launch(Manifest.permission.ACCESS_MEDIA_LOCATION)
+                    }
                 }
             }
             group.addView(chip)
         }
     }
 
+    private fun needsMediaLocationPermission(token: String): Boolean =
+        isMediaLocationPermissionRequired(token, Build.VERSION.SDK_INT) &&
+            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_MEDIA_LOCATION) !=
+            PackageManager.PERMISSION_GRANTED
+
     companion object {
         const val TAG = "TextContentFragment"
+        private const val LOCATION_TOKEN_NAME = "location"
+
+        /** IDEA-16: quyền `ACCESS_MEDIA_LOCATION` chỉ tồn tại từ Android 10 (Q) và chỉ cần cho chip {location}. */
+        internal fun isMediaLocationPermissionRequired(token: String, sdkInt: Int): Boolean =
+            token == LOCATION_TOKEN_NAME && sdkInt >= Build.VERSION_CODES.Q
         private const val TEXT_UPDATE_DEBOUNCE_MS = 200L
 
         /** BUG-16: `null?.text.toString()` cho ra literal "null"; đây giữ ô nhập trống khi chưa có config. */

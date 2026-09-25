@@ -72,6 +72,16 @@ class BitmapUtilsInputStreamCountRoboTest {
         return file
     }
 
+    /** IDEA-16: JPEG có EXIF GPS (Hà Nội) — toạ độ phải đọc trên CÙNG stream EXIF, không mở thêm. */
+    private fun createGpsJpeg(): File {
+        val file = createRotatedJpeg()
+        ExifInterface(file.absolutePath).apply {
+            setLatLong(HANOI_LAT, HANOI_LON)
+            saveAttributes()
+        }
+        return file
+    }
+
     private fun setupProvider(authority: String, file: File): CountingProvider {
         val provider = Robolectric.setupContentProvider(CountingProvider::class.java, authority)
         provider.file = file
@@ -107,5 +117,38 @@ class BitmapUtilsInputStreamCountRoboTest {
         assertThat(provider.openCount).isEqualTo(2)
         result.data?.bitmap?.recycle()
         Unit
+    }
+
+    @Test
+    fun decodeBitmapFromUri_readsGpsIntoExifModel_withoutExtraStream() = runBlocking {
+        val provider = setupProvider("wm.stream.count.gps", createGpsJpeg())
+        val uri = Uri.parse("content://wm.stream.count.gps/test.jpg")
+
+        val result = decodeBitmapFromUri(context, context.contentResolver, uri)
+
+        val exif = result.data?.exifModel
+        assertThat(exif?.latitude).isWithin(GPS_TOLERANCE).of(HANOI_LAT)
+        assertThat(exif?.longitude).isWithin(GPS_TOLERANCE).of(HANOI_LON)
+        assertThat(provider.openCount).isEqualTo(2)
+        result.data?.bitmap?.recycle()
+        Unit
+    }
+
+    @Test
+    fun decodeBitmapFromUri_noGps_coordinatesNull() = runBlocking {
+        setupProvider("wm.stream.count.nogps", createRotatedJpeg())
+
+        val result = decodeBitmapFromUri(context, context.contentResolver, Uri.parse("content://wm.stream.count.nogps/test.jpg"))
+
+        assertThat(result.data?.exifModel?.latitude).isNull()
+        assertThat(result.data?.exifModel?.longitude).isNull()
+        result.data?.bitmap?.recycle()
+        Unit
+    }
+
+    private companion object {
+        const val HANOI_LAT = 21.0285
+        const val HANOI_LON = 105.8542
+        const val GPS_TOLERANCE = 1e-4
     }
 }

@@ -45,7 +45,7 @@ class TextTokenResolverTest {
         assertThat(TextTokenResolver.SUPPORTED_TOKENS)
             .containsExactly(
                 "filename", "seq", "date", "model", "make",
-                "iso", "fnumber", "exposure", "focal", "exif"
+                "iso", "fnumber", "exposure", "focal", "exif", "location"
             )
     }
 }

@@ -19,6 +19,12 @@ class ExifModelTest {
         assertThat(ExifModel(make = "Canon").isEmpty()).isFalse()
     }
 
+    /** IDEA-16: toạ độ GPS không phải thông số máy ảnh — khung EXIF vẫn coi ảnh là "không có EXIF". */
+    @Test
+    fun isEmpty_ignoresGpsCoordinates() {
+        assertThat(ExifModel(latitude = 21.0285, longitude = 105.8542).isEmpty()).isTrue()
+    }
+
     @Test
     fun getCameraName_prefersModel_thenMake_thenFallback() {
         assertThat(ExifModel(make = "Canon", model = "EOS R5").getCameraName()).isEqualTo("EOS R5")

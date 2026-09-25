@@ -127,7 +127,7 @@ private fun readExifOrientationAndModel(
     context: Context,
     uri: Uri
 ): Pair<Float, com.mckimquyen.watermark.data.model.ExifModel> {
-    context.contentResolver.openInputStream(uri).use { input ->
+    openExifStream(context, uri).use { input ->
         if (input == null) {
             return 0f to com.mckimquyen.watermark.data.model.ExifModel()
         }
@@ -146,6 +146,27 @@ private fun readExifOrientationAndModel(
     }
 }
 
+/**
+ * IDEA-16: Android 10+ xoá (redact) tag GPS khỏi stream MediaStore trừ khi app có
+ * `ACCESS_MEDIA_LOCATION` VÀ mở Uri dạng "original" — áp cho mọi Uri authority `media` (gồm cả Uri
+ * Photo Picker `content://media/picker/...`). Provider từ chối bản original → fallback Uri thường
+ * (vẫn đúng 1 stream mở thành công, không đổi số lần mở của ENH-06).
+ */
+private fun openExifStream(context: Context, uri: Uri): InputStream? {
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q &&
+        uri.authority == MediaStore.AUTHORITY &&
+        androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_MEDIA_LOCATION) ==
+        android.content.pm.PackageManager.PERMISSION_GRANTED
+    ) {
+        try {
+            return context.contentResolver.openInputStream(MediaStore.setRequireOriginal(uri))
+        } catch (e: Exception) {
+            Log.w(TAG, "openExifStream: original uri bị từ chối, fallback uri thường", e)
+        }
+    }
+    return context.contentResolver.openInputStream(uri)
+}
+
 private fun buildExifModel(exif: ExifInterface?): com.mckimquyen.watermark.data.model.ExifModel {
     if (exif == null) return com.mckimquyen.watermark.data.model.ExifModel()
     val make = exif.getAttribute(ExifInterface.TAG_MAKE) ?: ""
@@ -155,7 +176,10 @@ private fun buildExifModel(exif: ExifInterface?): com.mckimquyen.watermark.data.
     val exposureTime = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME) ?: ""
     val focalLength = exif.getAttribute(ExifInterface.TAG_FOCAL_LENGTH) ?: ""
     val iso = exif.getAttribute(ExifInterface.TAG_ISO_SPEED_RATINGS) ?: ""
+    val latLong = exif.latLong
     return com.mckimquyen.watermark.data.model.ExifModel(
+        latitude = latLong?.getOrNull(0),
+        longitude = latLong?.getOrNull(1),
         make = make,
         model = model,
         dateTime = dateTime,

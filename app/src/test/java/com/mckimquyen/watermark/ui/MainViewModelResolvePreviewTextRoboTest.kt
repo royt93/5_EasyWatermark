@@ -11,8 +11,10 @@ import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.mckimquyen.watermark.export.ExportNaming
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import com.mckimquyen.watermark.utils.LocationNameResolver
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -119,5 +121,23 @@ class MainViewModelResolvePreviewTextRoboTest {
         val resolved = viewModel.resolvePreviewText("{filename}", info)
 
         assertThat(resolved).isEqualTo("1")
+    }
+
+    /** IDEA-16: preview editor render {location} theo GPS của ảnh đang chọn, qua ExportNaming được inject. */
+    @Test
+    fun locationToken_resolvesPlaceNameFromGps_inPreview() = runBlocking {
+        val vm = MainViewModel(
+            appContext = context,
+            userRepo = UserConfigRepository(userDataStore),
+            waterMarkRepo = waterMarkRepo,
+            memorySettingRepo = MemorySettingRepo(),
+            templateRepo = TemplateRepository(null),
+            exportNaming = ExportNaming(LocationNameResolver { _, _ -> "Hà Nội, Việt Nam" })
+        )
+        val gps = imageInfo(Uri.parse("content://media/gps"), ExifModel(latitude = 21.0285, longitude = 105.8542))
+        val noGps = imageInfo(Uri.parse("content://media/nogps"), ExifModel(make = "Canon"))
+
+        assertThat(vm.resolvePreviewText("📍 {location}", gps)).isEqualTo("📍 Hà Nội, Việt Nam")
+        assertThat(vm.resolvePreviewText("📍 {location}", noGps)).isEqualTo("📍 ")
     }
 }

@@ -10,7 +10,11 @@ data class ExifModel(
     val fNumber: String = "",
     val exposureTime: String = "",
     val iso: String = "",
-    val focalLength: String = ""
+    val focalLength: String = "",
+    // IDEA-16: toạ độ EXIF GPS (độ thập phân) cho token {location}. Không tính vào [isEmpty] — khung
+    // EXIF (thông số máy ảnh) không vẽ toạ độ, ảnh chỉ có GPS vẫn coi như "không có EXIF máy ảnh".
+    val latitude: Double? = null,
+    val longitude: Double? = null
 ) {
     fun isEmpty(): Boolean {
         return make.isEmpty() && model.isEmpty() && dateTime.isEmpty() && fNumber.isEmpty() && exposureTime.isEmpty() && iso.isEmpty() && focalLength.isEmpty()
