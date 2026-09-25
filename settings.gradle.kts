@@ -63,6 +63,9 @@ dependencyResolutionManagement {
             // QR code
             library("zxing-core", "com.google.zxing:core:3.5.3")
 
+            // IDEA-01: on-device Face Detection (bundled model, hoạt động offline hoàn toàn)
+            library("mlkit-face-detection", "com.google.mlkit:face-detection:16.1.7")
+
             // VIP screen UX: confetti + shimmer
             library("konfetti-xml", "nl.dionsegijn:konfetti-xml:2.0.5")
             library("shimmer", "com.facebook.shimmer:shimmer:0.5.0")

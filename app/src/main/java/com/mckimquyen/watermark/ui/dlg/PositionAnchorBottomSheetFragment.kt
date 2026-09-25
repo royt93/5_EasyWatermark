@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.asLiveData
 import com.google.android.material.button.MaterialButton
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.Anchor
@@ -76,6 +77,14 @@ class PositionAnchorBottomSheetFragment : BaseBindBSDFragment<FPositionAnchorBot
         binding.slMargin.trackActiveTintList = android.content.res.ColorStateList.valueOf(activeColor)
         binding.slMargin.trackInactiveTintList = android.content.res.ColorStateList.valueOf(inactiveColor)
         binding.slMargin.thumbTintList = android.content.res.ColorStateList.valueOf(activeColor)
+
+        binding.btnAutoPlacement.setOnClickListener {
+            shareViewModel.autoPlaceWatermarkForBatch()
+        }
+        shareViewModel.isAutoPlacing.asLiveData().observe(viewLifecycleOwner) { isPlacing ->
+            binding.btnAutoPlacement.isEnabled = !isPlacing
+            binding.pbAutoPlacement.visibility = if (isPlacing) View.VISIBLE else View.GONE
+        }
 
         binding.slMargin.contentDescription = getString(R.string.position_anchor_margin)
         binding.slMargin.addOnChangeListener { _, value, fromUser ->

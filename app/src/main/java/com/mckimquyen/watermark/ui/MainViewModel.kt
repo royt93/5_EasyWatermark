@@ -70,7 +70,13 @@ class MainViewModel @Inject constructor(
     private val templateRepo: TemplateRepository,
     private val exportNaming: com.mckimquyen.watermark.export.ExportNaming = com.mckimquyen.watermark.export.ExportNaming(),
     private val batchExportEngine: com.mckimquyen.watermark.export.BatchExportEngine =
-        com.mckimquyen.watermark.export.BatchExportEngine(appContext, exportNaming)
+        com.mckimquyen.watermark.export.BatchExportEngine(appContext, exportNaming),
+    private val autoPlacementEngine: com.mckimquyen.watermark.export.AutoPlacementEngine =
+        com.mckimquyen.watermark.export.AutoPlacementEngine(
+            appContext,
+            com.mckimquyen.watermark.utils.facedetection.MlKitFaceDetectionSource(),
+            exportNaming
+        )
 ) : ViewModel() {
 
     var nextSelectedPos: Int = 0
@@ -112,6 +118,41 @@ class MainViewModel @Inject constructor(
     val selectedImage: LiveData<ImageInfo> = waterMarkRepo.selectedImage.asLiveData()
 
     val saveProcess: MutableLiveData<ImageInfo?> = MutableLiveData()
+
+    /** IDEA-01: `true` trong lúc chạy Face Detection + tính vị trí cho cả batch. */
+    private val _isAutoPlacing = MutableStateFlow(false)
+    val isAutoPlacing: StateFlow<Boolean> = _isAutoPlacing.asStateFlow()
+
+    /**
+     * IDEA-01: chạy Face Detection cho MỌI ảnh trong batch (bỏ qua ảnh bị skip export), tự động
+     * đặt lại `offsetX/offsetY` né mặt người cho ảnh nào phát hiện được mặt — là 1 HÀNH ĐỘNG chạy
+     * 1 lần (không phải chế độ bật/tắt liên tục), user vẫn chỉnh tay lại sau đó bình thường.
+     * No-op nếu đang chạy dở (tránh bấm lặp chồng job).
+     */
+    fun autoPlaceWatermarkForBatch() {
+        if (_isAutoPlacing.value) return
+        launch {
+            _isAutoPlacing.value = true
+            try {
+                val config = waterMark.value ?: return@launch
+                val updated = autoPlacementEngine.suggestPlacements(
+                    appContext.contentResolver,
+                    waterMarkRepo.imageInfoList,
+                    config
+                ) { _, _ -> }
+                waterMarkRepo.updateImageList(updated)
+                // BUG thật phát hiện lúc smoke test: updateImageList() chỉ emit imageInfoMapFlow
+                // (làm mới dải thumbnail) — canvas chính (WaterMarkImageView) bind riêng vào
+                // waterMarkRepo.selectedImage (xem MainActivity dòng quan sát `selectedImage`),
+                // KHÔNG tự refresh nếu không re-emit. Ảnh đang mở trong editor phải re-select để
+                // canvas vẽ lại đúng offset mới, nếu không auto-placement chạy xong mà màn hình
+                // không đổi gì (giống bug đã xảy ra thật khi smoke test trên TECNO BG6).
+                selectedImage.value?.uri?.let { waterMarkRepo.select(it) }
+            } finally {
+                _isAutoPlacing.value = false
+            }
+        }
+    }
 
     private var compressedJob: Job? = null
 

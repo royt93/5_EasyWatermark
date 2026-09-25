@@ -52,11 +52,10 @@
 | [M3-08](done/M3-08-migrate-edit-panels-dialogs-bottom-sheets.md) | P1 | M | Migrate toàn bộ Dialogs, Bottom Sheets và Panels chỉnh sửa sang Material You M3 | **DONE** |
 | [M3-09](done/M3-09-cleanup-ios-glass-assets-lint-verification.md) | P2 | S | Dọn dẹp triệt để tài nguyên iOS Glass, Lint & Kiểm thử hồi quy toàn diện | **DONE** |
 
-## UNIQUE_IDEAS (16, +2 done) — tính năng độc quyền/đột phá, effort cao
+## UNIQUE_IDEAS (15, +3 done) — tính năng độc quyền/đột phá, effort cao
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
-| [IDEA-01](todo/IDEA-01-ai-auto-placement-nhan-dien-chu-the.md) | L | Auto-placement bằng on-device ML (né mặt người/chủ thể) — **đồng thuận 4/4 agent (đợt gốc)** |
 | [IDEA-08](todo/IDEA-08-referral-vip-qua-share-app.md) | M | Referral VIP qua Share App — tái dùng hạ tầng sẵn có, không cần backend (mới 2026-09-10) |
 | [IDEA-03](todo/IDEA-03-content-authenticity-stamp-c2pa.md) | L | Content authenticity stamp kiểu C2PA |
 | [IDEA-09](todo/IDEA-09-watermark-survivability-preview.md) | L | Watermark Survivability Preview — mô phỏng crop/recompress mạng xã hội (mới 2026-09-10) |
@@ -75,11 +74,12 @@
 
 ✅ **[IDEA-06](done/IDEA-06-auto-contrast-opacity-harmonizer.md)** — Auto-contrast/opacity harmonizer theo từng ảnh — done 2026-09-24, smoke test TECNO KJ7.
 ✅ **[IDEA-07](done/IDEA-07-batch-qr-smart-bridge.md)** — Batch QR Smart-Bridge (hash SHA-256 + xác thực nguồn gốc) — done 2026-09-24, smoke test TECNO BG6.
+✅ **[IDEA-01](done/IDEA-01-ai-auto-placement-nhan-dien-chu-the.md)** — Auto-placement bằng on-device ML Kit Face Detection (né mặt người) — done 2026-09-25, smoke test TECNO BG6.
 
 ## ⏸️ Deferred theo quyết định user (2026-09-10)
 
 - **BUG-14** (VIP secret hardcode), **BUG-15** (AdMob rewarded test ID), **ENH-17** (VIP key device-bound) — user quyết định: **bỏ qua, dời sang tháng sau** ("các tính năng về AD và IAP sẽ làm ở tháng sau"). Không đưa vào sprint hiện tại, không chọn hướng NDK/JNI hay server-side lúc này — quyết định BUG-14 để ngỏ tới khi quay lại nhóm AD/IAP.
-- **UNIQUE_IDEAS**: user chọn không đầu tư idea nào ngay ("nên làm đủ backlog trước, các tính năng mới để sau") — giữ nguyên 10 IDEA để tham khảo định hướng, không triển khai.
+- **UNIQUE_IDEAS**: quyết định "không đầu tư ngay" ban đầu (2026-09-10) đã được user CHỦ ĐỘNG đảo ngược sau đó — 3 IDEA (IDEA-06, IDEA-07, IDEA-01) đã pick và triển khai xong tính đến 2026-09-25. Dòng này giữ lại làm mốc lịch sử quyết định gốc, không còn phản ánh trạng thái hiện tại.
 - **Sprint đang chạy**: FEAT-02, FEAT-09, FEAT-14 (nhóm FEAT effort S/XS) — loop tự động qua `PROMPT_TEMPLATE.md`, kick off 2026-09-10. **Đã DONE** (xem `doc/task/done/`).
 
 ## Sprint 2026-09-11 — P2 bug sprint (BUG-11/13/16/17/20)

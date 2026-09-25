@@ -37,7 +37,14 @@ data class ImageInfo(
     // null = không crop (giữ nguyên toàn bộ khung ảnh).
     val cropRect: RectF? = null,
     // FEAT-16: góc straighten/deskew user chỉnh (độc lập với EXIF auto-rotate đã xử lý lúc decode).
-    val rotationDegrees: Float = 0f
+    val rotationDegrees: Float = 0f,
+    /**
+     * IDEA-01: cache kết quả Face Detection — toạ độ chuẩn hoá 0..1 theo kích thước bitmap lúc
+     * detect (độc lập scale sau này). `null` = CHƯA chạy detection cho ảnh này; list rỗng = đã
+     * chạy nhưng không tìm thấy mặt nào (khác `null` để không chạy lại ML Kit vô ích khi user bấm
+     * "Tự động né khuôn mặt" lần nữa).
+     */
+    val detectedFaceRectsNormalized: List<RectF>? = null
 ) {
     val shareUri: Uri?
         get() = result?.data as? Uri?

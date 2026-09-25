@@ -141,6 +141,7 @@
     <string name="tile_mode_title_decal">Single</string>
     <string name="position_anchor_button">Position</string>
     <string name="position_anchor_title">Watermark Position</string>
+    <string name="position_auto_placement">Auto-place away from faces</string>
     <string name="position_anchor_margin">Margin from edge</string>
     <!-- FEAT-18: before/after compare slider -->
     <string name="compare_title">Compare before/after</string>

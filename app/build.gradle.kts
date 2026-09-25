@@ -176,6 +176,8 @@ dependencies {
     api(libs.colorpicker)
     api(libs.blurview)
     api(libs.zxing.core)
+    // IDEA-01: Face Detection on-device (bundled model, không cần Play Services tải thêm).
+    implementation(libs.mlkit.face.detection)
 
     implementation("com.github.royt93:AdmobApplovinWrapper:1.1.5")
     implementation(libs.konfetti.xml)

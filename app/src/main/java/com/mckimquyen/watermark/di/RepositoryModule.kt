@@ -8,6 +8,8 @@ import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.mckimquyen.watermark.utils.facedetection.FaceDetectionSource
+import com.mckimquyen.watermark.utils.facedetection.MlKitFaceDetectionSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -47,4 +49,9 @@ object RepositoryModule {
     fun provideTemplateRepository(dao: TemplateDao?): TemplateRepository {
         return TemplateRepository(dao)
     }
+
+    /** IDEA-01. */
+    @Provides
+    @Singleton
+    fun provideFaceDetectionSource(impl: MlKitFaceDetectionSource): FaceDetectionSource = impl
 }
