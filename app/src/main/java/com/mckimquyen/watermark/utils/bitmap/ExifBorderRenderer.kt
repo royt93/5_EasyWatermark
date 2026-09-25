@@ -24,6 +24,9 @@ object ExifBorderRenderer {
      * FEAT-14 Custom Frame Builder: [bandColor]/[bandThicknessPercent]/[useSerifCaption] override
      * nhẹ lên style đang chọn — `null` (mặc định) giữ NGUYÊN hành vi gốc của từng style,
      * không đổi output nếu user chưa tuỳ chỉnh gì.
+     *
+     * IDEA-18: [frameColors] != null (bật "màu theo ảnh") thay TOÀN BỘ bảng màu nền + chữ của style,
+     * bỏ qua [bandColor] — màu chữ phải tính cùng lúc với màu nền mới đảm bảo tương phản.
      */
     fun buildExifBorderBitmap(
         source: Bitmap,
@@ -31,13 +34,16 @@ object ExifBorderRenderer {
         style: ExifFrameStyle,
         bandColor: Int? = null,
         bandThicknessPercent: Float? = null,
-        useSerifCaption: Boolean? = null
+        useSerifCaption: Boolean? = null,
+        frameColors: ExifFramePalette.FrameColors? = null
     ): Bitmap {
+        val colors = frameColors
+            ?: ExifFramePalette.defaultsFor(style).let { if (bandColor != null) it.copy(band = bandColor) else it }
         return when (style) {
-            ExifFrameStyle.CLASSIC -> buildClassicExifBorder(source, eModel, bandColor, bandThicknessPercent, useSerifCaption)
-            ExifFrameStyle.POLAROID -> buildPolaroidExifBorder(source, eModel, bandColor, bandThicknessPercent, useSerifCaption)
-            ExifFrameStyle.FILM_STRIP -> buildFilmStripExifBorder(source, eModel, bandColor, bandThicknessPercent, useSerifCaption)
-            ExifFrameStyle.MINIMAL -> buildMinimalExifBorder(source, eModel, bandColor, bandThicknessPercent, useSerifCaption)
+            ExifFrameStyle.CLASSIC -> buildClassicExifBorder(source, eModel, colors, bandThicknessPercent, useSerifCaption)
+            ExifFrameStyle.POLAROID -> buildPolaroidExifBorder(source, eModel, colors, bandThicknessPercent, useSerifCaption)
+            ExifFrameStyle.FILM_STRIP -> buildFilmStripExifBorder(source, eModel, colors, bandThicknessPercent, useSerifCaption)
+            ExifFrameStyle.MINIMAL -> buildMinimalExifBorder(source, eModel, colors, bandThicknessPercent, useSerifCaption)
         }
     }
 
@@ -68,17 +74,17 @@ object ExifBorderRenderer {
     private fun buildClassicExifBorder(
         source: Bitmap,
         eModel: ExifModel,
-        bandColor: Int?,
+        colors: ExifFramePalette.FrameColors,
         bandThicknessPercent: Float?,
         useSerifCaption: Boolean?
     ): Bitmap {
         val borderHeight = (source.height * (bandThicknessPercent ?: ExifFrameStyle.CLASSIC.defaultBandThicknessPercent)).toInt().coerceAtLeast(1)
         val expanded = Bitmap.createBitmap(source.width, source.height + borderHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(expanded)
-        canvas.drawColor(bandColor ?: ExifFrameStyle.CLASSIC.defaultBandColor)
+        canvas.drawColor(colors.band)
         canvas.drawBitmap(source, 0f, 0f, null)
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.BLACK
+            color = colors.primaryText
             textSize = borderHeight * 0.35f
             textAlign = Paint.Align.LEFT
             typeface = Typeface.create(captionTypefaceBase(useSerifCaption, Typeface.DEFAULT), Typeface.BOLD)
@@ -92,7 +98,7 @@ object ExifBorderRenderer {
         canvas.drawText(fitTextForCanvas(textPaint, eModel.getFormattedExif(), maxTextWidth), source.width * 0.95f, source.height + borderHeight * 0.45f, textPaint)
 
         textPaint.textSize = borderHeight * 0.18f
-        textPaint.color = Color.DKGRAY
+        textPaint.color = colors.secondaryText
         canvas.drawText(fitTextForCanvas(textPaint, eModel.dateTime, maxTextWidth), source.width * 0.95f, source.height + borderHeight * 0.75f, textPaint)
         return expanded
     }
@@ -101,7 +107,7 @@ object ExifBorderRenderer {
     private fun buildPolaroidExifBorder(
         source: Bitmap,
         eModel: ExifModel,
-        bandColor: Int?,
+        colors: ExifFramePalette.FrameColors,
         bandThicknessPercent: Float?,
         useSerifCaption: Boolean?
     ): Bitmap {
@@ -111,11 +117,11 @@ object ExifBorderRenderer {
         val totalHeight = source.height + sideBorder + bottomBorder
         val expanded = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(expanded)
-        canvas.drawColor(bandColor ?: ExifFrameStyle.POLAROID.defaultBandColor)
+        canvas.drawColor(colors.band)
         canvas.drawBitmap(source, sideBorder.toFloat(), sideBorder.toFloat(), null)
 
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.BLACK
+            color = colors.primaryText
             textAlign = Paint.Align.CENTER
             // Polaroid mặc định VỐN đã là serif — captionTypefaceBase(null) trả về styleDefault = SERIF.
             typeface = Typeface.create(captionTypefaceBase(useSerifCaption, Typeface.SERIF), Typeface.NORMAL)
@@ -125,7 +131,7 @@ object ExifBorderRenderer {
         canvas.drawText(fitTextForCanvas(textPaint, eModel.getCameraName(), maxTextWidth), totalWidth / 2f, source.height + sideBorder + bottomBorder * 0.55f, textPaint)
 
         textPaint.textSize = bottomBorder * 0.2f
-        textPaint.color = Color.DKGRAY
+        textPaint.color = colors.secondaryText
         val detail = listOfNotNull(
             eModel.getFormattedExif().takeIf { it.isNotEmpty() },
             eModel.dateTime.takeIf { it.isNotEmpty() }
@@ -138,7 +144,7 @@ object ExifBorderRenderer {
     private fun buildFilmStripExifBorder(
         source: Bitmap,
         eModel: ExifModel,
-        bandColor: Int?,
+        colors: ExifFramePalette.FrameColors,
         bandThicknessPercent: Float?,
         useSerifCaption: Boolean?
     ): Bitmap {
@@ -146,10 +152,10 @@ object ExifBorderRenderer {
         val totalHeight = source.height + bandHeight * 2
         val expanded = Bitmap.createBitmap(source.width, totalHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(expanded)
-        canvas.drawColor(bandColor ?: ExifFrameStyle.FILM_STRIP.defaultBandColor)
+        canvas.drawColor(colors.band)
         canvas.drawBitmap(source, 0f, bandHeight.toFloat(), null)
 
-        val holePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
+        val holePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = colors.primaryText }
         val holeSize = bandHeight * 0.42f
         val holeRadius = holeSize * 0.25f
         val holeGap = holeSize * 1.7f
@@ -183,6 +189,7 @@ object ExifBorderRenderer {
                 color = Color.argb(140, 0, 0, 0)
             }
         )
+        // Caption Film Strip nằm trên scrim ĐEN phủ ảnh (không nằm trên dải nền) → luôn trắng, kể cả IDEA-18.
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
             textAlign = Paint.Align.LEFT
@@ -205,14 +212,14 @@ object ExifBorderRenderer {
     private fun buildMinimalExifBorder(
         source: Bitmap,
         eModel: ExifModel,
-        bandColor: Int?,
+        colors: ExifFramePalette.FrameColors,
         bandThicknessPercent: Float?,
         useSerifCaption: Boolean?
     ): Bitmap {
         val borderHeight = (source.height * (bandThicknessPercent ?: ExifFrameStyle.MINIMAL.defaultBandThicknessPercent)).toInt().coerceAtLeast(1)
         val expanded = Bitmap.createBitmap(source.width, source.height + borderHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(expanded)
-        canvas.drawColor(bandColor ?: ExifFrameStyle.MINIMAL.defaultBandColor)
+        canvas.drawColor(colors.band)
         canvas.drawBitmap(source, 0f, 0f, null)
         canvas.drawLine(
             0f,
@@ -220,12 +227,12 @@ object ExifBorderRenderer {
             source.width.toFloat(),
             source.height.toFloat(),
             Paint().apply {
-                color = Color.LTGRAY
+                color = colors.accent
                 strokeWidth = borderHeight * 0.03f
             }
         )
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.DKGRAY
+            color = colors.primaryText
             textSize = borderHeight * 0.4f
             textAlign = Paint.Align.LEFT
             typeface = captionTypefaceBase(useSerifCaption, Typeface.DEFAULT)

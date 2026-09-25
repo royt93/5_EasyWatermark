@@ -643,6 +643,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /** IDEA-18 — màu khung EXIF theo màu chủ đạo của từng ảnh (áp lúc export). */
+    fun updateExifAutoPalette(enable: Boolean) {
+        launch { waterMarkRepo.updateExifAutoPalette(enable) }
+    }
+
     /** FEAT-11 — viền/bóng/nền pill cho text watermark, mỗi hiệu ứng bật/tắt độc lập. */
     fun updateTextEffectStroke(enable: Boolean) {
         launch { waterMarkRepo.updateTextEffectStroke(enable) }

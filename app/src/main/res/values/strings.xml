@@ -225,6 +225,7 @@
     <string name="exif_customize_band_color">Band color</string>
     <string name="exif_customize_band_thickness">Band thickness</string>
     <string name="exif_customize_serif_caption">Serif caption</string>
+    <string name="exif_customize_auto_palette">Match photo colors</string>
     <string name="vip_title">VIP Access</string>
     <string name="vip_status_active">VIP Active</string>
     <string name="vip_status_free">Free mode</string>

@@ -218,7 +218,32 @@
 
         </LinearLayout>
 
+        <!-- ══ IDEA-18: màu khung sinh theo màu chủ đạo của chính ảnh, thay vì màu band cố định ══ -->
         <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textview.MaterialTextView
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/exif_customize_auto_palette"
+                android:textAppearance="@style/TextAppearance.App.Body14" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/swExifAutoPalette"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/exif_customize_auto_palette" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowExifBandColor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"

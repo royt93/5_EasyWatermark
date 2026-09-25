@@ -54,6 +54,7 @@ class WaterMarkRepositoryApplyWaterMarkRoboTest {
         exifBandColor = 0x445566,
         exifBandThicknessPercent = 0.15f,
         exifUseSerifCaption = false,
+        exifAutoPalette = true,
         textEffectStroke = true,
         textEffectShadow = false,
         textEffectPillBackground = true,
@@ -90,6 +91,7 @@ class WaterMarkRepositoryApplyWaterMarkRoboTest {
         assertThat(readBack.exifBandColor).isEqualTo(mark.exifBandColor)
         assertThat(readBack.exifBandThicknessPercent).isEqualTo(mark.exifBandThicknessPercent)
         assertThat(readBack.exifUseSerifCaption).isEqualTo(mark.exifUseSerifCaption)
+        assertThat(readBack.exifAutoPalette).isEqualTo(mark.exifAutoPalette)
         assertThat(readBack.textEffectStroke).isEqualTo(mark.textEffectStroke)
         assertThat(readBack.textEffectShadow).isEqualTo(mark.textEffectShadow)
         assertThat(readBack.textEffectPillBackground).isEqualTo(mark.textEffectPillBackground)
@@ -108,6 +110,27 @@ class WaterMarkRepositoryApplyWaterMarkRoboTest {
         assertThat(readBack.exifBandColor).isNull()
         assertThat(readBack.exifBandThicknessPercent).isNull()
         assertThat(readBack.exifUseSerifCaption).isNull()
+    }
+
+    /** IDEA-18 — setter riêng + reset FEAT-14 phải xoá luôn cờ màu theo ảnh (không để "dính" sau Reset). */
+    @Test
+    fun updateExifAutoPalette_roundTrips_andResetClearsIt() = runBlocking {
+        assertThat(repo.waterMark.first().exifAutoPalette).isFalse()
+
+        repo.updateExifAutoPalette(true)
+        assertThat(repo.waterMark.first().exifAutoPalette).isTrue()
+
+        repo.resetExifCustomization()
+        assertThat(repo.waterMark.first().exifAutoPalette).isFalse()
+    }
+
+    @Test
+    fun applyWaterMark_autoPaletteFalse_overwritesPreviousTrue() = runBlocking {
+        repo.applyWaterMark(sampleMark().copy(exifAutoPalette = true))
+
+        repo.applyWaterMark(sampleMark().copy(exifAutoPalette = false))
+
+        assertThat(repo.waterMark.first().exifAutoPalette).isFalse()
     }
 
     @Test

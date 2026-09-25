@@ -176,6 +176,18 @@ class WaterMarkRepositoryIntegrationTest {
         assertThat(waterMark.exifUseSerifCaption).isNull()
     }
 
+    /** IDEA-18 — màu khung theo ảnh: mặc định tắt, ghi/đọc qua DataStore thật, reset xoá luôn. */
+    @Test
+    fun exifAutoPalette_defaultFalse_roundTrips_andIsClearedByReset() = runBlocking {
+        assertThat(repo.waterMark.first().exifAutoPalette).isFalse()
+
+        repo.updateExifAutoPalette(true)
+        assertThat(repo.waterMark.first().exifAutoPalette).isTrue()
+
+        repo.resetExifCustomization()
+        assertThat(repo.waterMark.first().exifAutoPalette).isFalse()
+    }
+
     @Test
     fun exifCustomization_persistsIndependently_fromFrameStyleSelection() = runBlocking {
         repo.updateExifBandColor(android.graphics.Color.GREEN)

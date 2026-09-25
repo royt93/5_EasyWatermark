@@ -113,6 +113,12 @@ class ExifPbFragment : BaseBindBSDFragment<DlgExifBorderBinding>() {
             }
         }
 
+        binding.swExifAutoPalette.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (buttonView.isPressed) {
+                shareViewModel.updateExifAutoPalette(isChecked)
+            }
+        }
+
         binding.tvExifCustomizeReset.setOnClickListener {
             shareViewModel.resetExifCustomization()
         }
@@ -134,10 +140,22 @@ class ExifPbFragment : BaseBindBSDFragment<DlgExifBorderBinding>() {
         }
         binding.tvExifBandThicknessValue.text = getString(R.string.position_anchor_margin_value, thicknessPercentValue.toInt())
 
+        // IDEA-18: màu theo ảnh bỏ qua màu band chọn tay → khoá hàng chọn màu để UI không "nói dối".
+        if (binding.swExifAutoPalette.isChecked != config.exifAutoPalette) {
+            binding.swExifAutoPalette.isChecked = config.exifAutoPalette
+        }
+        applyBandColorRowEnabled(!config.exifAutoPalette)
+
         val useSerif = config.exifUseSerifCaption ?: style.defaultUseSerifCaption
         if (binding.swExifSerifCaption.isChecked != useSerif) {
             binding.swExifSerifCaption.isChecked = useSerif
         }
+    }
+
+    private fun applyBandColorRowEnabled(enabled: Boolean) {
+        binding.rowExifBandColor.alpha = if (enabled) ALPHA_ENABLED else ALPHA_DISABLED
+        binding.flExifBandColor.isEnabled = enabled
+        binding.vExifBandColorSwatch.isEnabled = enabled
     }
 
     /** [ColorPickerDialog] nhớ vị trí chọn lần trước qua `setPreferenceName` (giống [ColorFragment]). */
@@ -164,6 +182,10 @@ class ExifPbFragment : BaseBindBSDFragment<DlgExifBorderBinding>() {
     companion object {
         private const val TAG = "ExifPbFragment"
         private const val SP_EXIF_BAND_COLOR_PICKER = "exif_band_color_picker_dialog"
+        private const val ALPHA_ENABLED = 1f
+
+        /** M3 disabled content opacity (38%). */
+        private const val ALPHA_DISABLED = 0.38f
 
         fun safetyShow(manager: FragmentManager) {
             try {

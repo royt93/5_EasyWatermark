@@ -269,4 +269,22 @@ class MainViewModelExifBorderRoboTest {
             assertThat(result.config).isEqualTo(Bitmap.Config.ARGB_8888)
         }
     }
+
+    /** IDEA-18: frameColors không được đổi kích thước khung (chỉ đổi màu) và không crash ở mọi style. */
+    @Test
+    fun autoPaletteFrameColors_everyStyle_sameSizeAsDefault_andNoCrash() {
+        val colors = com.mckimquyen.watermark.utils.bitmap.ExifFramePalette.resolve(Color.rgb(20, 30, 60), ExifFrameStyle.CLASSIC)
+        for (style in ExifFrameStyle.entries) {
+            val plain = com.mckimquyen.watermark.utils.bitmap.ExifBorderRenderer.buildExifBorderBitmap(redSource(), exif, style)
+            val themed = com.mckimquyen.watermark.utils.bitmap.ExifBorderRenderer.buildExifBorderBitmap(
+                redSource(),
+                exif,
+                style,
+                bandColor = Color.MAGENTA,
+                frameColors = colors
+            )
+            assertThat(themed.width).isEqualTo(plain.width)
+            assertThat(themed.height).isEqualTo(plain.height)
+        }
+    }
 }

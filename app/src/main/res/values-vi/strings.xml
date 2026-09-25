@@ -215,6 +215,7 @@
     <string name="exif_customize_band_color">Màu dải viền</string>
     <string name="exif_customize_band_thickness">Độ dày dải viền</string>
     <string name="exif_customize_serif_caption">Phông có chân (Serif)</string>
+    <string name="exif_customize_auto_palette">Màu khung theo ảnh</string>
     <string name="vip_title">VIP</string>
     <string name="vip_status_active">VIP đang kích hoạt</string>
     <string name="vip_status_free">Chế độ miễn phí</string>

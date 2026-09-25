@@ -18,6 +18,7 @@ import android.util.Log
 import androidx.core.content.FileProvider
 import androidx.core.graphics.withSave
 import androidx.documentfile.provider.DocumentFile
+import androidx.palette.graphics.Palette
 import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ConflictPolicy
@@ -38,6 +39,7 @@ import com.mckimquyen.watermark.utils.FileUtils.Companion.outPutFolderName
 import com.mckimquyen.watermark.utils.QrCodeGenerator
 import com.mckimquyen.watermark.utils.bitmap.BitmapRecycleGuard
 import com.mckimquyen.watermark.utils.bitmap.ExifBorderRenderer
+import com.mckimquyen.watermark.utils.bitmap.ExifFramePalette
 import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
 import com.mckimquyen.watermark.utils.bitmap.applyCropAndRotate
 import com.mckimquyen.watermark.utils.bitmap.calculateInSampleSize
@@ -475,14 +477,21 @@ class BatchExportEngine @Inject constructor(
                 )
 
                 val finalExportBitmap = if (tmpConfig.enableExif && imageInfo.exifModel != null && !imageInfo.exifModel!!.isEmpty()) {
+                    val frameStyle = ExifFrameStyle.obtain(tmpConfig.exifFrameStyle)
                     val expandedBitmap = ExifBorderRenderer.buildExifBorderBitmap(
                         source = mutableBitmap,
                         eModel = imageInfo.exifModel!!,
-                        style = ExifFrameStyle.obtain(tmpConfig.exifFrameStyle),
+                        style = frameStyle,
                         // FEAT-14 Custom Frame Builder — null nếu user chưa tuỳ chỉnh, giữ hành vi gốc.
                         bandColor = tmpConfig.exifBandColor,
                         bandThicknessPercent = tmpConfig.exifBandThicknessPercent,
-                        useSerifCaption = tmpConfig.exifUseSerifCaption
+                        useSerifCaption = tmpConfig.exifUseSerifCaption,
+                        // IDEA-18 — Palette tự thu nhỏ bitmap (~112x112) trước khi đếm màu, rẻ kể cả ảnh full-res.
+                        frameColors = if (tmpConfig.exifAutoPalette) {
+                            ExifFramePalette.resolve(Palette.from(mutableBitmap).generate().dominantSwatch?.rgb, frameStyle)
+                        } else {
+                            null
+                        }
                     )
                     // mutableBitmap đã được vẽ (drawBitmap) sang expandedBitmap, không còn dùng nữa
                     // (finalExportBitmap trỏ sang expandedBitmap) — recycle để tránh giữ 2 bitmap

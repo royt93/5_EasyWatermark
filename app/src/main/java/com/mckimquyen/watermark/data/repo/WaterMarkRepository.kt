@@ -88,6 +88,9 @@ class WaterMarkRepository @Inject constructor(
         val KEY_EXIF_BAND_COLOR = intPreferencesKey(SP_KEY_EXIF_BAND_COLOR)
         val KEY_EXIF_BAND_THICKNESS = floatPreferencesKey(SP_KEY_EXIF_BAND_THICKNESS)
         val KEY_EXIF_SERIF_CAPTION = booleanPreferencesKey(SP_KEY_EXIF_SERIF_CAPTION)
+
+        /** IDEA-18. */
+        val KEY_EXIF_AUTO_PALETTE = booleanPreferencesKey(SP_KEY_EXIF_AUTO_PALETTE)
         val KEY_TEXT_EFFECT_STROKE = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_STROKE)
         val KEY_TEXT_EFFECT_SHADOW = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_SHADOW)
         val KEY_TEXT_EFFECT_PILL_BACKGROUND = booleanPreferencesKey(SP_KEY_TEXT_EFFECT_PILL_BACKGROUND)
@@ -141,6 +144,7 @@ class WaterMarkRepository @Inject constructor(
                 exifBandColor = it[PreferenceKeys.KEY_EXIF_BAND_COLOR],
                 exifBandThicknessPercent = it[PreferenceKeys.KEY_EXIF_BAND_THICKNESS],
                 exifUseSerifCaption = it[PreferenceKeys.KEY_EXIF_SERIF_CAPTION],
+                exifAutoPalette = it[PreferenceKeys.KEY_EXIF_AUTO_PALETTE] ?: false,
                 textEffectStroke = it[PreferenceKeys.KEY_TEXT_EFFECT_STROKE] ?: false,
                 textEffectShadow = it[PreferenceKeys.KEY_TEXT_EFFECT_SHADOW] ?: false,
                 textEffectPillBackground = it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] ?: false,
@@ -563,13 +567,20 @@ class WaterMarkRepository @Inject constructor(
         dataStore.edit { it[PreferenceKeys.KEY_AUTO_CONTRAST_ENABLED] = enable }
     }
 
-    /** FEAT-14 — xoá cả 3 override cùng lúc (nút "Reset" trong UI). */
+    /** IDEA-18 — bật/tắt màu khung EXIF theo màu chủ đạo của từng ảnh. */
+    suspend fun updateExifAutoPalette(enable: Boolean) {
+        snapshotForUndoIfDue()
+        dataStore.edit { it[PreferenceKeys.KEY_EXIF_AUTO_PALETTE] = enable }
+    }
+
+    /** FEAT-14 — xoá mọi override cùng lúc (nút "Reset" trong UI), kể cả IDEA-18 auto palette. */
     suspend fun resetExifCustomization() {
         snapshotForUndoIfDue()
         dataStore.edit {
             it.remove(PreferenceKeys.KEY_EXIF_BAND_COLOR)
             it.remove(PreferenceKeys.KEY_EXIF_BAND_THICKNESS)
             it.remove(PreferenceKeys.KEY_EXIF_SERIF_CAPTION)
+            it.remove(PreferenceKeys.KEY_EXIF_AUTO_PALETTE)
         }
     }
 
@@ -604,6 +615,7 @@ class WaterMarkRepository @Inject constructor(
                 it[PreferenceKeys.KEY_EXIF_BAND_THICKNESS] = mark.exifBandThicknessPercent
             }
             if (mark.exifUseSerifCaption == null) it.remove(PreferenceKeys.KEY_EXIF_SERIF_CAPTION) else it[PreferenceKeys.KEY_EXIF_SERIF_CAPTION] = mark.exifUseSerifCaption
+            it[PreferenceKeys.KEY_EXIF_AUTO_PALETTE] = mark.exifAutoPalette
             it[PreferenceKeys.KEY_TEXT_EFFECT_STROKE] = mark.textEffectStroke
             it[PreferenceKeys.KEY_TEXT_EFFECT_SHADOW] = mark.textEffectShadow
             it[PreferenceKeys.KEY_TEXT_EFFECT_PILL_BACKGROUND] = mark.textEffectPillBackground
@@ -664,6 +676,9 @@ class WaterMarkRepository @Inject constructor(
         const val SP_KEY_EXIF_BAND_COLOR = "${SP_NAME}_key_exif_band_color"
         const val SP_KEY_EXIF_BAND_THICKNESS = "${SP_NAME}_key_exif_band_thickness"
         const val SP_KEY_EXIF_SERIF_CAPTION = "${SP_NAME}_key_exif_serif_caption"
+
+        /** IDEA-18. */
+        const val SP_KEY_EXIF_AUTO_PALETTE = "${SP_NAME}_key_exif_auto_palette"
         const val SP_KEY_TEXT_EFFECT_STROKE = "${SP_NAME}_key_text_effect_stroke"
         const val SP_KEY_TEXT_EFFECT_SHADOW = "${SP_NAME}_key_text_effect_shadow"
         const val SP_KEY_TEXT_EFFECT_PILL_BACKGROUND = "${SP_NAME}_key_text_effect_pill_background"

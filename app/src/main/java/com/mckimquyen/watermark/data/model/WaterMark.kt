@@ -26,6 +26,8 @@ data class WaterMark(
     val exifBandColor: Int? = null,
     val exifBandThicknessPercent: Float? = null,
     val exifUseSerifCaption: Boolean? = null,
+    /** IDEA-18 — bật thì màu nền/chữ khung EXIF sinh theo màu chủ đạo của chính ảnh, bỏ qua [exifBandColor]. */
+    val exifAutoPalette: Boolean = false,
     /** FEAT-11 — viền/bóng/nền pill cho text watermark, độc lập, kết hợp tự do. */
     val textEffectStroke: Boolean = false,
     val textEffectShadow: Boolean = false,
