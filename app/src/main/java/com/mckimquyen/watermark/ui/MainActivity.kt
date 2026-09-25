@@ -260,9 +260,6 @@ class MainActivity : BaseActivity() {
             initRecoveryView()
             return
         }
-        // Editor có thể mở lâu khi chỉnh watermark thủ công — giữ màn hình sáng suốt lúc dùng,
-        // không phụ thuộc Screen timeout của máy (vd OEM đặt timeout ngắn/eye-care mặc định).
-        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         launchView = LaunchView(this)
         setContentView(launchView)
         // Apply status-bar top padding and navigation bar bottom padding to the complete root view
