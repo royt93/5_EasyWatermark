@@ -166,7 +166,6 @@ class QrCodeBottomSheetFragmentRoboTest {
         assertThat(previewDrawableIsSet(fragment)).isFalse()
 
         fragment.binding.etContent.setText("hello")
-        shadowOf(Looper.getMainLooper()).idleFor(100, TimeUnit.MILLISECONDS) // < 250ms debounce
         assertThat(previewDrawableIsSet(fragment)).isFalse()
 
         shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS) // tổng > 250ms

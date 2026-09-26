@@ -357,4 +357,13 @@
     <string name="watermark_profile_apply_confirm_title">Áp dụng hồ sơ này?</string>
     <string name="watermark_profile_apply_confirm_message">Cấu hình watermark hiện tại sẽ bị thay bằng "%1$s".</string>
     <string name="watermark_profile_delete_confirm_message">Xóa hồ sơ này?</string>
+    <!-- IDEA-15: brand compliance -->
+    <string name="brand_compliance_pass">Đạt chuẩn thương hiệu</string>
+    <string name="brand_compliance_warn">Cảnh báo thương hiệu: %1$s</string>
+    <string name="brand_compliance_fail">Không đạt chuẩn thương hiệu: %1$s</string>
+    <string name="brand_compliance_issue_edge">Quá sát mép ảnh</string>
+    <string name="brand_compliance_issue_opacity">Độ mờ quá thấp</string>
+    <string name="brand_compliance_issue_contrast">Tương phản thấp</string>
+    <string name="brand_compliance_issue_face">Che khuôn mặt</string>
+    <string name="brand_compliance_issue_size">Kích thước bất thường</string>
 </resources>

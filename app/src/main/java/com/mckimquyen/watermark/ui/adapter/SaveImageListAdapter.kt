@@ -20,6 +20,7 @@ import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
 import com.mckimquyen.watermark.export.BatchExportEngine
+import com.mckimquyen.watermark.export.BrandComplianceScorer
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
 import com.mckimquyen.watermark.ui.widget.ProgressImageView
 import com.mckimquyen.watermark.utils.ktx.appear
@@ -60,6 +61,9 @@ class SaveImageListAdapter(
     // nhưng card trong danh sách vẫn kẹt icon "đang xử lý" mãi mãi. `pendingList` mutate đồng bộ
     // ngay tại lúc gọi (luôn trên main thread, đúng thứ tự FIFO) nên không bao giờ mất update.
     private var pendingList: MutableList<ImageInfo> = mutableListOf()
+
+    /** IDEA-15: cache kết quả Brand Compliance theo URI để re-apply mỗi lần bind mà không cần tính lại */
+    private val complianceCache = java.util.concurrent.ConcurrentHashMap<android.net.Uri, BrandComplianceScorer.ComplianceResult>()
 
     private val differ: AsyncListDiffer<ImageInfo> by lazy {
         AsyncListDiffer(this, differCallback)
@@ -138,6 +142,7 @@ class SaveImageListAdapter(
         // FEAT-17: cập nhật mỗi lần bind (không gate theo tag/uri như preview bên dưới) — đổi trạng
         // thái skip không đổi uri nên phải luôn refresh icon/độ mờ + rebind listener đúng item hiện tại.
         holder.updateSkipState(info.isSkippedInExport)
+        holder.showCompliance(complianceCache[info.uri])
         holder.ivSkipToggle.setOnClickListener { onToggleSkip(info) }
         holder.itemView.setOnClickListener { onItemClick(info, position) }
         // FEAT-07: chỉ render preview watermark 1 LẦN cho mỗi uri — payload "state" (đổi jobState
@@ -171,6 +176,8 @@ class SaveImageListAdapter(
                 is BatchExportEngine.PreviewResult.Success -> {
                     holder.ready()
                     holder.ivIcon.setImageBitmap(result.bitmap)
+                    result.compliance?.let { complianceCache[info.uri] = it }
+                    holder.showCompliance(result.compliance)
                     val (dimensions, bytes) = estimateOutput(result.approxOriginalWidth, result.approxOriginalHeight)
                     holder.showPreviewInfo(
                         context.getString(
@@ -184,6 +191,8 @@ class SaveImageListAdapter(
 
                 is BatchExportEngine.PreviewResult.DecodeFailure -> {
                     // ENH-35: Phản ánh rõ ảnh lỗi/không đọc được ngay trong grid preview trước khi export thật
+                    complianceCache.remove(info.uri)
+                    holder.showCompliance(null)
                     holder.showDecodeError(context.getString(R.string.save_failed))
                 }
 
@@ -282,6 +291,53 @@ class SaveImageListAdapter(
             tvPreviewInfo.text = text.orEmpty()
         }
 
+        /** IDEA-15: hiển thị badge tuân thủ thương hiệu (pass/warn/fail). */
+        fun showCompliance(result: BrandComplianceScorer.ComplianceResult?) {
+            if (result == null) {
+                ivCompliance.isVisible = false
+                return
+            }
+            ivCompliance.isVisible = true
+            val context = itemView.context
+            val (iconRes, tintAttr, contentDesc) = when (result.level) {
+                BrandComplianceScorer.Level.PASS -> Triple(
+                    R.drawable.baseline_check_circle_outline_24,
+                    com.google.android.material.R.attr.colorPrimary,
+                    context.getString(R.string.brand_compliance_pass)
+                )
+                BrandComplianceScorer.Level.WARN -> {
+                    val issueDesc = result.issues.firstOrNull()?.let { formatIssue(context, it) }.orEmpty()
+                    Triple(
+                        R.drawable.baseline_warning_amber_24,
+                        com.google.android.material.R.attr.colorTertiary,
+                        context.getString(R.string.brand_compliance_warn, issueDesc)
+                    )
+                }
+                BrandComplianceScorer.Level.FAIL -> {
+                    val issueDesc = result.issues.firstOrNull()?.let { formatIssue(context, it) }.orEmpty()
+                    Triple(
+                        R.drawable.baseline_error_24,
+                        com.google.android.material.R.attr.colorError,
+                        context.getString(R.string.brand_compliance_fail, issueDesc)
+                    )
+                }
+            }
+            ivCompliance.setImageResource(iconRes)
+            val typedValue = android.util.TypedValue()
+            if (context.theme.resolveAttribute(tintAttr, typedValue, true)) {
+                ivCompliance.setColorFilter(typedValue.data)
+            }
+            ivCompliance.contentDescription = contentDesc
+        }
+
+        private fun formatIssue(context: android.content.Context, issue: BrandComplianceScorer.Issue): String = when (issue) {
+            BrandComplianceScorer.Issue.EDGE -> context.getString(R.string.brand_compliance_issue_edge)
+            BrandComplianceScorer.Issue.LOW_OPACITY -> context.getString(R.string.brand_compliance_issue_opacity)
+            BrandComplianceScorer.Issue.LOW_CONTRAST -> context.getString(R.string.brand_compliance_issue_contrast)
+            BrandComplianceScorer.Issue.COVERS_FACE -> context.getString(R.string.brand_compliance_issue_face)
+            BrandComplianceScorer.Issue.SIZE_OUT_OF_RANGE -> context.getString(R.string.brand_compliance_issue_size)
+        }
+
         /** FEAT-17: icon đổi check↔cancel + làm mờ thumbnail khi ảnh bị loại khỏi batch export. */
         fun updateSkipState(isSkipped: Boolean) {
             ivSkipToggle.setImageResource(
@@ -292,6 +348,7 @@ class SaveImageListAdapter(
 
         val ivIcon: ProgressImageView = itemView.findViewById(R.id.ivIcon)
         val ivSkipToggle: ImageView = itemView.findViewById(R.id.ivSkipToggle)
+        val ivCompliance: ImageView = itemView.findViewById(R.id.ivCompliance)
         private val ivDone: ImageView = itemView.findViewById(R.id.ivDone)
         private val tvPreviewInfo: TextView = itemView.findViewById(R.id.tvPreviewInfo)
 

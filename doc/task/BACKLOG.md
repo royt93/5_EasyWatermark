@@ -60,7 +60,6 @@
 | [IDEA-03](todo/IDEA-03-content-authenticity-stamp-c2pa.md) | L | Content authenticity stamp kiểu C2PA |
 | [IDEA-09](todo/IDEA-09-watermark-survivability-preview.md) | L | Watermark Survivability Preview — mô phỏng crop/recompress mạng xã hội (mới 2026-09-10) |
 | [IDEA-10](todo/IDEA-10-recipient-fingerprint-batch.md) | L | Recipient Fingerprint Batch — watermark riêng theo người nhận, truy nguồn rò rỉ (mới 2026-09-10) |
-| [IDEA-15](todo/IDEA-15-brand-compliance-scoring-cham-diem-moi-anh-theo-rule-thuong.md) | L | Brand Compliance Scoring — chấm điểm mỗi ảnh theo rule thương hiệu trước khi export (mới 2026-09-16) |
 | [IDEA-17](todo/IDEA-17-voice-to-text-caption-khi-batch-nhieu-anh-mo-rong-feat-13.md) | L | Voice-to-text caption khi batch nhiều ảnh, mở rộng FEAT-13 (mới 2026-09-16) |
 | [IDEA-02](todo/IDEA-02-invisible-watermark-steganography.md) | XL | Invisible watermark / steganography chống xoá |
 | [IDEA-04](todo/IDEA-04-cloud-sync-brand-kit.md) | XL | Cloud sync Brand Kit đa thiết bị |
@@ -74,6 +73,7 @@
 ✅ **[IDEA-07](done/IDEA-07-batch-qr-smart-bridge.md)** — Batch QR Smart-Bridge (hash SHA-256 + xác thực nguồn gốc) — done 2026-09-24, smoke test TECNO BG6.
 ✅ **[IDEA-01](done/IDEA-01-ai-auto-placement-nhan-dien-chu-the.md)** — Auto-placement bằng on-device ML Kit Face Detection (né mặt người) — done 2026-09-25, smoke test TECNO BG6.
 ✅ **[IDEA-16](done/IDEA-16-watermark-tu-sinh-noi-dung-theo-gps-thoi-tiet-luc-chup.md)** — Token `{location}` tự sinh tên địa danh từ EXIF GPS qua Android Geocoder, cache 3 chữ số thập phân, tự xin quyền ACCESS_MEDIA_LOCATION (2026-09-25)
+✅ **[IDEA-15](done/IDEA-15-brand-compliance-scoring-cham-diem-moi-anh-theo-rule-thuong.md)** — Brand Compliance Scoring — chấm điểm mỗi ảnh theo rule thương hiệu trước khi export (done 2026-09-26, smoke test Samsung Galaxy S24 Ultra)
 ✅ **[IDEA-18](done/IDEA-18-bo-sinh-khung-exif-border-moi-theo-bang-mau-anh-khong-gioi-h.md)** — Màu khung EXIF theo màu chủ đạo của từng ảnh (cờ trên 4 style) — done 2026-09-25, smoke test TECNO KJ7.
 
 ## ⏸️ Deferred theo quyết định user (2026-09-10)

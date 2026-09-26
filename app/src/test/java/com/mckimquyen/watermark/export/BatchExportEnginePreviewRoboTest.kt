@@ -1,5 +1,7 @@
 package com.mckimquyen.watermark.export
 
+import android.graphics.RectF
+import android.graphics.Shader
 import android.net.Uri
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
@@ -126,5 +128,52 @@ class BatchExportEnginePreviewRoboTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertThat(result).isNotNull()
+    }
+
+    /** IDEA-15: PreviewResult.Success chứa đánh giá BrandComplianceScorer */
+    @Test
+    fun generatePreviewBitmap_evaluatesCompliance_andReturnsInSuccessResult() {
+        val waterMarkRepo = newRepo()
+        // Đặt alpha thấp (< 60) -> phải sinh issue LOW_OPACITY và FAIL
+        runBlocking { waterMarkRepo.updateAlpha(50) }
+        shadowOf(Looper.getMainLooper()).idle()
+        val engine = BatchExportEngine(context, ExportNaming())
+        val imageInfo = ImageInfo(Uri.parse("content://media/compliance_test.jpg"))
+
+        val result = runBlocking {
+            val config = waterMarkRepo.waterMark.first()
+            engine.generatePreviewBitmap(context.contentResolver, imageInfo, config, index = 0)
+        }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(result).isInstanceOf(BatchExportEngine.PreviewResult.Success::class.java)
+        val success = result as BatchExportEngine.PreviewResult.Success
+        assertThat(success.compliance).isNotNull()
+        assertThat(success.compliance!!.isFail).isTrue()
+        assertThat(success.compliance!!.issues).contains(BrandComplianceScorer.Issue.LOW_OPACITY)
+    }
+
+    /** IDEA-15: khuôn mặt dùng cache IDEA-01; không chạy ML Kit lại trong preview. */
+    @Test
+    fun generatePreviewBitmap_usesCachedFaceRects_forCompliance() {
+        val waterMarkRepo = newRepo()
+        val engine = BatchExportEngine(context, ExportNaming())
+        val imageInfo = ImageInfo(
+            uri = Uri.parse("content://media/face_compliance.jpg"),
+            tileMode = Shader.TileMode.CLAMP.ordinal,
+            offsetX = 0.5f,
+            offsetY = 0.5f,
+            detectedFaceRectsNormalized = listOf(RectF(0f, 0f, 1f, 1f))
+        )
+
+        val result = runBlocking {
+            val config = waterMarkRepo.waterMark.first()
+            engine.generatePreviewBitmap(context.contentResolver, imageInfo, config, index = 0)
+        }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val success = result as BatchExportEngine.PreviewResult.Success
+        assertThat(success.compliance).isNotNull()
+        assertThat(success.compliance!!.issues).contains(BrandComplianceScorer.Issue.COVERS_FACE)
     }
 }

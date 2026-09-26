@@ -28,6 +28,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- IDEA-15: badge Brand Compliance (pass / warn / fail) — góc trên-trái. -->
+    <ImageView
+        android:id="@+id/ivCompliance"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_margin="4dp"
+        android:background="@drawable/bg_preview_badge"
+        android:padding="4dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/baseline_check_circle_outline_24"
+        tools:visibility="visible" />
+
     <!-- FEAT-17: toggle skip/active — góc trên-phải, không đè lên ivDone (giữa) hay tvPreviewInfo (dưới). -->
     <ImageView
         android:id="@+id/ivSkipToggle"

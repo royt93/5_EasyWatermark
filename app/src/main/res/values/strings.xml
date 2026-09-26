@@ -377,4 +377,13 @@
     <string name="watermark_profile_apply_confirm_title">Apply this profile?</string>
     <string name="watermark_profile_apply_confirm_message">Current watermark settings will be replaced by "%1$s".</string>
     <string name="watermark_profile_delete_confirm_message">Delete this profile?</string>
+    <!-- IDEA-15: brand compliance -->
+    <string name="brand_compliance_pass">Watermark meets brand guidelines</string>
+    <string name="brand_compliance_warn">Brand warning: %1$s</string>
+    <string name="brand_compliance_fail">Brand non-compliant: %1$s</string>
+    <string name="brand_compliance_issue_edge">Too close to edge</string>
+    <string name="brand_compliance_issue_opacity">Opacity too low</string>
+    <string name="brand_compliance_issue_contrast">Low contrast</string>
+    <string name="brand_compliance_issue_face">Covers face</string>
+    <string name="brand_compliance_issue_size">Size out of range</string>
 </resources>

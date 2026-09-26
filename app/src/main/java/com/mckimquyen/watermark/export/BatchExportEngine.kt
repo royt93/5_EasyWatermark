@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Shader
@@ -788,7 +789,9 @@ class BatchExportEngine @Inject constructor(
         data class Success(
             override val bitmap: Bitmap,
             override val approxOriginalWidth: Int,
-            override val approxOriginalHeight: Int
+            override val approxOriginalHeight: Int,
+            /** IDEA-15: kết quả đánh giá quy tắc thương hiệu (pass/warn/fail) */
+            val compliance: BrandComplianceScorer.ComplianceResult? = null
         ) : PreviewResult
 
         data class DecodeFailure(
@@ -911,9 +914,57 @@ class BatchExportEngine @Inject constructor(
                 }
             }
 
+            val isClamp = previewInfo.obtainTileMode() == Shader.TileMode.CLAMP
+            val wmWidth = (shader?.width ?: 0).toFloat()
+            val wmHeight = (shader?.height ?: 0).toFloat()
+            val wmRectNormalized: BrandComplianceScorer.NormalizedBox? = if (isClamp && wmWidth > 0 && wmHeight > 0 && mutableBitmap.width > 0 && mutableBitmap.height > 0) {
+                val l = previewInfo.offsetX
+                val t = previewInfo.offsetY
+                val r = l + (wmWidth / mutableBitmap.width)
+                val b = t + (wmHeight / mutableBitmap.height)
+                BrandComplianceScorer.NormalizedBox(l, t, r, b)
+            } else {
+                null
+            }
+
+            val contrastRatio: Double? = if (config.markMode == WaterMarkRepository.MarkMode.Text) {
+                try {
+                    val paletteBuilder = Palette.from(mutableBitmap)
+                    wmRectNormalized?.let { rect ->
+                        val left = (rect.left * mutableBitmap.width).toInt().coerceIn(0, mutableBitmap.width - 1)
+                        val top = (rect.top * mutableBitmap.height).toInt().coerceIn(0, mutableBitmap.height - 1)
+                        val right = (rect.right * mutableBitmap.width).toInt().coerceIn(left + 1, mutableBitmap.width)
+                        val bottom = (rect.bottom * mutableBitmap.height).toInt().coerceIn(top + 1, mutableBitmap.height)
+                        paletteBuilder.setRegion(left, top, right, bottom)
+                    }
+                    val backgroundColor = paletteBuilder.generate().dominantSwatch?.rgb ?: Color.GRAY
+                    androidx.core.graphics.ColorUtils.calculateContrast(config.textColor, backgroundColor)
+                } catch (e: Exception) {
+                    null
+                }
+            } else {
+                null
+            }
+
+            val faces = imageInfo.detectedFaceRectsNormalized.orEmpty().map {
+                BrandComplianceScorer.NormalizedBox(it.left, it.top, it.right, it.bottom)
+            }
+
+            val compliance = BrandComplianceScorer.evaluate(
+                watermarkRect = wmRectNormalized,
+                alpha = config.alpha,
+                contrastRatio = contrastRatio,
+                faces = faces,
+                layoutMode = if (isClamp) {
+                    BrandComplianceScorer.LayoutMode.SINGLE
+                } else {
+                    BrandComplianceScorer.LayoutMode.TILED
+                }
+            )
+
             val layoutPaint = Paint().apply { this.shader = shader?.bitmapShader }
             val canvas = Canvas(mutableBitmap)
-            if (previewInfo.obtainTileMode() == Shader.TileMode.CLAMP) {
+            if (isClamp) {
                 // FEAT-03: bọc withSave — offset layer PHỤ (drawExtraLayers) tính từ gốc toạ độ
                 // ảnh, không được cộng dồn lên translate của layer chính này.
                 canvas.withSave {
@@ -924,8 +975,8 @@ class BatchExportEngine @Inject constructor(
                     drawRect(
                         0f,
                         0f,
-                        (shader?.width ?: 0).toFloat(),
-                        (shader?.height ?: 0).toFloat(),
+                        wmWidth,
+                        wmHeight,
                         layoutPaint
                     )
                 }
@@ -933,7 +984,7 @@ class BatchExportEngine @Inject constructor(
                 canvas.drawRect(0f, 0f, mutableBitmap.width.toFloat(), mutableBitmap.height.toFloat(), layoutPaint)
             }
             drawExtraLayers(canvas, mutableBitmap.width, mutableBitmap.height, imageInfo, config.extraLayers, contentResolver)
-            PreviewResult.Success(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
+            PreviewResult.Success(mutableBitmap, approxOriginalWidth, approxOriginalHeight, compliance)
         } catch (ce: CancellationException) {
             throw ce
         } catch (e: Exception) {
