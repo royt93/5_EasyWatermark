@@ -174,6 +174,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                             shareViewModel.saveCopyright(etCopyright.text?.toString().orEmpty().trim())
                             // BUG-32: Lưu pattern tên file ngay khi bấm Export (không phụ thuộc blur/mất focus của etOutputName)
                             shareViewModel.saveOutputNamePattern(etOutputName.text?.toString().orEmpty().trim())
+                            shareViewModel.saveProofingMode(swProofingMode.isChecked)
                             requireActivity().preCheckStoragePermission {
                                 shareViewModel.saveImage(
                                     requireActivity().contentResolver,
@@ -198,6 +199,11 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 setOnClickListener {
                     openShareZip()
                 }
+            }
+
+            swProofingMode.isChecked = shareViewModel.proofingMode
+            swProofingMode.setOnCheckedChangeListener { _, isChecked ->
+                shareViewModel.saveProofingMode(isChecked)
             }
 
             btnBatchCaptions.setOnClickListener {

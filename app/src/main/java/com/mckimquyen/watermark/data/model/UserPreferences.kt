@@ -16,7 +16,9 @@ data class UserPreferences(
     /** FEAT-19: Chính sách xử lý trùng tên file khi export lại. */
     val conflictPolicy: ConflictPolicy = ConflictPolicy.KEEP_BOTH,
     /** FEAT-15: null = xuất vào Pictures/WaterMarkCreator/ (mặc định); khác null = thư mục SAF user tự chọn. */
-    val outputDirectoryUri: Uri? = null
+    val outputDirectoryUri: Uri? = null,
+    /** IDEA-13: bật chế độ proofing — watermark lớn đánh số + sinh proof_index.html. */
+    val proofingMode: Boolean = false
 ) {
     companion object {
         val DEFAULT = UserPreferences(

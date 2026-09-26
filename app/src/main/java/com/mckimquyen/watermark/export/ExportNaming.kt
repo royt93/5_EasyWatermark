@@ -60,6 +60,7 @@ class ExportNaming @Inject constructor(
         return mapOf(
             "filename" to queryDisplayName(contentResolver, imageInfo.uri),
             "seq" to (index + 1).toString(),
+            "seq3" to (index + 1).toString().padStart(3, '0'),
             "date" to date,
             "model" to exif?.getCameraName().orEmpty(),
             "make" to exif?.make.orEmpty(),

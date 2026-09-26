@@ -366,4 +366,7 @@
     <string name="brand_compliance_issue_contrast">Tương phản thấp</string>
     <string name="brand_compliance_issue_face">Che khuôn mặt</string>
     <string name="brand_compliance_issue_size">Kích thước bất thường</string>
+    <!-- IDEA-13: Client Proofing Mode -->
+    <string name="proofing_mode_title">Chế độ ảnh duyệt cho khách</string>
+    <string name="proofing_mode_desc">Watermark lớn đánh số từng ảnh và sinh tệp proof_index.html</string>
 </resources>

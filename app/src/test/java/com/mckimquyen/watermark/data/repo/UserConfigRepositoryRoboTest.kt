@@ -106,4 +106,16 @@ class UserConfigRepositoryRoboTest {
 
         assertThat(repo.userPreferences.first().outputDirectoryUri).isNull()
     }
+
+    /** IDEA-13: lưu cấu hình proofing mode (mặc định false). */
+    @Test
+    fun testProofingMode_persistsSetting() = runBlocking {
+        assertThat(repo.userPreferences.first().proofingMode).isFalse()
+
+        repo.updateProofingMode(true)
+        assertThat(repo.userPreferences.first().proofingMode).isTrue()
+
+        repo.updateProofingMode(false)
+        assertThat(repo.userPreferences.first().proofingMode).isFalse()
+    }
 }

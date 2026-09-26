@@ -184,6 +184,9 @@ class MainViewModel @Inject constructor(
     val outputDirectoryUri: Uri?
         get() = userPreferences.value.outputDirectoryUri
 
+    val proofingMode: Boolean
+        get() = userPreferences.value.proofingMode
+
     val colorPalette: MutableLiveData<Palette> = MutableLiveData()
 
     private val projection = arrayOf(
@@ -731,6 +734,11 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             userRepo.updateConflictPolicy(policy)
         }
+    }
+
+    fun saveProofingMode(enabled: Boolean) {
+        viewModelScope.launch { userRepo.updateProofingMode(enabled) }
+        resetJobStatus()
     }
 
     /** FEAT-15: `null` xoá lựa chọn — quay lại xuất vào Pictures/WaterMarkCreator/ mặc định. */

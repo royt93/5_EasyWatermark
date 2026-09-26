@@ -290,6 +290,22 @@
         tools:text="content://.../Documents/MyFolder  ·  Đặt lại mặc định"
         tools:visibility="visible" />
 
+    <!-- ══ IDEA-13: Client Proofing Mode ═══════════════════════════════════ -->
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swProofingMode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:contentDescription="@string/proofing_mode_title"
+        android:text="@string/proofing_mode_title" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="@string/proofing_mode_desc"
+        android:textAppearance="@style/TextAppearance.App.Body13Variant" />
+
     <!-- ══ FEAT-13: entry point cho caption riêng từng ảnh ═════════════════════ -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBatchCaptions"

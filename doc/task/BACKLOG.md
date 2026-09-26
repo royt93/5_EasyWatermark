@@ -52,7 +52,7 @@
 | [M3-08](done/M3-08-migrate-edit-panels-dialogs-bottom-sheets.md) | P1 | M | Migrate toàn bộ Dialogs, Bottom Sheets và Panels chỉnh sửa sang Material You M3 | **DONE** |
 | [M3-09](done/M3-09-cleanup-ios-glass-assets-lint-verification.md) | P2 | S | Dọn dẹp triệt để tài nguyên iOS Glass, Lint & Kiểm thử hồi quy toàn diện | **DONE** |
 
-## UNIQUE_IDEAS (14, +4 done) — tính năng độc quyền/đột phá, effort cao
+## UNIQUE_IDEAS (14, +7 done) — tính năng độc quyền/đột phá, effort cao
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
@@ -66,7 +66,6 @@
 | [IDEA-05](todo/IDEA-05-cho-template-cong-dong.md) | XL | Chợ template cộng đồng (network effect) |
 | [IDEA-11](todo/IDEA-11-live-camera-watermark-ar-preview-xem-watermark-ngay-tren-vie.md) | XL | Live Camera Watermark / AR preview — watermark ngay trên viewfinder trước khi chụp (mới 2026-09-16, 2 nguồn đồng thuận) |
 | [IDEA-12](todo/IDEA-12-on-device-style-coach-goi-y-fontmauopacityvi-tri-theo-phong.md) | XL | On-device Style Coach — gợi ý font/màu/opacity/vị trí theo phong cách ảnh cá nhân (mới 2026-09-16) |
-| [IDEA-13](todo/IDEA-13-client-proofing-mode-xuat-album-proof-cho-khach-chon-anh-dan.md) | XL | Client Proofing Mode — album proof cho khách chọn ảnh, dành cho photographer (mới 2026-09-16) |
 | [IDEA-14](todo/IDEA-14-smart-redaction-watermark-tu-phat-hien-thong-tin-nhay-cam-tr.md) | XL | Smart Redaction + Watermark — tự phát hiện thông tin nhạy cảm trước khi đóng dấu (mới 2026-09-16) |
 
 ✅ **[IDEA-06](done/IDEA-06-auto-contrast-opacity-harmonizer.md)** — Auto-contrast/opacity harmonizer theo từng ảnh — done 2026-09-24, smoke test TECNO KJ7.
@@ -75,6 +74,7 @@
 ✅ **[IDEA-16](done/IDEA-16-watermark-tu-sinh-noi-dung-theo-gps-thoi-tiet-luc-chup.md)** — Token `{location}` tự sinh tên địa danh từ EXIF GPS qua Android Geocoder, cache 3 chữ số thập phân, tự xin quyền ACCESS_MEDIA_LOCATION (2026-09-25)
 ✅ **[IDEA-15](done/IDEA-15-brand-compliance-scoring-cham-diem-moi-anh-theo-rule-thuong.md)** — Brand Compliance Scoring — chấm điểm mỗi ảnh theo rule thương hiệu trước khi export (done 2026-09-26, smoke test Samsung Galaxy S24 Ultra)
 ✅ **[IDEA-18](done/IDEA-18-bo-sinh-khung-exif-border-moi-theo-bang-mau-anh-khong-gioi-h.md)** — Màu khung EXIF theo màu chủ đạo của từng ảnh (cờ trên 4 style) — done 2026-09-25, smoke test TECNO KJ7.
+✅ **[IDEA-13](done/IDEA-13-client-proofing-mode-xuat-album-proof-cho-khach-chon-anh-dan.md)** — Client Proofing Mode — watermark lớn đánh số từng ảnh + `proof_index.html` khớp file xuất — done 2026-09-26, smoke test TECNO KJ7.
 
 ## ⏸️ Deferred theo quyết định user (2026-09-10)
 

@@ -386,4 +386,7 @@
     <string name="brand_compliance_issue_contrast">Low contrast</string>
     <string name="brand_compliance_issue_face">Covers face</string>
     <string name="brand_compliance_issue_size">Size out of range</string>
+    <!-- IDEA-13: Client Proofing Mode -->
+    <string name="proofing_mode_title">Client proofing mode</string>
+    <string name="proofing_mode_desc">Large numbered watermark on every photo and a proof_index.html file</string>
 </resources>

@@ -44,7 +44,7 @@ class TextTokenResolverTest {
     fun supportedTokens_containsExpectedSet() {
         assertThat(TextTokenResolver.SUPPORTED_TOKENS)
             .containsExactly(
-                "filename", "seq", "date", "model", "make",
+                "filename", "seq", "seq3", "date", "model", "make",
                 "iso", "fnumber", "exposure", "focal", "exif", "location"
             )
     }

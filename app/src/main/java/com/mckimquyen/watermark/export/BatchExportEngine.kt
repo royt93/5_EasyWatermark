@@ -78,7 +78,10 @@ class BatchExportEngine @Inject constructor(
      * (`getPixel`/`ShadowCanvas.description` đều không phản ánh nội dung đã vẽ) nên không thể
      * assert bằng ảnh xuất ra, phải test trực tiếp điều kiện quyết định có vẽ hay không.
      */
-    internal fun resolveBaseText(imageInfo: ImageInfo, config: WaterMark): String = imageInfo.caption ?: config.text
+    internal fun resolveBaseText(imageInfo: ImageInfo, config: WaterMark, proofingMode: Boolean = false): String {
+        val text = imageInfo.caption ?: config.text
+        return if (proofingMode && imageInfo.caption != null) ProofingMode.withSeq(text) else text
+    }
 
     /** Xem [resolveBaseText] — cùng lý do `internal`. */
     internal fun shouldSkipTextWatermark(markMode: WaterMarkRepository.MarkMode, baseText: String): Boolean =
@@ -172,7 +175,8 @@ class BatchExportEngine @Inject constructor(
         val conflictPolicy: com.mckimquyen.watermark.data.model.ConflictPolicy = com.mckimquyen.watermark.data.model.ConflictPolicy.KEEP_BOTH,
         // FEAT-15: null = hành vi cũ (MediaStore Pictures/WaterMarkCreator/); khác null = ghi qua
         // SAF (DocumentFile) vào đúng thư mục user đã chọn thay vì luôn cố định.
-        val outputDirectoryUri: Uri? = null
+        val outputDirectoryUri: Uri? = null,
+        val proofingMode: Boolean = false
     )
 
     /**
@@ -252,7 +256,12 @@ class BatchExportEngine @Inject constructor(
             // exifModel tính ra trong lúc export chỉ dùng cục bộ trong hàm này (không caller nào
             // đọc lại sau khi hàm return), nên reassign biến local qua copy() thay vì mutate
             // instance được truyền vào (tránh side-effect ngoài ý muốn lên object caller đang giữ).
-            var imageInfo = originalImageInfo
+            // IDEA-13: proof phải phủ kín ảnh — ép REPEAT bất kể user đặt CLAMP (1 vị trí) cho ảnh này.
+            var imageInfo = if (settings.proofingMode) {
+                originalImageInfo.copy(tileMode = Shader.TileMode.REPEAT.ordinal)
+            } else {
+                originalImageInfo
+            }
             // ENH-14: downsample ngay lúc decode khi user đã chọn resize output (maxOutputLongEdge
             // != 0) — giảm peak memory khi vẽ watermark trên ảnh 12-48MP không cần thiết phải ở
             // full-res nếu output cuối cùng sẽ bị resize nhỏ lại. "Original" (0) giữ hành vi cũ.
@@ -345,7 +354,7 @@ class BatchExportEngine @Inject constructor(
                 // Thiếu guard skipTextWatermark bên dưới từng là bug: layoutPaint (Paint() mặc
                 // định màu đen, alpha 255) vẫn bị canvas.drawRect() tô kín đè lên ảnh vì shader
                 // null, biến "để trống caption = không watermark" thành "ảnh xuất ra bị đen kín".
-                val baseText = resolveBaseText(imageInfo, tmpConfig)
+                val baseText = resolveBaseText(imageInfo, tmpConfig, settings.proofingMode)
                 if (!shouldSkipTextWatermark(tmpConfig.markMode, baseText)) {
                     val shader = when (tmpConfig.markMode) {
                         WaterMarkRepository.MarkMode.Text -> {

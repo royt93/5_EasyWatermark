@@ -54,15 +54,17 @@ class BatchExportWorker @AssistedInject constructor(
         }
         val viewInfo = readViewInfo()
         val prefs = userRepo.userPreferences.first()
+        val baseConfig = waterMarkRepo.waterMark.first()
         val settings = BatchExportEngine.ExportSettings(
-            config = waterMarkRepo.waterMark.first(),
+            config = if (prefs.proofingMode) ProofingMode.overrideConfig(baseConfig) else baseConfig,
             outputFormat = prefs.outputFormat,
             compressLevel = prefs.compressLevel,
             maxOutputLongEdge = prefs.maxOutputLongEdge,
             copyright = prefs.copyright,
             outputNamePattern = prefs.outputNamePattern,
             conflictPolicy = prefs.conflictPolicy,
-            outputDirectoryUri = prefs.outputDirectoryUri
+            outputDirectoryUri = prefs.outputDirectoryUri,
+            proofingMode = prefs.proofingMode
         )
         val total = infoList.size
         var doneCount = 0
@@ -101,6 +103,18 @@ class BatchExportWorker @AssistedInject constructor(
             // thay vì chỉ dựa vào progress Data tạm thời.
             val finalList = result.data ?: infoList
             waterMarkRepo.updateImageList(finalList)
+            if (settings.proofingMode) {
+                val entries = finalList.mapIndexedNotNull { index, info ->
+                    val outputUri = info.shareUri ?: return@mapIndexedNotNull null
+                    if (info.isSkippedInExport) return@mapIndexedNotNull null
+                    val fileName = com.mckimquyen.watermark.utils.ExportZipHelper.queryDisplayName(
+                        applicationContext.contentResolver,
+                        outputUri
+                    ) ?: return@mapIndexedNotNull null
+                    ProofingMode.Entry(sequence = index + 1, fileName = fileName)
+                }
+                ProofingMode.writeIndex(applicationContext, entries, settings.outputDirectoryUri)
+            }
             recordHistory(infoList, finalList, settings)
             return if (result.isFailure()) WorkResult.failure() else WorkResult.success()
         } finally {
