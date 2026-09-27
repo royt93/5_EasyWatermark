@@ -56,4 +56,31 @@ class BatchCaptionLayoutRoboTest {
 
         assertThat(til.hint.toString()).isEqualTo(root.context.getString(R.string.batch_caption_hint))
     }
+
+    // ── IDEA-17: nhập caption bằng giọng nói ──────────────────────────────────────────────────
+
+    @Test
+    fun voiceViews_existInHierarchy() {
+        val root = inflateRoot()
+
+        assertThat(root.findViewById<View>(R.id.btnVoice)).isNotNull()
+        assertThat(root.findViewById<View>(R.id.tvVoiceTarget)).isNotNull()
+    }
+
+    @Test
+    fun voiceButton_coContentDescriptionChoTrinhDocManHinh() {
+        val root = inflateRoot()
+        val button = root.findViewById<View>(R.id.btnVoice)
+
+        assertThat(button.contentDescription?.toString()).isNotEmpty()
+    }
+
+    @Test
+    fun voiceButton_khongChiemSlotEndIconXoaCuaONhap() {
+        val root = inflateRoot()
+        val til = root.findViewById<TextInputLayout>(R.id.tilCaptions)
+
+        // Nút micro phải là view riêng — endIcon vẫn giữ nguyên chức năng xoá nhanh của FEAT-13.
+        assertThat(til.endIconMode).isEqualTo(TextInputLayout.END_ICON_CLEAR_TEXT)
+    }
 }

@@ -289,6 +289,10 @@
     </plurals>
     <string name="batch_caption_count_mismatch">Đã nhập %1$d dòng nhưng có %2$d ảnh trong danh sách — vui lòng kiểm tra lại</string>
     <string name="batch_caption_invalid_csv">Dấu ngoặc kép chưa đóng ở dòng %1$d</string>
+    <!-- IDEA-17: nhập caption bằng giọng nói cho dòng đang đặt con trỏ. -->
+    <string name="batch_caption_voice">Đọc chú thích cho dòng đang chọn</string>
+    <string name="batch_caption_voice_target">Đang nhập cho ảnh %1$d/%2$d</string>
+    <string name="batch_caption_voice_unavailable">Máy chưa có ứng dụng nhận dạng giọng nói</string>
     <string name="action_rate_us">Đánh giá</string>
     <string name="splash_tagline">Nhanh chóng • Đẹp mắt • Bảo vệ Ngoại tuyến</string>
     <string name="signature_saved_hint">Chữ ký đã lưu  (chạm để dùng · ✕ để xóa)</string>

@@ -309,6 +309,10 @@
     </plurals>
     <string name="batch_caption_count_mismatch">%1$d lines entered but %2$d images in batch — fix before applying</string>
     <string name="batch_caption_invalid_csv">Unclosed quote on line %1$d</string>
+    <!-- IDEA-17: nhập caption bằng giọng nói cho dòng đang đặt con trỏ. -->
+    <string name="batch_caption_voice">Dictate caption for the current line</string>
+    <string name="batch_caption_voice_target">Dictating for image %1$d/%2$d</string>
+    <string name="batch_caption_voice_unavailable">This device has no speech recognition app</string>
     <string name="action_rate_us">Rate us</string>
     <string name="splash_tagline">Fast • Elegant • Offline Protection</string>
     <string name="signature_saved_hint">Saved Signatures  (tap to load · ✕ to delete)</string>

@@ -21,6 +21,17 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
+    <!--
+        IDEA-17: đọc caption bằng giọng nói qua RecognizerIntent (app hệ thống ghi âm hộ nên KHÔNG
+        cần RECORD_AUDIO). Android 11+ ẩn package khác khỏi resolveActivity() — thiếu khối này thì
+        nút micro luôn bị ẩn nhầm trên máy vẫn hỗ trợ nhận dạng.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+        </intent>
+    </queries>
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
