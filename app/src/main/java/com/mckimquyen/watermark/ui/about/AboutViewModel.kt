@@ -7,11 +7,15 @@ import androidx.lifecycle.asLiveData
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.data.repo.BackupRestoreRepository
 import com.mckimquyen.watermark.data.repo.MemorySettingRepo
+import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.export.AuthenticityVerifier
+import com.mckimquyen.watermark.export.stego.HiddenWatermarkReader
+import com.mckimquyen.watermark.export.stego.InvisibleWatermark
 import com.mckimquyen.watermark.utils.ktx.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -19,6 +23,7 @@ import javax.inject.Inject
 class AboutViewModel @Inject constructor(
     private val waterMarkRepository: WaterMarkRepository,
     private val backupRestoreRepository: BackupRestoreRepository,
+    private val userConfigRepository: UserConfigRepository,
     memorySettingRepo: MemorySettingRepo
 ) : ViewModel() {
 
@@ -65,13 +70,29 @@ class AboutViewModel @Inject constructor(
     fun verifyAuthenticity(
         contentResolver: ContentResolver,
         srcUri: Uri,
-        onResult: (AuthenticityVerifier.Result) -> Unit
+        onResult: (VerifyReport) -> Unit
     ) {
         launch {
-            val result = withContext(Dispatchers.IO) {
-                AuthenticityVerifier.verify(contentResolver, srcUri)
+            // Tên chủ sở hữu đang cấu hình, để đối chiếu với ID rút gọn đọc từ lớp ẩn.
+            val currentOwner = userConfigRepository.userPreferences.first().copyright
+            val report = withContext(Dispatchers.IO) {
+                VerifyReport(
+                    stamp = AuthenticityVerifier.verify(contentResolver, srcUri),
+                    // IDEA-02: đọc song song, KHÔNG phụ thuộc kết quả EXIF ở trên — ca đáng giá nhất
+                    // chính là EXIF đã bị nền tảng xoá sạch mà lớp ẩn trong pixel vẫn còn.
+                    hidden = HiddenWatermarkReader.read(contentResolver, srcUri),
+                    currentOwner = currentOwner
+                )
             }
-            onResult(result)
+            onResult(report)
         }
     }
+
+    /** Kết quả gộp của hai tầng độc lập: con dấu EXIF (IDEA-03) và watermark ẩn trong pixel (IDEA-02). */
+    data class VerifyReport(
+        val stamp: AuthenticityVerifier.Result,
+        val hidden: InvisibleWatermark.Result?,
+        /** Tên chủ sở hữu đang đặt trong cấu hình export — để đối chiếu với ID trong lớp ẩn. */
+        val currentOwner: String = ""
+    )
 }

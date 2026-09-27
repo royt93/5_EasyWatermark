@@ -16,6 +16,7 @@ import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KE
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_COMPRESS_LEVEL
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_CONFLICT_POLICY
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_COPYRIGHT
+import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_INVISIBLE_WATERMARK
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_MAX_LONG_EDGE
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_OUTPUT_DIRECTORY_URI
 import com.mckimquyen.watermark.data.repo.UserConfigRepository.PreferenceKeys.KEY_OUTPUT_FORMAT
@@ -43,6 +44,7 @@ class UserConfigRepository @Inject constructor(
         val KEY_OUTPUT_DIRECTORY_URI = stringPreferencesKey(SP_KEY_OUTPUT_DIRECTORY_URI)
         val KEY_PROOFING_MODE = booleanPreferencesKey(SP_KEY_PROOFING_MODE)
         val KEY_AUTHENTICITY_STAMP = booleanPreferencesKey(SP_KEY_AUTHENTICITY_STAMP)
+        val KEY_INVISIBLE_WATERMARK = booleanPreferencesKey(SP_KEY_INVISIBLE_WATERMARK)
     }
 
     val userPreferences: Flow<UserPreferences> = dataStore.data
@@ -67,6 +69,8 @@ class UserConfigRepository @Inject constructor(
             val proofingMode = it[KEY_PROOFING_MODE] ?: false
             // IDEA-03: mặc định tắt — nhúng con dấu chứng thực là lựa chọn của user, không âm thầm bật.
             val authenticityStamp = it[KEY_AUTHENTICITY_STAMP] ?: false
+            // IDEA-02: mặc định tắt — nhúng tốn ~3s cho ảnh 12MP, phải do user chủ động bật.
+            val invisibleWatermark = it[KEY_INVISIBLE_WATERMARK] ?: false
             UserPreferences(
                 outputFormat,
                 compressLevel,
@@ -76,7 +80,8 @@ class UserConfigRepository @Inject constructor(
                 conflictPolicy,
                 outputDirectoryUri,
                 proofingMode,
-                authenticityStamp
+                authenticityStamp,
+                invisibleWatermark
             )
         }
 
@@ -137,6 +142,11 @@ class UserConfigRepository @Inject constructor(
         dataStore.edit { it[KEY_AUTHENTICITY_STAMP] = enabled }
     }
 
+    /** IDEA-02: bật/tắt nhúng watermark vô hình vào pixel ảnh xuất. */
+    suspend fun updateInvisibleWatermark(enabled: Boolean) {
+        dataStore.edit { it[KEY_INVISIBLE_WATERMARK] = enabled }
+    }
+
     /** FEAT-15: `null` = quay lại hành vi mặc định (MediaStore Pictures/WaterMarkCreator/). */
     suspend fun updateOutputDirectoryUri(uri: Uri?) {
         dataStore.edit {
@@ -164,6 +174,7 @@ class UserConfigRepository @Inject constructor(
         const val SP_KEY_OUTPUT_DIRECTORY_URI = "${SP_NAME}_key_output_directory_uri"
         const val SP_KEY_PROOFING_MODE = "${SP_NAME}_key_proofing_mode"
         const val SP_KEY_AUTHENTICITY_STAMP = "${SP_NAME}_key_authenticity_stamp"
+        const val SP_KEY_INVISIBLE_WATERMARK = "${SP_NAME}_key_invisible_watermark"
 
         // ENH-34: ordinal thật của Bitmap.CompressFormat.WEBP_LOSSY/WEBP_LOSSLESS (API 30+) — dùng
         // hằng số Int thay vì tham chiếu thẳng field enum ở đây, để so khớp ordinal đọc từ DataStore

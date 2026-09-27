@@ -20,6 +20,7 @@ import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.AAboutBinding
 import com.mckimquyen.watermark.export.AuthenticityVerifier
+import com.mckimquyen.watermark.export.stego.StegoPayload
 import com.mckimquyen.watermark.feature.vip.VipManagementActivity
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.formatDate
@@ -68,23 +69,46 @@ class AboutActivity : BaseActivity() {
         viewModel.verifyAuthenticity(contentResolver, uri, ::showVerifyResult)
     }
 
-    /** IDEA-03: hiện kết quả kiểm tra con dấu. Nội dung dựng bởi [buildVerifyMessage] để test riêng được. */
-    private fun showVerifyResult(result: AuthenticityVerifier.Result) {
+    /** IDEA-03 + IDEA-02: hiện kết quả kiểm tra. Nội dung dựng bởi [buildVerifyMessage] để test riêng được. */
+    private fun showVerifyResult(report: AboutViewModel.VerifyReport) {
+        val result = report.stamp
         val title = when {
-            result is AuthenticityVerifier.Result.Unreadable -> R.string.authenticity_verify_unreadable
-            result is AuthenticityVerifier.Result.NoStamp -> R.string.authenticity_verify_no_stamp
             result is AuthenticityVerifier.Result.Stamped && result.intact -> R.string.authenticity_verify_intact
-            else -> R.string.authenticity_verify_altered
+            result is AuthenticityVerifier.Result.Stamped -> R.string.authenticity_verify_altered
+            // IDEA-02: EXIF mất sạch (mạng xã hội re-encode) nhưng lớp ẩn còn — vẫn truy được chủ ảnh,
+            // nên tiêu đề phải phản ánh điều đó thay vì báo cụt "không có con dấu".
+            report.hidden != null -> R.string.invisible_watermark_title
+            result is AuthenticityVerifier.Result.Unreadable -> R.string.authenticity_verify_unreadable
+            else -> R.string.authenticity_verify_no_stamp
         }
         MaterialAlertDialogBuilder(this)
             .setTitle(title)
-            .setMessage(buildVerifyMessage(result))
+            .setMessage(buildVerifyMessage(report))
             .setPositiveButton(R.string.tips_confirm_dialog, null)
             .show()
     }
 
     /** Dựng phần thân dialog kết quả — tách khỏi [showVerifyResult] để test không cần dialog thật. */
-    internal fun buildVerifyMessage(result: AuthenticityVerifier.Result): String = when (result) {
+    internal fun buildVerifyMessage(report: AboutViewModel.VerifyReport): String {
+        val stampPart = buildStampMessage(report.stamp)
+        val hiddenPart = report.hidden?.let { hidden ->
+            buildList {
+                add(getString(R.string.invisible_watermark_found, hidden.ownerIdHex()))
+                // Đối chiếu với tên chủ sở hữu đang đặt: lớp ẩn chỉ mang ID rút gọn, không mang tên,
+                // nên chỉ khẳng định được "có khớp người đang dùng máy này" chứ không in ra tên lạ.
+                if (report.currentOwner.isNotBlank() &&
+                    hidden.ownerId == StegoPayload.ownerIdOf(report.currentOwner)
+                ) {
+                    add(getString(R.string.invisible_watermark_owner_match))
+                }
+                add(getString(R.string.invisible_watermark_confidence, (hidden.confidence * 100).toInt()))
+            }.joinToString("\n")
+        } ?: getString(R.string.invisible_watermark_absent)
+
+        return "$stampPart\n\n$hiddenPart"
+    }
+
+    private fun buildStampMessage(result: AuthenticityVerifier.Result): String = when (result) {
         AuthenticityVerifier.Result.Unreadable -> getString(R.string.authenticity_verify_no_stamp_desc)
         AuthenticityVerifier.Result.NoStamp -> getString(R.string.authenticity_verify_no_stamp_desc)
         is AuthenticityVerifier.Result.Stamped -> buildList {

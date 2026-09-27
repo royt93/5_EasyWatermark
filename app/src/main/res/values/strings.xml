@@ -413,6 +413,13 @@
     <string name="authenticity_verify_key">Key: %1$s</string>
     <string name="authenticity_verify_own_key">Signed by this device.</string>
     <string name="authenticity_verify_other_key">Signed by another device. The signature is valid, but only the key owner can confirm the key is theirs.</string>
+    <!-- IDEA-02: invisible watermark -->
+    <string name="invisible_watermark_title">Invisible watermark</string>
+    <string name="invisible_watermark_desc">Embeds an owner mark into the pixels themselves. Survives re-compression and social platforms stripping EXIF. Adds a few seconds per photo.</string>
+    <string name="invisible_watermark_found">Invisible watermark: %1$s</string>
+    <string name="invisible_watermark_owner_match">Matches the owner name currently set.</string>
+    <string name="invisible_watermark_confidence">Read confidence: %1$d%%</string>
+    <string name="invisible_watermark_absent">No invisible watermark found.</string>
     <!-- IDEA-09: watermark survivability preview -->
     <string name="survivability_entry">Survivability check</string>
     <string name="survivability_title">After sharing on social media</string>

@@ -218,6 +218,13 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 getString(R.string.authenticity_stamp_desc_unsupported, shareViewModel.outputFormat.name)
             }
 
+            // IDEA-02: watermark vô hình — nhúng vào pixel nên áp dụng được cho MỌI định dạng,
+            // không như con dấu EXIF ở trên.
+            swInvisibleWatermark.isChecked = shareViewModel.invisibleWatermark
+            swInvisibleWatermark.setOnCheckedChangeListener { _, isChecked ->
+                shareViewModel.saveInvisibleWatermark(isChecked)
+            }
+
             btnBatchCaptions.setOnClickListener {
                 BatchCaptionBSDialogFragment.safetyShow(childFragmentManager)
             }

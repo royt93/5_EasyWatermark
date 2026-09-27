@@ -393,6 +393,13 @@
     <string name="authenticity_verify_key">Khoá: %1$s</string>
     <string name="authenticity_verify_own_key">Ký bằng khoá của chính thiết bị này.</string>
     <string name="authenticity_verify_other_key">Ký bằng khoá của thiết bị khác. Chữ ký hợp lệ, nhưng chỉ chủ khoá mới xác nhận được khoá đó là của mình.</string>
+    <!-- IDEA-02: watermark vô hình -->
+    <string name="invisible_watermark_title">Watermark vô hình</string>
+    <string name="invisible_watermark_desc">Nhúng dấu chủ sở hữu vào chính các điểm ảnh. Sống sót qua nén lại và qua việc mạng xã hội xoá sạch EXIF. Tốn thêm vài giây mỗi ảnh.</string>
+    <string name="invisible_watermark_found">Watermark vô hình: %1$s</string>
+    <string name="invisible_watermark_owner_match">Khớp với tên chủ sở hữu đang đặt.</string>
+    <string name="invisible_watermark_confidence">Độ tin cậy khi đọc: %1$d%%</string>
+    <string name="invisible_watermark_absent">Không tìm thấy watermark vô hình.</string>
     <!-- IDEA-09: watermark survivability preview -->
     <string name="survivability_entry">Kiểm tra độ sống sót</string>
     <string name="survivability_title">Sau khi chia sẻ lên mạng xã hội</string>

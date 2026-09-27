@@ -323,6 +323,23 @@
         android:text="@string/authenticity_stamp_desc"
         android:textAppearance="@style/TextAppearance.App.Body13Variant" />
 
+    <!-- ══ IDEA-02: Watermark vô hình chống xoá ════════════════════════════ -->
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swInvisibleWatermark"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:contentDescription="@string/invisible_watermark_title"
+        android:text="@string/invisible_watermark_title" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvInvisibleWatermarkDesc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="@string/invisible_watermark_desc"
+        android:textAppearance="@style/TextAppearance.App.Body13Variant" />
+
     <!-- ══ FEAT-13: entry point cho caption riêng từng ảnh ═════════════════════ -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBatchCaptions"

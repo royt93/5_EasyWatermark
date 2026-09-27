@@ -65,7 +65,8 @@ class BatchExportWorker @AssistedInject constructor(
             conflictPolicy = prefs.conflictPolicy,
             outputDirectoryUri = prefs.outputDirectoryUri,
             proofingMode = prefs.proofingMode,
-            authenticityStamp = prefs.authenticityStamp
+            authenticityStamp = prefs.authenticityStamp,
+            invisibleWatermark = prefs.invisibleWatermark
         )
         val total = infoList.size
         var doneCount = 0

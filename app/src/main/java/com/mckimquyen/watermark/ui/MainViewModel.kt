@@ -191,6 +191,10 @@ class MainViewModel @Inject constructor(
     val authenticityStamp: Boolean
         get() = userPreferences.value.authenticityStamp
 
+    /** IDEA-02: nhúng watermark vô hình vào pixel ảnh xuất. */
+    val invisibleWatermark: Boolean
+        get() = userPreferences.value.invisibleWatermark
+
     val colorPalette: MutableLiveData<Palette> = MutableLiveData()
 
     private val projection = arrayOf(
@@ -765,6 +769,12 @@ class MainViewModel @Inject constructor(
      */
     fun saveAuthenticityStamp(enabled: Boolean) {
         viewModelScope.launch { userRepo.updateAuthenticityStamp(enabled) }
+        resetJobStatus()
+    }
+
+    /** IDEA-02: bật/tắt watermark vô hình. Reset job giống [saveAuthenticityStamp]. */
+    fun saveInvisibleWatermark(enabled: Boolean) {
+        viewModelScope.launch { userRepo.updateInvisibleWatermark(enabled) }
         resetJobStatus()
     }
 

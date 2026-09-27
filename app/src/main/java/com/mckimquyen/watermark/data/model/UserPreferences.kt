@@ -20,7 +20,9 @@ data class UserPreferences(
     /** IDEA-13: bật chế độ proofing — watermark lớn đánh số + sinh proof_index.html. */
     val proofingMode: Boolean = false,
     /** IDEA-03: nhúng con dấu chứng thực (hash + timestamp + chủ sở hữu + chữ ký) vào EXIF ảnh JPEG. */
-    val authenticityStamp: Boolean = false
+    val authenticityStamp: Boolean = false,
+    /** IDEA-02: nhúng watermark vô hình (DCT) vào pixel — còn sống khi nền tảng xoá sạch EXIF. */
+    val invisibleWatermark: Boolean = false
 ) {
     companion object {
         val DEFAULT = UserPreferences(

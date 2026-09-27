@@ -36,6 +36,8 @@ import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.data.model.WatermarkLayer
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.mckimquyen.watermark.export.stego.InvisibleWatermark
+import com.mckimquyen.watermark.export.stego.StegoPayload
 import com.mckimquyen.watermark.ui.MainViewModel
 import com.mckimquyen.watermark.ui.widget.WaterMarkImageView
 import com.mckimquyen.watermark.utils.FileUtils.Companion.outPutFolderName
@@ -181,7 +183,9 @@ class BatchExportEngine @Inject constructor(
         val outputDirectoryUri: Uri? = null,
         val proofingMode: Boolean = false,
         /** IDEA-03: nhúng con dấu chứng thực vào EXIF (chỉ có tác dụng với JPEG). */
-        val authenticityStamp: Boolean = false
+        val authenticityStamp: Boolean = false,
+        /** IDEA-02: nhúng lớp watermark vô hình vào pixel, sống sót khi nền tảng xoá EXIF. */
+        val invisibleWatermark: Boolean = false
     )
 
     /**
@@ -519,7 +523,7 @@ class BatchExportEngine @Inject constructor(
                 }
 
                 // Resize cạnh dài khi lưu (0 = giữ nguyên kích thước gốc).
-                val exportBitmap = OutputImageUtils.resizeIfNeeded(finalExportBitmap, settings.maxOutputLongEdge)
+                var exportBitmap = OutputImageUtils.resizeIfNeeded(finalExportBitmap, settings.maxOutputLongEdge)
                 // resizeIfNeeded trả về CÙNG instance khi maxOutputLongEdge=0 (không resize) — chỉ
                 // recycle finalExportBitmap khi thực sự đã tạo bitmap mới, tránh recycle nhầm bitmap
                 // đang dùng (BUG-05).
@@ -527,6 +531,19 @@ class BatchExportEngine @Inject constructor(
                     finalExportBitmap.recycle()
                 }
                 bitmapGuard.replace(exportBitmap)
+
+                // IDEA-02: lớp watermark VÔ HÌNH, nhúng ở đây vì đây là bitmap cuối cùng — sau
+                // watermark hiển thị + khung EXIF + resize, trước mọi nhánh ghi file, nên cả 3 nhánh
+                // (MediaStore / legacy File / SAF) đều mang lớp ẩn mà không phải sửa từng chỗ.
+                // Nhúng thất bại (ảnh quá nhỏ, thiếu RAM) thì bỏ qua im lặng, không chặn export.
+                if (settings.invisibleWatermark) {
+                    val ownerId = StegoPayload.ownerIdOf(settings.copyright)
+                    InvisibleWatermark.embed(exportBitmap, ownerId)?.let { stamped ->
+                        if (!exportBitmap.isRecycled) exportBitmap.recycle()
+                        bitmapGuard.replace(stamped)
+                        exportBitmap = stamped
+                    }
+                }
 
                 val conflictPolicy = settings.conflictPolicy
                 val rawOutputName = exportNaming.generateOutputName(

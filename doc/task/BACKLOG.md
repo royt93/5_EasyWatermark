@@ -52,13 +52,12 @@
 | [M3-08](done/M3-08-migrate-edit-panels-dialogs-bottom-sheets.md) | P1 | M | Migrate toàn bộ Dialogs, Bottom Sheets và Panels chỉnh sửa sang Material You M3 | **DONE** |
 | [M3-09](done/M3-09-cleanup-ios-glass-assets-lint-verification.md) | P2 | S | Dọn dẹp triệt để tài nguyên iOS Glass, Lint & Kiểm thử hồi quy toàn diện | **DONE** |
 
-## UNIQUE_IDEAS (11, +10 done) — tính năng độc quyền/đột phá, effort cao
+## UNIQUE_IDEAS (10, +11 done) — tính năng độc quyền/đột phá, effort cao
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [IDEA-08](todo/IDEA-08-referral-vip-qua-share-app.md) | M | Referral VIP qua Share App — tái dùng hạ tầng sẵn có, không cần backend (mới 2026-09-10) |
 | [IDEA-10](todo/IDEA-10-recipient-fingerprint-batch.md) | L | Recipient Fingerprint Batch — watermark riêng theo người nhận, truy nguồn rò rỉ (mới 2026-09-10) |
-| [IDEA-02](todo/IDEA-02-invisible-watermark-steganography.md) | XL | Invisible watermark / steganography chống xoá |
 | [IDEA-04](todo/IDEA-04-cloud-sync-brand-kit.md) | XL | Cloud sync Brand Kit đa thiết bị |
 | [IDEA-05](todo/IDEA-05-cho-template-cong-dong.md) | XL | Chợ template cộng đồng (network effect) |
 | [IDEA-11](todo/IDEA-11-live-camera-watermark-ar-preview-xem-watermark-ngay-tren-vie.md) | XL | Live Camera Watermark / AR preview — watermark ngay trên viewfinder trước khi chụp (mới 2026-09-16, 2 nguồn đồng thuận) |
@@ -72,6 +71,7 @@
 ✅ **[IDEA-15](done/IDEA-15-brand-compliance-scoring-cham-diem-moi-anh-theo-rule-thuong.md)** — Brand Compliance Scoring — chấm điểm mỗi ảnh theo rule thương hiệu trước khi export (done 2026-09-26, smoke test Samsung Galaxy S24 Ultra)
 ✅ **[IDEA-18](done/IDEA-18-bo-sinh-khung-exif-border-moi-theo-bang-mau-anh-khong-gioi-h.md)** — Màu khung EXIF theo màu chủ đạo của từng ảnh (cờ trên 4 style) — done 2026-09-25, smoke test TECNO KJ7.
 ✅ **[IDEA-17](done/IDEA-17-voice-to-text-caption-khi-batch-nhieu-anh-mo-rong-feat-13.md)** — Voice-to-text caption hàng loạt qua RecognizerIntent, điền đúng dòng đang đặt con trỏ — done 2026-09-27, smoke test TECNO KJ7.
+✅ **[IDEA-02](done/IDEA-02-invisible-watermark-steganography.md)** — Invisible watermark / steganography chống xoá — Zhao–Koch DCT-II 8x8 trên kênh luma, nhúng 64 bit MAGIC+ID+CRC; sống sót qua nén JPEG (q=85/75/70, 2 vòng nén liên tiếp, che 1/3 ảnh), PSNR > 43 dB; màn verify đọc song song với EXIF, truy được chủ ảnh kể cả khi nền tảng xoá sạch EXIF — done 2026-09-27, smoke test TECNO BG6.
 ✅ **[IDEA-03](done/IDEA-03-content-authenticity-stamp-c2pa.md)** — Content authenticity stamp kiểu C2PA — hash phần dữ liệu ảnh JPEG (bỏ qua APPn/COM nên ghi EXIF không phá hash) + chữ ký EC P-256 qua Android Keystore, nhúng EXIF UserComment; màn Thông tin kiểm tra ảnh đã bị sửa hay chưa — done 2026-09-27, smoke test TECNO KJ7.
 ✅ **[IDEA-09](done/IDEA-09-watermark-survivability-preview.md)** — Watermark Survivability Preview — mô phỏng crop/downscale/nén JPEG của Facebook/Instagram/Zalo, chấm PASS/WARN/FAIL kèm gợi ý sửa — done 2026-09-27, smoke test TECNO KJ7.
 ✅ **[IDEA-13](done/IDEA-13-client-proofing-mode-xuat-album-proof-cho-khach-chon-anh-dan.md)** — Client Proofing Mode — watermark lớn đánh số từng ảnh + `proof_index.html` khớp file xuất — done 2026-09-26, smoke test TECNO KJ7.
