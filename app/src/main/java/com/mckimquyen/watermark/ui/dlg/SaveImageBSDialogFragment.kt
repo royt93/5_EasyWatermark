@@ -210,6 +210,20 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 BatchCaptionBSDialogFragment.safetyShow(childFragmentManager)
             }
 
+            // IDEA-09: dùng ảnh đầu tiên chưa bị skip làm mẫu — feature đánh giá CẤU HÌNH watermark,
+            // không cần thêm entry point lặp lại trên từng card trong grid.
+            btnSurvivability.setOnClickListener {
+                val indexed = imageList.withIndex().firstOrNull { !it.value.isSkippedInExport }
+                    ?: imageList.withIndex().firstOrNull()
+                if (indexed != null) {
+                    SurvivabilityBottomSheetFragment.safetyShow(
+                        childFragmentManager,
+                        indexed.value.uri,
+                        indexed.index
+                    )
+                }
+            }
+
             btnOutputDirectory.setOnClickListener {
                 pickOutputDirectoryLauncher.launch(null)
             }

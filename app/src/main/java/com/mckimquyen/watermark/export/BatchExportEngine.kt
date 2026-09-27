@@ -5,10 +5,12 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.Shader
 import android.net.Uri
 import android.os.Build
@@ -51,6 +53,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -800,7 +803,11 @@ class BatchExportEngine @Inject constructor(
             override val approxOriginalWidth: Int,
             override val approxOriginalHeight: Int,
             /** IDEA-15: kết quả đánh giá quy tắc thương hiệu (pass/warn/fail) */
-            val compliance: BrandComplianceScorer.ComplianceResult? = null
+            val compliance: BrandComplianceScorer.ComplianceResult? = null,
+            /** IDEA-09: khung watermark chuẩn hoá (chỉ có ở CLAMP mode) — để chấm điểm sau biến đổi nền tảng. */
+            val watermarkRect: BrandComplianceScorer.NormalizedBox? = null,
+            /** IDEA-09: tương phản WCAG đo được ở vùng watermark (`null` nếu không đo được). */
+            val contrastRatio: Double? = null
         ) : PreviewResult
 
         data class DecodeFailure(
@@ -993,7 +1000,14 @@ class BatchExportEngine @Inject constructor(
                 canvas.drawRect(0f, 0f, mutableBitmap.width.toFloat(), mutableBitmap.height.toFloat(), layoutPaint)
             }
             drawExtraLayers(canvas, mutableBitmap.width, mutableBitmap.height, imageInfo, config.extraLayers, contentResolver)
-            PreviewResult.Success(mutableBitmap, approxOriginalWidth, approxOriginalHeight, compliance)
+            PreviewResult.Success(
+                bitmap = mutableBitmap,
+                approxOriginalWidth = approxOriginalWidth,
+                approxOriginalHeight = approxOriginalHeight,
+                compliance = compliance,
+                watermarkRect = wmRectNormalized,
+                contrastRatio = contrastRatio
+            )
         } catch (ce: CancellationException) {
             throw ce
         } catch (e: Exception) {
@@ -1136,6 +1150,84 @@ class BatchExportEngine @Inject constructor(
         } finally {
             bitmapValue.release()
         }
+    }
+
+    /**
+     * IDEA-09: bitmap đã qua biến đổi giả lập của nền tảng + điểm sống sót của watermark.
+     * Caller (UI) SỞ HỮU [bitmap] và phải tự `recycle()` khi không dùng nữa.
+     */
+    data class SurvivabilityResult(
+        val bitmap: Bitmap,
+        val score: SurvivabilityProfile.Result
+    )
+
+    /**
+     * IDEA-09: mô phỏng ảnh sau khi bị nền tảng mạng xã hội xử lý lại (crop tỉ lệ → downscale cạnh
+     * dài → recompress JPEG) rồi chấm điểm watermark còn sống sót hay không.
+     *
+     * Dùng lại [generatePreviewBitmap] để vẽ watermark (KHÔNG thêm bản sao thứ 3 của pipeline vẽ
+     * shader), rồi áp transform lên chính bitmap preview đó.
+     *
+     * ponytail: phần HÌNH chạy trên bitmap preview [PREVIEW_MAX_SIZE] nên artifact JPEG chỉ mang
+     * tính minh hoạ, không tỉ lệ 1:1 với output full-res. Phần ĐIỂM không phụ thuộc vào đó —
+     * [SurvivabilityProfile.evaluate] tính theo kích thước gốc thật. Nâng cấp khi cần độ chính xác
+     * pixel: render ở full-res, đổi lại tốn RAM/thời gian gấp nhiều lần.
+     */
+    suspend fun generateSurvivabilityPreview(
+        contentResolver: ContentResolver,
+        imageInfo: ImageInfo,
+        config: WaterMark,
+        index: Int,
+        profile: SurvivabilityProfile.Profile
+    ): SurvivabilityResult? = withContext(Dispatchers.IO) {
+        val preview = generatePreviewBitmap(contentResolver, imageInfo, config, index)
+        val previewBitmap = (preview as? PreviewResult.Success)?.bitmap ?: return@withContext null
+
+        var current = previewBitmap
+        try {
+            profile.cropAspect?.let { aspect ->
+                val box = SurvivabilityProfile.centerCropBox(current.width, current.height, aspect)
+                val cropped = applyCropAndRotate(current, 0f, RectF(box.left, box.top, box.right, box.bottom))
+                current = replaceBitmap(current, cropped)
+            }
+            current = replaceBitmap(current, OutputImageUtils.resizeIfNeeded(current, profile.maxLongEdge))
+            current = replaceBitmap(current, recompressJpeg(current, profile.jpegQuality))
+        } catch (ce: CancellationException) {
+            if (!current.isRecycled) current.recycle()
+            throw ce
+        } catch (e: Exception) {
+            e.printStackTrace()
+            if (!current.isRecycled) current.recycle()
+            return@withContext null
+        }
+
+        val score = SurvivabilityProfile.evaluate(
+            watermarkRect = preview.watermarkRect,
+            alpha = config.alpha,
+            contrastRatio = preview.contrastRatio,
+            profile = profile,
+            originalWidth = preview.approxOriginalWidth,
+            originalHeight = preview.approxOriginalHeight
+        )
+        SurvivabilityResult(current, score)
+    }
+
+    /** Thay bitmap trung gian bằng bản mới, recycle bản cũ nếu thật sự đã bị thay thế. */
+    private fun replaceBitmap(old: Bitmap, new: Bitmap): Bitmap {
+        if (new !== old && !old.isRecycled) {
+            old.recycle()
+        }
+        return new
+    }
+
+    /** Nén JPEG rồi decode lại để bitmap mang đúng artifact nén của nền tảng. Lỗi decode → giữ bitmap cũ. */
+    private fun recompressJpeg(bitmap: Bitmap, quality: Int): Bitmap {
+        val stream = ByteArrayOutputStream()
+        if (!bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)) {
+            return bitmap
+        }
+        val bytes = stream.toByteArray()
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: bitmap
     }
 
     companion object {

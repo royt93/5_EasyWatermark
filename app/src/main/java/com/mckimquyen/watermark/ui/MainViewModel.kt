@@ -295,6 +295,20 @@ class MainViewModel @Inject constructor(
     }
 
     /**
+     * IDEA-09: ảnh mô phỏng sau khi bị nền tảng mạng xã hội crop/downscale/nén lại, kèm điểm sống
+     * sót của watermark. Caller SỞ HỮU bitmap trả về và phải tự `recycle()`.
+     */
+    suspend fun generateSurvivabilityPreview(
+        contentResolver: ContentResolver,
+        imageInfo: ImageInfo,
+        index: Int,
+        profile: com.mckimquyen.watermark.export.SurvivabilityProfile.Profile
+    ): com.mckimquyen.watermark.export.BatchExportEngine.SurvivabilityResult? {
+        val config = waterMark.value ?: return null
+        return batchExportEngine.generateSurvivabilityPreview(contentResolver, imageInfo, config, index, profile)
+    }
+
+    /**
      * FEAT-07: ước tính (kích thước px, dung lượng bytes) output theo cấu hình resize/format/quality
      * ĐANG chọn trong dialog Export — [approxOriginalWidth]/[approxOriginalHeight] lấy từ
      * [BatchExportEngine.PreviewResult] (ước lượng lại từ inSampleSize lúc decode preview).

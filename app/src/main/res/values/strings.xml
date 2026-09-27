@@ -389,4 +389,21 @@
     <!-- IDEA-13: Client Proofing Mode -->
     <string name="proofing_mode_title">Client proofing mode</string>
     <string name="proofing_mode_desc">Large numbered watermark on every photo and a proof_index.html file</string>
+    <!-- IDEA-09: watermark survivability preview -->
+    <string name="survivability_entry">Survivability check</string>
+    <string name="survivability_title">After sharing on social media</string>
+    <string name="survivability_hint">Estimated simulation of how each platform crops, downscales and recompresses your photo.</string>
+    <string name="survivability_platform">Platform</string>
+    <string name="survivability_platform_facebook">Facebook</string>
+    <string name="survivability_platform_instagram">Instagram</string>
+    <string name="survivability_platform_zalo">Zalo</string>
+    <string name="survivability_pass">Watermark survives this platform</string>
+    <string name="survivability_warn">Watermark may be hard to see: %1$s</string>
+    <string name="survivability_fail">Watermark will not survive: %1$s</string>
+    <string name="survivability_issue_cropped">Cropped off by the platform</string>
+    <string name="survivability_issue_too_small">Too small to read after downscaling</string>
+    <string name="survivability_fix_move_center">Move the watermark toward the centre</string>
+    <string name="survivability_fix_increase_size">Increase the watermark size</string>
+    <string name="survivability_fix_increase_opacity">Increase the opacity</string>
+    <string name="survivability_fix_increase_contrast">Pick a colour with more contrast</string>
 </resources>

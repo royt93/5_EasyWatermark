@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?><!-- IDEA-09: xem watermark sau khi bị nền tảng mạng xã hội crop/downscale/nén lại -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet_surface"
+    android:paddingStart="16dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="16dp">
+
+    <View
+        android:id="@+id/vHandle"
+        android:layout_width="32dp"
+        android:layout_height="4dp"
+        android:alpha="0.4"
+        android:background="@drawable/bg_m3_drag_handle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="@string/survivability_title"
+        android:textAppearance="@style/TextAppearance.App.Title20Bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/vHandle" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvHint"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/survivability_hint"
+        android:textAppearance="@style/TextAppearance.App.Body13Variant"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPlatform"
+        style="@style/SaveDialogExposedDropdownMenu"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:hint="@string/survivability_platform"
+        app:boxStrokeColor="?attr/colorOutline"
+        app:boxStrokeWidth="1dp"
+        app:boxStrokeWidthFocused="2dp"
+        app:hintTextColor="?attr/colorOnSurfaceVariant"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvHint">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/atvPlatform"
+            style="@style/SaveDialogAutoCompleteTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:hint="@string/survivability_platform"
+            android:inputType="none"
+            android:labelFor="@id/tilPlatform"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <FrameLayout
+        android:id="@+id/flPreview"
+        android:layout_width="match_parent"
+        android:layout_height="320dp"
+        android:layout_marginTop="12dp"
+        android:background="?attr/colorSurfaceContainer"
+        app:layout_constraintTop_toBottomOf="@id/tilPlatform">
+
+        <ImageView
+            android:id="@+id/ivPreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/survivability_title"
+            android:scaleType="fitCenter" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:indeterminate="true" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/save_failed"
+            android:textColor="?attr/colorError"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/ivScore"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="12dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/tvScore"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvScore"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/baseline_warning_amber_24"
+        tools:visibility="visible" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvScore"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        android:textAppearance="@style/TextAppearance.App.Body14Variant"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/ivScore"
+        app:layout_constraintTop_toBottomOf="@id/flPreview"
+        tools:text="Watermark survives this platform" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvSuggestions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textAppearance="@style/TextAppearance.App.Body13Variant"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvScore"
+        tools:text="• Move the watermark toward the centre"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

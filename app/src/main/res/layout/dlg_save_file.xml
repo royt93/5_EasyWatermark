@@ -321,6 +321,21 @@
         app:iconPadding="8dp"
         app:iconTint="?attr/colorPrimary" />
 
+    <!-- ══ IDEA-09: xem watermark sau khi mạng xã hội crop/nén lại ═════════════ -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSurvivability"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/survivability_entry"
+        android:textColor="?attr/colorPrimary"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_compare"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp"
+        app:iconTint="?attr/colorPrimary" />
+
     <!-- ══ SECTION: EXPORT LIST ═════════════════════════════════════════════ -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvResult"

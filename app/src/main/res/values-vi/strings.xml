@@ -369,4 +369,21 @@
     <!-- IDEA-13: Client Proofing Mode -->
     <string name="proofing_mode_title">Chế độ ảnh duyệt cho khách</string>
     <string name="proofing_mode_desc">Watermark lớn đánh số từng ảnh và sinh tệp proof_index.html</string>
+    <!-- IDEA-09: watermark survivability preview -->
+    <string name="survivability_entry">Kiểm tra độ sống sót</string>
+    <string name="survivability_title">Sau khi chia sẻ lên mạng xã hội</string>
+    <string name="survivability_hint">Mô phỏng ước lượng cách từng nền tảng cắt, thu nhỏ và nén lại ảnh của bạn.</string>
+    <string name="survivability_platform">Nền tảng</string>
+    <string name="survivability_platform_facebook">Facebook</string>
+    <string name="survivability_platform_instagram">Instagram</string>
+    <string name="survivability_platform_zalo">Zalo</string>
+    <string name="survivability_pass">Watermark sống sót trên nền tảng này</string>
+    <string name="survivability_warn">Watermark có thể khó thấy: %1$s</string>
+    <string name="survivability_fail">Watermark sẽ không sống sót: %1$s</string>
+    <string name="survivability_issue_cropped">Bị nền tảng cắt mất</string>
+    <string name="survivability_issue_too_small">Quá nhỏ để đọc sau khi thu nhỏ</string>
+    <string name="survivability_fix_move_center">Dời watermark vào giữa ảnh</string>
+    <string name="survivability_fix_increase_size">Tăng kích thước watermark</string>
+    <string name="survivability_fix_increase_opacity">Tăng độ mờ đục</string>
+    <string name="survivability_fix_increase_contrast">Chọn màu tương phản hơn</string>
 </resources>
