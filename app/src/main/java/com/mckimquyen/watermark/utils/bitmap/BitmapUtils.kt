@@ -117,6 +117,61 @@ fun applyCropAndRotate(src: Bitmap, rotationDegrees: Float, cropRect: RectF?): B
     return current
 }
 
+/** IDEA-14: kích thước khối mosaic (px) — mỗi khối đại diện 1 vùng [MOSAIC_BLOCK]×[MOSAIC_BLOCK] pixel gốc. */
+private const val MOSAIC_BLOCK = 12
+
+/**
+ * IDEA-14: che (mosaic hoá) từng vùng trong [rects] (normalized 0..1 theo kích thước [src]) — dùng
+ * chung cho preview editor lẫn mọi luồng export, gọi NGAY SAU [applyCropAndRotate] và TRƯỚC khi vẽ
+ * watermark, để nội dung nhạy cảm không bao giờ xuất hiện trong ảnh cuối cùng.
+ *
+ * Cố ý dùng MOSAIC (giảm hẳn độ phân giải theo khối) thay vì Gaussian blur: blur vẫn có thể bị khử
+ * nhiễu để đọc lại một phần, mosaic phá huỷ thông tin gốc triệt để hơn cho mục đích riêng tư — và
+ * không cần `RenderEffect` (chỉ API 31+, app minSdk 24) hay RenderScript (đã deprecated).
+ *
+ * Cùng nguyên tắc sở hữu bitmap như [applyCropAndRotate]: KHÔNG BAO GIỜ recycle [src], chỉ trả về
+ * bitmap MỚI khi có ít nhất 1 rect hợp lệ được áp; fast-path trả nguyên [src] khi rỗng/null.
+ */
+fun applyRedaction(src: Bitmap, rects: List<RectF>?): Bitmap {
+    if (rects.isNullOrEmpty()) return src
+
+    val result = src.copy(Bitmap.Config.ARGB_8888, true) ?: return src
+    val canvas = android.graphics.Canvas(result)
+    var appliedAny = false
+
+    for (rect in rects) {
+        val left = (rect.left.coerceIn(0f, 1f) * result.width).toInt()
+        val top = (rect.top.coerceIn(0f, 1f) * result.height).toInt()
+        val right = (rect.right.coerceIn(0f, 1f) * result.width).toInt()
+        val bottom = (rect.bottom.coerceIn(0f, 1f) * result.height).toInt()
+        val width = (right - left).coerceAtMost(result.width - left)
+        val height = (bottom - top).coerceAtMost(result.height - top)
+        if (width <= 0 || height <= 0 || left < 0 || top < 0) continue
+
+        val region = Bitmap.createBitmap(result, left, top, width, height)
+        val smallWidth = (width / MOSAIC_BLOCK).coerceAtLeast(1)
+        val smallHeight = (height / MOSAIC_BLOCK).coerceAtLeast(1)
+        val downscaled = Bitmap.createScaledBitmap(region, smallWidth, smallHeight, false)
+        val mosaic = Bitmap.createScaledBitmap(downscaled, width, height, false)
+
+        canvas.drawBitmap(mosaic, left.toFloat(), top.toFloat(), null)
+        appliedAny = true
+
+        // Bitmap.createBitmap/createScaledBitmap có thể trả CHÍNH instance nguồn khi kích thước
+        // yêu cầu trùng khớp nguồn (không tạo bản sao) — chỉ recycle khi thực sự là bản sao mới,
+        // tránh vô tình recycle nhầm `result` (region trùng toàn bộ ảnh) hoặc `region`/`downscaled`.
+        if (region !== result) region.recycle()
+        if (downscaled !== region) downscaled.recycle()
+        if (mosaic !== downscaled) mosaic.recycle()
+    }
+
+    if (!appliedAny) {
+        result.recycle()
+        return src
+    }
+    return result
+}
+
 /**
  * ENH-06: đọc rotation (orientation) VÀ [com.mckimquyen.watermark.data.model.ExifModel] trong
  * CÙNG 1 lần mở `InputStream`/`ExifInterface` cho 1 [uri] — trước đây `getOrientation()` và

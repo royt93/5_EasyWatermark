@@ -147,4 +147,12 @@
     <string name="crop_straighten_label">Redresser</string>
     <string name="crop_apply">Appliquer</string>
     <string name="crop_no_image_selected">Aucune image sélectionnée à rogner</string>
+    <!-- IDEA-14: Smart Redaction -->
+    <string name="action_smart_redaction">Masquage intelligent</string>
+    <string name="redaction_title">Masquage intelligent</string>
+    <string name="redaction_no_image_selected">Aucune image sélectionnée à masquer</string>
+    <string name="redaction_scanning">Recherche d\'informations sensibles (email, téléphone, visages)…</string>
+    <string name="redaction_no_regions_found">Aucune information sensible détectée. Vous pouvez appliquer quand même pour ignorer cette étape.</string>
+    <string name="redaction_regions_found">%1$d zone(s) trouvée(s) — touchez une zone pour la garder ou l\'ignorer, puis Appliquer.</string>
+    <string name="redaction_apply">Appliquer</string>
 </resources>

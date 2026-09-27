@@ -52,7 +52,7 @@
 | [M3-08](done/M3-08-migrate-edit-panels-dialogs-bottom-sheets.md) | P1 | M | Migrate toàn bộ Dialogs, Bottom Sheets và Panels chỉnh sửa sang Material You M3 | **DONE** |
 | [M3-09](done/M3-09-cleanup-ios-glass-assets-lint-verification.md) | P2 | S | Dọn dẹp triệt để tài nguyên iOS Glass, Lint & Kiểm thử hồi quy toàn diện | **DONE** |
 
-## UNIQUE_IDEAS (6, +12 done) — tính năng độc quyền/đột phá, effort cao
+## UNIQUE_IDEAS (5, +13 done) — tính năng độc quyền/đột phá, effort cao
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
@@ -61,7 +61,8 @@
 | [IDEA-05](todo/IDEA-05-cho-template-cong-dong.md) | XL | Chợ template cộng đồng (network effect) |
 | [IDEA-11](todo/IDEA-11-live-camera-watermark-ar-preview-xem-watermark-ngay-tren-vie.md) | XL | Live Camera Watermark / AR preview — watermark ngay trên viewfinder trước khi chụp (mới 2026-09-16, 2 nguồn đồng thuận) |
 | [IDEA-12](todo/IDEA-12-on-device-style-coach-goi-y-fontmauopacityvi-tri-theo-phong.md) | XL | On-device Style Coach — gợi ý font/màu/opacity/vị trí theo phong cách ảnh cá nhân (mới 2026-09-16) |
-| [IDEA-14](todo/IDEA-14-smart-redaction-watermark-tu-phat-hien-thong-tin-nhay-cam-tr.md) | XL | Smart Redaction + Watermark — tự phát hiện thông tin nhạy cảm trước khi đóng dấu (mới 2026-09-16) |
+
+✅ **[IDEA-14](done/IDEA-14-smart-redaction-watermark-tu-phat-hien-thong-tin-nhay-cam-tr.md)** — Smart Redaction + Watermark — tự phát hiện thông tin nhạy cảm (email, SĐT, mặt người) bằng ML Kit Text Recognition + Face Detection, khoanh vùng cho user tap chọn rồi mosaic hoá TRƯỚC KHI đóng dấu bản quyền — done 2026-09-27, smoke test Samsung Galaxy S24 Ultra.
 
 ✅ **[IDEA-06](done/IDEA-06-auto-contrast-opacity-harmonizer.md)** — Auto-contrast/opacity harmonizer theo từng ảnh — done 2026-09-24, smoke test TECNO KJ7.
 ✅ **[IDEA-07](done/IDEA-07-batch-qr-smart-bridge.md)** — Batch QR Smart-Bridge (hash SHA-256 + xác thực nguồn gốc) — done 2026-09-24, smoke test TECNO BG6.

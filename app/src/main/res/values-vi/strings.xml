@@ -149,6 +149,14 @@
     <string name="crop_straighten_label">Xoay thẳng</string>
     <string name="crop_apply">Áp dụng</string>
     <string name="crop_no_image_selected">Chưa chọn ảnh nào để crop</string>
+    <!-- IDEA-14: Smart Redaction — phát hiện và che thông tin nhạy cảm trước khi watermark -->
+    <string name="action_smart_redaction">Che thông tin nhạy cảm</string>
+    <string name="redaction_title">Che thông tin nhạy cảm</string>
+    <string name="redaction_no_image_selected">Chưa chọn ảnh nào để che thông tin</string>
+    <string name="redaction_scanning">Đang quét thông tin nhạy cảm (email, SĐT, khuôn mặt)…</string>
+    <string name="redaction_no_regions_found">Không phát hiện thông tin nhạy cảm. Bạn vẫn có thể bấm Áp dụng để bỏ qua bước này.</string>
+    <string name="redaction_regions_found">Tìm thấy %1$d vùng — chạm từng khung để giữ hoặc bỏ chọn, rồi bấm Áp dụng.</string>
+    <string name="redaction_apply">Áp dụng</string>
     <string name="position_anchor_margin_value">%d%%</string>
     <string name="anchor_top_left">Trên trái</string>
     <string name="anchor_top_center">Trên giữa</string>

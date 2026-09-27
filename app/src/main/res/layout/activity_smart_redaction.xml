@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="?attr/colorOnSurface"
+        app:navigationContentDescription="@string/back"
+        app:title="@string/redaction_title"
+        app:titleCentered="false"
+        app:titleTextColor="?attr/colorOnSurface"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.mckimquyen.watermark.ui.widget.RedactionOverlayView
+        android:id="@+id/redactionOverlayView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/llBottomControls"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/pbScanning"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toBottomOf="@id/redactionOverlayView"
+        app:layout_constraintEnd_toEndOf="@id/redactionOverlayView"
+        app:layout_constraintStart_toStartOf="@id/redactionOverlayView"
+        app:layout_constraintTop_toTopOf="@id/redactionOverlayView" />
+
+    <LinearLayout
+        android:id="@+id/llBottomControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurfaceContainerLow"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvStatus"
+            style="@style/TextAppearance.App.Body13Variant"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="@string/redaction_scanning" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnApplyRedaction"
+            style="@style/Widget.Material3.Button.FilledButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:enabled="false"
+            android:text="@string/redaction_apply"
+            android:textAppearance="@style/TextAppearance.App.Label16OnPrimaryMedium"
+            app:backgroundTint="?attr/colorPrimary"
+            app:cornerRadius="26dp"
+            app:elevation="2dp"
+            app:rippleColor="?attr/colorOnPrimary"
+            app:strokeWidth="0dp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

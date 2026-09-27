@@ -10,6 +10,8 @@ import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.utils.facedetection.FaceDetectionSource
 import com.mckimquyen.watermark.utils.facedetection.MlKitFaceDetectionSource
+import com.mckimquyen.watermark.utils.textdetection.MlKitSensitiveTextSource
+import com.mckimquyen.watermark.utils.textdetection.SensitiveTextSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -54,4 +56,9 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideFaceDetectionSource(impl: MlKitFaceDetectionSource): FaceDetectionSource = impl
+
+    /** IDEA-14. */
+    @Provides
+    @Singleton
+    fun provideSensitiveTextSource(impl: MlKitSensitiveTextSource): SensitiveTextSource = impl
 }

@@ -47,6 +47,13 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/actionSmartRedaction"
+        android:icon="@drawable/ic_redaction"
+        android:title="@string/action_smart_redaction"
+        app:iconTint="?attr/colorOnSurface"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/actionCompare"
         android:icon="@drawable/ic_compare"
         android:title="@string/action_compare"

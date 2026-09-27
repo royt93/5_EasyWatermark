@@ -111,6 +111,9 @@ class MainActivity : BaseActivity() {
     /** FEAT-16: launcher mở [CropActivity] cho ảnh đang selected trong batch. */
     private lateinit var cropLauncher: ActivityResultLauncher<Intent>
 
+    /** IDEA-14: launcher mở [SmartRedactionActivity] cho ảnh đang selected trong batch. */
+    private lateinit var smartRedactionLauncher: ActivityResultLauncher<Intent>
+
     /** FEAT-22: Launcher chụp ảnh trực tiếp từ ứng dụng Camera hệ thống. */
     private lateinit var takePictureLauncher: ActivityResultLauncher<Uri>
     private var currentCameraPhotoFile: File? = null
@@ -392,6 +395,18 @@ class MainActivity : BaseActivity() {
             )
             val rotationDegrees = data.getFloatExtra(CropActivity.EXTRA_RESULT_ROTATION, 0f)
             viewModel.updateImageCrop(Uri.parse(uriString), cropRect, rotationDegrees)
+        }
+
+        smartRedactionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode != android.app.Activity.RESULT_OK) return@registerForActivityResult
+            val data = result.data ?: return@registerForActivityResult
+            val uriString = data.getStringExtra(SmartRedactionActivity.EXTRA_RESULT_URI) ?: return@registerForActivityResult
+            val redactionRects = androidx.core.content.IntentCompat.getParcelableArrayListExtra(
+                data,
+                SmartRedactionActivity.EXTRA_RESULT_REDACTION_RECTS,
+                RectF::class.java
+            ) ?: return@registerForActivityResult
+            viewModel.updateImageRedaction(Uri.parse(uriString), redactionRects)
         }
     }
 
@@ -1110,6 +1125,18 @@ class MainActivity : BaseActivity() {
                 toast(R.string.crop_no_image_selected)
             } else {
                 cropLauncher.launch(CropActivity.createIntent(this, uri))
+            }
+            true
+        }
+
+        R.id.actionSmartRedaction -> {
+            val info = viewModel.selectedImage.value
+            if (info == null || info.uri == Uri.EMPTY) {
+                toast(R.string.redaction_no_image_selected)
+            } else {
+                smartRedactionLauncher.launch(
+                    SmartRedactionActivity.createIntent(this, info.uri, info.cropRect, info.rotationDegrees)
+                )
             }
             true
         }

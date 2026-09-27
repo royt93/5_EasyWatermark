@@ -146,4 +146,12 @@
     <string name="crop_straighten_label">Rett opp</string>
     <string name="crop_apply">Bruk</string>
     <string name="crop_no_image_selected">Ingen bilde valgt for beskjæring</string>
+    <!-- IDEA-14: Smart Redaction -->
+    <string name="action_smart_redaction">Smart sladding</string>
+    <string name="redaction_title">Smart sladding</string>
+    <string name="redaction_no_image_selected">Ingen bilde valgt for sladding</string>
+    <string name="redaction_scanning">Søker etter sensitiv informasjon (e-post, telefonnummer, ansikter)…</string>
+    <string name="redaction_no_regions_found">Fant ingen sensitiv informasjon. Du kan likevel bruke for å hoppe over dette trinnet.</string>
+    <string name="redaction_regions_found">Fant %1$d område(r) — trykk på en boks for å beholde eller hoppe over den, trykk deretter Bruk.</string>
+    <string name="redaction_apply">Bruk</string>
 </resources>

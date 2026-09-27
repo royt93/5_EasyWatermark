@@ -148,4 +148,12 @@
     <string name="crop_straighten_label">水平補正</string>
     <string name="crop_apply">適用</string>
     <string name="crop_no_image_selected">切り抜く画像が選択されていません</string>
+    <!-- IDEA-14: Smart Redaction -->
+    <string name="action_smart_redaction">スマート墨消し</string>
+    <string name="redaction_title">スマート墨消し</string>
+    <string name="redaction_no_image_selected">墨消しする画像が選択されていません</string>
+    <string name="redaction_scanning">機密情報(メール、電話番号、顔)をスキャン中…</string>
+    <string name="redaction_no_regions_found">機密情報は検出されませんでした。このまま適用してこの手順をスキップできます。</string>
+    <string name="redaction_regions_found">%1$d 件の領域が見つかりました — 枠をタップして保持/スキップを切り替え、適用してください。</string>
+    <string name="redaction_apply">適用</string>
 </resources>

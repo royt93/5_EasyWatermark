@@ -44,7 +44,15 @@ data class ImageInfo(
      * chạy nhưng không tìm thấy mặt nào (khác `null` để không chạy lại ML Kit vô ích khi user bấm
      * "Tự động né khuôn mặt" lần nữa).
      */
-    val detectedFaceRectsNormalized: List<RectF>? = null
+    val detectedFaceRectsNormalized: List<RectF>? = null,
+    /**
+     * IDEA-14: vùng đã user XÁC NHẬN che (mosaic) trước khi export — normalized 0..1 theo ảnh ĐÃ
+     * áp [cropRect]/[rotationDegrees]. `null` = chưa từng mở màn Smart Redaction cho ảnh này (không
+     * áp gì); list rỗng = đã mở nhưng user bỏ chọn hết (vẫn hợp lệ, khác `null` để không hiểu nhầm
+     * "chưa xem qua"). KHÔNG liên quan tới [detectedFaceRectsNormalized] (dùng cho AutoPlacement né
+     * mặt lúc đặt watermark, không phải danh sách sẽ bị che).
+     */
+    val redactionRectsNormalized: List<RectF>? = null
 ) {
     val shareUri: Uri?
         get() = result?.data as? Uri?

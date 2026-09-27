@@ -65,6 +65,8 @@ dependencyResolutionManagement {
 
             // IDEA-01: on-device Face Detection (bundled model, hoạt động offline hoàn toàn)
             library("mlkit-face-detection", "com.google.mlkit:face-detection:16.1.7")
+            // IDEA-14: on-device Text Recognition (bundled model, offline) — phát hiện email/SĐT nhạy cảm
+            library("mlkit-text-recognition", "com.google.mlkit:text-recognition:16.0.1")
 
             // VIP screen UX: confetti + shimmer
             library("konfetti-xml", "nl.dionsegijn:konfetti-xml:2.0.5")

@@ -147,4 +147,12 @@
     <string name="crop_straighten_label">Begradigen</string>
     <string name="crop_apply">Anwenden</string>
     <string name="crop_no_image_selected">Kein Bild zum Zuschneiden ausgewählt</string>
+    <!-- IDEA-14: Smart Redaction -->
+    <string name="action_smart_redaction">Intelligente Schwärzung</string>
+    <string name="redaction_title">Intelligente Schwärzung</string>
+    <string name="redaction_no_image_selected">Kein Bild zum Schwärzen ausgewählt</string>
+    <string name="redaction_scanning">Suche nach sensiblen Daten (E-Mail, Telefonnummer, Gesichter)…</string>
+    <string name="redaction_no_regions_found">Keine sensiblen Daten gefunden. Sie können trotzdem anwenden, um diesen Schritt zu überspringen.</string>
+    <string name="redaction_regions_found">%1$d Bereich(e) gefunden — tippen Sie auf ein Feld, um es zu behalten oder zu überspringen, dann Anwenden.</string>
+    <string name="redaction_apply">Anwenden</string>
 </resources>

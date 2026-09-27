@@ -150,4 +150,12 @@
     <string name="crop_straighten_label">校正</string>
     <string name="crop_apply">应用</string>
     <string name="crop_no_image_selected">未选择要裁剪的图片</string>
+    <!-- IDEA-14: Smart Redaction -->
+    <string name="action_smart_redaction">智能打码</string>
+    <string name="redaction_title">智能打码</string>
+    <string name="redaction_no_image_selected">未选择要打码的图片</string>
+    <string name="redaction_scanning">正在扫描敏感信息(邮箱、电话号码、人脸)…</string>
+    <string name="redaction_no_regions_found">未检测到敏感信息。您仍可直接应用以跳过此步骤。</string>
+    <string name="redaction_regions_found">找到 %1$d 个区域 — 点击方框以保留或跳过,然后点击应用。</string>
+    <string name="redaction_apply">应用</string>
 </resources>

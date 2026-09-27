@@ -142,4 +142,12 @@
     <string name="crop_straighten_label">Rett opp</string>
     <string name="crop_apply">Bruk</string>
     <string name="crop_no_image_selected">Ikkje valt noko bilete å skjera av</string>
+    <!-- IDEA-14: Smart Redaction -->
+    <string name="action_smart_redaction">Smart sladding</string>
+    <string name="redaction_title">Smart sladding</string>
+    <string name="redaction_no_image_selected">Ikkje valt noko bilete å sladda</string>
+    <string name="redaction_scanning">Søkjer etter sensitiv informasjon (e-post, telefonnummer, andlet)…</string>
+    <string name="redaction_no_regions_found">Fann ingen sensitiv informasjon. Du kan likevel bruka for å hoppa over dette steget.</string>
+    <string name="redaction_regions_found">Fann %1$d område — trykk på ein boks for å behalda eller hoppa over han, trykk så Bruk.</string>
+    <string name="redaction_apply">Bruk</string>
 </resources>

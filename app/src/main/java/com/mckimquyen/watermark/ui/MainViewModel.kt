@@ -802,6 +802,11 @@ class MainViewModel @Inject constructor(
         launch { waterMarkRepo.updateImageCrop(uri, cropRect, rotationDegrees) }
     }
 
+    /** IDEA-14: áp danh sách vùng đã xác nhận che (kết quả từ `SmartRedactionActivity`) cho đúng ảnh [uri]. */
+    fun updateImageRedaction(uri: Uri, redactionRects: List<RectF>) {
+        launch { waterMarkRepo.updateImageRedaction(uri, redactionRects) }
+    }
+
     fun removeImage(
         imageInfo: ImageInfo?,
         curSelectedPos: Int

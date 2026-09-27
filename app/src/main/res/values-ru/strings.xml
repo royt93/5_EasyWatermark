@@ -65,4 +65,12 @@
     <string name="crop_straighten_label">Выровнять</string>
     <string name="crop_apply">Применить</string>
     <string name="crop_no_image_selected">Не выбрано изображение для обрезки</string>
+    <!-- IDEA-14: Smart Redaction -->
+    <string name="action_smart_redaction">Умное скрытие данных</string>
+    <string name="redaction_title">Умное скрытие данных</string>
+    <string name="redaction_no_image_selected">Не выбрано изображение для скрытия данных</string>
+    <string name="redaction_scanning">Поиск конфиденциальной информации (email, телефон, лица)…</string>
+    <string name="redaction_no_regions_found">Конфиденциальная информация не обнаружена. Можно применить, чтобы пропустить этот шаг.</string>
+    <string name="redaction_regions_found">Найдено областей: %1$d — нажмите на рамку, чтобы оставить или пропустить, затем нажмите «Применить».</string>
+    <string name="redaction_apply">Применить</string>
 </resources>

@@ -39,6 +39,7 @@ import com.mckimquyen.watermark.ui.widget.utils.WaterMarkShader
 import com.mckimquyen.watermark.utils.TextEffectRenderer
 import com.mckimquyen.watermark.utils.bitmap.BitmapCache
 import com.mckimquyen.watermark.utils.bitmap.applyCropAndRotate
+import com.mckimquyen.watermark.utils.bitmap.applyRedaction
 import com.mckimquyen.watermark.utils.bitmap.decodeSampledBitmapFromResource
 import com.mckimquyen.watermark.utils.ktx.applyConfig
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -77,6 +78,19 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
     private var curImageInfo: ImageInfo = ImageInfo(Uri.EMPTY)
 
     private var decodedUri: Uri = Uri.EMPTY
+
+    /**
+     * IDEA-14: theo dõi RIÊNG vùng redaction ĐÃ ÁP thật (khác đọc [curImageInfo].redactionRectsNormalized
+     * để so sánh) — bug đã gặp qua smoke test thật: `config` setter (dòng ~183) gọi `applyNewConfig`
+     * bằng `curImageInfo` đã bị 1 lời gọi `updateUri()` khác ghi đè thành giá trị MỚI trước đó trong
+     * cùng nhịp xử lý ảnh vừa chọn lại (`MainActivity.viewModel.selectedImage.observe`, 2 lệnh gọi
+     * `config =`/`updateUri()` cạnh nhau), khiến phép so `curImageInfo.redactionRectsNormalized !=
+     * imageInfo.redactionRectsNormalized` thấy "không đổi" dù bitmap thật SỰ CHƯA từng được mosaic
+     * hoá — mosaic áp xong bị bỏ qua hoàn toàn, không lỗi, không crash, chỉ ảnh SAI. Field riêng này
+     * chỉ cập nhật ĐÚNG lúc mosaic thật sự được áp (cạnh [decodedUri]), không phụ thuộc thời điểm
+     * ghi [curImageInfo].
+     */
+    private var lastAppliedRedactionRects: List<RectF>? = null
 
     @Volatile
     private var localIconUri: Uri = Uri.EMPTY
@@ -205,7 +219,8 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
             // decode lại — decodeSampledBitmapFromResource đã cache theo uri nên chi phí decode
             // lại gần như 0, chỉ tốn lại bước applyCropAndRotate.
             val geometryChanged = curImageInfo.cropRect != imageInfo.cropRect ||
-                curImageInfo.rotationDegrees != imageInfo.rotationDegrees
+                curImageInfo.rotationDegrees != imageInfo.rotationDegrees ||
+                lastAppliedRedactionRects != imageInfo.redactionRectsNormalized
             // quick check is the same image
             if (decodedUri != uri || geometryChanged) {
                 AppLog.d(LOG_TAG, "[WMIV] applyNewConfig: decodedUri($decodedUri) != uri($uri) or geometryChanged=$geometryChanged, decoding main image...")
@@ -244,7 +259,16 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 // thuộc sở hữu BitmapCache (retain/release ở trên), applyCropAndRotate không bao
                 // giờ recycle nó. Nếu có transform thật, kết quả là bitmap MỚI do View tự sở hữu.
                 val previousTransformed = transformedMainBitmap
-                val displayBitmap = applyCropAndRotate(imageBitmap, imageInfo.rotationDegrees, imageInfo.cropRect)
+                var displayBitmap = applyCropAndRotate(imageBitmap, imageInfo.rotationDegrees, imageInfo.cropRect)
+                // IDEA-14: che thông tin nhạy cảm ngay ở preview editor — nội dung gốc không được
+                // hiện ra dù chỉ trong lúc chỉnh sửa, cùng thứ tự với mọi luồng export.
+                if (!imageInfo.redactionRectsNormalized.isNullOrEmpty()) {
+                    val redacted = applyRedaction(displayBitmap, imageInfo.redactionRectsNormalized)
+                    if (redacted !== displayBitmap && displayBitmap !== imageBitmap && !displayBitmap.isRecycled) {
+                        displayBitmap.recycle()
+                    }
+                    displayBitmap = redacted
+                }
                 transformedMainBitmap = if (displayBitmap !== imageBitmap) displayBitmap else null
                 previousTransformed?.let { if (!it.isRecycled) it.recycle() }
                 // adjust bitmap via matrix
@@ -284,6 +308,7 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                     height = drawableBounds.height().toInt()
                 )
                 decodedUri = uri
+                lastAppliedRedactionRects = imageInfo.redactionRectsNormalized
                 // FEAT-23: đúng lúc biết tỉ lệ khung ảnh THẬT (kích thước bitmap gốc, không phụ
                 // thuộc scale-to-fit) — bằng nhau (ảnh vuông) coi là dọc (tie-break tuỳ ý, ghi rõ).
                 this@WaterMarkImageView.onImageOrientationKnown(displayBitmap.height >= displayBitmap.width)
@@ -666,6 +691,7 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         setImageBitmap(null)
         setBackgroundColor(Color.TRANSPARENT)
         decodedUri = Uri.EMPTY
+        lastAppliedRedactionRects = null
     }
 
     @androidx.annotation.VisibleForTesting

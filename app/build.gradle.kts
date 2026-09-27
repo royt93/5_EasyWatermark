@@ -178,6 +178,8 @@ dependencies {
     api(libs.zxing.core)
     // IDEA-01: Face Detection on-device (bundled model, không cần Play Services tải thêm).
     implementation(libs.mlkit.face.detection)
+    // IDEA-14: Text Recognition on-device (bundled model) — phát hiện email/SĐT nhạy cảm.
+    implementation(libs.mlkit.text.recognition)
 
     implementation("com.github.royt93:AdmobApplovinWrapper:1.1.5")
     implementation(libs.konfetti.xml)

@@ -147,4 +147,12 @@
     <string name="crop_straighten_label">Raddrizza</string>
     <string name="crop_apply">Applica</string>
     <string name="crop_no_image_selected">Nessuna immagine selezionata da ritagliare</string>
+    <!-- IDEA-14: Smart Redaction -->
+    <string name="action_smart_redaction">Redazione intelligente</string>
+    <string name="redaction_title">Redazione intelligente</string>
+    <string name="redaction_no_image_selected">Nessuna immagine selezionata da redigere</string>
+    <string name="redaction_scanning">Ricerca di informazioni sensibili (email, telefono, volti)…</string>
+    <string name="redaction_no_regions_found">Nessuna informazione sensibile rilevata. Puoi comunque applicare per saltare questo passaggio.</string>
+    <string name="redaction_regions_found">Trovate %1$d zona/e — tocca un riquadro per mantenerlo o saltarlo, poi Applica.</string>
+    <string name="redaction_apply">Applica</string>
 </resources>

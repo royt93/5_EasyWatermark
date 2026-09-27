@@ -147,4 +147,12 @@
     <string name="crop_straighten_label">Endireitar</string>
     <string name="crop_apply">Aplicar</string>
     <string name="crop_no_image_selected">Nenhuma imagem selecionada para cortar</string>
+    <!-- IDEA-14: Smart Redaction -->
+    <string name="action_smart_redaction">Ocultação inteligente</string>
+    <string name="redaction_title">Ocultação inteligente</string>
+    <string name="redaction_no_image_selected">Nenhuma imagem selecionada para ocultar</string>
+    <string name="redaction_scanning">Procurando informações sensíveis (email, telefone, rostos)…</string>
+    <string name="redaction_no_regions_found">Nenhuma informação sensível detectada. Você pode aplicar mesmo assim para pular esta etapa.</string>
+    <string name="redaction_regions_found">Encontradas %1$d área(s) — toque em uma caixa para mantê-la ou pulá-la, depois Aplicar.</string>
+    <string name="redaction_apply">Aplicar</string>
 </resources>

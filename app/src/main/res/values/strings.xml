@@ -159,6 +159,14 @@
     <string name="crop_straighten_label">Straighten</string>
     <string name="crop_apply">Apply</string>
     <string name="crop_no_image_selected">No image selected to crop</string>
+    <!-- IDEA-14: Smart Redaction — detect and blur sensitive info before watermarking -->
+    <string name="action_smart_redaction">Smart Redaction</string>
+    <string name="redaction_title">Smart Redaction</string>
+    <string name="redaction_no_image_selected">No image selected to redact</string>
+    <string name="redaction_scanning">Scanning for sensitive info (email, phone number, faces)…</string>
+    <string name="redaction_no_regions_found">No sensitive info detected. You can apply anyway to skip this step.</string>
+    <string name="redaction_regions_found">Found %1$d region(s) — tap a box to keep or skip it, then Apply.</string>
+    <string name="redaction_apply">Apply</string>
     <string name="position_anchor_margin_value">%d%%</string>
     <string name="anchor_top_left">Top Left</string>
     <string name="anchor_top_center">Top Center</string>

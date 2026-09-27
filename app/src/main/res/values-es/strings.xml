@@ -146,4 +146,12 @@
     <string name="crop_straighten_label">Enderezar</string>
     <string name="crop_apply">Aplicar</string>
     <string name="crop_no_image_selected">No se seleccionó ninguna imagen para recortar</string>
+    <!-- IDEA-14: Smart Redaction -->
+    <string name="action_smart_redaction">Redacción inteligente</string>
+    <string name="redaction_title">Redacción inteligente</string>
+    <string name="redaction_no_image_selected">No hay ninguna imagen seleccionada para redactar</string>
+    <string name="redaction_scanning">Buscando información sensible (correo, teléfono, rostros)…</string>
+    <string name="redaction_no_regions_found">No se detectó información sensible. Puedes aplicar de todos modos para omitir este paso.</string>
+    <string name="redaction_regions_found">Se encontraron %1$d zona(s) — toca un recuadro para mantenerlo u omitirlo, luego Aplicar.</string>
+    <string name="redaction_apply">Aplicar</string>
 </resources>

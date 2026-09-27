@@ -269,6 +269,33 @@ class WaterMarkRepository @Inject constructor(
         updateImageList(list)
     }
 
+    /**
+     * IDEA-14: gán danh sách vùng đã user xác nhận che (kết quả trả về từ `SmartRedactionActivity`)
+     * — mirror [updateImageCrop] hệt về cấu trúc.
+     */
+    suspend fun updateImageRedaction(uri: Uri, redactionRects: List<RectF>) {
+        var updatedSelected: ImageInfo? = null
+        val list = imageInfoList.map { info ->
+            if (info.uri == uri) {
+                info.copy(redactionRectsNormalized = redactionRects).also { updatedSelected = it }
+            } else {
+                info
+            }
+        }
+        updateImageList(list)
+        // BUG phát hiện qua smoke test thật: updateImageList() CHỈ cập nhật _imageMapFlow, KHÔNG
+        // đụng _selectedImage — khác [updateOffset] (đã emit cả 2) nhưng giống [updateImageCrop]
+        // sẵn có (cùng hạn chế, ngoài phạm vi sửa ở đây). Thiếu dòng này, editor đang mở đúng ảnh
+        // vừa Smart-Redact sẽ KHÔNG BAO GIỜ vẽ lại — `WaterMarkImageView` chỉ nhận ImageInfo mới qua
+        // `viewModel.selectedImage` (LiveData `.asLiveData()` từ StateFlow này), và khi
+        // `MainActivity` resume từ `SmartRedactionActivity`, observer chỉ được redeliver GIÁ TRỊ CŨ
+        // (StateFlow chưa đổi) — mosaic vừa Apply xong bị "mất tích" một cách âm thầm, không lỗi,
+        // không crash, chỉ ảnh SAI. Emit đúng ảnh vừa sửa nếu nó đang là ảnh được chọn.
+        if (uri == selectedImage.value.uri) {
+            updatedSelected?.let { _selectedImage.emit(it) }
+        }
+    }
+
     suspend fun updateText(text: String) {
         snapshotForUndoIfDue()
         dataStore.edit {

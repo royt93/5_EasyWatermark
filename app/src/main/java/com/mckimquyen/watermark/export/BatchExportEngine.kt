@@ -47,6 +47,7 @@ import com.mckimquyen.watermark.utils.bitmap.ExifBorderRenderer
 import com.mckimquyen.watermark.utils.bitmap.ExifFramePalette
 import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
 import com.mckimquyen.watermark.utils.bitmap.applyCropAndRotate
+import com.mckimquyen.watermark.utils.bitmap.applyRedaction
 import com.mckimquyen.watermark.utils.bitmap.calculateInSampleSize
 import com.mckimquyen.watermark.utils.bitmap.decodeBitmapFromUri
 import com.mckimquyen.watermark.utils.bitmap.decodeSampledBitmapFromResource
@@ -313,6 +314,16 @@ class BatchExportEngine @Inject constructor(
                     mutableBitmap.recycle()
                 }
                 mutableBitmap = transformed
+            }
+
+            // IDEA-14: che (mosaic) thông tin nhạy cảm NGAY SAU crop/rotate, TRƯỚC khi vẽ watermark
+            // — nội dung nhạy cảm không bao giờ được xuất hiện trong ảnh cuối cùng.
+            if (!imageInfo.redactionRectsNormalized.isNullOrEmpty()) {
+                val redacted = applyRedaction(mutableBitmap, imageInfo.redactionRectsNormalized)
+                if (redacted !== mutableBitmap && !mutableBitmap.isRecycled) {
+                    mutableBitmap.recycle()
+                }
+                mutableBitmap = redacted
             }
 
             // BUG-21: theo dõi bitmap đang "sở hữu" (chưa recycle) — mọi early-return lỗi bên
@@ -921,6 +932,14 @@ class BatchExportEngine @Inject constructor(
                 }
                 mutableBitmap = transformed
             }
+            // IDEA-14: preview grid phải khớp đúng ảnh export thật — cũng che thông tin nhạy cảm.
+            if (!imageInfo.redactionRectsNormalized.isNullOrEmpty()) {
+                val redacted = applyRedaction(mutableBitmap, imageInfo.redactionRectsNormalized)
+                if (redacted !== mutableBitmap && !mutableBitmap.isRecycled) {
+                    mutableBitmap.recycle()
+                }
+                mutableBitmap = redacted
+            }
             val approxOriginalWidth = mutableBitmap.width * bitmapValue.inSampleSize
             val approxOriginalHeight = mutableBitmap.height * bitmapValue.inSampleSize
 
@@ -1119,6 +1138,22 @@ class BatchExportEngine @Inject constructor(
                     watermarkedCopy.recycle()
                 }
                 watermarkedCopy = transformedWatermarked
+            }
+
+            // IDEA-14: che thông tin nhạy cảm cho CẢ 2 bản — bản "trước" không được lộ nội dung
+            // nhạy cảm mà bản "sau" đã che, nếu không so sánh sẽ vô tình phơi bày lại chính thứ
+            // tính năng này sinh ra để giấu.
+            if (!imageInfo.redactionRectsNormalized.isNullOrEmpty()) {
+                val redactedOriginal = applyRedaction(originalCopy, imageInfo.redactionRectsNormalized)
+                if (redactedOriginal !== originalCopy && !originalCopy.isRecycled) {
+                    originalCopy.recycle()
+                }
+                originalCopy = redactedOriginal
+                val redactedWatermarked = applyRedaction(watermarkedCopy, imageInfo.redactionRectsNormalized)
+                if (redactedWatermarked !== watermarkedCopy && !watermarkedCopy.isRecycled) {
+                    watermarkedCopy.recycle()
+                }
+                watermarkedCopy = redactedWatermarked
             }
 
             val baseText = resolveBaseText(imageInfo, config)
