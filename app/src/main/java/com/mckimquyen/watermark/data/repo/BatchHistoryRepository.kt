@@ -41,7 +41,9 @@ class BatchHistoryRepository @Inject constructor(
                 copyright = settings.copyright,
                 outputNamePattern = settings.outputNamePattern,
                 conflictPolicyId = settings.conflictPolicy.id,
-                outputDirectoryUri = settings.outputDirectoryUri?.toString()
+                outputDirectoryUri = settings.outputDirectoryUri?.toString(),
+                recipientCode = settings.recipientCode,
+                recipientName = settings.recipientName
             )
         )
         dao.trimOldest(MAX_HISTORY_ENTRIES)

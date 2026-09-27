@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.mckimquyen.watermark.data.db.AppDatabase
 import com.mckimquyen.watermark.data.db.BatchHistoryDatabase
+import com.mckimquyen.watermark.data.db.RecipientDatabase
 import com.mckimquyen.watermark.data.db.WatermarkProfileDatabase
 import dagger.Module
 import dagger.Provides
@@ -50,7 +51,7 @@ object AppModule {
         context = app,
         klass = BatchHistoryDatabase::class.java,
         name = "batch-history-db"
-    ).build()
+    ).addMigrations(BatchHistoryDatabase.MIGRATION_1_2).build()
 
     @Singleton
     @Provides
@@ -70,4 +71,19 @@ object AppModule {
     @Singleton
     @Provides
     fun provideWatermarkProfileDao(db: WatermarkProfileDatabase) = db.watermarkProfileDao()
+
+    /** IDEA-10: DB riêng (không seed từ asset) cho quản lý Người nhận (Recipient). */
+    @Singleton
+    @Provides
+    fun provideRecipientDatabase(
+        @ApplicationContext app: Context
+    ): RecipientDatabase = Room.databaseBuilder(
+        context = app,
+        klass = RecipientDatabase::class.java,
+        name = "recipient-db"
+    ).build()
+
+    @Singleton
+    @Provides
+    fun provideRecipientDao(db: RecipientDatabase) = db.recipientDao()
 }

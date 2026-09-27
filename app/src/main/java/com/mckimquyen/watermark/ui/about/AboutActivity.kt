@@ -105,7 +105,13 @@ class AboutActivity : BaseActivity() {
             }.joinToString("\n")
         } ?: getString(R.string.invisible_watermark_absent)
 
-        return "$stampPart\n\n$hiddenPart"
+        // IDEA-10: dấu vân tay truy được người nhận → đặt LÊN ĐẦU, đây là thông tin quan trọng nhất
+        // của cả màn hình khi ảnh bị rò rỉ.
+        val leakPart = report.leakedRecipient?.let {
+            getString(R.string.recipient_leak_detected, it.name, it.code) + "\n\n"
+        }.orEmpty()
+
+        return "$leakPart$stampPart\n\n$hiddenPart"
     }
 
     private fun buildStampMessage(result: AuthenticityVerifier.Result): String = when (result) {

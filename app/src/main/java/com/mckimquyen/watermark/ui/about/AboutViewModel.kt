@@ -5,8 +5,10 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.mckimquyen.cmonet.CMonet
+import com.mckimquyen.watermark.data.model.entity.Recipient
 import com.mckimquyen.watermark.data.repo.BackupRestoreRepository
 import com.mckimquyen.watermark.data.repo.MemorySettingRepo
+import com.mckimquyen.watermark.data.repo.RecipientRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.export.AuthenticityVerifier
@@ -24,6 +26,7 @@ class AboutViewModel @Inject constructor(
     private val waterMarkRepository: WaterMarkRepository,
     private val backupRestoreRepository: BackupRestoreRepository,
     private val userConfigRepository: UserConfigRepository,
+    private val recipientRepository: RecipientRepository,
     memorySettingRepo: MemorySettingRepo
 ) : ViewModel() {
 
@@ -75,17 +78,49 @@ class AboutViewModel @Inject constructor(
         launch {
             // Tên chủ sở hữu đang cấu hình, để đối chiếu với ID rút gọn đọc từ lớp ẩn.
             val currentOwner = userConfigRepository.userPreferences.first().copyright
-            val report = withContext(Dispatchers.IO) {
-                VerifyReport(
-                    stamp = AuthenticityVerifier.verify(contentResolver, srcUri),
-                    // IDEA-02: đọc song song, KHÔNG phụ thuộc kết quả EXIF ở trên — ca đáng giá nhất
-                    // chính là EXIF đã bị nền tảng xoá sạch mà lớp ẩn trong pixel vẫn còn.
-                    hidden = HiddenWatermarkReader.read(contentResolver, srcUri),
-                    currentOwner = currentOwner
-                )
+            val stampResult = withContext(Dispatchers.IO) {
+                AuthenticityVerifier.verify(contentResolver, srcUri)
             }
-            onResult(report)
+            val hiddenResult = withContext(Dispatchers.IO) {
+                // IDEA-02: đọc song song, KHÔNG phụ thuộc kết quả EXIF ở trên — ca đáng giá nhất
+                // chính là EXIF đã bị nền tảng xoá sạch mà lớp ẩn trong pixel vẫn còn.
+                HiddenWatermarkReader.read(contentResolver, srcUri)
+            }
+            // IDEA-10: dấu vân tay người nhận — chỉ tra khi ownerId lớp ẩn KHÔNG khớp chính chủ,
+            // vì ảnh của chính mình (không gắn recipient) không phải trường hợp rò rỉ.
+            val leaked = resolveLeakedRecipient(stampResult, hiddenResult, currentOwner)
+            onResult(
+                VerifyReport(
+                    stamp = stampResult,
+                    hidden = hiddenResult,
+                    currentOwner = currentOwner,
+                    leakedRecipient = leaked
+                )
+            )
         }
+    }
+
+    /**
+     * IDEA-10: đối chiếu dấu vết đọc được với danh sách người nhận cục bộ.
+     *
+     * Ưu tiên lớp ẩn trong pixel ([InvisibleWatermark]) vì nó sống sót qua việc nền tảng xoá EXIF —
+     * đúng tình huống truy nguồn rò rỉ thật. Nếu không có lớp ẩn thì mới xét chuỗi owner trong EXIF.
+     */
+    private suspend fun resolveLeakedRecipient(
+        stamp: AuthenticityVerifier.Result,
+        hidden: InvisibleWatermark.Result?,
+        currentOwner: String
+    ): Recipient? {
+        val ownIdOfCurrentOwner = com.mckimquyen.watermark.export.stego.StegoPayload.ownerIdOf(currentOwner)
+        // Ảnh của chính mình, không gắn người nhận → không phải rò rỉ, không cần tra DB.
+        if (hidden != null && hidden.ownerId == ownIdOfCurrentOwner) return null
+
+        val stampOwner = (stamp as? AuthenticityVerifier.Result.Stamped)?.owner
+        return recipientRepository.findMatching(
+            ownerText = stampOwner,
+            stegoOwnerId = hidden?.ownerId,
+            currentOwner = currentOwner
+        )
     }
 
     /** Kết quả gộp của hai tầng độc lập: con dấu EXIF (IDEA-03) và watermark ẩn trong pixel (IDEA-02). */
@@ -93,6 +128,8 @@ class AboutViewModel @Inject constructor(
         val stamp: AuthenticityVerifier.Result,
         val hidden: InvisibleWatermark.Result?,
         /** Tên chủ sở hữu đang đặt trong cấu hình export — để đối chiếu với ID trong lớp ẩn. */
-        val currentOwner: String = ""
+        val currentOwner: String = "",
+        /** IDEA-10: người nhận khớp dấu vân tay — khác null nghĩa là truy được nguồn rò rỉ. */
+        val leakedRecipient: Recipient? = null
     )
 }

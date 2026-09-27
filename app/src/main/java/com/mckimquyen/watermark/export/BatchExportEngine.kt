@@ -185,7 +185,10 @@ class BatchExportEngine @Inject constructor(
         /** IDEA-03: nhúng con dấu chứng thực vào EXIF (chỉ có tác dụng với JPEG). */
         val authenticityStamp: Boolean = false,
         /** IDEA-02: nhúng lớp watermark vô hình vào pixel, sống sót khi nền tảng xoá EXIF. */
-        val invisibleWatermark: Boolean = false
+        val invisibleWatermark: Boolean = false,
+        /** IDEA-10: Mã người nhận để nhúng fingerprint và thay thế token {recipient}. */
+        val recipientCode: String? = null,
+        val recipientName: String? = null
     )
 
     /**
@@ -367,8 +370,8 @@ class BatchExportEngine @Inject constructor(
                 if (!shouldSkipTextWatermark(tmpConfig.markMode, baseText)) {
                     val shader = when (tmpConfig.markMode) {
                         WaterMarkRepository.MarkMode.Text -> {
-                            // Resolve dynamic text tokens (e.g. {date}, {filename}, {iso}) per image at export time.
-                            val resolvedText = exportNaming.resolveTextTokens(baseText, imageInfo, contentResolver, index)
+                            // Resolve dynamic text tokens (e.g. {date}, {filename}, {iso}, {recipient}) per image at export time.
+                            val resolvedText = exportNaming.resolveTextTokens(baseText, imageInfo, contentResolver, index, settings.recipientCode)
                             WaterMarkImageView.buildTextBitmapShader(
                                 imageInfo = imageInfo,
                                 config = tmpConfig.copy(text = resolvedText),
@@ -536,8 +539,13 @@ class BatchExportEngine @Inject constructor(
                 // watermark hiển thị + khung EXIF + resize, trước mọi nhánh ghi file, nên cả 3 nhánh
                 // (MediaStore / legacy File / SAF) đều mang lớp ẩn mà không phải sửa từng chỗ.
                 // Nhúng thất bại (ảnh quá nhỏ, thiếu RAM) thì bỏ qua im lặng, không chặn export.
+                // IDEA-10: nếu có recipientCode, hash kết hợp owner#recipientCode để tạo dấu vân tay riêng.
                 if (settings.invisibleWatermark) {
-                    val ownerId = StegoPayload.ownerIdOf(settings.copyright)
+                    val ownerId = if (!settings.recipientCode.isNullOrBlank()) {
+                        StegoPayload.ownerIdOf("${settings.copyright}#${settings.recipientCode}")
+                    } else {
+                        StegoPayload.ownerIdOf(settings.copyright)
+                    }
                     InvisibleWatermark.embed(exportBitmap, ownerId)?.let { stamped ->
                         if (!exportBitmap.isRecycled) exportBitmap.recycle()
                         bitmapGuard.replace(stamped)
@@ -551,7 +559,8 @@ class BatchExportEngine @Inject constructor(
                     imageInfo,
                     index,
                     settings.outputNamePattern,
-                    settings.outputFormat
+                    settings.outputFormat,
+                    settings.recipientCode
                 )
 
                 return@withContext if (settings.outputDirectoryUri != null) {
@@ -637,7 +646,12 @@ class BatchExportEngine @Inject constructor(
                     contentResolver.update(imageContentUri, finalDetails, null, null)
                     exportNaming.applyCopyrightExif(contentResolver, imageContentUri, settings.copyright, settings.outputFormat)
                     if (settings.authenticityStamp) {
-                        exportNaming.applyAuthenticityExif(contentResolver, imageContentUri, settings.copyright, settings.outputFormat)
+                        val stampOwner = if (!settings.recipientCode.isNullOrBlank()) {
+                            "${settings.copyright} [${settings.recipientCode}]"
+                        } else {
+                            settings.copyright
+                        }
+                        exportNaming.applyAuthenticityExif(contentResolver, imageContentUri, stampOwner, settings.outputFormat)
                     }
                     Result.success(imageContentUri)
                 } else {
@@ -707,7 +721,12 @@ class BatchExportEngine @Inject constructor(
                     bitmapGuard.release()
                     exportNaming.applyCopyrightExif(outputFile.absolutePath, settings.copyright, settings.outputFormat)
                     if (settings.authenticityStamp) {
-                        exportNaming.applyAuthenticityExif(outputFile.absolutePath, settings.copyright, settings.outputFormat)
+                        val stampOwner = if (!settings.recipientCode.isNullOrBlank()) {
+                            "${settings.copyright} [${settings.recipientCode}]"
+                        } else {
+                            settings.copyright
+                        }
+                        exportNaming.applyAuthenticityExif(outputFile.absolutePath, stampOwner, settings.outputFormat)
                     }
                     val outputUri = FileProvider.getUriForFile(
                         /* context = */ appContext,
@@ -814,7 +833,12 @@ class BatchExportEngine @Inject constructor(
         bitmapGuard.release()
         exportNaming.applyCopyrightExif(contentResolver, targetDoc.uri, settings.copyright, settings.outputFormat)
         if (settings.authenticityStamp) {
-            exportNaming.applyAuthenticityExif(contentResolver, targetDoc.uri, settings.copyright, settings.outputFormat)
+            val stampOwner = if (!settings.recipientCode.isNullOrBlank()) {
+                "${settings.copyright} [${settings.recipientCode}]"
+            } else {
+                settings.copyright
+            }
+            exportNaming.applyAuthenticityExif(contentResolver, targetDoc.uri, stampOwner, settings.outputFormat)
         }
         return Result.success(targetDoc.uri)
     }

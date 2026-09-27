@@ -259,14 +259,16 @@ class MainViewModel @Inject constructor(
     fun saveImage(
         contentResolver: ContentResolver,
         viewInfo: ViewInfo,
-        imageList: List<ImageInfo>
+        imageList: List<ImageInfo>,
+        recipientCode: String? = null,
+        recipientName: String? = null
     ) {
         if (this.imageList.value?.first.isNullOrEmpty()) {
             saveResult.value = Result.failure(data = null, code = TYPE_ERROR_NOT_IMG)
             return
         }
         saveResult.value = Result.success(null, code = TYPE_SAVING)
-        BatchExportWorker.enqueue(appContext, viewInfo)
+        BatchExportWorker.enqueue(appContext, viewInfo, recipientCode, recipientName)
         observeExportWork()
     }
 

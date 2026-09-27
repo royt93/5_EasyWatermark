@@ -10,7 +10,7 @@ object TextTokenResolver {
     /** Các token được hỗ trợ (không bao gồm dấu ngoặc). */
     val SUPPORTED_TOKENS = listOf(
         "filename", "seq", "seq3", "date", "model", "make",
-        "iso", "fnumber", "exposure", "focal", "exif", "location"
+        "iso", "fnumber", "exposure", "focal", "exif", "location", "recipient"
     )
 
     /**

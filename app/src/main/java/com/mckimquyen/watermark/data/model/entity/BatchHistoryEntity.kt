@@ -32,5 +32,8 @@ data class BatchHistoryEntity(
     val outputNamePattern: String,
     val conflictPolicyId: Int,
     /** null = mặc định Pictures/WaterMarkCreator/ (FEAT-15). */
-    val outputDirectoryUri: String? = null
+    val outputDirectoryUri: String? = null,
+    /** IDEA-10: mã và tên người nhận nếu batch có gắn fingerprint. */
+    val recipientCode: String? = null,
+    val recipientName: String? = null
 )

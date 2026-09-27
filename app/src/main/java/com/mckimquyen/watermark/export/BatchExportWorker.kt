@@ -55,6 +55,8 @@ class BatchExportWorker @AssistedInject constructor(
         val viewInfo = readViewInfo()
         val prefs = userRepo.userPreferences.first()
         val baseConfig = waterMarkRepo.waterMark.first()
+        val recipientCode = inputData.getString(KEY_RECIPIENT_CODE)
+        val recipientName = inputData.getString(KEY_RECIPIENT_NAME)
         val settings = BatchExportEngine.ExportSettings(
             config = if (prefs.proofingMode) ProofingMode.overrideConfig(baseConfig) else baseConfig,
             outputFormat = prefs.outputFormat,
@@ -66,7 +68,9 @@ class BatchExportWorker @AssistedInject constructor(
             outputDirectoryUri = prefs.outputDirectoryUri,
             proofingMode = prefs.proofingMode,
             authenticityStamp = prefs.authenticityStamp,
-            invisibleWatermark = prefs.invisibleWatermark
+            invisibleWatermark = prefs.invisibleWatermark,
+            recipientCode = recipientCode,
+            recipientName = recipientName
         )
         val total = infoList.size
         var doneCount = 0
@@ -246,7 +250,10 @@ class BatchExportWorker @AssistedInject constructor(
         private const val NOTIFICATION_CHANNEL_ID = "batch_export"
         private const val NOTIFICATION_ID = 4201
 
-        fun buildRequest(viewInfo: ViewInfo) = OneTimeWorkRequestBuilder<BatchExportWorker>()
+        private const val KEY_RECIPIENT_CODE = "recipient_code"
+        private const val KEY_RECIPIENT_NAME = "recipient_name"
+
+        fun buildRequest(viewInfo: ViewInfo, recipientCode: String? = null, recipientName: String? = null) = OneTimeWorkRequestBuilder<BatchExportWorker>()
             .setInputData(
                 Data.Builder()
                     .putInt(KEY_VIEW_WIDTH, viewInfo.width)
@@ -256,15 +263,17 @@ class BatchExportWorker @AssistedInject constructor(
                     .putInt(KEY_PADDING_RIGHT, viewInfo.paddingRight)
                     .putInt(KEY_PADDING_BOTTOM, viewInfo.paddingBottom)
                     .putInt(KEY_SCALE_TYPE, viewInfo.scaleType.ordinal)
+                    .putString(KEY_RECIPIENT_CODE, recipientCode)
+                    .putString(KEY_RECIPIENT_NAME, recipientName)
                     .build()
             )
             .build()
 
-        fun enqueue(context: Context, viewInfo: ViewInfo) {
+        fun enqueue(context: Context, viewInfo: ViewInfo, recipientCode: String? = null, recipientName: String? = null) {
             WorkManager.getInstance(context).enqueueUniqueWork(
                 UNIQUE_WORK_NAME,
                 ExistingWorkPolicy.REPLACE,
-                buildRequest(viewInfo)
+                buildRequest(viewInfo, recipientCode, recipientName)
             )
         }
 

@@ -36,16 +36,17 @@ class ExportNaming @Inject constructor(
     /**
      * Resolve dynamic text tokens in the watermark text for a given image, per-image at export time
      * so batch jobs get per-photo values. No-op when the text has no '{' token.
-     * Supported: {filename} {seq} {date} {model} {make} {iso} {fnumber} {exposure} {focal} {exif} {location}
+     * Supported: {filename} {seq} {date} {model} {make} {iso} {fnumber} {exposure} {focal} {exif} {location} {recipient}
      */
     fun resolveTextTokens(
         text: String,
         imageInfo: ImageInfo,
         contentResolver: ContentResolver,
-        index: Int
+        index: Int,
+        recipient: String? = null
     ): String {
         if (!text.contains('{')) return text
-        return TextTokenResolver.resolve(text, buildBaseTokens(text, imageInfo, contentResolver, index))
+        return TextTokenResolver.resolve(text, buildBaseTokens(text, imageInfo, contentResolver, index, recipient))
     }
 
     /** Token dùng chung cho cả text watermark/tên file ([resolveTextTokens]) và QR động ([resolveQrContent]). */
@@ -53,7 +54,8 @@ class ExportNaming @Inject constructor(
         text: String,
         imageInfo: ImageInfo,
         contentResolver: ContentResolver,
-        index: Int
+        index: Int,
+        recipient: String? = null
     ): Map<String, String> {
         val exif = imageInfo.exifModel
         val date = exif?.dateTime?.takeIf { it.isNotBlank() }
@@ -71,7 +73,9 @@ class ExportNaming @Inject constructor(
             "focal" to exif?.focalLength.orEmpty(),
             "exif" to exif?.getFormattedExif().orEmpty(),
             // IDEA-16: reverse-geocode có thể gọi mạng — chỉ chạy khi text thật sự dùng token này.
-            "location" to if (text.contains(LOCATION_TOKEN)) locationNameResolver.resolve(exif?.latitude, exif?.longitude) else ""
+            "location" to if (text.contains(LOCATION_TOKEN)) locationNameResolver.resolve(exif?.latitude, exif?.longitude) else "",
+            // IDEA-10: mã hoặc tên người nhận cho token {recipient}
+            "recipient" to recipient.orEmpty()
         )
     }
 
@@ -134,13 +138,14 @@ class ExportNaming @Inject constructor(
         imageInfo: ImageInfo,
         index: Int,
         outputNamePattern: String,
-        outputFormat: Bitmap.CompressFormat
+        outputFormat: Bitmap.CompressFormat,
+        recipient: String? = null
     ): String {
         val pattern = outputNamePattern.trim()
         val base = if (pattern.isEmpty()) {
             "ewm_${System.currentTimeMillis()}"
         } else {
-            resolveTextTokens(pattern, imageInfo, contentResolver, index)
+            resolveTextTokens(pattern, imageInfo, contentResolver, index, recipient)
         }
         return "$base.${trapOutputExtension(outputFormat)}"
     }

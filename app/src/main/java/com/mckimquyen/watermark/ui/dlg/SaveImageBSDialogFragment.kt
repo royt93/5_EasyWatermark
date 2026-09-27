@@ -32,6 +32,7 @@ import com.mckimquyen.watermark.ui.MainActivity
 import com.mckimquyen.watermark.ui.MainViewModel
 import com.mckimquyen.watermark.ui.adapter.SaveImageListAdapter
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
+import com.mckimquyen.watermark.ui.recipient.RecipientPickerBottomSheetFragment
 import com.mckimquyen.watermark.utils.ExportZipHelper
 import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.VibrateHelper
@@ -52,8 +53,25 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     /** FEAT-15: chọn thư mục ĐÍCH lưu ảnh xuất (khác GalleryFragment.pickFolderLauncher — thư mục NGUỒN). */
     private lateinit var pickOutputDirectoryLauncher: ActivityResultLauncher<Uri?>
 
+    /**
+     * IDEA-10: người nhận đang chọn cho batch này. Chỉ sống trong phiên dialog (không lưu DataStore)
+     * — gắn dấu vân tay là quyết định theo TỪNG lần gửi, mặc định lần sau phải là "không gắn" để
+     * tránh vô tình đóng dấu sai người nhận vào lô ảnh kế tiếp.
+     */
+    private var selectedRecipientCode: String? = null
+    private var selectedRecipientName: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        childFragmentManager.setFragmentResultListener(
+            RecipientPickerBottomSheetFragment.REQUEST_KEY,
+            this
+        ) { _, bundle ->
+            selectedRecipientCode = bundle.getString(RecipientPickerBottomSheetFragment.RESULT_CODE)
+            selectedRecipientName = bundle.getString(RecipientPickerBottomSheetFragment.RESULT_NAME)
+            // Callback chạy sau khi dialog đã hiện → `binding` an toàn (xem doc updateOutputDirectoryUi).
+            updateRecipientUi(binding)
+        }
         pickOutputDirectoryLauncher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
             if (uri == null) return@registerForActivityResult
             runCatching {
@@ -134,6 +152,20 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     }
 
     /**
+     * IDEA-10: hiện tên + mã người nhận đang chọn, hoặc "không gắn người nhận" khi chưa chọn.
+     * Nhận [dlgBinding] qua tham số cùng lý do như [updateOutputDirectoryUi].
+     */
+    private fun updateRecipientUi(dlgBinding: DlgSaveFileBinding) {
+        val name = selectedRecipientName
+        val code = selectedRecipientCode
+        dlgBinding.tvSelectedRecipientDesc.text = if (!name.isNullOrBlank() && !code.isNullOrBlank()) {
+            getString(R.string.recipient_selected_format, name, code)
+        } else {
+            getString(R.string.recipient_none)
+        }
+    }
+
+    /**
      * ENH-13: hiển thị rõ số ảnh lỗi khi có, giữ nguyên format "X/Y" cũ khi mọi ảnh đều thành
      * công (không thêm nhiễu UI khi không cần).
      */
@@ -179,7 +211,9 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                                 shareViewModel.saveImage(
                                     requireActivity().contentResolver,
                                     (requireContext() as MainActivity).getImageViewInfo(),
-                                    (requireContext() as MainActivity).getImageList()
+                                    (requireContext() as MainActivity).getImageList(),
+                                    selectedRecipientCode,
+                                    selectedRecipientName
                                 )
                             }
                         }
@@ -228,6 +262,13 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             btnBatchCaptions.setOnClickListener {
                 BatchCaptionBSDialogFragment.safetyShow(childFragmentManager)
             }
+
+            // IDEA-10: chọn người nhận để nhúng dấu vân tay truy nguồn rò rỉ.
+            btnSelectRecipient.setOnClickListener {
+                RecipientPickerBottomSheetFragment.newInstance(selectedRecipientCode)
+                    .show(childFragmentManager, RecipientPickerBottomSheetFragment.TAG)
+            }
+            updateRecipientUi(root)
 
             // IDEA-09: dùng ảnh đầu tiên chưa bị skip làm mẫu — feature đánh giá CẤU HÌNH watermark,
             // không cần thêm entry point lặp lại trên từng card trong grid.

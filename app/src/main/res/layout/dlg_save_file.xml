@@ -370,6 +370,29 @@
         app:iconPadding="8dp"
         app:iconTint="?attr/colorPrimary" />
 
+    <!-- ══ IDEA-10: người nhận ảnh (dấu vân tay truy nguồn rò rỉ) ═══════════════ -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSelectRecipient"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="4dp"
+        android:text="@string/recipient_select_entry"
+        android:textColor="?attr/colorPrimary"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_person_24"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp"
+        app:iconTint="?attr/colorPrimary" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvSelectedRecipientDesc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="@string/recipient_none"
+        android:textAppearance="@style/TextAppearance.App.Body13Variant" />
+
     <!-- ══ SECTION: EXPORT LIST ═════════════════════════════════════════════ -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvResult"

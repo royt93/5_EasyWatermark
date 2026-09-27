@@ -437,4 +437,21 @@
     <string name="survivability_fix_increase_size">Increase the watermark size</string>
     <string name="survivability_fix_increase_opacity">Increase the opacity</string>
     <string name="survivability_fix_increase_contrast">Pick a colour with more contrast</string>
+    <!-- IDEA-10: recipient fingerprint batch -->
+    <string name="recipient_select_entry">Recipient fingerprint</string>
+    <string name="recipient_none">No recipient assigned</string>
+    <string name="recipient_selected_format">Recipient: %1$s (%2$s)</string>
+    <string name="recipient_management_title">Recipient Management</string>
+    <string name="recipient_add">Add recipient</string>
+    <string name="recipient_edit">Edit recipient</string>
+    <string name="recipient_name">Recipient name</string>
+    <string name="recipient_code">Identifier code</string>
+    <string name="recipient_notes">Notes (optional)</string>
+    <string name="recipient_delete_confirm">Delete recipient %1$s?</string>
+    <string name="recipient_leak_detected">⚠️ Leak source: Sent to %1$s (Code: %2$s)</string>
+    <string name="recipient_picker_title">Select recipient for batch</string>
+    <string name="recipient_manage_button">Manage</string>
+    <string name="recipient_code_error_empty">Code cannot be empty</string>
+    <string name="recipient_name_error_empty">Name cannot be empty</string>
+    <string name="recipient_code_error_duplicate">Code already exists</string>
 </resources>

@@ -417,4 +417,21 @@
     <string name="survivability_fix_increase_size">Tăng kích thước watermark</string>
     <string name="survivability_fix_increase_opacity">Tăng độ mờ đục</string>
     <string name="survivability_fix_increase_contrast">Chọn màu tương phản hơn</string>
+    <!-- IDEA-10: recipient fingerprint batch -->
+    <string name="recipient_select_entry">Người nhận ảnh (Dấu vân tay)</string>
+    <string name="recipient_none">Không gắn người nhận</string>
+    <string name="recipient_selected_format">Người nhận: %1$s (%2$s)</string>
+    <string name="recipient_management_title">Quản lý người nhận</string>
+    <string name="recipient_add">Thêm người nhận</string>
+    <string name="recipient_edit">Sửa người nhận</string>
+    <string name="recipient_name">Tên người nhận</string>
+    <string name="recipient_code">Mã định danh</string>
+    <string name="recipient_notes">Ghi chú (tuỳ chọn)</string>
+    <string name="recipient_delete_confirm">Xoá người nhận %1$s?</string>
+    <string name="recipient_leak_detected">⚠️ Nguồn rò rỉ: Gửi cho %1$s (Mã: %2$s)</string>
+    <string name="recipient_picker_title">Chọn người nhận cho batch</string>
+    <string name="recipient_manage_button">Quản lý</string>
+    <string name="recipient_code_error_empty">Mã không được để trống</string>
+    <string name="recipient_name_error_empty">Tên không được để trống</string>
+    <string name="recipient_code_error_duplicate">Mã định danh đã tồn tại</string>
 </resources>
