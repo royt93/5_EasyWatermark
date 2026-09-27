@@ -187,6 +187,10 @@ class MainViewModel @Inject constructor(
     val proofingMode: Boolean
         get() = userPreferences.value.proofingMode
 
+    /** IDEA-03: nhúng con dấu chứng thực vào EXIF ảnh xuất (chỉ tác dụng với JPEG). */
+    val authenticityStamp: Boolean
+        get() = userPreferences.value.authenticityStamp
+
     val colorPalette: MutableLiveData<Palette> = MutableLiveData()
 
     private val projection = arrayOf(
@@ -752,6 +756,15 @@ class MainViewModel @Inject constructor(
 
     fun saveProofingMode(enabled: Boolean) {
         viewModelScope.launch { userRepo.updateProofingMode(enabled) }
+        resetJobStatus()
+    }
+
+    /**
+     * IDEA-03: bật/tắt con dấu chứng thực. Giống [saveProofingMode], reset job để batch đã xuất
+     * trước đó không bị coi là "xong" với cấu hình con dấu cũ — bấm Export lại phải xuất lại thật.
+     */
+    fun saveAuthenticityStamp(enabled: Boolean) {
+        viewModelScope.launch { userRepo.updateAuthenticityStamp(enabled) }
         resetJobStatus()
     }
 

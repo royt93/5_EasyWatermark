@@ -18,7 +18,9 @@ data class UserPreferences(
     /** FEAT-15: null = xuất vào Pictures/WaterMarkCreator/ (mặc định); khác null = thư mục SAF user tự chọn. */
     val outputDirectoryUri: Uri? = null,
     /** IDEA-13: bật chế độ proofing — watermark lớn đánh số + sinh proof_index.html. */
-    val proofingMode: Boolean = false
+    val proofingMode: Boolean = false,
+    /** IDEA-03: nhúng con dấu chứng thực (hash + timestamp + chủ sở hữu + chữ ký) vào EXIF ảnh JPEG. */
+    val authenticityStamp: Boolean = false
 ) {
     companion object {
         val DEFAULT = UserPreferences(

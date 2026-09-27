@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import com.mckimquyen.watermark.data.model.ImageInfo
+import com.mckimquyen.watermark.utils.AuthenticityKeyStore
 import com.mckimquyen.watermark.utils.HashUtils
 import com.mckimquyen.watermark.utils.LocationNameResolver
 import com.mckimquyen.watermark.utils.TextTokenResolver
@@ -263,6 +264,66 @@ class ExportNaming @Inject constructor(
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    /**
+     * IDEA-03: nhúng con dấu chứng thực vào EXIF ảnh đã lưu qua MediaStore/SAF (Android Q+).
+     *
+     * Gọi NGAY SAU [applyCopyrightExif] để hash phản ánh đúng file cuối cùng. Hash bỏ qua mọi segment
+     * metadata (xem [JpegImageDigest]) nên việc chính hàm này ghi thêm EXIF KHÔNG làm con dấu tự sai.
+     *
+     * Chỉ JPEG: [JpegImageDigest] duyệt marker theo cấu trúc JPEG, format khác trả `null` và bỏ qua
+     * im lặng. Mọi lỗi đều nuốt — không bao giờ chặn export vì metadata.
+     */
+    fun applyAuthenticityExif(
+        contentResolver: ContentResolver,
+        uri: Uri,
+        owner: String,
+        outputFormat: Bitmap.CompressFormat
+    ) {
+        if (outputFormat != Bitmap.CompressFormat.JPEG) return
+        try {
+            val hash = contentResolver.openInputStream(uri)?.use { JpegImageDigest.hashImageData(it) } ?: return
+            val comment = buildStampComment(hash, owner) ?: return
+            contentResolver.openFileDescriptor(uri, "rw")?.use { pfd ->
+                val exif = ExifInterface(pfd.fileDescriptor)
+                exif.setAttribute(ExifInterface.TAG_USER_COMMENT, comment)
+                exif.saveAttributes()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /** IDEA-03: bản cho ảnh lưu theo đường dẫn file (Android < Q). Xem overload Uri ở trên. */
+    fun applyAuthenticityExif(filePath: String, owner: String, outputFormat: Bitmap.CompressFormat) {
+        if (outputFormat != Bitmap.CompressFormat.JPEG) return
+        try {
+            val hash = java.io.File(filePath).inputStream().use { JpegImageDigest.hashImageData(it) } ?: return
+            val comment = buildStampComment(hash, owner) ?: return
+            val exif = ExifInterface(filePath)
+            exif.setAttribute(ExifInterface.TAG_USER_COMMENT, comment)
+            exif.saveAttributes()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * Dựng chuỗi con dấu đã ký. `null` khi Keystore không dùng được — thà không có con dấu còn hơn
+     * ghi một con dấu không ký được mà người xem lại tưởng là đã xác thực.
+     */
+    private fun buildStampComment(hash: String, owner: String): String? {
+        val publicKey = AuthenticityKeyStore.publicKeyEncoded() ?: return null
+        val unsigned = AuthenticityStamp.Stamp(
+            hash = hash,
+            timestampMs = System.currentTimeMillis(),
+            owner = owner.trim(),
+            publicKey = publicKey,
+            signature = ""
+        )
+        val signature = AuthenticityKeyStore.sign(AuthenticityStamp.signedPayload(unsigned)) ?: return null
+        return AuthenticityStamp.format(unsigned.copy(signature = signature))
     }
 
     companion object {

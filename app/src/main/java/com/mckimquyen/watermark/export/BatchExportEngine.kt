@@ -179,7 +179,9 @@ class BatchExportEngine @Inject constructor(
         // FEAT-15: null = hành vi cũ (MediaStore Pictures/WaterMarkCreator/); khác null = ghi qua
         // SAF (DocumentFile) vào đúng thư mục user đã chọn thay vì luôn cố định.
         val outputDirectoryUri: Uri? = null,
-        val proofingMode: Boolean = false
+        val proofingMode: Boolean = false,
+        /** IDEA-03: nhúng con dấu chứng thực vào EXIF (chỉ có tác dụng với JPEG). */
+        val authenticityStamp: Boolean = false
     )
 
     /**
@@ -617,6 +619,9 @@ class BatchExportEngine @Inject constructor(
                     }
                     contentResolver.update(imageContentUri, finalDetails, null, null)
                     exportNaming.applyCopyrightExif(contentResolver, imageContentUri, settings.copyright, settings.outputFormat)
+                    if (settings.authenticityStamp) {
+                        exportNaming.applyAuthenticityExif(contentResolver, imageContentUri, settings.copyright, settings.outputFormat)
+                    }
                     Result.success(imageContentUri)
                 } else {
                     // need request write_storage permission
@@ -684,6 +689,9 @@ class BatchExportEngine @Inject constructor(
                     exportBitmap.recycle()
                     bitmapGuard.release()
                     exportNaming.applyCopyrightExif(outputFile.absolutePath, settings.copyright, settings.outputFormat)
+                    if (settings.authenticityStamp) {
+                        exportNaming.applyAuthenticityExif(outputFile.absolutePath, settings.copyright, settings.outputFormat)
+                    }
                     val outputUri = FileProvider.getUriForFile(
                         /* context = */ appContext,
                         /* authority = */ "${BuildConfig.APPLICATION_ID}.fileprovider",
@@ -788,6 +796,9 @@ class BatchExportEngine @Inject constructor(
         exportBitmap.recycle()
         bitmapGuard.release()
         exportNaming.applyCopyrightExif(contentResolver, targetDoc.uri, settings.copyright, settings.outputFormat)
+        if (settings.authenticityStamp) {
+            exportNaming.applyAuthenticityExif(contentResolver, targetDoc.uri, settings.copyright, settings.outputFormat)
+        }
         return Result.success(targetDoc.uri)
     }
 

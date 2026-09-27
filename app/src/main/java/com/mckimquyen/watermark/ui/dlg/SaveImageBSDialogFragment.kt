@@ -206,6 +206,18 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 shareViewModel.saveProofingMode(isChecked)
             }
 
+            // IDEA-03: con dấu chứng thực — chỉ có tác dụng với JPEG, UI tự mờ đi nếu định dạng khác.
+            swAuthenticityStamp.isChecked = shareViewModel.authenticityStamp
+            swAuthenticityStamp.setOnCheckedChangeListener { _, isChecked ->
+                shareViewModel.saveAuthenticityStamp(isChecked)
+            }
+            // Mờ mô tả nếu format không JPEG.
+            tvAuthenticityStampDesc.text = if (shareViewModel.outputFormat == Bitmap.CompressFormat.JPEG) {
+                getString(R.string.authenticity_stamp_desc)
+            } else {
+                getString(R.string.authenticity_stamp_desc_unsupported, shareViewModel.outputFormat.name)
+            }
+
             btnBatchCaptions.setOnClickListener {
                 BatchCaptionBSDialogFragment.safetyShow(childFragmentManager)
             }

@@ -393,6 +393,26 @@
     <!-- IDEA-13: Client Proofing Mode -->
     <string name="proofing_mode_title">Client proofing mode</string>
     <string name="proofing_mode_desc">Large numbered watermark on every photo and a proof_index.html file</string>
+    <!-- IDEA-03: content authenticity stamp -->
+    <string name="authenticity_stamp_title">Embed authenticity stamp</string>
+    <string name="authenticity_stamp_desc">Signs each exported photo so you can later prove it has not been altered. JPEG only.</string>
+    <string name="authenticity_stamp_desc_unsupported">Only works with JPEG — the current format is %1$s, so no stamp will be embedded.</string>
+    <string name="authenticity_verify_entry">Verify photo authenticity</string>
+    <string name="authenticity_verify_entry_subtitle">Check whether a photo has been altered since export</string>
+    <string name="authenticity_verify_title">Authenticity check</string>
+    <string name="authenticity_verify_intact">Photo is intact</string>
+    <string name="authenticity_verify_altered">Photo has been altered</string>
+    <string name="authenticity_verify_no_stamp">No authenticity stamp</string>
+    <string name="authenticity_verify_no_stamp_desc">This photo carries no stamp, so there is nothing to compare it against. Only photos exported with the stamp turned on can be checked.</string>
+    <string name="authenticity_verify_unreadable">Cannot read this file</string>
+    <string name="authenticity_verify_altered_desc">The image data no longer matches the stamp. It has been re-saved or edited since export.</string>
+    <string name="authenticity_verify_bad_signature">The signature is invalid — the stamp itself was tampered with.</string>
+    <string name="authenticity_verify_exported_at">Exported: %1$s</string>
+    <string name="authenticity_verify_owner">Owner: %1$s</string>
+    <string name="authenticity_verify_owner_unset">Owner: not set</string>
+    <string name="authenticity_verify_key">Key: %1$s</string>
+    <string name="authenticity_verify_own_key">Signed by this device.</string>
+    <string name="authenticity_verify_other_key">Signed by another device. The signature is valid, but only the key owner can confirm the key is theirs.</string>
     <!-- IDEA-09: watermark survivability preview -->
     <string name="survivability_entry">Survivability check</string>
     <string name="survivability_title">After sharing on social media</string>

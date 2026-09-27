@@ -10,6 +10,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jakewharton.processphoenix.ProcessPhoenix
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.AppLog
@@ -18,8 +19,10 @@ import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.AAboutBinding
+import com.mckimquyen.watermark.export.AuthenticityVerifier
 import com.mckimquyen.watermark.feature.vip.VipManagementActivity
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
+import com.mckimquyen.watermark.utils.ktx.formatDate
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.openLink
 import com.mckimquyen.watermark.utils.ktx.toast
@@ -57,6 +60,59 @@ class AboutActivity : BaseActivity() {
         viewModel.restoreFrom(uri) { success ->
             toast(if (success) R.string.restore_success else R.string.restore_failed)
         }
+    }
+
+    /** IDEA-03: chọn 1 ảnh bất kỳ để kiểm tra con dấu chứng thực. */
+    private val verifyLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@registerForActivityResult
+        viewModel.verifyAuthenticity(contentResolver, uri, ::showVerifyResult)
+    }
+
+    /** IDEA-03: hiện kết quả kiểm tra con dấu. Nội dung dựng bởi [buildVerifyMessage] để test riêng được. */
+    private fun showVerifyResult(result: AuthenticityVerifier.Result) {
+        val title = when {
+            result is AuthenticityVerifier.Result.Unreadable -> R.string.authenticity_verify_unreadable
+            result is AuthenticityVerifier.Result.NoStamp -> R.string.authenticity_verify_no_stamp
+            result is AuthenticityVerifier.Result.Stamped && result.intact -> R.string.authenticity_verify_intact
+            else -> R.string.authenticity_verify_altered
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(title)
+            .setMessage(buildVerifyMessage(result))
+            .setPositiveButton(R.string.tips_confirm_dialog, null)
+            .show()
+    }
+
+    /** Dựng phần thân dialog kết quả — tách khỏi [showVerifyResult] để test không cần dialog thật. */
+    internal fun buildVerifyMessage(result: AuthenticityVerifier.Result): String = when (result) {
+        AuthenticityVerifier.Result.Unreadable -> getString(R.string.authenticity_verify_no_stamp_desc)
+        AuthenticityVerifier.Result.NoStamp -> getString(R.string.authenticity_verify_no_stamp_desc)
+        is AuthenticityVerifier.Result.Stamped -> buildList {
+            // Chữ ký hỏng nghĩa là chính con dấu bị can thiệp — nói rõ, đừng chỉ báo "đã bị sửa".
+            if (!result.signatureValid) {
+                add(getString(R.string.authenticity_verify_bad_signature))
+            } else if (!result.hashMatches) {
+                add(getString(R.string.authenticity_verify_altered_desc))
+            }
+            add(getString(R.string.authenticity_verify_exported_at, result.timestampMs.formatDate("dd/MM/yyyy HH:mm")))
+            add(
+                if (result.owner.isEmpty()) {
+                    getString(R.string.authenticity_verify_owner_unset)
+                } else {
+                    getString(R.string.authenticity_verify_owner, result.owner)
+                }
+            )
+            if (result.keyFingerprint.isNotEmpty()) {
+                add(getString(R.string.authenticity_verify_key, result.keyFingerprint))
+                add(
+                    if (result.signedByThisDevice) {
+                        getString(R.string.authenticity_verify_own_key)
+                    } else {
+                        getString(R.string.authenticity_verify_other_key)
+                    }
+                )
+            }
+        }.joinToString("\n")
     }
 
 //    private lateinit var bgDrawable: GradientDrawable
@@ -132,6 +188,12 @@ class AboutActivity : BaseActivity() {
             tvRestoreData.setOnClickListener {
                 AppLog.d(LOG_TAG, "AboutActivity tvRestoreData clicked — opening SAF open-document")
                 restoreLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
+            }
+            tvVerifyAuthenticity.contentDescription =
+                "${getString(R.string.authenticity_verify_entry)}, ${getString(R.string.authenticity_verify_entry_subtitle)}"
+            tvVerifyAuthenticity.setOnClickListener {
+                AppLog.d(LOG_TAG, "AboutActivity tvVerifyAuthenticity clicked — opening SAF open-document")
+                verifyLauncher.launch(arrayOf("image/*"))
             }
 //            tvChangeLog.setOnClickListener {
 //                openLink("https://github.com/rosuH/EasyWatermark/releases/")

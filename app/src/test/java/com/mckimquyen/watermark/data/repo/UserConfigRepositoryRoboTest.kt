@@ -118,4 +118,16 @@ class UserConfigRepositoryRoboTest {
         repo.updateProofingMode(false)
         assertThat(repo.userPreferences.first().proofingMode).isFalse()
     }
+
+    /** IDEA-03: lưu lựa chọn nhúng con dấu chứng thực (mặc định false). */
+    @Test
+    fun testAuthenticityStamp_persistsSetting() = runBlocking {
+        assertThat(repo.userPreferences.first().authenticityStamp).isFalse()
+
+        repo.updateAuthenticityStamp(true)
+        assertThat(repo.userPreferences.first().authenticityStamp).isTrue()
+
+        repo.updateAuthenticityStamp(false)
+        assertThat(repo.userPreferences.first().authenticityStamp).isFalse()
+    }
 }

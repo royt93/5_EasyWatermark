@@ -306,6 +306,23 @@
         android:text="@string/proofing_mode_desc"
         android:textAppearance="@style/TextAppearance.App.Body13Variant" />
 
+    <!-- ══ IDEA-03: Con dấu chứng thực (C2PA-lite) ══════════════════════════ -->
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swAuthenticityStamp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:contentDescription="@string/authenticity_stamp_title"
+        android:text="@string/authenticity_stamp_title" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvAuthenticityStampDesc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="@string/authenticity_stamp_desc"
+        android:textAppearance="@style/TextAppearance.App.Body13Variant" />
+
     <!-- ══ FEAT-13: entry point cho caption riêng từng ảnh ═════════════════════ -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBatchCaptions"

@@ -373,6 +373,26 @@
     <!-- IDEA-13: Client Proofing Mode -->
     <string name="proofing_mode_title">Chế độ ảnh duyệt cho khách</string>
     <string name="proofing_mode_desc">Watermark lớn đánh số từng ảnh và sinh tệp proof_index.html</string>
+    <!-- IDEA-03: con dấu chứng thực nội dung -->
+    <string name="authenticity_stamp_title">Nhúng con dấu chứng thực</string>
+    <string name="authenticity_stamp_desc">Ký từng ảnh xuất ra để về sau chứng minh được ảnh chưa bị sửa. Chỉ áp dụng cho JPEG.</string>
+    <string name="authenticity_stamp_desc_unsupported">Chỉ hỗ trợ JPEG — định dạng hiện tại là %1$s nên sẽ không nhúng con dấu.</string>
+    <string name="authenticity_verify_entry">Kiểm tra chứng thực ảnh</string>
+    <string name="authenticity_verify_entry_subtitle">Xem ảnh có bị sửa kể từ lúc xuất hay không</string>
+    <string name="authenticity_verify_title">Kết quả kiểm tra</string>
+    <string name="authenticity_verify_intact">Ảnh còn nguyên vẹn</string>
+    <string name="authenticity_verify_altered">Ảnh đã bị sửa</string>
+    <string name="authenticity_verify_no_stamp">Không có con dấu chứng thực</string>
+    <string name="authenticity_verify_no_stamp_desc">Ảnh này không mang con dấu nên không có gì để đối chiếu. Chỉ ảnh xuất ra khi đã bật con dấu mới kiểm tra được.</string>
+    <string name="authenticity_verify_unreadable">Không đọc được tệp này</string>
+    <string name="authenticity_verify_altered_desc">Dữ liệu ảnh không còn khớp con dấu. Ảnh đã bị lưu lại hoặc chỉnh sửa sau khi xuất.</string>
+    <string name="authenticity_verify_bad_signature">Chữ ký không hợp lệ — chính con dấu đã bị can thiệp.</string>
+    <string name="authenticity_verify_exported_at">Xuất lúc: %1$s</string>
+    <string name="authenticity_verify_owner">Chủ sở hữu: %1$s</string>
+    <string name="authenticity_verify_owner_unset">Chủ sở hữu: chưa đặt</string>
+    <string name="authenticity_verify_key">Khoá: %1$s</string>
+    <string name="authenticity_verify_own_key">Ký bằng khoá của chính thiết bị này.</string>
+    <string name="authenticity_verify_other_key">Ký bằng khoá của thiết bị khác. Chữ ký hợp lệ, nhưng chỉ chủ khoá mới xác nhận được khoá đó là của mình.</string>
     <!-- IDEA-09: watermark survivability preview -->
     <string name="survivability_entry">Kiểm tra độ sống sót</string>
     <string name="survivability_title">Sau khi chia sẻ lên mạng xã hội</string>
