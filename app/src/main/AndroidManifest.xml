@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- lint SelectedPhotoAccess (disable ở app/build.gradle.kts `lint {}` — check này không tôn trọng
+tools:ignore): luồng "Chọn thêm ảnh" khi user cấp quyền ảnh giới hạn (Android 14+) là tính năng UX
+riêng cần thiết kế, không phải lint nông — xem IDEA-19. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 

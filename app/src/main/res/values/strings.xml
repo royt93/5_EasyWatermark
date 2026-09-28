@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Watermark Creator</string>
     <string name="app_copyright">© SAIGON PHANTOM LABS</string>
     <string name="action_pick">Choose picture</string>
@@ -29,13 +29,9 @@
     <string name="title_text_color">Color</string>
     <string name="title_text_rotate">Angle</string>
     <string name="request_permission_failed">Failed to get permission</string>
-    <string name="about_title_about">About</string>
     <string name="about_title_info">Information</string>
     <string name="about_title_output">Output format</string>
     <string name="about_title_version">Version</string>
-    <string name="about_title_rating">Rate our app</string>
-    <string name="about_title_feed_back">Feedback</string>
-    <string name="about_title_update_log">Changelog</string>
     <string name="about_title_open_source">Open source licenses</string>
     <string name="error_not_img">Please select an image</string>
     <string name="error_file_not_found">The image couldn\'t be opened or was not selected</string>
@@ -75,7 +71,9 @@
     <string name="dialog_cancel_exist_confirm">Cancel</string>
     <string name="dialog_content_exist_confirm">Discard changes?</string>
     <string name="about_title_privacy_statement">Privacy Statement</string>
-    <string name="about_title_privacy_statement_zh" translatable="false">隐私政策</string>
+    <!-- lint HardcodedText: SPDX license identifier chuẩn, không dịch. -->
+    <string name="license_id_apache_2_0" translatable="false">Apache-2.0</string>
+    <string name="license_id_bsd_2_clause" translatable="false">BSD-2-Clause</string>
     <string name="open_source_desc_color_picker" translatable="false"><![CDATA[ColorPickerView implements getting HSV colors, ARGB values, Hex color codes from any image drawables or your gallery pictures by tapping on the desired color. Supports alpha & brightness slider bar, dialog, and saving & restoring selected data.]]></string>
     <string name="open_source_desc_about_lib" translatable="false">Glide is a fast and efficient open source media management and image loading framework for Android that wraps media decoding, memory and disk caching, and resource pooling into a simple and easy to use interface.</string>
     <string name="open_source_desc_material_components" translatable="false">Material Components for Android (MDC-Android) help developers execute Material Design. Developed by a core team of engineers and UX designers at Google, these components enable a reliable development workflow to build beautiful and functional Android apps.Material Components for Android is a drop-in replacement for Android\'s Design Support Library.</string>
@@ -97,16 +95,16 @@
     <string name="dialog_save_export_list_title">Export list(%1$s)</string>
     <string name="format_label_webp_lossy">WEBP (Lossy)</string>
     <string name="format_label_webp_lossless">WEBP (Lossless)</string>
-    <string name="dialog_save_export_count_with_failures">%1$d/%2$d · %3$d failed</string>
+    <!-- lint PluralsCandidate: heuristic sai — đây là bộ đếm tiến trình "x/y · z failed", không
+    phải câu số ít/nhiều cần <plurals>. -->
+    <string name="dialog_save_export_count_with_failures" tools:ignore="PluralsCandidate">%1$d/%2$d · %3$d failed</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d · ~%3$s</string>
     <string name="dialog_open_in_gallery">View in gallery</string>
     <string name="dialog_share_as_zip">Share as ZIP</string>
-    <string name="dialog_share_images">Share images</string>
     <string name="zipping_images">Creating ZIP file…</string>
     <string name="share_zip_failed">Failed to create ZIP file</string>
     <string name="dialog_save_config_format">Format</string>
     <string name="dialog_save_config_quality">Quality</string>
-    <string name="dialog_save_exporting">Exporting</string>
     <string name="tips_pick_image">Choose Images</string>
     <string name="launch_card_camera_title">Take a photo</string>
     <string name="launch_card_camera_desc">Capture with camera and watermark immediately</string>
@@ -165,7 +163,8 @@
     <string name="redaction_no_image_selected">No image selected to redact</string>
     <string name="redaction_scanning">Scanning for sensitive info (email, phone number, faces)…</string>
     <string name="redaction_no_regions_found">No sensitive info detected. You can apply anyway to skip this step.</string>
-    <string name="redaction_regions_found">Found %1$d region(s) — tap a box to keep or skip it, then Apply.</string>
+    <!-- lint PluralsCandidate: đã tự viết "region(s)" trung tính số ít/nhiều, không cần <plurals>. -->
+    <string name="redaction_regions_found" tools:ignore="PluralsCandidate">Found %1$d region(s) — tap a box to keep or skip it, then Apply.</string>
     <string name="redaction_apply">Apply</string>
     <string name="position_anchor_margin_value">%d%%</string>
     <string name="anchor_top_left">Top Left</string>
@@ -180,7 +179,6 @@
     <string name="anchor_selected_format">%1$s, selected</string>
     <string name="aa">Aa!</string>
     <string name="send_email">Send email</string>
-    <string name="send_telegram">Send Telegram</string>
     <string name="jump_to_store">Jump to Store</string>
     <string name="colorpickerview">ColorPickerView</string>
     <string name="glide">Glide</string>
@@ -216,7 +214,6 @@
     <string name="qr_code_template_hint">Content template — use {hash} {date} {portfolio_link}</string>
     <string name="qr_code_portfolio_link_hint">Portfolio / social link</string>
     <string name="dialog_save_config_resize">Resize (long edge)</string>
-    <string name="dialog_save_config_resize_none">Original</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>
     <string name="dialog_save_config_copyright_hint">© Your name</string>
     <string name="dialog_save_config_name_pattern">File name pattern</string>
@@ -281,12 +278,13 @@
     <string name="func_title_layers">Layers</string>
     <string name="layer_manager_title">Watermark layers</string>
     <string name="layer_manager_add">Add layer</string>
-    <string name="layer_manager_max_reached">Maximum %1$d extra layers reached</string>
+    <!-- lint PluralsCandidate: %1$d luôn là giới hạn cố định (constant), không phải số đếm thay
+    đổi theo số ít/nhiều — <plurals> không áp dụng. -->
+    <string name="layer_manager_max_reached" tools:ignore="PluralsCandidate">Maximum %1$d extra layers reached</string>
     <string name="layer_manager_empty">No extra layer yet — tap \"Add layer\" to overlay a logo or extra text</string>
     <string name="layer_manager_delete_cd">Delete layer</string>
     <string name="layer_manager_move_up_cd">Move layer up</string>
     <string name="layer_manager_move_down_cd">Move layer down</string>
-    <string name="layer_edit_title">Edit layer</string>
     <string name="layer_edit_pick_icon">Choose icon</string>
     <string name="layer_edit_text_hint">Layer text</string>
     <string name="about_version_display">v%1$s</string>
@@ -303,7 +301,8 @@
     <!-- ENH-01: batch export qua WorkManager — notification tiến độ + huỷ. -->
     <string name="export_notification_channel_name">Batch export</string>
     <string name="export_notification_title">Exporting watermark images…</string>
-    <string name="export_notification_progress">%1$d/%2$d done</string>
+    <!-- lint PluralsCandidate: bộ đếm tiến trình "x/y done", không phải câu số ít/nhiều. -->
+    <string name="export_notification_progress" tools:ignore="PluralsCandidate">%1$d/%2$d done</string>
     <string name="dialog_save_cancel">Cancel</string>
 
     <!-- FEAT-13: caption riêng theo từng ảnh trong batch (CSV multi-line). -->
@@ -315,7 +314,9 @@
         <item quantity="one">One line per image, same order (%1$d image)</item>
         <item quantity="other">One line per image, same order (%1$d images)</item>
     </plurals>
-    <string name="batch_caption_count_mismatch">%1$d lines entered but %2$d images in batch — fix before applying</string>
+    <!-- lint PluralsCandidate: câu so sánh 2 số riêng biệt (lines vs images), không map được vào
+    1 <plurals> đơn lẻ. -->
+    <string name="batch_caption_count_mismatch" tools:ignore="PluralsCandidate">%1$d lines entered but %2$d images in batch — fix before applying</string>
     <string name="batch_caption_invalid_csv">Unclosed quote on line %1$d</string>
     <!-- IDEA-17: nhập caption bằng giọng nói cho dòng đang đặt con trỏ. -->
     <string name="batch_caption_voice">Dictate caption for the current line</string>
@@ -358,13 +359,14 @@
     <string name="signature_history_delete">Delete signature</string>
     <string name="signature_history_item">Saved signature</string>
     <string name="close">Close</string>
-    <string name="action_close">Close</string>
     <string name="gallery_photo_item_desc">Photo %1$d</string>
 
     <!-- FEAT-04: batch export history -->
     <string name="batch_history_title">Export history</string>
     <string name="batch_history_empty">No batch export yet</string>
-    <string name="batch_history_summary">%1$d success · %2$d failed</string>
+    <!-- lint PluralsCandidate: tóm tắt 2 số riêng biệt (success vs failed), không map được vào 1
+    <plurals> đơn lẻ. -->
+    <string name="batch_history_summary" tools:ignore="PluralsCandidate">%1$d success · %2$d failed</string>
     <string name="batch_history_action_view">View</string>
     <string name="batch_history_action_rerun">Rerun</string>
     <string name="batch_history_action_delete">Delete</string>
@@ -411,7 +413,6 @@
     <string name="authenticity_stamp_desc_unsupported">Only works with JPEG — the current format is %1$s, so no stamp will be embedded.</string>
     <string name="authenticity_verify_entry">Verify photo authenticity</string>
     <string name="authenticity_verify_entry_subtitle">Check whether a photo has been altered since export</string>
-    <string name="authenticity_verify_title">Authenticity check</string>
     <string name="authenticity_verify_intact">Photo is intact</string>
     <string name="authenticity_verify_altered">Photo has been altered</string>
     <string name="authenticity_verify_no_stamp">No authenticity stamp</string>
@@ -466,4 +467,9 @@
     <string name="recipient_code_error_empty">Code cannot be empty</string>
     <string name="recipient_name_error_empty">Name cannot be empty</string>
     <string name="recipient_code_error_duplicate">Code already exists</string>
+    <string name="recipient_code_display">Code: %1$s</string>
+    <string name="version_name_build_format">v%1$s (%2$s)</string>
+    <string name="version_name_copyright_format">v%1$s • %2$s</string>
+    <string name="copyright_rights_reserved_format">%1$s • All Rights Reserved</string>
+    <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
 </resources>

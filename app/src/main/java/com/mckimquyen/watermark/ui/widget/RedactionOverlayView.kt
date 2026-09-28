@@ -29,6 +29,10 @@ class RedactionOverlayView : View {
     private var suggestions: List<RedactionSuggestion> = emptyList()
     private val displayMatrix = Matrix()
 
+    // lint DrawAllocation: dùng lại 1 instance thay vì cấp phát RectF mới mỗi lần onDraw() (gọi
+    // liên tục khi invalidate, mỗi suggestion 1 lần).
+    private val reusableRect = RectF()
+
     private val bitmapPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     private val confirmedStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
@@ -82,20 +86,19 @@ class RedactionOverlayView : View {
         val bmp = bitmap ?: return
         canvas.drawBitmap(bmp, displayMatrix, bitmapPaint)
 
-        val viewRect = RectF()
         for (suggestion in suggestions) {
-            viewRect.set(
+            reusableRect.set(
                 suggestion.rect.left * bmp.width,
                 suggestion.rect.top * bmp.height,
                 suggestion.rect.right * bmp.width,
                 suggestion.rect.bottom * bmp.height
             )
-            displayMatrix.mapRect(viewRect)
+            displayMatrix.mapRect(reusableRect)
             if (suggestion.confirmed) {
-                canvas.drawRect(viewRect, confirmedFill)
-                canvas.drawRect(viewRect, confirmedStroke)
+                canvas.drawRect(reusableRect, confirmedFill)
+                canvas.drawRect(reusableRect, confirmedStroke)
             } else {
-                canvas.drawRect(viewRect, dismissedStroke)
+                canvas.drawRect(reusableRect, dismissedStroke)
             }
         }
     }

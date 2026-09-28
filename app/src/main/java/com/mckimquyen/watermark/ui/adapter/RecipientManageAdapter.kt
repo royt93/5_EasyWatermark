@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.entity.Recipient
 import com.mckimquyen.watermark.databinding.ItemRecipientManageBinding
 
@@ -39,7 +40,7 @@ class RecipientManageAdapter(
             onDelete: (Recipient) -> Unit
         ) {
             binding.tvName.text = item.name
-            binding.tvCode.text = "Mã: ${item.code}"
+            binding.tvCode.text = binding.tvCode.context.getString(R.string.recipient_code_display, item.code)
             if (!item.notes.isNullOrBlank()) {
                 binding.tvNotes.visibility = View.VISIBLE
                 binding.tvNotes.text = item.notes

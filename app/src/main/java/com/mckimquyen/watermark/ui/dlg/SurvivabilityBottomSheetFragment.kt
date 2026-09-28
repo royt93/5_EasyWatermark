@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
@@ -57,7 +58,7 @@ class SurvivabilityBottomSheetFragment : BaseBindBSDFragment<FSurvivabilityBotto
         val labels = SurvivabilityProfile.profiles.map { platformLabel(requireContext(), it.platform) }
         binding.atvPlatform.also {
             it.setAdapter(ArrayAdapter(requireContext(), R.layout.simple_dropdown_item_1line, labels))
-            it.setDropDownBackgroundDrawable(requireContext().getDrawable(R.drawable.bg_dropdown_popup))
+            it.setDropDownBackgroundDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.bg_dropdown_popup))
             it.setText(labels.first(), false)
             it.setOnItemClickListener { _, _, position, _ ->
                 val profile = SurvivabilityProfile.profiles.getOrNull(position) ?: return@setOnItemClickListener

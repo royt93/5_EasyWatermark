@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:layout_height="match_parent">
 
     <!-- Center Brand Group -->
     <LinearLayout
@@ -33,9 +32,8 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="20dp"
-                android:scaleType="centerInside"
-                android:src="@drawable/ic_launcher"
+                android:scaleType="centerCrop"
+                android:src="@drawable/mascot_logo"
                 tools:ignore="ContentDescription" />
 
         </com.google.android.material.card.MaterialCardView>

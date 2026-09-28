@@ -90,7 +90,7 @@ class LaunchView : CustomViewGroup {
                     shapeAppearanceModel = ShapeAppearanceModel.Builder()
                         .setAllCornerSizes(36.dp.toFloat())
                         .build()
-                    setImageResource(R.drawable.ic_launcher)
+                    setImageResource(R.drawable.mascot_logo)
                 }
             )
         }
@@ -124,7 +124,11 @@ class LaunchView : CustomViewGroup {
     val tvVersionCopyright: TextView by lazy {
         MaterialTextView(context).apply {
             layoutParams = MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-            text = "v${BuildConfig.VERSION_NAME} • ${context.getString(com.mckimquyen.watermark.R.string.app_copyright)}"
+            text = context.getString(
+                com.mckimquyen.watermark.R.string.version_name_copyright_format,
+                BuildConfig.VERSION_NAME,
+                context.getString(com.mckimquyen.watermark.R.string.app_copyright)
+            )
             setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_LabelSmall)
             val textColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.DKGRAY)
             setTextColor(textColor)

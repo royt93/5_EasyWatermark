@@ -133,6 +133,9 @@ class EditTextContentFragment : BaseBindFragment<DlgEditTextBinding>() {
         val editText = binding?.etWaterText ?: return
         TextTokenResolver.SUPPORTED_TOKENS.forEach { token ->
             val chip = Chip(requireContext()).apply {
+                // lint SetTextI18n: `token` là cú pháp kỹ thuật cố định từ TextTokenResolver
+                // (vd "{filename}"), không phải câu chữ cần dịch — dịch sẽ phá cú pháp token.
+                @Suppress("SetTextI18n")
                 text = "{$token}"
                 contentDescription = "{$token}"
                 isCheckable = false

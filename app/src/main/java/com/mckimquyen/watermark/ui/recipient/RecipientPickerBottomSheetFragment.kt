@@ -93,6 +93,9 @@ class RecipientPickerBottomSheetFragment : BottomSheetDialogFragment() {
 
         private var items: List<Recipient> = emptyList()
 
+        // lint NotifyDataSetChanged: danh sách người nhận thường rất nhỏ (vài chục), không cần
+        // DiffUtil/AsyncListDiffer — notifyDataSetChanged() đơn giản và đủ nhanh.
+        @Suppress("NotifyDataSetChanged")
         fun submitList(newItems: List<Recipient>) {
             items = newItems
             notifyDataSetChanged()
@@ -128,11 +131,15 @@ class RecipientPickerBottomSheetFragment : BottomSheetDialogFragment() {
                 binding.root.setOnClickListener { onSelect(null) }
             }
 
+            // lint SetTextI18n: `codeLabel`/`notePart` đều đã qua getString()/dữ liệu người dùng
+            // (item.notes) — không còn literal chữ cứng nào cần dịch, chỉ nối 2 chuỗi đã an toàn.
+            @Suppress("SetTextI18n")
             fun bind(item: Recipient, isSelected: Boolean, onSelect: (Recipient?) -> Unit) {
                 binding.tvRecipientName.text = item.name
                 binding.tvRecipientCode.visibility = View.VISIBLE
                 val notePart = if (!item.notes.isNullOrBlank()) " · ${item.notes}" else ""
-                binding.tvRecipientCode.text = "Mã: ${item.code}$notePart"
+                val codeLabel = binding.tvRecipientCode.context.getString(R.string.recipient_code_display, item.code)
+                binding.tvRecipientCode.text = "$codeLabel$notePart"
                 binding.ivSelectedCheck.visibility = if (isSelected) View.VISIBLE else View.GONE
                 binding.root.setOnClickListener { onSelect(item) }
             }

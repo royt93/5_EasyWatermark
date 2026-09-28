@@ -24,14 +24,10 @@
     <string name="title_horizon_layout">Vassrett</string>
     <string name="title_text_color">Let</string>
     <string name="title_text_rotate">Vinkel</string>
-    <string name="about_title_about">Om</string>
     <string name="request_permission_failed">Fekk ikkje tilgjenge</string>
     <string name="about_title_info">Opplysingar</string>
-    <string name="about_title_rating">Døm appen</string>
     <string name="about_title_version">Utgåve</string>
     <string name="error_not_img">Vel eit bilete</string>
-    <string name="about_title_feed_back">Tilbakemelding</string>
-    <string name="about_title_update_log">Brigdelogg</string>
     <string name="about_title_open_source">Løyve</string>
     <string name="dialog_export_to_gallery">Før ut til galleriet</string>
     <string name="water_mark_mode_image">Ikon</string>
@@ -66,7 +62,6 @@
     <string name="dialog_open_in_gallery">Vis i galleri</string>
     <string name="dialog_save_config_format">Format</string>
     <string name="dialog_save_config_quality">Kvalitet</string>
-    <string name="dialog_save_exporting">Fører ut</string>
     <string name="tips_pick_image">Vel bilete</string>
     <string name="pick_via_system">Meir …</string>
     <string name="recovery_title">Gjenopprettingsmodus</string>
@@ -155,13 +150,11 @@
     <string name="about_section_data">Datahandtering</string>
     <string name="about_section_support">Støtte og fellesskap</string>
     <string name="about_title_privacy_statement">Personvernerklæring</string>
-    <string name="about_title_privacy_statement_zh">隐私政策</string>
     <string name="about_version_display">v%1$s</string>
     <string name="accessibility_edit_watermark_text">Endre vassmerketekst</string>
     <string name="action_camera">Kamera</string>
     <string name="action_clear">Fjern</string>
     <string name="action_clear_canvas">Tøm lerretet</string>
-    <string name="action_close">Lat att</string>
     <string name="action_compare">Jamfør</string>
     <string name="action_delete">Slett</string>
     <string name="action_deselect_all">Fjern all merking</string>
@@ -200,7 +193,6 @@
     <string name="authenticity_verify_own_key">Signert av denne einheita.</string>
     <string name="authenticity_verify_owner">Eigar: %1$s</string>
     <string name="authenticity_verify_owner_unset">Eigar: ikkje sett</string>
-    <string name="authenticity_verify_title">Ektheitskontroll</string>
     <string name="authenticity_verify_unreadable">Kan ikkje lesa denne fila</string>
     <string name="backup_data">Sikkerheitskopi</string>
     <string name="backup_data_subtitle">Før ut malar og signaturar</string>
@@ -270,16 +262,13 @@
     <string name="dialog_save_config_name_pattern_hint">t.d. {filename}_wm_{seq} — la stå tomt for standard</string>
     <string name="dialog_save_config_output_directory">Vel lagringsmappe</string>
     <string name="dialog_save_config_resize">Endre storleik (lengste side)</string>
-    <string name="dialog_save_config_resize_none">Original</string>
     <string name="dialog_save_export_count_with_failures">%1$d/%2$d · %3$d mislukkast</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d · ~%3$s</string>
     <string name="dialog_save_output_directory_reset">Nullstill til standard</string>
     <string name="dialog_share_as_zip">Del som ZIP</string>
-    <string name="dialog_share_images">Del bilete</string>
     <string name="draw_signature">Teikn signatur</string>
     <string name="dynamic_color_subtitle_supported">Tilpassar seg automatisk til systemets bakgrunnspalett (Material You)</string>
     <string name="dynamic_color_subtitle_unsupported">Krev Android 12+ (einheita brukar standard Material 3-palett)</string>
-    <string name="email_subject">[EasyWaterMark] Crash info</string>
     <string name="exif_customize_auto_palette">Match biletets fargar</string>
     <string name="exif_customize_band_color">Farge på ramme</string>
     <string name="exif_customize_band_thickness">Tjukkleik på ramme</string>
@@ -319,7 +308,6 @@
     <string name="launch_card_pick_desc">Vern bilete med tekst, ikon eller Leica EXIF</string>
     <string name="layer_edit_pick_icon">Vel ikon</string>
     <string name="layer_edit_text_hint">Tekst for laget</string>
-    <string name="layer_edit_title">Rediger lag</string>
     <string name="layer_manager_add">Legg til lag</string>
     <string name="layer_manager_delete_cd">Slett lag</string>
     <string name="layer_manager_empty">Ingen ekstra lag enno — trykk «Legg til lag» for å legge ein logo eller meir tekst over</string>
@@ -372,7 +360,6 @@
     <string name="restore_failed">Gjenoppretting mislukkast — fila er kanskje ikkje ei gyldig sikkerheitskopi</string>
     <string name="restore_success">Gjenoppretting fullført</string>
     <string name="send_email">Send e-brev</string>
-    <string name="send_telegram">Send Telegram</string>
     <string name="share_app">Del appen</string>
     <string name="share_app_message">Sjekk ut %1$s: https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="share_app_subtitle">Del EasyWatermark med venar</string>
@@ -438,8 +425,9 @@
     <string name="tile_mode_title_decal">Enkel</string>
     <string name="tips_database_init_error">Kunne ikkje starte databasen.</string>
     <string name="tips_input_text_can_not_be_empty">Innhald må fyllast ut</string>
-    <string name="open_source_desc_color_picker" translatable="false"><![CDATA[ColorPickerView implements getting HSV colors, ARGB values, Hex color codes from any image drawables or your gallery pictures by tapping on the desired color. Supports alpha & brightness slider bar, dialog, and saving & restoring selected data.]]></string>
-    <string name="open_source_desc_about_lib" translatable="false">Glide is a fast and efficient open source media management and image loading framework for Android that wraps media decoding, memory and disk caching, and resource pooling into a simple and easy to use interface.</string>
-    <string name="open_source_desc_material_components" translatable="false">Material Components for Android (MDC-Android) help developers execute Material Design. Developed by a core team of engineers and UX designers at Google, these components enable a reliable development workflow to build beautiful and functional Android apps.Material Components for Android is a drop-in replacement for Android\'s Design Support Library.</string>
-    <string name="open_source_desc_compressor" translatable="false">"Compressor is a lightweight and powerful android image compression library. Compressor will allow you to compress large photos into smaller sized photos with very less or negligible loss in quality of the image. "</string>
+    <string name="recipient_code_display">Kode: %1$s</string>
+    <string name="version_name_build_format">v%1$s (%2$s)</string>
+    <string name="version_name_copyright_format">v%1$s • %2$s</string>
+    <string name="copyright_rights_reserved_format">%1$s • Med einerett</string>
+    <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
 </resources>

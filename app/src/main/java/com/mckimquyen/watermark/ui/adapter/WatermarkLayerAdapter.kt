@@ -21,6 +21,7 @@ class WatermarkLayerAdapter(
 
     private var items: List<WatermarkLayer> = emptyList()
 
+    @Suppress("NotifyDataSetChanged")
     fun submitList(list: List<WatermarkLayer>) {
         items = list
         notifyDataSetChanged()

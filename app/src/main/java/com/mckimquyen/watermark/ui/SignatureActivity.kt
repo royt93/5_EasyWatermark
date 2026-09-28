@@ -142,6 +142,10 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
             }
         }
 
+        // lint ClickableViewAccessibility: listener CHỈ quan sát ACTION_DOWN để ẩn hint, trả `false`
+        // (không tiêu thụ sự kiện) — vẽ chữ ký thật xử lý riêng trong SignatureView. Đây không phải
+        // click interaction nên gọi performClick() ở đây không đúng ngữ nghĩa, sẽ gây nhầm lẫn.
+        @Suppress("ClickableViewAccessibility")
         binding.signatureView.setOnTouchListener { v, event ->
             if (event.action == android.view.MotionEvent.ACTION_DOWN) {
                 binding.tvEmptyHint.visibility = View.GONE
@@ -226,6 +230,9 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
         }
     }
 
+    // lint NotifyDataSetChanged: lịch sử chữ ký load 1 lần khi mở màn, danh sách nhỏ — không cần
+    // DiffUtil/AsyncListDiffer.
+    @Suppress("NotifyDataSetChanged")
     private fun loadHistory() {
         lifecycleScope.launch {
             val list = repo.getAllSignatures()

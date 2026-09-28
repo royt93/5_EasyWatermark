@@ -19,13 +19,9 @@
     <string name="title_text_color">カラー</string>
     <string name="title_text_rotate">角度</string>
     <string name="request_permission_failed">パーミッションの取得に失敗しました</string>
-    <string name="about_title_about">詳細</string>
     <string name="about_title_info">インフォメーション</string>
     <string name="about_title_output">出力形式</string>
     <string name="about_title_version">バージョン</string>
-    <string name="about_title_rating">アプリを評価する</string>
-    <string name="about_title_feed_back">フィードバック</string>
-    <string name="about_title_update_log">変更履歴</string>
     <string name="about_title_open_source">オープンソースライセンス</string>
     <string name="error_not_img">画像を選択してください</string>
     <string name="error_file_not_found">画像が選択されていないか、開くことができません</string>
@@ -64,7 +60,6 @@
     <string name="dialog_open_in_gallery">ギャラリーで表示</string>
     <string name="dialog_save_config_format">形式</string>
     <string name="dialog_save_config_quality">品質</string>
-    <string name="dialog_save_exporting">エクスポート中</string>
     <string name="tips_pick_image">画像を選択</string>
     <string name="pick_via_system">more…</string>
     <string name="tips_input_text_can_not_be_empty">入力してください。</string>
@@ -161,13 +156,11 @@
     <string name="about_section_data">データ管理</string>
     <string name="about_section_support">サポート&amp;コミュニティ</string>
     <string name="about_title_privacy_statement">プライバシーポリシー</string>
-    <string name="about_title_privacy_statement_zh" translatable="false"><![CDATA[隐私政策]]></string>
     <string name="about_version_display">v%1$s</string>
     <string name="accessibility_edit_watermark_text">ウォーターマークテキストを編集</string>
     <string name="action_camera">カメラ</string>
     <string name="action_clear">クリア</string>
     <string name="action_clear_canvas">キャンバスをクリア</string>
-    <string name="action_close">閉じる</string>
     <string name="action_compare">比較</string>
     <string name="action_delete">削除</string>
     <string name="action_deselect_all">すべて選択解除</string>
@@ -206,7 +199,6 @@
     <string name="authenticity_verify_own_key">このデバイスによって署名されています。</string>
     <string name="authenticity_verify_owner">所有者：%1$s</string>
     <string name="authenticity_verify_owner_unset">所有者：未設定</string>
-    <string name="authenticity_verify_title">真正性チェック</string>
     <string name="authenticity_verify_unreadable">このファイルを読み込めません</string>
     <string name="backup_data">バックアップ</string>
     <string name="backup_data_subtitle">テンプレートと署名を書き出す</string>
@@ -276,16 +268,13 @@
     <string name="dialog_save_config_name_pattern_hint">例：{filename}_wm_{seq} — 空欄でデフォルト</string>
     <string name="dialog_save_config_output_directory">保存先フォルダを選択</string>
     <string name="dialog_save_config_resize">リサイズ（長辺）</string>
-    <string name="dialog_save_config_resize_none">オリジナル</string>
     <string name="dialog_save_export_count_with_failures">%1$d/%2$d・失敗%3$d件</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d・約%3$s</string>
     <string name="dialog_save_output_directory_reset">デフォルトに戻す</string>
     <string name="dialog_share_as_zip">ZIPで共有</string>
-    <string name="dialog_share_images">画像を共有</string>
     <string name="draw_signature">署名を描く</string>
     <string name="dynamic_color_subtitle_supported">システムの壁紙パレットに自動適応（Material You）</string>
     <string name="dynamic_color_subtitle_unsupported">Android 12以降が必要です（このデバイスは標準のMaterial 3パレットを使用）</string>
-    <string name="email_subject" translatable="false"><![CDATA[[EasyWaterMark] Crash info]]></string>
     <string name="exif_customize_auto_palette">写真の色に合わせる</string>
     <string name="exif_customize_band_color">バンドカラー</string>
     <string name="exif_customize_band_thickness">バンドの太さ</string>
@@ -325,7 +314,6 @@
     <string name="launch_card_pick_desc">テキスト、アイコン、Leica EXIFで写真を保護</string>
     <string name="layer_edit_pick_icon">アイコンを選択</string>
     <string name="layer_edit_text_hint">レイヤーテキスト</string>
-    <string name="layer_edit_title">レイヤーを編集</string>
     <string name="layer_manager_add">レイヤーを追加</string>
     <string name="layer_manager_delete_cd">レイヤーを削除</string>
     <string name="layer_manager_empty">追加レイヤーはまだありません。「レイヤーを追加」をタップしてロゴやテキストを重ねましょう</string>
@@ -336,10 +324,6 @@
     <string name="material_components_for_android">Material Components for Android</string>
     <string name="more_apps">その他のアプリ</string>
     <string name="more_apps_subtitle">開発者の他のアプリを見る</string>
-    <string name="open_source_desc_about_lib" translatable="false"><![CDATA[Glide is a fast and efficient open source media management and image loading framework for Android that wraps media decoding, memory and disk caching, and resource pooling into a simple and easy to use interface.]]></string>
-    <string name="open_source_desc_color_picker" translatable="false"><![CDATA[ColorPickerView implements getting HSV colors, ARGB values, Hex color codes from any image drawables or your gallery pictures by tapping on the desired color. Supports alpha & brightness slider bar, dialog, and saving & restoring selected data.]]></string>
-    <string name="open_source_desc_compressor" translatable="false"><![CDATA["Compressor is a lightweight and powerful android image compression library. Compressor will allow you to compress large photos into smaller sized photos with very less or negligible loss in quality of the image. "]]></string>
-    <string name="open_source_desc_material_components" translatable="false">Material Components for Android (MDC-Android) help developers execute Material Design. Developed by a core team of engineers and UX designers at Google, these components enable a reliable development workflow to build beautiful and functional Android apps.Material Components for Android is a drop-in replacement for Android\'s Design Support Library.</string>
     <string name="pick_folder">フォルダを選択</string>
     <string name="pick_folder_dialog_message">選択したフォルダ内の画像を直接スキャン、またはサブフォルダも含めることができます。</string>
     <string name="pick_folder_dialog_title">フォルダを選択</string>
@@ -382,7 +366,6 @@
     <string name="restore_failed">復元に失敗しました。有効なバックアップファイルではない可能性があります</string>
     <string name="restore_success">復元が完了しました</string>
     <string name="send_email">メールを送信</string>
-    <string name="send_telegram">Telegramで送信</string>
     <string name="share_app">アプリを共有</string>
     <string name="share_app_message">%1$s をチェック：https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="share_app_subtitle">EasyWatermarkを友達に共有</string>
@@ -441,4 +424,9 @@
     <string name="watermark_profile_title">ウォーターマークプロファイル</string>
     <string name="you_ll_need_to_close_and_restart_the_app_to_switch_themes">テーマを切り替えるには、アプリを終了して再起動する必要があります</string>
     <string name="zipping_images">ZIPファイルを作成中…</string>
+    <string name="recipient_code_display">コード: %1$s</string>
+    <string name="version_name_build_format">v%1$s (%2$s)</string>
+    <string name="version_name_copyright_format">v%1$s • %2$s</string>
+    <string name="copyright_rights_reserved_format">%1$s • 全著作権所有</string>
+    <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
 </resources>

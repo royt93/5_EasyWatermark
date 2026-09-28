@@ -77,21 +77,15 @@
     <string name="about_section_app_info">О приложении</string>
     <string name="about_section_data">Управление данными</string>
     <string name="about_section_support">Поддержка и сообщество</string>
-    <string name="about_title_about">О приложении</string>
-    <string name="about_title_feed_back">Обратная связь</string>
     <string name="about_title_info">Информация</string>
     <string name="about_title_open_source">Лицензии open source</string>
     <string name="about_title_output">Формат вывода</string>
     <string name="about_title_privacy_statement">Политика конфиденциальности</string>
-    <string name="about_title_privacy_statement_zh" translatable="false">隐私政策</string>
-    <string name="about_title_rating">Оценить наше приложение</string>
-    <string name="about_title_update_log">История изменений</string>
     <string name="about_version_display">v%1$s</string>
     <string name="accessibility_edit_watermark_text">Изменить текст водяного знака</string>
     <string name="action_camera">Камера</string>
     <string name="action_clear">Очистить</string>
     <string name="action_clear_canvas">Очистить холст</string>
-    <string name="action_close">Закрыть</string>
     <string name="action_compare">Сравнить</string>
     <string name="action_delete">Удалить</string>
     <string name="action_deselect_all">Снять выделение со всех</string>
@@ -133,7 +127,6 @@
     <string name="authenticity_verify_own_key">Подписано этим устройством.</string>
     <string name="authenticity_verify_owner">Владелец: %1$s</string>
     <string name="authenticity_verify_owner_unset">Владелец: не задан</string>
-    <string name="authenticity_verify_title">Проверка подлинности</string>
     <string name="authenticity_verify_unreadable">Не удалось прочитать этот файл</string>
     <string name="backup_data">Резервная копия</string>
     <string name="backup_data_subtitle">Экспорт шаблонов и подписей</string>
@@ -215,14 +208,11 @@
     <string name="dialog_save_config_name_pattern_hint">например, {filename}_wm_{seq} — оставьте пустым для значения по умолчанию</string>
     <string name="dialog_save_config_output_directory">Выбрать папку сохранения</string>
     <string name="dialog_save_config_resize">Изменить размер (по длинной стороне)</string>
-    <string name="dialog_save_config_resize_none">Исходный</string>
     <string name="dialog_save_export_count_with_failures">%1$d/%2$d · %3$d с ошибкой</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d · ~%3$s</string>
     <string name="dialog_save_export_list_title">Список экспорта (%1$s)</string>
-    <string name="dialog_save_exporting">Экспорт</string>
     <string name="dialog_save_output_directory_reset">Сбросить по умолчанию</string>
     <string name="dialog_share_as_zip">Поделиться как ZIP</string>
-    <string name="dialog_share_images">Поделиться изображениями</string>
     <string name="dialog_title_edit_watermark">Изменить водяной знак</string>
     <string name="dialog_title_exist_confirm">Предупреждение</string>
     <string name="dialog_title_template_edit">Изменить шаблон</string>
@@ -230,7 +220,6 @@
     <string name="draw_signature">Нарисовать подпись</string>
     <string name="dynamic_color_subtitle_supported">Автоматически подстраивается под палитру обоев системы (Material You)</string>
     <string name="dynamic_color_subtitle_unsupported">Требуется Android 12+ (устройство использует стандартную палитру Material 3)</string>
-    <string name="email_subject" translatable="false">[EasyWaterMark] Crash info</string>
     <string name="error_file_not_found">Не удалось открыть изображение или оно не выбрано</string>
     <string name="error_not_img">Пожалуйста, выберите изображение</string>
     <string name="error_save_oom">Недостаточно памяти, закройте фоновые приложения и повторите попытку</string>
@@ -273,7 +262,6 @@
     <string name="launch_card_pick_desc">Защитите фото текстом, значками или рамкой Leica EXIF</string>
     <string name="layer_edit_pick_icon">Выбрать значок</string>
     <string name="layer_edit_text_hint">Текст слоя</string>
-    <string name="layer_edit_title">Изменить слой</string>
     <string name="layer_manager_add">Добавить слой</string>
     <string name="layer_manager_delete_cd">Удалить слой</string>
     <string name="layer_manager_empty">Дополнительных слоёв пока нет — нажмите «Добавить слой», чтобы наложить логотип или текст</string>
@@ -285,10 +273,6 @@
     <string name="more_apps">Другие приложения</string>
     <string name="more_apps_subtitle">Другие приложения разработчика</string>
     <string name="msg_crash">Хотите сообщить об этой ошибке? Это поможет нам улучшить приложение! Личные данные не собираются.</string>
-    <string name="open_source_desc_about_lib" translatable="false">Glide is a fast and efficient open source media management and image loading framework for Android that wraps media decoding, memory and disk caching, and resource pooling into a simple and easy to use interface.</string>
-    <string name="open_source_desc_color_picker" translatable="false"><![CDATA[ColorPickerView implements getting HSV colors, ARGB values, Hex color codes from any image drawables or your gallery pictures by tapping on the desired color. Supports alpha & brightness slider bar, dialog, and saving & restoring selected data.]]></string>
-    <string name="open_source_desc_compressor" translatable="false">"Compressor is a lightweight and powerful android image compression library. Compressor will allow you to compress large photos into smaller sized photos with very less or negligible loss in quality of the image. "</string>
-    <string name="open_source_desc_material_components" translatable="false">Material Components for Android (MDC-Android) help developers execute Material Design. Developed by a core team of engineers and UX designers at Google, these components enable a reliable development workflow to build beautiful and functional Android apps.Material Components for Android is a drop-in replacement for Android\'s Design Support Library.</string>
     <string name="pick_folder">Выбрать папку</string>
     <string name="pick_folder_dialog_message">Сканировать изображения прямо в выбранной папке или включить также вложенные папки.</string>
     <string name="pick_folder_dialog_title">Выбрать папку</string>
@@ -336,7 +320,6 @@
     <string name="restore_failed">Восстановление не удалось — файл может быть повреждён или не является резервной копией</string>
     <string name="restore_success">Восстановление завершено успешно</string>
     <string name="send_email">Отправить письмо</string>
-    <string name="send_telegram">Отправить в Telegram</string>
     <string name="share">Поделиться</string>
     <string name="share_app">Поделиться приложением</string>
     <string name="share_app_message">Посмотрите %1$s: https://play.google.com/store/apps/details?id=%2$s</string>
@@ -448,4 +431,9 @@
     <string name="watermark_profile_title">Профили водяного знака</string>
     <string name="you_ll_need_to_close_and_restart_the_app_to_switch_themes">Чтобы сменить тему, нужно закрыть и перезапустить приложение</string>
     <string name="zipping_images">Создание ZIP-файла…</string>
+    <string name="recipient_code_display">Код: %1$s</string>
+    <string name="version_name_build_format">v%1$s (%2$s)</string>
+    <string name="version_name_copyright_format">v%1$s • %2$s</string>
+    <string name="copyright_rights_reserved_format">%1$s • Все права защищены</string>
+    <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
 </resources>

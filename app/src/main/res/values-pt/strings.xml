@@ -12,12 +12,10 @@
     <string name="tips_error">Falha</string>
     <string name="title_text_style">Fonte</string>
     <string name="title_text_size">Tamanho</string>
-    <string name="about_title_update_log">Histórico de modificações</string>
     <string name="about_title_open_source">Software livre</string>
     <string name="error_not_img">Selecione uma imagem</string>
     <string name="error_file_not_found">A imagem não pôde ser aberta ou não foi selecionada</string>
     <string name="share">Compartilhar a imagem</string>
-    <string name="about_title_feed_back">Opinião</string>
     <string name="tips_not_app_can_open_images">Nenhum gestor de ficheiros detectado.</string>
     <string name="tips_choose_other_file_type">Imagem inválida</string>
     <string name="error_save_oom">Memória insuficiente, por favor limpe os processos em segundo plano e tente novamente</string>
@@ -39,11 +37,9 @@
     <string name="tile_mode_title_decal">Único</string>
     <string name="tips_use_this_template">Usar este modelo\?</string>
     <string name="tips_database_init_error">Falha na inicialização do banco de dados.</string>
-    <string name="about_title_about">Sobre</string>
     <string name="about_title_info">Detalhes</string>
     <string name="about_title_output">Formato de saída</string>
     <string name="about_title_version">Versão</string>
-    <string name="about_title_rating">Avalie nosso app</string>
     <string name="dialog_export_to_gallery">Exportar para Álbum</string>
     <string name="water_mark_mode_text">Texto</string>
     <string name="water_mark_mode_image">Ícone</string>
@@ -72,7 +68,6 @@
     <string name="dialog_open_in_gallery">Ver na Galeria</string>
     <string name="dialog_save_config_format">Formato</string>
     <string name="dialog_save_config_quality">Qualidade</string>
-    <string name="dialog_save_exporting">Exportando</string>
     <string name="tips_pick_image">Vamos começar selecionando uma imagem</string>
     <string name="pick_via_system">Choose more…</string>
     <string name="recovery_title">Modo de restauração</string>
@@ -160,13 +155,11 @@
     <string name="about_section_data">Gestão de Dados</string>
     <string name="about_section_support">Suporte &amp; Comunidade</string>
     <string name="about_title_privacy_statement">Política de Privacidade</string>
-    <string name="about_title_privacy_statement_zh" translatable="false">隐私政策</string>
     <string name="about_version_display">v%1$s</string>
     <string name="accessibility_edit_watermark_text">Editar texto da marca de água</string>
     <string name="action_camera">Câmara</string>
     <string name="action_clear">Limpar</string>
     <string name="action_clear_canvas">Limpar área de desenho</string>
-    <string name="action_close">Fechar</string>
     <string name="action_compare">Comparar</string>
     <string name="action_delete">Eliminar</string>
     <string name="action_deselect_all">Desmarcar tudo</string>
@@ -205,7 +198,6 @@
     <string name="authenticity_verify_own_key">Assinado por este dispositivo.</string>
     <string name="authenticity_verify_owner">Proprietário: %1$s</string>
     <string name="authenticity_verify_owner_unset">Proprietário: não definido</string>
-    <string name="authenticity_verify_title">Verificação de autenticidade</string>
     <string name="authenticity_verify_unreadable">Não é possível ler este ficheiro</string>
     <string name="backup_data">Cópia de segurança</string>
     <string name="backup_data_subtitle">Exportar modelos e assinaturas</string>
@@ -275,16 +267,13 @@
     <string name="dialog_save_config_name_pattern_hint">ex.: {filename}_wm_{seq} — deixe vazio para usar a predefinição</string>
     <string name="dialog_save_config_output_directory">Escolher pasta de destino</string>
     <string name="dialog_save_config_resize">Redimensionar (lado maior)</string>
-    <string name="dialog_save_config_resize_none">Original</string>
     <string name="dialog_save_export_count_with_failures">%1$d/%2$d · %3$d falhadas</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d · ~%3$s</string>
     <string name="dialog_save_output_directory_reset">Repor predefinição</string>
     <string name="dialog_share_as_zip">Partilhar como ZIP</string>
-    <string name="dialog_share_images">Partilhar imagens</string>
     <string name="draw_signature">Desenhar Assinatura</string>
     <string name="dynamic_color_subtitle_supported">Adapta-se automaticamente à paleta do fundo do sistema (Material You)</string>
     <string name="dynamic_color_subtitle_unsupported">Requer Android 12+ (o dispositivo utiliza a paleta Material 3 padrão)</string>
-    <string name="email_subject" translatable="false">[EasyWaterMark] Crash info</string>
     <string name="exif_customize_auto_palette">Corresponder às cores da fotografia</string>
     <string name="exif_customize_band_color">Cor da faixa</string>
     <string name="exif_customize_band_thickness">Espessura da faixa</string>
@@ -324,7 +313,6 @@
     <string name="launch_card_pick_desc">Proteja fotografias com texto, ícones ou EXIF Leica</string>
     <string name="layer_edit_pick_icon">Escolher ícone</string>
     <string name="layer_edit_text_hint">Texto da camada</string>
-    <string name="layer_edit_title">Editar camada</string>
     <string name="layer_manager_add">Adicionar camada</string>
     <string name="layer_manager_delete_cd">Eliminar camada</string>
     <string name="layer_manager_empty">Ainda sem camadas extra — toque em \"Adicionar camada\" para sobrepor um logótipo ou texto adicional</string>
@@ -335,10 +323,6 @@
     <string name="material_components_for_android">Material Components for Android</string>
     <string name="more_apps">Mais aplicações</string>
     <string name="more_apps_subtitle">Explore mais aplicações do programador</string>
-    <string name="open_source_desc_about_lib" translatable="false">Glide is a fast and efficient open source media management and image loading framework for Android that wraps media decoding, memory and disk caching, and resource pooling into a simple and easy to use interface.</string>
-    <string name="open_source_desc_color_picker" translatable="false"><![CDATA[ColorPickerView implements getting HSV colors, ARGB values, Hex color codes from any image drawables or your gallery pictures by tapping on the desired color. Supports alpha & brightness slider bar, dialog, and saving & restoring selected data.]]></string>
-    <string name="open_source_desc_compressor" translatable="false">"Compressor is a lightweight and powerful android image compression library. Compressor will allow you to compress large photos into smaller sized photos with very less or negligible loss in quality of the image. "</string>
-    <string name="open_source_desc_material_components" translatable="false">Material Components for Android (MDC-Android) help developers execute Material Design. Developed by a core team of engineers and UX designers at Google, these components enable a reliable development workflow to build beautiful and functional Android apps.Material Components for Android is a drop-in replacement for Android\'s Design Support Library.</string>
     <string name="pick_folder">Escolher pasta</string>
     <string name="pick_folder_dialog_message">Analisar imagens diretamente na pasta selecionada, ou incluir também as subpastas.</string>
     <string name="pick_folder_dialog_title">Escolher pasta</string>
@@ -381,7 +365,6 @@
     <string name="restore_failed">A restauração falhou — o ficheiro pode não ser uma cópia de segurança válida</string>
     <string name="restore_success">Restauro concluído com sucesso</string>
     <string name="send_email">Enviar e-mail</string>
-    <string name="send_telegram">Enviar pelo Telegram</string>
     <string name="share_app">Partilhar Aplicação</string>
     <string name="share_app_message">Conheça %1$s: https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="share_app_subtitle">Partilhe o EasyWatermark com amigos</string>
@@ -389,14 +372,17 @@
     <plurals name="gallery_select_photo_count">
         <item quantity="one">Selecionar %1$d foto</item>
         <item quantity="other">Selecionar %1$d fotos</item>
+        <item quantity="many">Selecionar %1$d fotos</item>
     </plurals>
     <plurals name="gallery_selected_count">
         <item quantity="one">%1$d selecionada</item>
         <item quantity="other">%1$d selecionadas</item>
+        <item quantity="many">%1$d selecionadas</item>
     </plurals>
     <plurals name="batch_caption_subtitle">
         <item quantity="one">Uma linha por imagem, mesma ordem (%1$d imagem)</item>
         <item quantity="other">Uma linha por imagem, mesma ordem (%1$d imagens)</item>
+        <item quantity="many">Uma linha por imagem, mesma ordem (%1$d imagens)</item>
     </plurals>
     <string name="share_zip_failed">Falha ao criar o ficheiro ZIP</string>
     <string name="show_bounds">Mostrar Limites</string>
@@ -443,4 +429,9 @@
     <string name="watermark_profile_title">Perfis de marca de água</string>
     <string name="you_ll_need_to_close_and_restart_the_app_to_switch_themes">Terá de fechar e reiniciar a aplicação para mudar de tema</string>
     <string name="zipping_images">A criar ficheiro ZIP…</string>
+    <string name="recipient_code_display">Código: %1$s</string>
+    <string name="version_name_build_format">v%1$s (%2$s)</string>
+    <string name="version_name_copyright_format">v%1$s • %2$s</string>
+    <string name="copyright_rights_reserved_format">%1$s • Todos os direitos reservados</string>
+    <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
 </resources>

@@ -10,6 +10,7 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.drawable.BitmapDrawable
 import android.util.AttributeSet
 import android.view.View
+import androidx.appcompat.content.res.AppCompatResources
 import com.google.android.material.color.MaterialColors
 import com.mckimquyen.watermark.R
 import kotlin.math.min
@@ -179,7 +180,7 @@ class SelectableImageView : View {
     ): Bitmap? {
         var b: Bitmap? = null
         if (resId > 0) {
-            b = context.getDrawable(resId)?.let {
+            b = AppCompatResources.getDrawable(context, resId)?.let {
                 if (it is BitmapDrawable) {
                     it.bitmap
                 } else if (it.intrinsicHeight > 0 && it.intrinsicWidth > 0) {

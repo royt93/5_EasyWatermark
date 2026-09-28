@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="about_title_about">關於</string>
-    <string name="about_title_feed_back">回饋</string>
     <string name="about_title_info">消息</string>
     <string name="about_title_open_source">開源許可</string>
-    <string name="about_title_rating">為這個應用程式評分</string>
-    <string name="about_title_update_log">更新日誌</string>
     <string name="about_title_version">版本</string>
     <string name="action_pick">選擇圖片</string>
     <string name="action_save">儲存</string>
@@ -60,7 +56,6 @@
     <string name="text_typeface_bold">粗體</string>
     <string name="text_typeface_italic">斜體</string>
     <string name="text_typeface_bold_italic">斜體加粗</string>
-    <string name="dialog_save_exporting">正在匯入</string>
     <string name="dialog_save_export_list_title">輸出清單（%1$s）</string>
     <string name="dialog_open_in_gallery">在圖片庫中檢視</string>
     <string name="dialog_save_config_format">格式</string>
@@ -162,13 +157,11 @@
     <string name="about_section_data">資料管理</string>
     <string name="about_section_support">支援與社群</string>
     <string name="about_title_privacy_statement">隱私權政策</string>
-    <string name="about_title_privacy_statement_zh">隱私權政策</string>
     <string name="about_version_display">v%1$s</string>
     <string name="accessibility_edit_watermark_text">編輯浮水印文字</string>
     <string name="action_camera">相機</string>
     <string name="action_clear">清除</string>
     <string name="action_clear_canvas">清空畫布</string>
-    <string name="action_close">關閉</string>
     <string name="action_compare">比較</string>
     <string name="action_delete">刪除</string>
     <string name="action_deselect_all">取消全選</string>
@@ -207,7 +200,6 @@
     <string name="authenticity_verify_own_key">由本裝置簽署。</string>
     <string name="authenticity_verify_owner">擁有者：%1$s</string>
     <string name="authenticity_verify_owner_unset">擁有者：未設定</string>
-    <string name="authenticity_verify_title">真實性檢查</string>
     <string name="authenticity_verify_unreadable">無法讀取此檔案</string>
     <string name="backup_data">備份</string>
     <string name="backup_data_subtitle">匯出範本和簽名</string>
@@ -277,16 +269,13 @@
     <string name="dialog_save_config_name_pattern_hint">例如 {filename}_wm_{seq} —— 留空則使用預設值</string>
     <string name="dialog_save_config_output_directory">選擇儲存資料夾</string>
     <string name="dialog_save_config_resize">調整大小（長邊）</string>
-    <string name="dialog_save_config_resize_none">原始大小</string>
     <string name="dialog_save_export_count_with_failures">%1$d/%2$d · %3$d 失敗</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d · ~%3$s</string>
     <string name="dialog_save_output_directory_reset">重設為預設值</string>
     <string name="dialog_share_as_zip">以 ZIP 格式分享</string>
-    <string name="dialog_share_images">分享圖片</string>
     <string name="draw_signature">繪製簽名</string>
     <string name="dynamic_color_subtitle_supported">自動配合系統桌布配色（Material You）</string>
     <string name="dynamic_color_subtitle_unsupported">需要 Android 12 以上版本（此裝置使用標準 Material 3 配色）</string>
-    <string name="email_subject">[EasyWaterMark] 當機資訊</string>
     <string name="exif_customize_auto_palette">配合照片色調</string>
     <string name="exif_customize_band_color">色帶顏色</string>
     <string name="exif_customize_band_thickness">色帶厚度</string>
@@ -326,7 +315,6 @@
     <string name="launch_card_pick_desc">以文字、圖示或 Leica EXIF 保護照片</string>
     <string name="layer_edit_pick_icon">選擇圖示</string>
     <string name="layer_edit_text_hint">圖層文字</string>
-    <string name="layer_edit_title">編輯圖層</string>
     <string name="layer_manager_add">新增圖層</string>
     <string name="layer_manager_delete_cd">刪除圖層</string>
     <string name="layer_manager_empty">尚無額外圖層 —— 點擊「新增圖層」以疊加標誌或額外文字</string>
@@ -337,10 +325,6 @@
     <string name="material_components_for_android">Material Components for Android</string>
     <string name="more_apps">更多應用程式</string>
     <string name="more_apps_subtitle">探索開發者的更多應用程式</string>
-    <string name="open_source_desc_about_lib">Glide 是一套快速又有效率的開源媒體管理與圖片載入框架，適用於 Android，將媒體解碼、記憶體與磁碟快取、資源池管理封裝成簡單易用的介面。</string>
-    <string name="open_source_desc_color_picker"><![CDATA[ColorPickerView 可從任何圖片、可繪製資源或相簿圖片中，透過點擊所需顏色來取得 HSV 顏色、ARGB 值、十六進位顏色代碼。支援透明度與亮度滑桿、對話框，以及儲存與還原所選資料。]]></string>
-    <string name="open_source_desc_compressor">"Compressor 是一套輕量且強大的 Android 圖片壓縮函式庫。它能將大型照片壓縮成體積更小的照片，且畫質幾乎沒有明顯損失。"</string>
-    <string name="open_source_desc_material_components">Material Components for Android（MDC-Android）協助開發者實現 Material Design。由 Google 核心工程師與 UX 設計師團隊開發，這些元件能提供可靠的開發流程，協助打造美觀又實用的 Android 應用程式。Material Components for Android 是 Android 官方 Design Support Library 的直接替代方案。</string>
     <string name="pick_folder">選擇資料夾</string>
     <string name="pick_folder_dialog_message">直接掃描所選資料夾中的圖片，也可以包含子資料夾。</string>
     <string name="pick_folder_dialog_title">選擇資料夾</string>
@@ -383,7 +367,6 @@
     <string name="restore_failed">還原失敗 —— 檔案可能不是有效的備份</string>
     <string name="restore_success">還原成功</string>
     <string name="send_email">傳送電子郵件</string>
-    <string name="send_telegram">傳送到 Telegram</string>
     <string name="share_app">分享應用程式</string>
     <string name="share_app_message">快來看看 %1$s：https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="share_app_subtitle">與朋友分享 EasyWatermark</string>
@@ -442,4 +425,9 @@
     <string name="watermark_profile_title">浮水印方案</string>
     <string name="you_ll_need_to_close_and_restart_the_app_to_switch_themes">切換主題需要關閉並重新啟動應用程式</string>
     <string name="zipping_images">正在建立 ZIP 檔案…</string>
+    <string name="recipient_code_display">代碼: %1$s</string>
+    <string name="version_name_build_format">v%1$s (%2$s)</string>
+    <string name="version_name_copyright_format">v%1$s • %2$s</string>
+    <string name="copyright_rights_reserved_format">%1$s • 版權所有</string>
+    <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
 </resources>

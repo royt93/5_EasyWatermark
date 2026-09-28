@@ -112,6 +112,10 @@ android {
     lint {
         baseline = file("lint-baseline.xml")
         disable += "NullSafeMutableLiveData"
+        // SelectedPhotoAccess không tôn trọng tools:ignore (đã thử cả <uses-permission> lẫn root
+        // <manifest>, vẫn báo) — tắt ở cấp module tới khi triển khai IDEA-19 (luồng "Chọn thêm
+        // ảnh" khi quyền ảnh Android 14+ bị giới hạn).
+        disable += "SelectedPhotoAccess"
     }
 
     testOptions {
@@ -151,7 +155,7 @@ dependencies {
     // trên COMPILE classpath (không chỉ shim listenablefuture rỗng) để Kotlin resolve type đầy đủ
     // khi subclass CoroutineWorker. Bản thật của guava vốn đã có ở runtime qua lib khác (AdMob/Play
     // Review) nhưng chỉ transitive runtime, không lộ ra compile classpath — khai báo thẳng ở đây.
-    api("com.google.guava:guava:31.1-android")
+    api("com.google.guava:guava:33.3.1-android")
     api(libs.asyncLayoutInflater)
     api(libs.glide.glide)
     kapt(libs.glide.compiler)

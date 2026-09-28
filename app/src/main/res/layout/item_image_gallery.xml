@@ -6,12 +6,16 @@
     - Check icon: 28dp Material You dynamic primary circle, always visible
     - Unselected: icon ghost (30% opacity, no circle bg)
 -->
+<!-- lint Overdraw false-positive: colorSurfaceContainerLow tạo tông nền khác biệt có chủ đích cho
+ô ảnh grid (không trùng colorSurface của theme) — xoá sẽ đổi giao diện thật, không phải overdraw. -->
 <com.mckimquyen.watermark.ui.widget.SquareFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="1.5dp"
-    android:background="?attr/colorSurfaceContainerLow">
+    android:background="?attr/colorSurfaceContainerLow"
+    tools:ignore="Overdraw">
 
     <!-- Photo layer (scales on selection) -->
     <androidx.constraintlayout.utils.widget.ImageFilterView

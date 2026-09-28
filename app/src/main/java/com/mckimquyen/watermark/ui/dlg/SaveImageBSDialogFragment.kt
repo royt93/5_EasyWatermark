@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.documentfile.provider.DocumentFile
@@ -43,6 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.Locale
 
 class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     private val imageList: List<ImageInfo>
@@ -142,7 +144,11 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         }
         val folderName = DocumentFile.fromTreeUri(requireContext(), uri)?.name ?: uri.lastPathSegment.orEmpty()
         dlgBinding.tvOutputDirectoryPath.apply {
-            text = "$folderName  ·  ${getString(R.string.dialog_save_output_directory_reset)}"
+            text = getString(
+                R.string.output_directory_path_with_reset_hint,
+                folderName,
+                getString(R.string.dialog_save_output_directory_reset)
+            )
             isVisible = true
             setOnClickListener {
                 shareViewModel.saveOutputDirectoryUri(null)
@@ -297,7 +303,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 )
                 it.setAdapter(adapter)
                 it.setDropDownBackgroundDrawable(
-                    requireContext().getDrawable(R.drawable.bg_dropdown_popup)
+                    AppCompatResources.getDrawable(requireContext(), R.drawable.bg_dropdown_popup)
                 )
                 it.setText(labelOf(shareViewModel.outputFormat), false)
                 it.setOnItemClickListener { _, _, index, _ ->
@@ -315,7 +321,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                     resizeArray
                 )
                 it.setAdapter(adapter)
-                it.setDropDownBackgroundDrawable(requireContext().getDrawable(R.drawable.bg_dropdown_popup))
+                it.setDropDownBackgroundDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.bg_dropdown_popup))
                 val curIdx = resizeValues.indexOf(shareViewModel.maxOutputLongEdge).coerceAtLeast(0)
                 it.setText(resizeArray[curIdx], false)
                 it.setOnItemClickListener { _, _, index, _ ->
@@ -350,7 +356,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                     conflictPolicyLabels
                 )
                 it.setAdapter(adapter)
-                it.setDropDownBackgroundDrawable(requireContext().getDrawable(R.drawable.bg_dropdown_popup))
+                it.setDropDownBackgroundDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.bg_dropdown_popup))
                 val curIdx = conflictPolicyValues.indexOf(shareViewModel.conflictPolicy).coerceAtLeast(0)
                 it.setText(conflictPolicyLabels[curIdx], false)
                 it.setOnItemClickListener { _, _, index, _ ->
@@ -405,7 +411,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
 
             val theAdapter = rvResult.adapter as SaveImageListAdapter
 
-            tvQualityValue.text = compressLevel.toInt().toString()
+            tvQualityValue.text = String.format(Locale.getDefault(), "%d", compressLevel.toInt())
 
             tvResult.text = exportCountText(theAdapter)
 
@@ -428,7 +434,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 contentDescription = "$baseDesc: ${compressLevel.toInt()}"
                 addOnChangeListener { _, value, _ ->
                     shareViewModel.saveOutput(shareViewModel.outputFormat, value.toInt())
-                    tvQualityValue.text = value.toInt().toString()
+                    tvQualityValue.text = String.format(Locale.getDefault(), "%d", value.toInt())
                     contentDescription = "$baseDesc: ${value.toInt()}"
                 }
             }

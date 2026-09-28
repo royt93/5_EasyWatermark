@@ -40,7 +40,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
-import com.google.android.material.badge.ExperimentalBadgeUtils
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
@@ -1097,9 +1096,10 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    // `@OptIn` đủ cho Kotlin compiler, nhưng lint (AGP 8.7.2) báo UnsafeOptInUsageError giả với
-    // compileSdk 37 (annotations DB của SDK này lint chưa đọc đúng) — thêm @SuppressLint để lint sạch.
-    @OptIn(ExperimentalBadgeUtils::class)
+    // `ExperimentalBadgeUtils` trong bản Material lib đang dùng KHÔNG phải marker `@RequiresOptIn`
+    // thật (compiler tự cảnh báo "@OptIn has no effect" nếu thêm) — chỉ `@SuppressLint` mới tắt
+    // được cảnh báo lint AGP 8.7.2 báo (UnsafeOptInUsageError, false-positive do compileSdk 37 mới,
+    // annotations DB lint chưa đọc đúng).
     @SuppressLint("UnsafeOptInUsageError")
     private fun attachVipBadge(badge: BadgeDrawable, toolbar: MaterialToolbar) {
         try {
@@ -1108,7 +1108,6 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    @OptIn(ExperimentalBadgeUtils::class)
     @SuppressLint("UnsafeOptInUsageError")
     private fun detachVipBadge(badge: BadgeDrawable, toolbar: MaterialToolbar) {
         try {

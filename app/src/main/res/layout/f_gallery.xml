@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragmentGallery"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:layout_height="match_parent">
 
     <!-- ── Material 3 Top App Bar ── -->
     <com.google.android.material.appbar.AppBarLayout
@@ -49,6 +48,10 @@
         app:layout_constraintTop_toBottomOf="@id/abl" />
 
     <!-- ── Empty State ── -->
+    <!-- lint UseCompoundDrawables: gợi ý gộp ImageView+TextView thành 1 TextView dùng drawableTop,
+    nhưng icon cần layout_width/height=64dp CỐ ĐỊNH + alpha=0.4 độc lập — compound drawable của
+    TextView không hỗ trợ resize/alpha riêng (sẽ render icon sai kích thước hoặc mất hiệu ứng mờ),
+    giữ nguyên 2 view để không risk regression hình ảnh cho lợi ích tối ưu nhỏ. -->
     <LinearLayout
         android:id="@+id/llEmptyState"
         android:layout_width="wrap_content"
@@ -60,6 +63,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/abl"
+        tools:ignore="UseCompoundDrawables"
         tools:visibility="visible">
 
         <ImageView

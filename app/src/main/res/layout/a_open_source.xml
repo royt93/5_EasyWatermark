@@ -5,7 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
     android:fillViewport="true">
 
     <LinearLayout
@@ -74,7 +73,7 @@
                         android:paddingTop="2dp"
                         android:paddingEnd="8dp"
                         android:paddingBottom="2dp"
-                        android:text="Apache-2.0"
+                        android:text="@string/license_id_apache_2_0"
                         android:textAppearance="@style/TextAppearance.App.Label11PrimaryBold" />
 
                     <ImageView
@@ -144,7 +143,7 @@
                         android:paddingTop="2dp"
                         android:paddingEnd="8dp"
                         android:paddingBottom="2dp"
-                        android:text="BSD-2-Clause"
+                        android:text="@string/license_id_bsd_2_clause"
                         android:textAppearance="@style/TextAppearance.App.Label11PrimaryBold" />
 
                     <ImageView
@@ -214,7 +213,7 @@
                         android:paddingTop="2dp"
                         android:paddingEnd="8dp"
                         android:paddingBottom="2dp"
-                        android:text="Apache-2.0"
+                        android:text="@string/license_id_apache_2_0"
                         android:textAppearance="@style/TextAppearance.App.Label11PrimaryBold" />
 
                     <ImageView
@@ -284,7 +283,7 @@
                         android:paddingTop="2dp"
                         android:paddingEnd="8dp"
                         android:paddingBottom="2dp"
-                        android:text="Apache-2.0"
+                        android:text="@string/license_id_apache_2_0"
                         android:textAppearance="@style/TextAppearance.App.Label11PrimaryBold" />
 
                     <ImageView

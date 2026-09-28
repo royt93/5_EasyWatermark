@@ -67,28 +67,10 @@
         <item name="trackHeight">4dp</item>
     </style>
 
-    <style name="TextInputLayoutStyle" parent="Widget.Material3.TextInputLayout.OutlinedBox">
-        <item name="boxStrokeWidth">1dp</item>
-        <item name="boxStrokeWidthFocused">2dp</item>
-    </style>
-
     <style name="ProgressBarStyle">
         <item name="android:indeterminate">true</item>
         <item name="android:indeterminateTint">?attr/colorPrimary</item>
         <item name="android:indeterminateTintMode">src_in</item>
-    </style>
-
-    <style name="AboutPageTextViewStyle" parent="TextAppearance.Material3.TitleLarge">
-        <item name="android:paddingStart">28dp</item>
-        <item name="android:paddingEnd">28dp</item>
-        <item name="android:textColor">?attr/colorOnSurface</item>
-        <item name="android:drawableTint">?attr/colorOnSurface</item>
-    </style>
-
-    <style name="SaveDialogTextViewStyle" parent="Widget.Material3.BottomSheet.Modal">
-        <item name="android:textColor">?attr/colorOnSurface</item>
-        <item name="android:paddingStart">0dp</item>
-        <item name="android:paddingEnd">0dp</item>
     </style>
 
     <style name="SaveDialogExposedDropdownMenu" parent="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
@@ -135,10 +117,6 @@
 
     <style name="Widget.App.Button" parent="Widget.Material3.Button">
         <item name="materialThemeOverlay">@style/ThemeOverlay.Material3.Button</item>
-    </style>
-
-    <style name="Widget.App.Button.TextButton" parent="Widget.Material3.Button.TextButton">
-        <item name="materialThemeOverlay">@style/ThemeOverlay.Material3.Button.TextButton</item>
     </style>
 
     <style name="Widget.App.AlertDialog.Button" parent="Widget.Material3.Button.TextButton.Dialog">

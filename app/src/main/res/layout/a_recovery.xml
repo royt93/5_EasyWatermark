@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- lint MergeRootFrame: gợi ý đổi sang <merge> SAI ở đây — layout này dùng
+setContentView(R.layout.a_recovery) trực tiếp (MainActivity.kt), không phải inflate() với parent
+tường minh; <merge> làm root cho setContentView() sẽ crash lúc runtime. Giữ FrameLayout thật. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootRecovery"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    tools:ignore="MergeRootFrame">
 
     <!-- Inner container to maintain 16dp horizontal margin safely without being overridden by WindowInsets padding -->
     <androidx.constraintlayout.widget.ConstraintLayout

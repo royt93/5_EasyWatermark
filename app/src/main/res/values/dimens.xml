@@ -4,4 +4,9 @@
          chung 1 nguồn với SaveImageListAdapter.onCreateViewHolder() thay vì đọc parent.height lúc
          runtime (có thể = 0 nếu RecyclerView chưa layout xong khi ViewHolder đầu tiên được tạo). -->
     <dimen name="save_result_row_height">144dp</dimen>
+
+    <!-- lint PrivateResource: copy giá trị từ material.R.dimen.m3_appbar_size_compact (Material
+    1.12.0 = 64dp, alias m3_comp_top_app_bar_small_container_height) thay vì tham chiếu resource
+    private của thư viện — resource private có thể đổi/xoá ở version Material sau mà không báo. -->
+    <dimen name="app_toolbar_compact_height">64dp</dimen>
 </resources>

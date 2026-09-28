@@ -19,12 +19,8 @@
     <string name="title_text_color">Color</string>
     <string name="title_text_rotate">Ángulo</string>
     <string name="request_permission_failed">Solicitud permiso fallido</string>
-    <string name="about_title_about">Acerca de</string>
     <string name="about_title_info">Información</string>
     <string name="about_title_version">Versión</string>
-    <string name="about_title_rating">Puntuación</string>
-    <string name="about_title_feed_back">Comentarios</string>
-    <string name="about_title_update_log">Cambiar registro</string>
     <string name="about_title_open_source">Código abierto</string>
     <string name="error_not_img">Deberías elegir una foto</string>
     <string name="error_file_not_found">La foto quizás no existe</string>
@@ -60,7 +56,6 @@
     <string name="text_typeface_bold">Negrita</string>
     <string name="text_typeface_italic">Cursiva</string>
     <string name="text_typeface_bold_italic">Cursiva negrita</string>
-    <string name="dialog_save_exporting">Exportando</string>
     <string name="dialog_save_export_list_title">Exportar lista(%1$s)</string>
     <string name="dialog_open_in_gallery">Ver en galería</string>
     <string name="dialog_save_config_format">Formato</string>
@@ -166,7 +161,6 @@
     <string name="action_camera">Cámara</string>
     <string name="action_clear">Borrar</string>
     <string name="action_clear_canvas">Borrar lienzo</string>
-    <string name="action_close">Cerrar</string>
     <string name="action_compare">Comparar</string>
     <string name="action_delete">Eliminar</string>
     <string name="action_deselect_all">Deseleccionar todo</string>
@@ -205,7 +199,6 @@
     <string name="authenticity_verify_own_key">Firmada por este dispositivo.</string>
     <string name="authenticity_verify_owner">Propietario: %1$s</string>
     <string name="authenticity_verify_owner_unset">Propietario: sin definir</string>
-    <string name="authenticity_verify_title">Comprobación de autenticidad</string>
     <string name="authenticity_verify_unreadable">No se puede leer este archivo</string>
     <string name="backup_data">Copia de seguridad</string>
     <string name="backup_data_subtitle">Exportar plantillas y firmas</string>
@@ -275,12 +268,10 @@
     <string name="dialog_save_config_name_pattern_hint">p. ej. {filename}_wm_{seq} — deja vacío para usar el predeterminado</string>
     <string name="dialog_save_config_output_directory">Elegir carpeta de guardado</string>
     <string name="dialog_save_config_resize">Redimensionar (lado largo)</string>
-    <string name="dialog_save_config_resize_none">Original</string>
     <string name="dialog_save_export_count_with_failures">%1$d/%2$d · %3$d fallidas</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d · ~%3$s</string>
     <string name="dialog_save_output_directory_reset">Restablecer al predeterminado</string>
     <string name="dialog_share_as_zip">Compartir como ZIP</string>
-    <string name="dialog_share_images">Compartir imágenes</string>
     <string name="draw_signature">Dibujar firma</string>
     <string name="dynamic_color_subtitle_supported">Se adapta automáticamente a la paleta del fondo de pantalla del sistema (Material You)</string>
     <string name="dynamic_color_subtitle_unsupported">Requiere Android 12 o superior (el dispositivo usa la paleta estándar de Material 3)</string>
@@ -323,7 +314,6 @@
     <string name="launch_card_pick_desc">Protege tus fotos con texto, iconos o marco EXIF Leica</string>
     <string name="layer_edit_pick_icon">Elegir icono</string>
     <string name="layer_edit_text_hint">Texto de la capa</string>
-    <string name="layer_edit_title">Editar capa</string>
     <string name="layer_manager_add">Añadir capa</string>
     <string name="layer_manager_delete_cd">Eliminar capa</string>
     <string name="layer_manager_empty">Aún no hay capas adicionales — toca «Añadir capa» para superponer un logo o texto extra</string>
@@ -376,7 +366,6 @@
     <string name="restore_failed">Error al restaurar — el archivo puede no ser una copia de seguridad válida</string>
     <string name="restore_success">Restauración completada correctamente</string>
     <string name="send_email">Enviar correo</string>
-    <string name="send_telegram">Enviar por Telegram</string>
     <string name="share_app">Compartir app</string>
     <string name="share_app_message">Echa un vistazo a %1$s: https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="share_app_subtitle">Comparte EasyWatermark con tus amigos</string>
@@ -384,14 +373,17 @@
     <plurals name="gallery_select_photo_count">
         <item quantity="one">Seleccionar %1$d foto</item>
         <item quantity="other">Seleccionar %1$d fotos</item>
+        <item quantity="many">Seleccionar %1$d fotos</item>
     </plurals>
     <plurals name="gallery_selected_count">
         <item quantity="one">%1$d seleccionada</item>
         <item quantity="other">%1$d seleccionadas</item>
+        <item quantity="many">%1$d seleccionadas</item>
     </plurals>
     <plurals name="batch_caption_subtitle">
         <item quantity="one">Una línea por imagen, mismo orden (%1$d imagen)</item>
         <item quantity="other">Una línea por imagen, mismo orden (%1$d imágenes)</item>
+        <item quantity="many">Una línea por imagen, mismo orden (%1$d imágenes)</item>
     </plurals>
     <string name="share_zip_failed">No se pudo crear el archivo ZIP</string>
     <string name="show_bounds">Mostrar límites</string>
@@ -438,10 +430,9 @@
     <string name="watermark_profile_title">Perfiles de marca de agua</string>
     <string name="you_ll_need_to_close_and_restart_the_app_to_switch_themes">Deberás cerrar y reiniciar la app para cambiar de tema</string>
     <string name="zipping_images">Creando archivo ZIP…</string>
-    <string name="about_title_privacy_statement_zh" translatable="false">隐私政策</string>
-    <string name="open_source_desc_color_picker" translatable="false"><![CDATA[ColorPickerView implements getting HSV colors, ARGB values, Hex color codes from any image drawables or your gallery pictures by tapping on the desired color. Supports alpha & brightness slider bar, dialog, and saving & restoring selected data.]]></string>
-    <string name="open_source_desc_about_lib" translatable="false">Glide is a fast and efficient open source media management and image loading framework for Android that wraps media decoding, memory and disk caching, and resource pooling into a simple and easy to use interface.</string>
-    <string name="open_source_desc_material_components" translatable="false">Material Components for Android (MDC-Android) help developers execute Material Design. Developed by a core team of engineers and UX designers at Google, these components enable a reliable development workflow to build beautiful and functional Android apps.Material Components for Android is a drop-in replacement for Android\'s Design Support Library.</string>
-    <string name="email_subject" translatable="false">[EasyWaterMark] Crash info</string>
-    <string name="open_source_desc_compressor" translatable="false">"Compressor is a lightweight and powerful android image compression library. Compressor will allow you to compress large photos into smaller sized photos with very less or negligible loss in quality of the image. "</string>
+    <string name="recipient_code_display">Código: %1$s</string>
+    <string name="version_name_build_format">v%1$s (%2$s)</string>
+    <string name="version_name_copyright_format">v%1$s • %2$s</string>
+    <string name="copyright_rights_reserved_format">%1$s • Todos los derechos reservados</string>
+    <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
 </resources>

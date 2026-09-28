@@ -145,9 +145,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
     ): FGalleryBinding {
         val rootView = FGalleryBinding.inflate(layoutInflater, container, false)
 
-        val baseToolbarHeight = resources.getDimensionPixelSize(
-            com.google.android.material.R.dimen.m3_appbar_size_compact
-        )
+        val baseToolbarHeight = resources.getDimensionPixelSize(R.dimen.app_toolbar_compact_height)
         rootView.topAppBar.layoutParams.height = baseToolbarHeight
         rootView.topAppBar.setPadding(0, 0, 0, 0)
         val toolbarIconColor = MaterialColors.getColor(

@@ -7,6 +7,7 @@ import com.google.android.material.color.MaterialColors
 import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.LOG_TAG
+import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.AOpenSourceBinding
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.inflate
@@ -21,9 +22,7 @@ class OpenSourceActivity : BaseActivity() {
         AppLog.d(LOG_TAG, "OpenSourceActivity onCreate")
         setContentView(binding.root)
         // Insets: push toolbar down below the status bar & camera cutout, and add bottom padding for nav bar
-        val baseAppBarHeight = resources.getDimensionPixelSize(
-            com.google.android.material.R.dimen.m3_appbar_size_compact
-        )
+        val baseAppBarHeight = resources.getDimensionPixelSize(R.dimen.app_toolbar_compact_height)
         val baseScrollBottom = (32 * resources.displayMetrics.density).toInt()
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val statusBarTop = insets.getInsets(

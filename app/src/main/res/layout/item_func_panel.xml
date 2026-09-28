@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- lint Overdraw false-positive: background là ripple hiệu ứng chạm
+(selectableItemBackgroundBorderless), không phải màu đặc trùng theme — xoá sẽ mất hiệu ứng chạm. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,7 +11,8 @@
     android:orientation="vertical"
     android:background="?attr/selectableItemBackgroundBorderless"
     android:paddingStart="8dp"
-    android:paddingEnd="8dp">
+    android:paddingEnd="8dp"
+    tools:ignore="Overdraw">
 
     <!-- Icon with M3 tonal container — nền đổi màu theo trạng thái chọn (xem FuncPanelAdapter) -->
     <FrameLayout
@@ -39,7 +42,7 @@
         android:gravity="center"
         android:textAlignment="center"
         android:textColor="?attr/colorOnSurface"
-        android:textSize="10sp"
+        android:textSize="11sp"
         tools:text="Size" />
 
 </LinearLayout>

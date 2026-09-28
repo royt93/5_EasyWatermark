@@ -39,8 +39,12 @@ class SplashActivity : BaseActivity() {
             insets
         }
 
-        binding.tvVersion.text = "v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
-        binding.tvCopyright.text = "${getString(R.string.app_copyright)} • All Rights Reserved"
+        binding.tvVersion.text = getString(
+            R.string.version_name_build_format,
+            BuildConfig.VERSION_NAME,
+            BuildConfig.VERSION_CODE.toString()
+        )
+        binding.tvCopyright.text = getString(R.string.copyright_rights_reserved_format, getString(R.string.app_copyright))
 
         lifecycleScope.launch { runSplashFlow() }
     }

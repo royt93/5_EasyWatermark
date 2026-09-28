@@ -20,13 +20,9 @@
     <string name="title_text_color">Couleur</string>
     <string name="title_text_rotate">Angle</string>
     <string name="request_permission_failed">Impossible d\'obtenir la permission</string>
-    <string name="about_title_about">À propos</string>
     <string name="about_title_info">Informations</string>
     <string name="about_title_output">Format de sortie</string>
     <string name="about_title_version">Version</string>
-    <string name="about_title_rating">Évaluez notre appli</string>
-    <string name="about_title_feed_back">Remarques</string>
-    <string name="about_title_update_log">Journal des modifications</string>
     <string name="about_title_open_source">Licences ouvertes</string>
     <string name="error_not_img">Sélectionnez une image</string>
     <string name="error_file_not_found">L\'image n\'a pas pu être ouverte ou n\'a pas été sélectionnée</string>
@@ -63,7 +59,6 @@
     <string name="dialog_open_in_gallery">Voir dans la galerie</string>
     <string name="dialog_save_config_format">Format</string>
     <string name="dialog_save_config_quality">Qualité</string>
-    <string name="dialog_save_exporting">Exportation en cours</string>
     <string name="tips_pick_image">Choisissez des images</string>
     <string name="pick_via_system">plus…</string>
     <string name="recovery_title">Mode de récupération</string>
@@ -167,7 +162,6 @@
     <string name="action_camera">Appareil photo</string>
     <string name="action_clear">Effacer</string>
     <string name="action_clear_canvas">Effacer le canevas</string>
-    <string name="action_close">Fermer</string>
     <string name="action_compare">Comparer</string>
     <string name="action_delete">Supprimer</string>
     <string name="action_deselect_all">Tout désélectionner</string>
@@ -206,7 +200,6 @@
     <string name="authenticity_verify_own_key">Signée par cet appareil.</string>
     <string name="authenticity_verify_owner">Propriétaire : %1$s</string>
     <string name="authenticity_verify_owner_unset">Propriétaire : non défini</string>
-    <string name="authenticity_verify_title">Vérification d\'authenticité</string>
     <string name="authenticity_verify_unreadable">Impossible de lire ce fichier</string>
     <string name="backup_data">Sauvegarde</string>
     <string name="backup_data_subtitle">Exporter les modèles et signatures</string>
@@ -276,12 +269,10 @@
     <string name="dialog_save_config_name_pattern_hint">ex. {filename}_wm_{seq} — laisser vide pour la valeur par défaut</string>
     <string name="dialog_save_config_output_directory">Choisir le dossier de sauvegarde</string>
     <string name="dialog_save_config_resize">Redimensionner (côté long)</string>
-    <string name="dialog_save_config_resize_none">Original</string>
     <string name="dialog_save_export_count_with_failures">%1$d/%2$d · %3$d échecs</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d · ~%3$s</string>
     <string name="dialog_save_output_directory_reset">Réinitialiser par défaut</string>
     <string name="dialog_share_as_zip">Partager en ZIP</string>
-    <string name="dialog_share_images">Partager les images</string>
     <string name="draw_signature">Dessiner la signature</string>
     <string name="dynamic_color_subtitle_supported">S\'adapte automatiquement à la palette du fond d\'écran système (Material You)</string>
     <string name="dynamic_color_subtitle_unsupported">Nécessite Android 12+ (l\'appareil utilise la palette Material 3 standard)</string>
@@ -324,7 +315,6 @@
     <string name="launch_card_pick_desc">Protégez vos photos avec du texte, des icônes ou l\'EXIF Leica</string>
     <string name="layer_edit_pick_icon">Choisir une icône</string>
     <string name="layer_edit_text_hint">Texte du calque</string>
-    <string name="layer_edit_title">Modifier le calque</string>
     <string name="layer_manager_add">Ajouter un calque</string>
     <string name="layer_manager_delete_cd">Supprimer le calque</string>
     <string name="layer_manager_empty">Aucun calque supplémentaire — appuyez sur « Ajouter un calque » pour superposer un logo ou du texte</string>
@@ -377,7 +367,6 @@
     <string name="restore_failed">Échec de la restauration — le fichier n\'est peut-être pas une sauvegarde valide</string>
     <string name="restore_success">Restauration terminée avec succès</string>
     <string name="send_email">Envoyer un e-mail</string>
-    <string name="send_telegram">Envoyer sur Telegram</string>
     <string name="share_app">Partager l\'application</string>
     <string name="share_app_message">Découvrez %1$s : https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="share_app_subtitle">Partagez EasyWatermark avec vos amis</string>
@@ -385,14 +374,17 @@
     <plurals name="gallery_select_photo_count">
         <item quantity="one">Sélectionner %1$d photo</item>
         <item quantity="other">Sélectionner %1$d photos</item>
+        <item quantity="many">Sélectionner %1$d photos</item>
     </plurals>
     <plurals name="gallery_selected_count">
         <item quantity="one">%1$d sélectionnée</item>
         <item quantity="other">%1$d sélectionnées</item>
+        <item quantity="many">%1$d sélectionnées</item>
     </plurals>
     <plurals name="batch_caption_subtitle">
         <item quantity="one">Une ligne par image, même ordre (%1$d image)</item>
         <item quantity="other">Une ligne par image, même ordre (%1$d images)</item>
+        <item quantity="many">Une ligne par image, même ordre (%1$d images)</item>
     </plurals>
     <string name="share_zip_failed">Échec de la création du fichier ZIP</string>
     <string name="show_bounds">Afficher les limites</string>
@@ -439,10 +431,9 @@
     <string name="watermark_profile_title">Profils de filigrane</string>
     <string name="you_ll_need_to_close_and_restart_the_app_to_switch_themes">Vous devrez fermer et relancer l\'application pour changer de thème</string>
     <string name="zipping_images">Création du fichier ZIP…</string>
-    <string name="about_title_privacy_statement_zh" translatable="false">隐私政策</string>
-    <string name="open_source_desc_color_picker" translatable="false"><![CDATA[ColorPickerView implements getting HSV colors, ARGB values, Hex color codes from any image drawables or your gallery pictures by tapping on the desired color. Supports alpha & brightness slider bar, dialog, and saving & restoring selected data.]]></string>
-    <string name="open_source_desc_about_lib" translatable="false">Glide is a fast and efficient open source media management and image loading framework for Android that wraps media decoding, memory and disk caching, and resource pooling into a simple and easy to use interface.</string>
-    <string name="open_source_desc_material_components" translatable="false">Material Components for Android (MDC-Android) help developers execute Material Design. Developed by a core team of engineers and UX designers at Google, these components enable a reliable development workflow to build beautiful and functional Android apps.Material Components for Android is a drop-in replacement for Android\'s Design Support Library.</string>
-    <string name="email_subject" translatable="false">[EasyWaterMark] Crash info</string>
-    <string name="open_source_desc_compressor" translatable="false">"Compressor is a lightweight and powerful android image compression library. Compressor will allow you to compress large photos into smaller sized photos with very less or negligible loss in quality of the image. "</string>
+    <string name="recipient_code_display">Code : %1$s</string>
+    <string name="version_name_build_format">v%1$s (%2$s)</string>
+    <string name="version_name_copyright_format">v%1$s • %2$s</string>
+    <string name="copyright_rights_reserved_format">%1$s • Tous droits réservés</string>
+    <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
 </resources>

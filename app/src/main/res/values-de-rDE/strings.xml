@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Watermark Creator</string>
     <string name="action_save">Speichern</string>
     <string name="action_pick">Bild auswählen</string>
@@ -18,13 +18,9 @@
     <string name="title_vertical_layout">Vertikal</string>
     <string name="title_text_color">Farbe</string>
     <string name="title_text_rotate">Winkel</string>
-    <string name="about_title_about">Über</string>
     <string name="about_title_info">Informationen</string>
     <string name="about_title_output">Ausgabeformat</string>
     <string name="about_title_version">Version</string>
-    <string name="about_title_rating">Bewerte unsere App</string>
-    <string name="about_title_feed_back">Rückmeldung</string>
-    <string name="about_title_update_log">Änderungen</string>
     <string name="about_title_open_source">Quelloffen</string>
     <string name="error_not_img">Bild auswählen</string>
     <string name="error_file_not_found">Bild konnte nicht geöffnet werden</string>
@@ -60,7 +56,6 @@
     <string name="text_typeface_bold">Fett</string>
     <string name="text_typeface_italic">Kursiv</string>
     <string name="text_typeface_bold_italic">Fett und Kursiv</string>
-    <string name="dialog_save_exporting">Export wird ausgeführt</string>
     <string name="dialog_save_export_list_title">Liste exportieren(%1$s)</string>
     <string name="dialog_open_in_gallery">In Galerie anzeigen</string>
     <string name="dialog_save_config_format">Format</string>
@@ -167,7 +162,6 @@
     <string name="action_camera">Kamera</string>
     <string name="action_clear">Löschen</string>
     <string name="action_clear_canvas">Leinwand leeren</string>
-    <string name="action_close">Schließen</string>
     <string name="action_compare">Vergleichen</string>
     <string name="action_delete">Löschen</string>
     <string name="action_deselect_all">Alle abwählen</string>
@@ -196,7 +190,10 @@
     <string name="authenticity_verify_altered_desc">Die Bilddaten stimmen nicht mehr mit dem Stempel überein. Es wurde nach dem Export erneut gespeichert oder bearbeitet.</string>
     <string name="authenticity_verify_bad_signature">Die Signatur ist ungültig — der Stempel selbst wurde manipuliert.</string>
     <string name="authenticity_verify_entry">Fotoauthentizität prüfen</string>
-    <string name="authenticity_verify_entry_subtitle">Prüfen, ob ein Foto seit dem Export verändert wurde</string>
+    <!-- lint Typos gợi ý "seit dem"→"seitdem" SAI ngữ pháp ở đây: "seit dem Export" = giới từ
+    "seit" + mạo từ "dem" + danh từ "Export" ("kể từ khi xuất") — đúng chuẩn tiếng Đức. "seitdem"
+    là trạng từ ("từ đó"), không dùng được trước danh từ. Giữ nguyên, suppress cảnh báo sai. -->
+    <string name="authenticity_verify_entry_subtitle" tools:ignore="Typos">Prüfen, ob ein Foto seit dem Export verändert wurde</string>
     <string name="authenticity_verify_exported_at">Exportiert: %1$s</string>
     <string name="authenticity_verify_intact">Foto ist unverändert</string>
     <string name="authenticity_verify_key">Schlüssel: %1$s</string>
@@ -206,7 +203,6 @@
     <string name="authenticity_verify_own_key">Signiert von diesem Gerät.</string>
     <string name="authenticity_verify_owner">Inhaber: %1$s</string>
     <string name="authenticity_verify_owner_unset">Inhaber: nicht festgelegt</string>
-    <string name="authenticity_verify_title">Echtheitsprüfung</string>
     <string name="authenticity_verify_unreadable">Diese Datei kann nicht gelesen werden</string>
     <string name="backup_data">Sichern</string>
     <string name="backup_data_subtitle">Vorlagen und Signaturen exportieren</string>
@@ -276,12 +272,10 @@
     <string name="dialog_save_config_name_pattern_hint">z. B. {filename}_wm_{seq} — leer lassen für Standard</string>
     <string name="dialog_save_config_output_directory">Speicherordner wählen</string>
     <string name="dialog_save_config_resize">Größe ändern (lange Seite)</string>
-    <string name="dialog_save_config_resize_none">Original</string>
     <string name="dialog_save_export_count_with_failures">%1$d/%2$d · %3$d fehlgeschlagen</string>
     <string name="dialog_save_export_estimate">%1$d×%2$d · ~%3$s</string>
     <string name="dialog_save_output_directory_reset">Auf Standard zurücksetzen</string>
     <string name="dialog_share_as_zip">Als ZIP teilen</string>
-    <string name="dialog_share_images">Bilder teilen</string>
     <string name="draw_signature">Signatur zeichnen</string>
     <string name="dynamic_color_subtitle_supported">Passt sich automatisch an die Hintergrundbild-Palette des Systems an (Material You)</string>
     <string name="dynamic_color_subtitle_unsupported">Erfordert Android 12+ (Gerät verwendet Standard-Material-3-Palette)</string>
@@ -324,7 +318,6 @@
     <string name="launch_card_pick_desc">Fotos mit Text, Symbolen oder Leica EXIF schützen</string>
     <string name="layer_edit_pick_icon">Symbol wählen</string>
     <string name="layer_edit_text_hint">Ebenentext</string>
-    <string name="layer_edit_title">Ebene bearbeiten</string>
     <string name="layer_manager_add">Ebene hinzufügen</string>
     <string name="layer_manager_delete_cd">Ebene löschen</string>
     <string name="layer_manager_empty">Noch keine zusätzliche Ebene — tippe auf \"Ebene hinzufügen\", um ein Logo oder zusätzlichen Text zu überlagern</string>
@@ -377,7 +370,6 @@
     <string name="restore_failed">Wiederherstellung fehlgeschlagen — Datei ist möglicherweise keine gültige Sicherung</string>
     <string name="restore_success">Wiederherstellung erfolgreich abgeschlossen</string>
     <string name="send_email">E-Mail senden</string>
-    <string name="send_telegram">Telegram senden</string>
     <string name="share_app">App teilen</string>
     <string name="share_app_message">Schau dir %1$s an: https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="share_app_subtitle">Teile EasyWatermark mit Freunden</string>
@@ -439,10 +431,9 @@
     <string name="watermark_profile_title">Wasserzeichenprofile</string>
     <string name="you_ll_need_to_close_and_restart_the_app_to_switch_themes">Du musst die App schließen und neu starten, um das Design zu wechseln</string>
     <string name="zipping_images">ZIP-Datei wird erstellt…</string>
-    <string name="about_title_privacy_statement_zh" translatable="false">隐私政策</string>
-    <string name="open_source_desc_color_picker" translatable="false"><![CDATA[ColorPickerView implements getting HSV colors, ARGB values, Hex color codes from any image drawables or your gallery pictures by tapping on the desired color. Supports alpha & brightness slider bar, dialog, and saving & restoring selected data.]]></string>
-    <string name="open_source_desc_about_lib" translatable="false">Glide is a fast and efficient open source media management and image loading framework for Android that wraps media decoding, memory and disk caching, and resource pooling into a simple and easy to use interface.</string>
-    <string name="open_source_desc_material_components" translatable="false">Material Components for Android (MDC-Android) help developers execute Material Design. Developed by a core team of engineers and UX designers at Google, these components enable a reliable development workflow to build beautiful and functional Android apps.Material Components for Android is a drop-in replacement for Android\'s Design Support Library.</string>
-    <string name="email_subject" translatable="false">[EasyWaterMark] Crash info</string>
-    <string name="open_source_desc_compressor" translatable="false">"Compressor is a lightweight and powerful android image compression library. Compressor will allow you to compress large photos into smaller sized photos with very less or negligible loss in quality of the image. "</string>
+    <string name="recipient_code_display">Code: %1$s</string>
+    <string name="version_name_build_format">v%1$s (%2$s)</string>
+    <string name="version_name_copyright_format">v%1$s • %2$s</string>
+    <string name="copyright_rights_reserved_format">%1$s • Alle Rechte vorbehalten</string>
+    <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
 </resources>

@@ -39,6 +39,7 @@
         android:gravity="end|center_vertical"
         android:minWidth="44dp"
         android:paddingStart="4dp"
+        android:paddingEnd="4dp"
         android:textColor="?attr/colorOnSurface"
         android:textSize="13sp"
         android:textStyle="bold"

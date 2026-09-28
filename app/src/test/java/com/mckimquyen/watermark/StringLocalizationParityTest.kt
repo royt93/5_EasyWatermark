@@ -75,6 +75,46 @@ class StringLocalizationParityTest(private val locale: String) {
         }
     }
 
+    @Test
+    fun localeStrings_doNotContainUntranslatableBaseKeys() {
+        // Lint `Untranslatable` (audit 2026-09-28): 6 key base đánh dấu `translatable="false"`
+        // (license text, email subject cố định...) từng bị dịch nhầm sang 12/13 locale. Unit test
+        // parity cũ bỏ qua translatable=false ở CẢ 2 phía nên không bắt được — khoá lại bằng test
+        // riêng: base đánh dấu translatable=false thì KHÔNG locale nào được có key đó.
+        val resDir = resDir()
+        val enFile = File(resDir, "values/strings.xml")
+        val localeFile = File(resDir, "values-$locale/strings.xml")
+
+        val untranslatableKeys = parseKeyNames(enFile, onlyUntranslatable = true)
+        val localeKeys = parseKeyNames(localeFile, onlyUntranslatable = false)
+
+        val leaked = untranslatableKeys intersect localeKeys
+        assertWithMessage(
+            "Locale '$locale' chứa ${leaked.size} key base đánh dấu translatable=\"false\" " +
+                "lẽ ra không nên dịch: $leaked"
+        ).that(leaked).isEmpty()
+    }
+
+    private fun parseXml(file: File) = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        .parse(file).apply { documentElement.normalize() }
+
+    /** Tên (`name`) mọi `<string>`/`<plurals>` trong file; `onlyUntranslatable` lọc còn key
+     * `translatable="false"`. */
+    private fun parseKeyNames(file: File, onlyUntranslatable: Boolean): Set<String> {
+        val doc = parseXml(file)
+        val names = mutableSetOf<String>()
+        for (tag in listOf("string", "plurals")) {
+            val nodes = doc.getElementsByTagName(tag)
+            for (i in 0 until nodes.length) {
+                val node = nodes.item(i)
+                if (node !is Element) continue
+                if (onlyUntranslatable && node.getAttribute("translatable") != "false") continue
+                names += node.getAttribute("name")
+            }
+        }
+        return names
+    }
+
     /**
      * Parse cả `<string>` VÀ `<plurals>` (bug thật phát hiện lúc audit 2026-09-27: `<plurals>`
      * dùng tag khác `<string-array>` nên lần quét trước đó bỏ sót — `gallery_select_photo_count`,
@@ -84,10 +124,7 @@ class StringLocalizationParityTest(private val locale: String) {
      * locale, đủ để so khớp format specifier.
      */
     private fun parseStringsXml(file: File): Map<String, String> {
-        val dbFactory = DocumentBuilderFactory.newInstance()
-        val dBuilder = dbFactory.newDocumentBuilder()
-        val doc = dBuilder.parse(file)
-        doc.documentElement.normalize()
+        val doc = parseXml(file)
 
         val result = mutableMapOf<String, String>()
 
