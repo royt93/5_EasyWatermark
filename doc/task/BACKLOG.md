@@ -11,7 +11,9 @@
 - `sources`: agent nào tìm ra/đồng thuận — độ đồng thuận cao = độ tin cậy cao.
 - **Prompt loop:** mỗi ticket trong `todo/` có section "## Prompt loop" trỏ tới [PROMPT_TEMPLATE.md](PROMPT_TEMPLATE.md) — Definition of Done dùng chung (audit >9/10 + unit/widget/integration test đủ mọi case + smoke test thật trên device đã khoá → mới được move `done/` + push).
 
-## BUGS_TO_FIX (0 todo + 2 deferred + 42 done) — ưu tiên P0 trước
+## BUGS_TO_FIX (1 todo + 2 deferred + 42 done) — ưu tiên P0 trước
+
+> **Self-audit 2026-09-28** (đọc lại diff IDEA-12 vừa merge): [BUG-45](todo/BUG-45-style-history-ghi-nham-config-da-bi-proofing-mode-ghi-de.md) — P2, style history (IDEA-12) ghi nhầm `alpha`/`markMode` đã bị `ProofingMode.overrideConfig()` ghi đè khi Client Proofing Mode bật, học sai "gu" user.
 
 > **Re-audit 2026-09-16** (xem `## Re-audit 2026-09-16` cuối file) tìm thêm 1 finding P0 thật NGOÀI danh sách dưới — **`app/keystore.jks` + `gradle.properties` (chứa password ký release plaintext) đang commit vào git, cả 2 remote GitHub đều PUBLIC** — user đã xác nhận biết và sẽ tự xử lý riêng (không phải task thường, không tạo ticket .md — đây là sự cố bảo mật cần quyết định business, không phải code fix qua `/loop`).
 
