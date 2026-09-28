@@ -1,6 +1,6 @@
 # Danh sách việc cần làm & Cải tiến
 
-> Cập nhật: 2026-09-16. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng.
+> Cập nhật: 2026-09-28. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
 ## Tính năng cần triển khai
 
@@ -16,6 +16,14 @@
 - [x] ~~Dọn 7 file nháp ở gốc repo~~ — ĐÃ XONG (`git rm` build_log.txt, fix_anim.kt, old_launch.kt, sim.kt, sim.py, test_anim.kt, translate.py).
 - [x] ~~**Hardcoded log tag `roy93~`**~~ — ĐÃ XONG: gom 92 chỗ về hằng số chung `LOG_TAG` trong `AppConst.kt` (top-level, package gốc).
 - [x] ~~**Magic numbers**: `MyApplication.catchException` (`1024 * 1024 / 2 / 10`)~~ — ĐÃ XONG: tách hằng `MAX_CRASH_STACK_TRACE_LENGTH` có doc.
+- [x] ~~**ENH-36: 33 `Log.i`/`Log.w` chưa gate `BuildConfig.DEBUG`**~~ — ĐÃ XONG (2026-09-28): sót khỏi
+  đợt gate `Log.d` trước đó (ENH-03) — `AppLog.w` trước đây cũng KHÔNG gate gì. Thêm `AppLog.i`
+  (gate `BuildConfig.DEBUG`, cùng khuôn `AppLog.d`), gate luôn `AppLog.w`; GIỮ `AppLog.e` không gate
+  (lỗi thật cần thấy ở bản release) nhưng scrub URI ảnh user khỏi message (`WaterMarkRepository`).
+  Xoá hẳn (không gate) ~15 log rác tần suất cao trong vòng vẽ/gesture (`onTouch`/`onScale` mỗi sự
+  kiện chạm, `onSizeChanged`, touch handler `MultiSelectRv`, gesture callback `PhotoPreviewItem`,
+  "Hit the cache bitmap!" mỗi lần decode) — gate cũng không giải quyết được áp lực GC dựng string
+  template ở tần suất này. Chi tiết: `doc/task/done/ENH-36-gate-log-i-w-e-con-sot-ngoai-enh-03.md`.
 
 ## Kiểm thử (Test)
 
@@ -73,6 +81,35 @@ commit `c3af54a`:
   - `DetectedPerformanceSeekBarListener` (class chưa dùng ở đâu) nhận `context` ở constructor.
   - `MainActivity` dùng `application as MyApplication` thay vì `MyApplication.instance as MyApplication`.
 
+## Bugfix đợt self-audit 2026-09-27, fix 2026-09-28
+
+Self-audit toàn app (không giới hạn phạm vi cũ) tìm 8 finding mới (BUG-37..43, ENH-36), đã fix hết
++ phát sinh thêm 1 bug thật lúc smoke test (BUG-44). Chi tiết đầy đủ + test + smoke test xem từng
+file `doc/task/done/<ID>-*.md`; tóm tắt ở đây:
+
+- [x] **BUG-37** — MediaStore `OVERWRITE` ghi thất bại để lại ảnh CŨ mắc `IS_PENDING=1` (ảnh mất
+  khỏi gallery vĩnh viễn) — cleanup cũ chỉ xử lý đúng nhánh `insert()` mới (BUG-19), chưa cover
+  nhánh `update()` đè lên row có sẵn (FEAT-19 thêm sau). Fix: `MediaStoreWriteFailureCleanup.decide()`.
+- [x] **BUG-38** — leak 2 bitmap `ComparePreviewBottomSheetFragment` — xem `doc/memory_leak.md` mục 3.1.
+- [x] **BUG-39** — auto-contrast (IDEA-06) chỉ áp preview editor, `BatchExportEngine` (export thật/
+  preview grid/so sánh) bỏ qua hoàn toàn — ảnh xuất ra giữ màu chữ cũ dù preview đã đảo màu. Fix:
+  trích `WaterMarkImageView.resolveAutoContrast()` dùng chung, wire vào cả 3 điểm vẽ.
+- [x] **BUG-40** — tên file xuất không sanitize, token EXIF `{exposure}`/`{fnumber}` chứa `/` làm
+  export lỗi. Fix: `ExportNaming.sanitizeFileName()` dùng chung với `ExportZipHelper`.
+- [x] **BUG-41** — switch "Dynamic Color" ở About không tắt được trên mọi máy Android 12+ (logic
+  `||` khiến năng lực thiết bị luôn thắng lựa chọn user) + `applyToActivitiesIfAvailable` gọi trùng
+  2 lần. Fix: tách `isDeviceCapable()`/`isUserEnabled()` trong `MonetManufacturer`.
+- [x] **BUG-42** — `sizeHasChanged = w != oldh` (lỗi copy-paste 3 custom view: `CircleImageView`/
+  `ColoredImageVIew`/`ProgressImageView`) — view gần vuông (avatar About) bỏ lỡ resize thật.
+- [x] **BUG-43** — EXIF `focalLength`/`exposureTime` parse không guard — `NumberFormatException`
+  lan ra làm decode/export thất bại mơ hồ; mẫu số 0 sinh `"Infinitymm"`/`"1/2147483647s"`.
+- [x] **BUG-44** (phát sinh lúc smoke test BUG-39) — nút export giữ nhầm label/state "Chia sẻ" từ
+  lần export THÀNH CÔNG trước đó trong cùng phiên, không trigger export mới cho ảnh vừa chọn. Root
+  cause: `WorkManager` replay lại `WorkInfo` SUCCEEDED cũ mỗi lần `reattachExportWorkIfRunning()`
+  gọi lại, ghi đè `saveResult` vừa được `resetJobStatus()` xoá. Fix: guard idempotent
+  `lastHandledFinishedWorkId`.
+
 ## Tham khảo
 - Chi tiết các leak đã fix: xem `doc/memory_leak.md`.
+- Hàng đợi ticket kỹ thuật đầy đủ (đang làm + tồn đọng): xem `doc/task/BACKLOG.md`.
 - Trạng thái migrate quảng cáo: xem `doc/AD.MD`.

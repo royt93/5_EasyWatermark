@@ -74,6 +74,35 @@ Toàn bộ Memory Leaks và rủi ro OOM lớn nhất chặn đứng độ ổn 
 
 ---
 
+## 3. Leak Mới Phát Hiện (Self-Audit 2026-09-27, Fix 2026-09-28)
+
+### 3.1 Rò Rỉ 2 Bitmap trong `ComparePreviewBottomSheetFragment` (BUG-38)
+- **Vấn đề:**
+  `BatchExportEngine.generateCompareBitmaps()` trả `CompareBitmaps(original, watermarked)` — 2
+  bitmap ĐỘC LẬP (copy riêng, không chia sẻ buffer với `BitmapCache`) nên **caller sở hữu và phải
+  tự recycle**. `ComparePreviewBottomSheetFragment` set cả 2 vào `ivOriginal`/`ivWatermarked` nhưng
+  không có `onDestroyView()`, không `recycle()` bất kỳ bitmap nào. `viewLifecycleOwner.lifecycleScope.launch`
+  cũng không giữ `Job` để cancel và không kiểm tra `view == null` sau khi `generateCompareBitmaps()`
+  trả về.
+- **Hậu quả:**
+  Mỗi lần mở sheet "So sánh trước/sau" cho 1 ảnh trong grid preview batch = 2 bitmap cỡ
+  `PREVIEW_MAX_SIZE` (ARGB_8888) mồ côi chờ GC; mở liên tiếp nhiều ảnh trong batch lớn cộng dồn
+  nhanh. Đóng sheet TRƯỚC khi render xong (huỷ giữa chừng) làm mồ côi hoàn toàn cả 2 bitmap vừa
+  tạo, không có đường nào recycle.
+- **Khắc phục:**
+  Copy nguyên pattern `SurvivabilityBottomSheetFragment` (cùng dạng "ViewModel trả bitmap, fragment
+  sở hữu" đã làm đúng từ trước): giữ `renderJob: Job?` + 2 field bitmap
+  (`originalBitmap`/`watermarkedBitmap`), bọc phần đã cấp phát bitmap trong
+  `withContext(NonCancellable)`, recycle ngay bản mồ côi nếu `!isActive || view == null`,
+  `onDestroyView()` gỡ drawable khỏi 2 `ImageView` rồi recycle cả 2 nếu chưa `isRecycled`.
+- **Trạng thái:** ✅ **ĐÃ FIX** (2026-09-28). 3 widget test mới (`ComparePreviewBottomSheetFragmentRoboTest`)
+  verify: đóng sau khi render xong → cả 2 bitmap `isRecycled=true`; đóng giữa chừng → không crash,
+  field không set giá trị mồ côi; mở/đóng liên tục 3 lần không crash. Smoke test thật trên TECNO
+  KJ7: mở/đóng sheet so sánh 5 lần liên tục, logcat sạch, không "trying to use a recycled bitmap".
+  Chi tiết: `doc/task/done/BUG-38-comparepreview-bottomsheet-khong-recycle-2-bitmap.md`.
+
+---
+
 ## Báo Cáo Audit Bổ Sung (Final Check - 5 Round Spec)
 
 **1. Vòng đời Ad Banner (`AboutActivity.kt`)**
