@@ -37,6 +37,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.badge.ExperimentalBadgeUtils
@@ -1074,7 +1075,6 @@ class MainActivity : BaseActivity() {
     }
 
     /** Badge VIP vàng trên icon crown khi gói VIP còn hiệu lực; tự gỡ khi hết VIP. */
-    @OptIn(ExperimentalBadgeUtils::class)
     private fun refreshVipBadge() {
         if (!this::launchView.isInitialized) return
         val toolbar = launchView.toolbar
@@ -1089,11 +1089,31 @@ class MainActivity : BaseActivity() {
                     isVisible = true
                 }
                 vipBadge = badge
-                runCatching { BadgeUtils.attachBadgeDrawable(badge, toolbar, R.id.actionVip) }
+                attachVipBadge(badge, toolbar)
             } else if (!active && existing != null) {
-                runCatching { BadgeUtils.detachBadgeDrawable(existing, toolbar, R.id.actionVip) }
+                detachVipBadge(existing, toolbar)
                 vipBadge = null
             }
+        }
+    }
+
+    // `@OptIn` đủ cho Kotlin compiler, nhưng lint (AGP 8.7.2) báo UnsafeOptInUsageError giả với
+    // compileSdk 37 (annotations DB của SDK này lint chưa đọc đúng) — thêm @SuppressLint để lint sạch.
+    @OptIn(ExperimentalBadgeUtils::class)
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun attachVipBadge(badge: BadgeDrawable, toolbar: MaterialToolbar) {
+        try {
+            BadgeUtils.attachBadgeDrawable(badge, toolbar, R.id.actionVip)
+        } catch (ignored: Exception) {
+        }
+    }
+
+    @OptIn(ExperimentalBadgeUtils::class)
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun detachVipBadge(badge: BadgeDrawable, toolbar: MaterialToolbar) {
+        try {
+            BadgeUtils.detachBadgeDrawable(badge, toolbar, R.id.actionVip)
+        } catch (ignored: Exception) {
         }
     }
 
