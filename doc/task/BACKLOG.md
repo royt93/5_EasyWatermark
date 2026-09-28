@@ -317,3 +317,15 @@ Phạm vi CHỦ ĐỘNG loại trừ theo yêu cầu (không audit, không đề
 - `baseline-prof.txt` còn 171 dòng package cũ `me.rosuh.easywatermark`, 0 dòng `mckimquyen` — profile chết hoàn toàn, nhưng file KHÔNG được wire vào `app/build.gradle.kts` nên không tác động runtime; ghi nhận, không ticket.
 
 **Tổng dòng audit qua**: ~27.100 dòng Kotlin (`app/src/main` 26.9k + `cmonet/src/main` ~200), cộng `dlg_save_file.xml`/`f_base_pb.xml`/`proguard-rules.pro`/`coroutines.pro` và 12 file ticket `done/` liên quan để loại trùng.
+
+## Fix i18n: 272+ key dịch thiếu 10 locale + `<plurals>` bỏ sót 2026-09-27/28
+
+Phát hiện ngoài luồng self-audit trên: `StringLocalizationParityTest` cũ chỉ so `values-vi` với base, không quét 12 locale còn lại → 10/13 locale thiếu 272/422 key (riêng `ru` thiếu 353/422), và cả 13 locale (trừ 1) thiếu hẳn 3 `<plurals>` (`gallery_select_photo_count`, `gallery_selected_count`, `batch_caption_subtitle` — dùng tag XML khác `<string>` nên lọt qua cả test cũ lẫn agent audit ban đầu, chỉ Android Lint `MissingTranslation` bắt được).
+
+Fix: bổ sung đủ key + 3 `<plurals>` cho `values-{de-rDE,es,fr,it,ja,nb-rNO,nn,pt,pt-rBR,ru,zh-rCN,zh-rTW}`; `StringLocalizationParityTest` parameterize quét động MỌI `values-xx` (không hardcode `vi`) + parse thêm `<plurals>`; xoá TODO firebase/share app cũ đã lỗi thời trong `MyApplication.kt`.
+
+Test 3 tầng: `StringLocalizationParityTest` (unit, 13 locale × parity key + format specifier PASS), `GalleryFragmentPluralsLocalizationRoboTest` + `GalleryPluralsAllLocalesRoboTest` (Robolectric, riêng `ru` qua Fragment thật + cả 13 locale qua resource-resolve, PASS), `LocaleStringResolutionIntegrationTest` (androidTest, verify trên APK cài thật không chỉ source/shadow, 2/2 PASS trên TECNO_KJ7). `ktlintCheck` PASS. Full-suite `testDebugUnitTest` 914 test — 1 fail `MainViewModelSaveImageImmutabilityRoboTest` khi chạy chung (flaky cross-test JVM fork đã ghi ở `doc/todo.md`), PASS khi chạy lại riêng lẻ, không liên quan đợt fix này.
+
+Smoke test thật trên TECNO_KJ7: set per-app locale `ru-RU` (Android 14 `cmd locale set-app-locales`, không đụng system locale máy) → chọn 3 ảnh ở Gallery, FAB hiện "Выбрать 3 фото" + chip "3 выбрано" đúng tiếng Nga, không rơi về "Select 3 photos"/"3 selected" như bug gốc. Logcat sạch. Đã reset locale app về mặc định sau test.
+
+Điểm tự chấm 9.5/10 (trừ nhẹ: chất lượng dịch 10 ngôn ngữ không phải tiếng Việt/Anh chưa được người bản ngữ review, chỉ đảm bảo đúng cấu trúc/format specifier/không fallback; phát hiện thêm 1 dead string `aa`="Aa!" tồn tại từ trước ở mọi locale kể cả base, không dùng ở đâu trong code — ghi nhận, không thuộc phạm vi fix này nên không sửa).
