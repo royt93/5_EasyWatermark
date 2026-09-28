@@ -418,38 +418,23 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         if (!shouldApplyAutoContrast(newConfig)) return newConfig
         val bitmap = transformedMainBitmap ?: mainImageBitmapValue?.bitmap
         if (bitmap == null || bitmap.isRecycled) return newConfig
-        return withContext(Dispatchers.Default) {
-            val scaleToBitmap = if (drawableBounds.width() > 0f) {
-                bitmap.width / drawableBounds.width()
-            } else {
-                1f
-            }
-            val sampleSizePx = (newConfig.textSize * scaleToBitmap * AUTO_CONTRAST_SAMPLE_SIZE_MULTIPLIER)
-                .toInt()
-                .coerceAtLeast(1)
-            val region = computeAutoContrastSampleRegion(
-                tileMode = curImageInfo.obtainTileMode(),
-                offsetX = curImageInfo.offsetX,
-                offsetY = curImageInfo.offsetY,
-                sampleSizePx = sampleSizePx,
-                bitmapWidth = bitmap.width,
-                bitmapHeight = bitmap.height
-            )
-            if (!region.isValid) return@withContext newConfig
-            val dominantColor = try {
-                Palette.Builder(bitmap)
-                    .setRegion(region.left, region.top, region.right, region.bottom)
-                    .generate()
-                    .getDominantColor(Color.GRAY)
-            } catch (e: IllegalArgumentException) {
-                AppLog.d(LOG_TAG, "[WMIV] applyAutoContrastIfEnabled: invalid region $region, skip")
-                return@withContext newConfig
-            }
-            newConfig.copy(
-                textColor = TextEffectRenderer.contrastingColor(dominantColor, ALPHA_OPAQUE),
-                alpha = readableAlpha(newConfig.alpha)
-            )
+        // View onDraw dùng textSize RAW (isScale=true khi applyConfig) nhưng bitmap lấy mẫu màu
+        // (ảnh gốc đã decode) thường có độ phân giải KHÁC hẳn kích thước hiển thị trên màn hình
+        // — quy đổi textSize sang không gian pixel của CHÍNH bitmap đang lấy mẫu trước khi giao
+        // cho [resolveAutoContrast] (dùng chung với BUG-39, xem doc ở đó).
+        val scaleToBitmap = if (drawableBounds.width() > 0f) {
+            bitmap.width / drawableBounds.width()
+        } else {
+            1f
         }
+        return resolveAutoContrast(
+            bitmap = bitmap,
+            tileMode = curImageInfo.obtainTileMode(),
+            offsetX = curImageInfo.offsetX,
+            offsetY = curImageInfo.offsetY,
+            textSizeInBitmapPx = newConfig.textSize * scaleToBitmap,
+            config = newConfig
+        )
     }
 
     private val textPaint: TextPaint by lazy {
@@ -1016,6 +1001,56 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
             val right = (left + sampleSizePx).coerceAtMost(bitmapWidth)
             val bottom = (top + sampleSizePx).coerceAtMost(bitmapHeight)
             return SampleRegion(left, top, right, bottom)
+        }
+
+        /**
+         * BUG-39: logic auto-contrast dùng CHUNG cho preview editor ([applyAutoContrastIfEnabled])
+         * lẫn `BatchExportEngine` (3 nơi vẽ layer chính: export thật/preview grid/so sánh trước-
+         * sau) — trước đây CHỈ preview editor gọi, khiến ảnh xuất ra giữ màu/alpha cũ dù preview đã
+         * đảo màu. [bitmap] phải là ảnh ĐÃ áp mọi biến đổi trước đó (crop/rotate/redaction) và cùng
+         * hệ toạ độ với [offsetX]/[offsetY] (0..1, gốc theo bitmap này). [textSizeInBitmapPx] là
+         * textSize THỰC TẾ (đã quy đổi tỉ lệ nếu cần) trong không gian pixel của CHÍNH [bitmap] —
+         * caller tự tính vì mỗi nơi gọi quy đổi khác nhau (xem [applyAutoContrastIfEnabled] quy đổi
+         * qua View, `BatchExportEngine.generateImage()` quy đổi qua `imageInfo.scaleX`, 2 hàm
+         * preview/compare dùng thẳng vì canvas THÌ CHÍNH LÀ bitmap đang lấy mẫu — không cần quy đổi).
+         * Trả [config] nguyên bản nếu tắt auto-contrast/không phải layer Text/vùng lấy mẫu không hợp lệ.
+         */
+        suspend fun resolveAutoContrast(
+            bitmap: Bitmap,
+            tileMode: Shader.TileMode,
+            offsetX: Float,
+            offsetY: Float,
+            textSizeInBitmapPx: Float,
+            config: WaterMark
+        ): WaterMark {
+            if (!shouldApplyAutoContrast(config) || bitmap.isRecycled) return config
+            return withContext(Dispatchers.Default) {
+                val sampleSizePx = (textSizeInBitmapPx * AUTO_CONTRAST_SAMPLE_SIZE_MULTIPLIER)
+                    .toInt()
+                    .coerceAtLeast(1)
+                val region = computeAutoContrastSampleRegion(
+                    tileMode = tileMode,
+                    offsetX = offsetX,
+                    offsetY = offsetY,
+                    sampleSizePx = sampleSizePx,
+                    bitmapWidth = bitmap.width,
+                    bitmapHeight = bitmap.height
+                )
+                if (!region.isValid) return@withContext config
+                val dominantColor = try {
+                    Palette.Builder(bitmap)
+                        .setRegion(region.left, region.top, region.right, region.bottom)
+                        .generate()
+                        .getDominantColor(Color.GRAY)
+                } catch (e: IllegalArgumentException) {
+                    AppLog.d(LOG_TAG, "[WMIV] resolveAutoContrast: invalid region $region, skip")
+                    return@withContext config
+                }
+                config.copy(
+                    textColor = TextEffectRenderer.contrastingColor(dominantColor, ALPHA_OPAQUE),
+                    alpha = readableAlpha(config.alpha)
+                )
+            }
         }
 
         /**

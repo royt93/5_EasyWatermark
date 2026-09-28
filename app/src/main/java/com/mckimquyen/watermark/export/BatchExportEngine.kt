@@ -374,7 +374,20 @@ class BatchExportEngine @Inject constructor(
                     scaleX = 1 / matrixValues[Matrix.MSCALE_X],
                     scaleY = 1 / matrixValues[Matrix.MSCALE_X]
                 )
-                val bitmapPaint = TextPaint().applyConfig(imageInfo, tmpConfig, isScale = false)
+                // BUG-39: preview editor đã đảo màu/alpha theo auto-contrast (IDEA-06) từ trước —
+                // export thật phải áp CÙNG kết quả lên chính textPaint dùng để vẽ, nếu không ảnh
+                // xuất ra giữ màu cũ dù preview đã đổi. isScale=false ở đây nên textSize hiệu dụng
+                // trong không gian pixel của mutableBitmap = tmpConfig.textSize * imageInfo.scaleX
+                // (đúng công thức PainKtx.applyConfig dùng ngay bên dưới).
+                val autoContrastConfig = WaterMarkImageView.resolveAutoContrast(
+                    bitmap = mutableBitmap,
+                    tileMode = imageInfo.obtainTileMode(),
+                    offsetX = imageInfo.offsetX,
+                    offsetY = imageInfo.offsetY,
+                    textSizeInBitmapPx = tmpConfig.textSize * imageInfo.scaleX,
+                    config = tmpConfig
+                )
+                val bitmapPaint = TextPaint().applyConfig(imageInfo, autoContrastConfig, isScale = false)
                 val layoutPaint = Paint()
                 // Thiếu guard skipTextWatermark bên dưới từng là bug: layoutPaint (Paint() mặc
                 // định màu đen, alpha 255) vẫn bị canvas.drawRect() tô kín đè lên ảnh vì shader
@@ -970,13 +983,23 @@ class BatchExportEngine @Inject constructor(
                 inSample = bitmapValue.inSampleSize,
                 exifModel = bitmapValue.exifModel
             )
-            val textPaint = TextPaint().applyConfig(previewInfo, config)
+            // BUG-39: preview grid phải khớp export thật — canvas ở đây CHÍNH LÀ mutableBitmap
+            // đang lấy mẫu (isScale=true, không quy đổi tỉ lệ như generateImage()).
+            val autoContrastConfig = WaterMarkImageView.resolveAutoContrast(
+                bitmap = mutableBitmap,
+                tileMode = previewInfo.obtainTileMode(),
+                offsetX = previewInfo.offsetX,
+                offsetY = previewInfo.offsetY,
+                textSizeInBitmapPx = config.textSize,
+                config = config
+            )
+            val textPaint = TextPaint().applyConfig(previewInfo, autoContrastConfig)
             val shader = when (config.markMode) {
                 WaterMarkRepository.MarkMode.Text -> {
                     val resolvedText = exportNaming.resolveTextTokens(baseText, previewInfo, contentResolver, index)
                     WaterMarkImageView.buildTextBitmapShader(
                         imageInfo = previewInfo,
-                        config = config.copy(text = resolvedText),
+                        config = autoContrastConfig.copy(text = resolvedText),
                         textPaint = textPaint,
                         coroutineContext = Dispatchers.IO
                     )
@@ -1181,13 +1204,23 @@ class BatchExportEngine @Inject constructor(
                 inSample = bitmapValue.inSampleSize,
                 exifModel = bitmapValue.exifModel
             )
-            val textPaint = TextPaint().applyConfig(previewInfo, config)
+            // BUG-39: so sánh trước/sau phải khớp export thật — sample TRÊN watermarkedCopy lúc
+            // này còn nguyên ảnh gốc (watermark chưa vẽ), cùng hệ toạ độ offsetX/offsetY.
+            val autoContrastConfig = WaterMarkImageView.resolveAutoContrast(
+                bitmap = watermarkedCopy,
+                tileMode = previewInfo.obtainTileMode(),
+                offsetX = previewInfo.offsetX,
+                offsetY = previewInfo.offsetY,
+                textSizeInBitmapPx = config.textSize,
+                config = config
+            )
+            val textPaint = TextPaint().applyConfig(previewInfo, autoContrastConfig)
             val shader = when (config.markMode) {
                 WaterMarkRepository.MarkMode.Text -> {
                     val resolvedText = exportNaming.resolveTextTokens(baseText, previewInfo, contentResolver, index)
                     WaterMarkImageView.buildTextBitmapShader(
                         imageInfo = previewInfo,
-                        config = config.copy(text = resolvedText),
+                        config = autoContrastConfig.copy(text = resolvedText),
                         textPaint = textPaint,
                         coroutineContext = Dispatchers.IO
                     )
