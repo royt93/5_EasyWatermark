@@ -130,12 +130,23 @@ class MainViewModel @Inject constructor(
     private val _styleSuggestion = MutableStateFlow<WatermarkStyleHistoryEntity?>(null)
     val styleSuggestionFlow: StateFlow<WatermarkStyleHistoryEntity?> = _styleSuggestion.asStateFlow()
 
+    /** Code review 2026-09-28: 2 batch nạp liên tiếp nhanh có thể chạy chồng — huỷ job trước đó
+     * tránh kết quả TÍNH SAU của batch CŨ ghi đè kết quả đúng của batch MỚI (race). */
+    private var styleSuggestionJob: Job? = null
+
     private fun refreshStyleSuggestion() {
-        launch {
+        styleSuggestionJob?.cancel()
+        styleSuggestionJob = launch {
             val suggestion = styleCoach.suggest(styleHistoryRepo.recent())
             _styleSuggestion.value = suggestion?.let {
-                val current = WatermarkStyleHistoryRepository.currentSignature(waterMarkRepo.waterMark.first())
-                it.takeIf { s -> styleCoach.isDifferentFromCurrent(s, current) }
+                val currentMark = waterMarkRepo.waterMark.first()
+                val current = WatermarkStyleHistoryRepository.currentSignature(currentMark)
+                // Code review 2026-09-28: KHÔNG gợi ý đổi sang markMode Image nếu iconUri hiện tại
+                // rỗng (chưa từng chọn icon) — áp sẽ đổi mode nhưng giữ nguyên iconUri rỗng (đúng AC
+                // "giữ nguyên icon hiện tại"), watermark render ra trống, lỗi im lặng khó phát hiện.
+                val wouldBreakIconlessImageMode = it.markModeValue == WaterMarkRepository.MarkMode.Image.value &&
+                    currentMark.iconUri.toString().isBlank()
+                it.takeIf { s -> styleCoach.isDifferentFromCurrent(s, current) && !wouldBreakIconlessImageMode }
             }
         }
     }

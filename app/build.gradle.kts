@@ -208,4 +208,7 @@ dependencies {
     androidTestImplementation(libs.test.truth)
     androidTestImplementation(libs.test.coroutines)
     androidTestImplementation(libs.test.room)
+    // IDEA-12 BUG-45 follow-up: cần TestListenableWorkerBuilder dựng BatchExportWorker thật trên
+    // device (decode bitmap thật, khác Robolectric) — cùng artifact đã dùng ở testImplementation.
+    androidTestImplementation(libs.test.work)
 }

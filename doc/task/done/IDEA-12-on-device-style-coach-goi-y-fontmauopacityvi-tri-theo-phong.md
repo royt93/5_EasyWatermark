@@ -112,3 +112,41 @@ Gọi từ `MainViewModel` khi load batch mới, so với `WaterMark` hiện t�
 - Bấm "Áp dụng" → màu watermark đổi đúng sang màu đã seed (vàng→xanh lá), text nội dung giữ nguyên, banner tự ẩn. Logcat sạch.
 - Dọn sạch: `pm clear` app sau khi test xong — không để lại data giả trên máy user.
 - Nhánh "Bỏ qua" không lặp lại thao tác tay trên device (đã cover kỹ ở `MainViewModelStyleSuggestionRoboTest.dismissStyleSuggestion_...`), chỉ verify qua Robolectric — ghi nhận minh bạch, không tự nhận đã click tay case này.
+
+## Audit vòng 2 trước khi push (2026-09-28, `/code-review --level high`)
+
+User yêu cầu audit lại trước khi push. Code review (forked agent, effort high) tìm 6 finding trên diff
+IDEA-12; xác minh + xử lý từng cái:
+
+1. **BUG-45** (ghi style history bằng config đã bị Proofing Mode ghi đè) — trùng khớp finding tự tìm
+   trước đó, đã fix (xem `done/BUG-45-*.md`).
+2. **`styleHistoryRepo.record()` lỗi làm cả batch báo failure** — CONFIRMED, fix: bọc `runCatching`
+   (cùng chỗ với fix BUG-45).
+3. **Banner "trôi" sang màn Launch khi thoát Editor** — CONFIRMED thật (đọc code: `cardStyleSuggestion`
+   cố ý ngoài `editorViews` nên không tự ẩn khi `toLaunchMode()`, `layoutLaunch()` không bao giờ
+   `layout()` lại nó → giữ toạ độ Editor cũ). Fix: ẩn tay `cardStyleSuggestion` trong nhánh
+   `ViewMode.LaunchMode` của `transformLayout()`. Test mới `LaunchViewRoboTest.toLaunchMode_hidesStyleSuggestionBanner_...`
+   + **smoke test thật trên TECNO_KJ7**: seed 10 dòng lịch sử → mở batch (banner hiện) → back → dialog
+   "Huỷ bỏ mọi thay đổi?" → Xác nhận → màn Launch render sạch, KHÔNG còn banner trôi nổi (trước fix sẽ
+   đè lên logo/action grid).
+4. **Áp gợi ý Image mode trong khi iconUri hiện tại rỗng → watermark trống** — CONFIRMED plausible,
+   fix: `refreshStyleSuggestion()` không hiện banner nếu suggestion là Image mode mà iconUri hiện tại
+   rỗng. Test mới `MainViewModelStyleSuggestionRoboTest.updateImageList_majoritySuggestsImageMode_currentIconUriBlank_noSuggestion`.
+5. **`record()` không transactional (insert+prune 2 lệnh rời)** — CONFIRMED lý thuyết (rủi ro thấp, tự
+   hồi phục ở lần ghi kế tiếp), fix rẻ: gộp thành `WatermarkStyleHistoryDao.recordAndPrune()` (default
+   method `@Transaction`). Không cần test riêng — test hiện có (repo/DAO) đã đi qua đúng đường mới vì
+   default method gọi lại đúng `insert()`/`pruneKeepLatest()` đã override trong fake.
+6. **Race 2 batch load liên tiếp ghi đè kết quả** — CONFIRMED lý thuyết, fix: huỷ `styleSuggestionJob`
+   cũ trước khi `launch` job mới (`Job?.cancel()` chuẩn Kotlin). **Không viết test riêng** — cố tình:
+   test cancellation-timing chính xác cần `delay()` + mock chậm, rủi ro flaky cao hơn giá trị chứng
+   minh 1 pattern coroutine đã chuẩn/phổ biến (ghi rõ ở đây thay vì fake 1 test không đáng tin).
+
+**Bonus finding ngoài dự kiến**: viết androidTest thật cho case 1/2 (`BatchExportWorkerStyleHistoryIntegrationTest`,
+cần thêm `androidTestImplementation(libs.test.work)`) lộ ra 1 bug THẬT KHÁC không liên quan —
+`calculateInSampleSize` treo/`ArithmeticException` khi `reqWidth`/`reqHeight`=0 — ghi `BUG-46`, KHÔNG
+fix (ngoài scope, không liên quan IDEA-12).
+
+**Điểm tự audit vòng 2: 9.5/10** — 4/6 finding CONFIRMED thật và đã fix có test/smoke test; 2/6 đánh
+giá lý thuyết/rủi ro thấp, fix rẻ không cần test riêng biện minh rõ ràng. `./gradlew testDebugUnitTest`
+(toàn bộ) + `ktlintCheck` PASS. 7 androidTest liên quan (migration + DAO + BatchExportWorker style
+history, cả 2 case proofingMode) PASS thật trên TECNO_KJ7.

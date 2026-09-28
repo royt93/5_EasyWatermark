@@ -127,6 +127,25 @@ class MainViewModelStyleSuggestionRoboTest {
     }
 
     @Test
+    fun updateImageList_majoritySuggestsImageMode_currentIconUriBlank_noSuggestion() = runBlocking {
+        // Code review 2026-09-28: lịch sử toàn Image mode nhưng iconUri HIỆN TẠI rỗng (chưa từng
+        // chọn icon, đúng mặc định WaterMarkRepository) — áp gợi ý sẽ đổi markMode sang Image mà
+        // giữ nguyên iconUri rỗng (đúng AC "giữ nguyên icon hiện tại") → watermark render trống,
+        // lỗi im lặng. KHÔNG được hiện banner trong case này.
+        assertThat(waterMarkRepo.waterMark.first().iconUri.toString()).isEmpty()
+        val imageModeMajority = majoritySignature().copy(markModeValue = WaterMarkRepository.MarkMode.Image.value)
+        seedHistory(imageModeMajority, majorityCount = 6, total = 10)
+
+        viewModel.updateImageList(listOf(Uri.parse("content://media/1.jpg")))
+        shadowOf(Looper.getMainLooper()).idle()
+        Thread.sleep(80)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(viewModel.styleSuggestionFlow.value).isNull()
+        Unit
+    }
+
+    @Test
     fun updateImageList_majoritySameAsCurrentConfig_noSuggestion() = runBlocking {
         val majority = majoritySignature()
         // Áp majority thành cấu hình ĐANG DÙNG trước — suggestion trùng hiện tại thì không nên hiện.

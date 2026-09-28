@@ -166,8 +166,16 @@ class BatchExportWorker @AssistedInject constructor(
             settings = settings
         )
         // IDEA-12: ít nhất 1 ảnh export thành công mới tính là 1 lần dùng "gu" style này.
-        if (outputUris.isNotEmpty()) {
-            styleHistoryRepo.record(settings.config)
+        // BUG-45 (code review 2026-09-28): KHÔNG ghi khi proofingMode — settings.config lúc này đã
+        // bị ProofingMode.overrideConfig() ghi đè alpha/markMode (watermark tạm cho khách xem
+        // trước), không phải "gu" thật user dùng cho ảnh xuất thật; ghi nhầm sẽ làm Style Coach học
+        // sai và gợi ý áp nhầm cấu hình proofing lên cấu hình thật.
+        // Bọc runCatching (code review 2026-09-28): DB insert/prune lỗi (disk full, DB lock...)
+        // không được làm cả batch báo failure — ảnh đã export/lưu thành công thật rồi, ghi lịch sử
+        // "gu" chỉ là phụ, không đáng đánh đổi trải nghiệm export chính.
+        if (outputUris.isNotEmpty() && !settings.proofingMode) {
+            runCatching { styleHistoryRepo.record(settings.config) }
+                .onFailure { it.printStackTrace() }
         }
     }
 

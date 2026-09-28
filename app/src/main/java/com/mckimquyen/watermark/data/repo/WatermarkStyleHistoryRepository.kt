@@ -15,10 +15,9 @@ class WatermarkStyleHistoryRepository @Inject constructor(
     private val dao: WatermarkStyleHistoryDao
 ) {
 
-    /** Ghi lại + prune giữ tối đa [MAX_ROWS] dòng (đủ cho [WatermarkStyleCoach.MIN_SAMPLES], tránh DB phình vô hạn). */
+    /** Ghi lại + prune giữ tối đa [MAX_ROWS] dòng (đủ cho [WatermarkStyleCoach.MIN_SAMPLES], tránh DB phình vô hạn) — 1 transaction, xem doc ở [WatermarkStyleHistoryDao.recordAndPrune]. */
     suspend fun record(mark: WaterMark) {
-        dao.insert(toEntity(mark))
-        dao.pruneKeepLatest(MAX_ROWS)
+        dao.recordAndPrune(toEntity(mark), MAX_ROWS)
     }
 
     suspend fun recent(n: Int = MAX_ROWS): List<WatermarkStyleHistoryEntity> = dao.recent(n)

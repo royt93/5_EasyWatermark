@@ -698,6 +698,11 @@ class LaunchView : CustomViewGroup {
                 editorViews.forEach {
                     it.isVisible = false
                 }
+                // Code review 2026-09-28: cardStyleSuggestion CỐ Ý nằm ngoài editorViews (xem doc ở
+                // field) nên không tự ẩn theo vòng lặp trên — không ẩn tay ở đây thì banner còn
+                // isVisible=true từ lần Editor trước sẽ "trôi" sang màn Launch (layoutLaunch() không
+                // bao giờ gọi layout() cho nó, giữ nguyên toạ độ cũ của layoutEditor()).
+                cardStyleSuggestion.isVisible = false
                 launchViews.forEach {
                     it.alpha = 1f
                     it.translationY = 0f

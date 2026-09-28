@@ -2,6 +2,7 @@ package com.mckimquyen.watermark.ui.widget
 
 import android.content.Context
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.material.tabs.TabLayout
 import com.google.common.truth.Truth.assertThat
@@ -100,6 +101,19 @@ class LaunchViewRoboTest {
         // TabLayout sits above navigation bar
         val usableBottom = 2400 - 168
         assertThat(launchView.tabLayout.bottom).isAtMost(usableBottom)
+    }
+
+    @Test
+    fun toLaunchMode_hidesStyleSuggestionBanner_evenIfLeftVisibleFromEditor() {
+        // Code review 2026-09-28: cardStyleSuggestion CỐ Ý ngoài editorViews (hiện/ẩn do
+        // MainActivity điều khiển qua styleSuggestionFlow) — nếu không tự ẩn khi rời Editor, banner
+        // "trôi" sang màn Launch ở toạ độ cũ (layoutLaunch() không bao giờ layout() cho nó).
+        launchView.toEditorMode()
+        launchView.cardStyleSuggestion.isVisible = true // mô phỏng banner đang hiện trong Editor
+
+        launchView.toLaunchMode()
+
+        assertThat(launchView.cardStyleSuggestion.isVisible).isFalse()
     }
 
     @Test
