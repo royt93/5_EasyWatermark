@@ -3,71 +3,116 @@ package com.mckimquyen.watermark
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import org.w3c.dom.Element
 import java.io.File
 import java.util.regex.Pattern
 import javax.xml.parsers.DocumentBuilderFactory
 
 /**
- * Unit test verifying 100% 1-to-1 parity between base strings.xml and Vietnamese values-vi/strings.xml.
- * Ensures no missing translations and matching format specifiers (%s, %d, %1$s, etc.).
+ * Unit test verifying 100% 1-to-1 parity between base `values/strings.xml` và MỌI locale
+ * `values-xx/strings.xml` hiện có trong repo (2026-09-27: mở rộng từ chỉ `vi` sang tất cả 13 locale
+ * sau đợt audit phát hiện 10 locale thiếu 272/422 key, `ru` thiếu 353/422 key — xem
+ * `doc/task/BACKLOG.md` mục "Self-audit 2026-09-27").
+ *
+ * Danh sách locale lấy ĐỘNG bằng cách quét thư mục `values-*` có chứa `strings.xml` — tự động
+ * cover locale mới thêm sau này mà không cần sửa test.
  */
-class StringLocalizationParityTest {
+@RunWith(Parameterized::class)
+class StringLocalizationParityTest(private val locale: String) {
+
+    companion object {
+        private fun resDir(): File {
+            val rootDir = File("").absoluteFile
+            return if (File(rootDir, "src/main/res").exists()) {
+                File(rootDir, "src/main/res")
+            } else {
+                File(rootDir, "app/src/main/res")
+            }
+        }
+
+        @JvmStatic
+        @Parameterized.Parameters(name = "locale={0}")
+        fun locales(): List<String> = resDir().listFiles { f ->
+            f.isDirectory && f.name.startsWith("values-") && File(f, "strings.xml").exists() &&
+                // values-night*/values-v23../values-v29../values-v30../values-v31../values-v35 là
+                // resource qualifier theme/API, KHÔNG phải locale dịch — loại khỏi phạm vi test này.
+                !f.name.startsWith("values-night") && !f.name.matches(Regex("values-v\\d+"))
+        }?.map { it.name.removePrefix("values-") }?.sorted().orEmpty()
+    }
 
     private val formatSpecifierRegex = Pattern.compile("%(\\d+\\\$)?[-#+ 0,(]*\\d*(\\.\\d+)?[a-zA-Z%]")
 
     @Test
-    fun allEnglishStrings_existInVietnameseWithMatchingFormatSpecifiers() {
-        val rootDir = File("").absoluteFile
-        val resDir = if (File(rootDir, "src/main/res").exists()) {
-            File(rootDir, "src/main/res")
-        } else {
-            File(rootDir, "app/src/main/res")
-        }
-
+    fun allEnglishStrings_existInLocaleWithMatchingFormatSpecifiers() {
+        val resDir = resDir()
         val enFile = File(resDir, "values/strings.xml")
-        val viFile = File(resDir, "values-vi/strings.xml")
+        val localeFile = File(resDir, "values-$locale/strings.xml")
 
         assertThat(enFile.exists()).isTrue()
-        assertThat(viFile.exists()).isTrue()
+        assertThat(localeFile.exists()).isTrue()
 
         val enStrings = parseStringsXml(enFile)
-        val viStrings = parseStringsXml(viFile)
+        val localeStrings = parseStringsXml(localeFile)
 
-        // 1. Key set equality (ignoring non-translatable strings)
-        val missingInVi = enStrings.keys - viStrings.keys
-        assertThat(missingInVi).isEmpty()
+        // 1. Key set: locale phải có ÍT NHẤT đủ key của baseline (thiếu key = fallback English im
+        // lặng, đúng lỗi đã audit ra ở 2026-09-27).
+        val missingInLocale = enStrings.keys - localeStrings.keys
+        assertWithMessage("Locale '$locale' thiếu ${missingInLocale.size} key so với baseline")
+            .that(missingInLocale)
+            .isEmpty()
 
-        // 2. Format specifier equality
+        // 2. Format specifier equality — sai thứ tự/loại placeholder crash runtime
+        // (IllegalFormatException) chứ không chỉ hiển thị sai.
         for ((key, enValue) in enStrings) {
-            val viValue = viStrings[key] ?: continue
+            val localeValue = localeStrings[key] ?: continue
             val enSpecifiers = extractSpecifiers(enValue)
-            val viSpecifiers = extractSpecifiers(viValue)
-            assertWithMessage("Format specifiers mismatch for key: $key")
-                .that(viSpecifiers)
+            val localeSpecifiers = extractSpecifiers(localeValue)
+            assertWithMessage("Format specifiers mismatch for key '$key' ở locale '$locale'")
+                .that(localeSpecifiers)
                 .containsExactlyElementsIn(enSpecifiers)
         }
     }
 
+    /**
+     * Parse cả `<string>` VÀ `<plurals>` (bug thật phát hiện lúc audit 2026-09-27: `<plurals>`
+     * dùng tag khác `<string-array>` nên lần quét trước đó bỏ sót — `gallery_select_photo_count`,
+     * `gallery_selected_count`, `batch_caption_subtitle` thiếu ở 12/13 locale, chỉ Android Lint
+     * `MissingTranslation` bắt được, unit test cũ (chỉ đọc `<string>`) không hề phát hiện).
+     * Đại diện giá trị `<plurals>` bằng item `quantity="other"` — CLDR luôn có category này ở mọi
+     * locale, đủ để so khớp format specifier.
+     */
     private fun parseStringsXml(file: File): Map<String, String> {
         val dbFactory = DocumentBuilderFactory.newInstance()
         val dBuilder = dbFactory.newDocumentBuilder()
         val doc = dBuilder.parse(file)
         doc.documentElement.normalize()
 
-        val stringNodes = doc.getElementsByTagName("string")
         val result = mutableMapOf<String, String>()
 
+        val stringNodes = doc.getElementsByTagName("string")
         for (i in 0 until stringNodes.length) {
             val node = stringNodes.item(i)
             if (node is Element) {
-                val translatable = node.getAttribute("translatable")
-                if (translatable == "false") continue
-                val name = node.getAttribute("name")
-                val text = node.textContent
-                result[name] = text
+                if (node.getAttribute("translatable") == "false") continue
+                result[node.getAttribute("name")] = node.textContent
             }
         }
+
+        val pluralsNodes = doc.getElementsByTagName("plurals")
+        for (i in 0 until pluralsNodes.length) {
+            val node = pluralsNodes.item(i)
+            if (node is Element) {
+                if (node.getAttribute("translatable") == "false") continue
+                val otherItem = (0 until node.childNodes.length)
+                    .map { node.childNodes.item(it) }
+                    .filterIsInstance<Element>()
+                    .firstOrNull { it.getAttribute("quantity") == "other" }
+                result[node.getAttribute("name")] = otherItem?.textContent.orEmpty()
+            }
+        }
+
         return result
     }
 

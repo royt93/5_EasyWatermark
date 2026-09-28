@@ -138,7 +138,7 @@
     <string name="compare_hint">Kéo để xem lại ảnh gốc</string>
     <string name="action_compare">So sánh</string>
     <!-- FEAT-16: màn hình crop/xoay thẳng -->
-    <string name="action_crop">Crop</string>
+    <string name="action_crop">Cắt ảnh</string>
     <string name="crop_title">Crop &amp; xoay thẳng</string>
     <string name="crop_ratio_free">Tự do</string>
     <string name="crop_ratio_square">1:1</string>

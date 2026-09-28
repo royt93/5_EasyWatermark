@@ -22,9 +22,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
-// TODO firebase
-// TODO share app
-
 // done
 // review in app bingo
 // font scale
