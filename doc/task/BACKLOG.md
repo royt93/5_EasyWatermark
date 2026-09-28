@@ -11,7 +11,7 @@
 - `sources`: agent nào tìm ra/đồng thuận — độ đồng thuận cao = độ tin cậy cao.
 - **Prompt loop:** mỗi ticket trong `todo/` có section "## Prompt loop" trỏ tới [PROMPT_TEMPLATE.md](PROMPT_TEMPLATE.md) — Definition of Done dùng chung (audit >9/10 + unit/widget/integration test đủ mọi case + smoke test thật trên device đã khoá → mới được move `done/` + push).
 
-## BUGS_TO_FIX (7 todo + 2 deferred + 34 done) — ưu tiên P0 trước
+## BUGS_TO_FIX (6 todo + 2 deferred + 35 done) — ưu tiên P0 trước
 
 > **Re-audit 2026-09-16** (xem `## Re-audit 2026-09-16` cuối file) tìm thêm 1 finding P0 thật NGOÀI danh sách dưới — **`app/keystore.jks` + `gradle.properties` (chứa password ký release plaintext) đang commit vào git, cả 2 remote GitHub đều PUBLIC** — user đã xác nhận biết và sẽ tự xử lý riêng (không phải task thường, không tạo ticket .md — đây là sự cố bảo mật cần quyết định business, không phải code fix qua `/loop`).
 
@@ -19,7 +19,6 @@
 |---|---|---|---|
 | [BUG-14](todo/BUG-14-vip-secret-hardcode-trong-apk.md) | P0 | M | VIP secret hardcode base64, lặp 3 chỗ + 1 secret thứ 2 chưa từng ticket hoá (mở rộng 2026-09-10) — **deferred, xem ghi chú cuối file** |
 | [BUG-15](todo/BUG-15-admob-rewarded-release-dung-test-id.md) | P0 | XS | `ADMOB_REWARDED_ID` build release vẫn dùng ID test — mất doanh thu, vi phạm chính sách AdMob — **deferred, xem ghi chú cuối file** |
-| [BUG-37](todo/BUG-37-mediastore-overwrite-ghi-that-bai-de-lai-anh-cu-mac-is-pending.md) | P1 | S | MediaStore OVERWRITE ghi thất bại để lại ảnh CŨ mắc `IS_PENDING=1` — ảnh mất khỏi gallery (mới 2026-09-27) |
 | [BUG-38](todo/BUG-38-comparepreview-bottomsheet-khong-recycle-2-bitmap.md) | P1 | XS | `ComparePreviewBottomSheetFragment` không recycle 2 bitmap compare — leak mỗi lần mở (mới 2026-09-27) |
 | [BUG-39](todo/BUG-39-auto-contrast-chi-ap-preview-editor-export-bo-qua.md) | P1 | M | Auto-contrast (IDEA-06) chỉ áp preview editor, export bỏ qua → ảnh xuất khác preview (mới 2026-09-27) |
 | [BUG-40](todo/BUG-40-ten-file-xuat-khong-sanitize-token-chua-dau-gach-cheo.md) | P2 | S | Tên file xuất không sanitize — token `{exposure}`/`{fnumber}` chứa `/` làm export lỗi (mới 2026-09-27) |
@@ -27,7 +26,7 @@
 | [BUG-42](todo/BUG-42-sizehaschanged-so-sanh-w-voi-chieu-cao-cu.md) | P2 | XS | `sizeHasChanged = w != oldh` — so rộng mới với cao cũ, 3 custom view (mới 2026-09-27) |
 | [BUG-43](todo/BUG-43-exif-focal-exposure-parse-khong-guard.md) | P2 | XS | EXIF focal/exposure parse không guard → `NumberFormatException`/`Infinity` (mới 2026-09-27) |
 
-**Đã DONE** (xem `doc/task/done/`): BUG-01..13, 16..27, 28 (release bitmap refcount in reset), 29..31, 32 (outputNamePattern save sync), 33 (safe gallery/share in failed batch), 34, 35 (SAF folder pick SecurityException catch fallback), 36.
+**Đã DONE** (xem `doc/task/done/`): BUG-01..13, 16..27, 28 (release bitmap refcount in reset), 29..31, 32 (outputNamePattern save sync), 33 (safe gallery/share in failed batch), 34, 35 (SAF folder pick SecurityException catch fallback), 36. **BUG-37 2026-09-28**: [BUG-37](done/BUG-37-mediastore-overwrite-ghi-that-bai-de-lai-anh-cu-mac-is-pending.md) MediaStore OVERWRITE ghi thất bại để lại ảnh CŨ mắc `IS_PENDING=1` — tách hàm thuần `MediaStoreWriteFailureCleanup.decide(isNewRow)` quyết định `DELETE_ROW` (row mới, như BUG-19) vs `CLEAR_PENDING` (row cũ OVERWRITE, trả `IS_PENDING=0`); smoke test thật trên TECNO KJ7 export OVERWRITE 2 lần liên tiếp cùng tên file, verify `content query` MediaStore không còn row nào pending.
 
 ## ENHANCEMENTS (1 todo, 1 deferred + 31 done) — cải tiến tính năng có sẵn
 

@@ -29,7 +29,9 @@ import com.mckimquyen.watermark.data.model.ExifFrameStyle
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
 import com.mckimquyen.watermark.data.model.JobStateResolver
+import com.mckimquyen.watermark.data.model.MediaStoreCleanupAction
 import com.mckimquyen.watermark.data.model.MediaStoreInsertResolver
+import com.mckimquyen.watermark.data.model.MediaStoreWriteFailureCleanup
 import com.mckimquyen.watermark.data.model.MediaStoreWriteResolver
 import com.mckimquyen.watermark.data.model.Result
 import com.mckimquyen.watermark.data.model.ViewInfo
@@ -642,9 +644,19 @@ class BatchExportEngine @Inject constructor(
                         Result.failure<Unit>(data = null, code = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_WRITE, message = e.message)
                     }
                     if (writeResult.isFailure()) {
-                        // Ghi thất bại → xoá row IS_PENDING nếu mới tạo thay vì để lại file 0-byte/lỗi trong gallery.
-                        if (isNewRow) {
-                            contentResolver.delete(imageContentUri, null, null)
+                        // BUG-37: row mới (KEEP_BOTH/RENAME_VERSION) → xoá row rác như BUG-19.
+                        // Row đã có sẵn bị đánh IS_PENDING=1 để OVERWRITE → trả về 0 thay vì xoá,
+                        // nếu không ảnh CŨ của user mất khỏi gallery vĩnh viễn.
+                        when (MediaStoreWriteFailureCleanup.decide(isNewRow)) {
+                            MediaStoreCleanupAction.DELETE_ROW ->
+                                contentResolver.delete(imageContentUri, null, null)
+                            MediaStoreCleanupAction.CLEAR_PENDING ->
+                                contentResolver.update(
+                                    imageContentUri,
+                                    ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) },
+                                    null,
+                                    null
+                                )
                         }
                         return@withContext Result.extendMsg(writeResult)
                     }
