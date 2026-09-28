@@ -89,4 +89,64 @@ class BitmapUtilsTest {
     fun calculateInSampleSizeForLongEdge_exactlyRequested_returns1() {
         assertThat(calculateInSampleSizeForLongEdge(longEdge = 1080, reqLongEdge = 1080)).isEqualTo(1)
     }
+
+    // ---- BUG-43: parseExposureTime ----
+
+    @Test
+    fun parseExposureTime_fastShutter_returnsFractionFormat() {
+        // 1/125s = 0.008
+        assertThat(parseExposureTime("0.008")).isEqualTo("1/125s")
+    }
+
+    @Test
+    fun parseExposureTime_slowShutter_returnsRawSecondsFormat() {
+        assertThat(parseExposureTime("2")).isEqualTo("2s")
+    }
+
+    @Test
+    fun parseExposureTime_zero_returnsEmpty_notInfinityOrMaxInt() {
+        assertThat(parseExposureTime("0")).isEmpty()
+    }
+
+    @Test
+    fun parseExposureTime_garbageString_doesNotThrow_returnsRawWithSuffix() {
+        assertThat(parseExposureTime("not_a_number")).isEqualTo("not_a_numbers")
+    }
+
+    @Test
+    fun parseExposureTime_empty_returnsEmpty() {
+        assertThat(parseExposureTime("")).isEmpty()
+    }
+
+    // ---- BUG-43: parseFocalLength ----
+
+    @Test
+    fun parseFocalLength_validRational_roundsWholeNumber_noTrailingDotZero() {
+        assertThat(parseFocalLength("50/1")).isEqualTo("50mm")
+    }
+
+    @Test
+    fun parseFocalLength_validRational_keepsRealFraction() {
+        assertThat(parseFocalLength("235/10")).isEqualTo("23.5mm")
+    }
+
+    @Test
+    fun parseFocalLength_zeroDenominator_returnsEmpty_notInfinity() {
+        assertThat(parseFocalLength("50/0")).isEmpty()
+    }
+
+    @Test
+    fun parseFocalLength_garbageNumerator_doesNotThrow_returnsEmpty() {
+        assertThat(parseFocalLength("abc/2")).isEmpty()
+    }
+
+    @Test
+    fun parseFocalLength_notRationalFormat_returnsRawWithSuffix() {
+        assertThat(parseFocalLength("50")).isEqualTo("50mm")
+    }
+
+    @Test
+    fun parseFocalLength_empty_returnsEmpty() {
+        assertThat(parseFocalLength("")).isEmpty()
+    }
 }

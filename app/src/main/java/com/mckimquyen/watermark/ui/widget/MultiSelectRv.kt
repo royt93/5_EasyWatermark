@@ -5,7 +5,6 @@ import android.hardware.display.DisplayManager
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.core.view.GestureDetectorCompat
@@ -99,7 +98,6 @@ class MultiSelectRv : RecyclerView {
                     val gridLayoutManager = (rv.layoutManager as? GridLayoutManager?) ?: return
                     when (event.actionMasked) {
                         MotionEvent.ACTION_DOWN -> {
-                            Log.i(TAG, "ACTION_DOWN")
                             downX = event.x
                             downY = event.y
                             isLongPress = false
@@ -134,14 +132,9 @@ class MultiSelectRv : RecyclerView {
                                 val reduce =
                                     (distanceX < 0 || distanceY < 0) && (preTouchPos > touchPos || distanceX >= it.measuredWidth || distanceY >= it.measuredHeight)
 
-                                Log.i(
-                                    TAG,
-                                    "rvGestureDetector onScroll reduce = $reduce, increase = $increase, distanceX = $distanceX, distanceY = $distanceY, $preTouchPos, $touchPos, dx = $distanceStartX, distanceStartY = $distanceStartY, scrollBottomArea = $scrollBottomArea, scrollTopArea = $scrollTopArea, leftArea = $leftArea, isInAutoScrollArea = $isInAutoScrollArea"
-                                )
                                 preTouchPos = touchPos
                                 when {
                                     scrollBottomArea && increase -> {
-                                        Log.i(TAG, "scrollBottomArea")
                                         onSelect?.invoke(
                                             rv,
                                             gridLayoutManager.findLastVisibleItemPosition()
@@ -151,7 +144,6 @@ class MultiSelectRv : RecyclerView {
                                     }
 
                                     scrollTopArea && reduce -> {
-                                        Log.i(TAG, "scrollTopArea")
                                         onUnSelect?.invoke(
                                             rv,
                                             touchPos
@@ -161,7 +153,6 @@ class MultiSelectRv : RecyclerView {
                                     }
 
                                     increase -> {
-                                        Log.i(TAG, "increase touchPos = $touchPos")
                                         onSelect?.invoke(rv, touchPos)
                                         preMoveX = moveX
                                         preMoveY = moveY
@@ -169,7 +160,6 @@ class MultiSelectRv : RecyclerView {
                                     }
 
                                     reduce -> {
-                                        Log.i(TAG, "reduce touchPos = $touchPos")
                                         onUnSelect?.invoke(rv, touchPos)
                                         preMoveX = moveX
                                         preMoveY = moveY
@@ -177,7 +167,6 @@ class MultiSelectRv : RecyclerView {
                                     }
                                 }
                                 if (((scrollBottomArea && isIncreasing) || (scrollTopArea && !isIncreasing)) && isLongPress) {
-                                    Log.i(TAG, "isLongPress = true")
                                     var targetPos = if (scrollBottomArea) lastItemIndex() else 0
                                     rv.stopScroll()
                                     rv.smoothScrollToPosition(targetPos)
@@ -185,10 +174,6 @@ class MultiSelectRv : RecyclerView {
                                     val runnable = object : Runnable {
                                         override fun run() {
                                             if (System.currentTimeMillis() - latestMoveTs >= ((1000 / refreshRate).toLong()) && ((scrollBottomArea && isIncreasing) || (scrollTopArea && !isIncreasing)) && isLongPress) {
-                                                Log.i(
-                                                    TAG,
-                                                    "rvGestureDetector onScroll detected event lost, manually scroll scrollBottomArea = $scrollBottomArea, isIncreasing = $isIncreasing"
-                                                )
                                                 targetPos =
                                                     if (scrollBottomArea) lastItemIndex() else 0
                                                 latestMoveTs = System.currentTimeMillis()

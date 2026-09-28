@@ -24,8 +24,6 @@ class ProgressImageView : AppCompatImageView {
         defStyleAttr
     )
 
-    private var sizeHasChanged: Boolean = true
-
     private val paint by lazy {
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = successColor
@@ -52,10 +50,9 @@ class ProgressImageView : AppCompatImageView {
 
 //    private var innerBitmap: Bitmap? = null
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        sizeHasChanged = w != oldh || h != oldh
-    }
+    // BUG-42: onSizeChanged() cũ chỉ gán field sizeHasChanged không đâu đọc lại (so lệch w với
+    // oldh thay vì oldw — cùng lỗi copy-paste với CircleImageView/ColoredImageVIew) — gỡ hẳn thay
+    // vì sửa, override rỗng không còn lý do tồn tại.
 
     private val saveLayerBounds = RectF()
 

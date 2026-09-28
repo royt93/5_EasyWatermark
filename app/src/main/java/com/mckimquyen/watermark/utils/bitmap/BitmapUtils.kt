@@ -10,9 +10,9 @@ import android.graphics.Matrix
 import android.graphics.RectF
 import android.net.Uri
 import android.provider.MediaStore
-import android.util.Log
 import android.widget.ImageView
 import androidx.exifinterface.media.ExifInterface
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.data.model.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -216,7 +216,7 @@ private fun openExifStream(context: Context, uri: Uri): InputStream? {
         try {
             return context.contentResolver.openInputStream(MediaStore.setRequireOriginal(uri))
         } catch (e: Exception) {
-            Log.w(TAG, "openExifStream: original uri bị từ chối, fallback uri thường", e)
+            AppLog.w(TAG, "openExifStream: original uri bị từ chối, fallback uri thường", e)
         }
     }
     return context.contentResolver.openInputStream(uri)
@@ -239,21 +239,45 @@ private fun buildExifModel(exif: ExifInterface?): com.mckimquyen.watermark.data.
         model = model,
         dateTime = dateTime,
         fNumber = if (fNumber.isNotEmpty()) "f/$fNumber" else "",
-        exposureTime = if (exposureTime.isNotEmpty()) {
-            val d = exposureTime.toDoubleOrNull()
-            if (d != null && d < 1) "1/${(1 / d).toInt()}s" else "${exposureTime}s"
-        } else {
-            ""
-        },
+        exposureTime = parseExposureTime(exposureTime),
         iso = iso,
-        focalLength = if (focalLength.isNotEmpty()) {
-            val parts = focalLength.split("/")
-            if (parts.size == 2) "${parts[0].toDouble() / parts[1].toDouble()}mm" else "${focalLength}mm"
-        } else {
-            ""
-        }
+        focalLength = parseFocalLength(focalLength)
     )
 }
+
+/**
+ * BUG-43: tag EXIF `exposureTime` = "0" (máy/ROM ghi sai) → `d=0.0` → `1/0=Infinity` →
+ * `.toInt()=Int.MAX_VALUE` → caption `"1/2147483647s"`. Hàm thuần, guard `d <= 0`/không hữu hạn
+ * → trả rỗng (cùng quy ước "tag thiếu = rỗng" đã dùng ở [buildExifModel]).
+ */
+fun parseExposureTime(raw: String): String {
+    if (raw.isEmpty()) return ""
+    val d = raw.toDoubleOrNull() ?: return "${raw}s"
+    if (d <= 0.0 || !d.isFinite()) return ""
+    return if (d < 1) "1/${(1 / d).toInt()}s" else "${raw}s"
+}
+
+/**
+ * BUG-43: `parts[0].toDouble()`/`parts[1].toDouble()` trần ném `NumberFormatException` nếu tag
+ * không phải rational số hợp lệ (EXIF hỏng) — exception này không được bắt ở đâu trong pipeline
+ * decode, lan ra làm ảnh export/preview thất bại mơ hồ. Hàm thuần, dùng `toDoubleOrNull()`, guard
+ * mẫu số 0/không hữu hạn → trả rỗng; làm tròn số gọn (`50mm` thay vì `50.0mm`).
+ */
+fun parseFocalLength(raw: String): String {
+    if (raw.isEmpty()) return ""
+    val parts = raw.split("/")
+    if (parts.size != 2) return "${raw}mm"
+    val numerator = parts[0].toDoubleOrNull()
+    val denominator = parts[1].toDoubleOrNull()
+    if (numerator == null || denominator == null || denominator == 0.0) return ""
+    val value = numerator / denominator
+    if (!value.isFinite()) return ""
+    return "${formatFocalValue(value)}mm"
+}
+
+/** BUG-43: bỏ ".0" thừa cho số focal nguyên (50.0 → "50"), giữ nguyên số lẻ thật (23.5 → "23.5"). */
+private fun formatFocalValue(value: Double): String =
+    if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()
 
 /**
  * Get orientation from ExifInterface and System sql.
@@ -386,8 +410,6 @@ suspend fun decodeSampledBitmapFromResource(
             reqHeight
         ).data
         BitmapCache.addToCache(info, cacheValue)
-    } else {
-        Log.i("BitmapUtils", "Hit the cache bitmap!")
     }
     return@withContext Result.success(data = cacheValue)
 }
@@ -416,7 +438,7 @@ fun decodeSampledBitmapFromResourceSync(
             options.run { outHeight to outWidth }
         }
         options.inSampleSize = calculateInSampleSize(oWidth, oHeight, reqWidth, reqHeight)
-        Log.i(
+        AppLog.i(
             TAG,
             "reqW x reqH = $reqWidth x $reqHeight, outWidth x outHeight = $oWidth x $oHeight, inSampleSize = ${options.inSampleSize}"
         )
@@ -432,7 +454,7 @@ fun decodeSampledBitmapFromResourceSync(
     } catch (fne: FileNotFoundException) {
         return Result.failure(null, "-1", fne.message)
     } catch (oom: OutOfMemoryError) {
-        Log.i("BitmapUtils", "Decoding sampled bitmap from resource throw oom")
+        AppLog.i("BitmapUtils", "Decoding sampled bitmap from resource throw oom")
         return Result.failure(
             null,
             "-1",
@@ -454,7 +476,7 @@ fun calculateInSampleSize(
     reqHeight: Int
 ): Int {
     // Raw height and width of image
-    Log.i(
+    AppLog.i(
         "generateImage",
         "w = $width, h = $height, reqW = $reqWidth, reqH = $reqHeight"
     )

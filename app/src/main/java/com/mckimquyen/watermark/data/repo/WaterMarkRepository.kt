@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.graphics.RectF
 import android.graphics.Shader
 import android.net.Uri
-import android.util.Log
 import androidx.collection.ArrayMap
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -15,6 +14,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ExifFrameStyle
@@ -438,11 +438,13 @@ class WaterMarkRepository @Inject constructor(
 
     suspend fun updateTileMode(imageInfo: ImageInfo, mode: Shader.TileMode): ImageInfo {
         if (imageInfo.tileMode == mode.ordinal) {
-            Log.i("WaterMarkRepository", "updateTileMode: same mode")
+            AppLog.i("WaterMarkRepository", "updateTileMode: same mode")
             return imageInfo
         }
         val index = imageInfoMap[imageInfo.uri] ?: kotlin.run {
-            Log.e("WaterMarkRepository", "updateTileMode: imageInfo not found, uri = ${imageInfo.uri}")
+            // ENH-36: không in imageInfo.uri đầy đủ ra log — lộ URI ảnh người dùng ở bản release
+            // (Log.e không gate BuildConfig.DEBUG). Đủ để chẩn đoán mà không lộ PII.
+            AppLog.e("WaterMarkRepository", "updateTileMode: imageInfo not found in imageInfoMap")
             return imageInfo
         }
 

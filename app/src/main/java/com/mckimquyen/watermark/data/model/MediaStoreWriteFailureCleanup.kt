@@ -7,7 +7,7 @@ enum class MediaStoreCleanupAction {
 
     /** Row đã có sẵn từ trước, chỉ bị đánh `IS_PENDING=1` để ghi đè (OVERWRITE) — trả về 0
      * để ảnh CŨ của user hiện lại trong gallery, không xoá. */
-    CLEAR_PENDING,
+    CLEAR_PENDING
 }
 
 /**

@@ -20,10 +20,22 @@ object AppLog {
         if (BuildConfig.DEBUG) Log.d(tag, msg)
     }
 
+    /**
+     * ENH-36: sót khỏi ENH-03 — 41 lời gọi `Log.i` trần rải rác (gồm cả đường nóng nhất:
+     * `onTouch`/`onScale` mỗi sự kiện, decode ảnh mỗi lần) vẫn dựng string template + in log ở
+     * bản release. Gate giống [d].
+     */
+    fun i(tag: String, msg: String) {
+        if (BuildConfig.DEBUG) Log.i(tag, msg)
+    }
+
+    /** ENH-36: trước đây KHÔNG gate gì — cùng lý do với [d]/[i], gate luôn cho nhất quán. */
     fun w(tag: String, msg: String, tr: Throwable? = null) {
+        if (!BuildConfig.DEBUG) return
         if (tr != null) Log.w(tag, msg, tr) else Log.w(tag, msg)
     }
 
+    /** ENH-36: GIỮ không gate — lỗi thật nên thấy được cả ở bản release để chẩn đoán sự cố người dùng gặp. */
     fun e(tag: String, msg: String, tr: Throwable? = null) {
         if (tr != null) Log.e(tag, msg, tr) else Log.e(tag, msg)
     }

@@ -145,7 +145,10 @@ class ExportNaming @Inject constructor(
         val base = if (pattern.isEmpty()) {
             "ewm_${System.currentTimeMillis()}"
         } else {
-            resolveTextTokens(pattern, imageInfo, contentResolver, index, recipient)
+            // BUG-40: token EXIF ({exposure}/{fnumber}/{exif}) và chuỗi tự do ({filename}/
+            // {recipient}/{location}) có thể chứa ký tự cấm hệ thống file — sanitize SAU khi
+            // resolve token, TRƯỚC khi nối extension.
+            sanitizeFileName(resolveTextTokens(pattern, imageInfo, contentResolver, index, recipient))
         }
         return "$base.${trapOutputExtension(outputFormat)}"
     }
@@ -336,5 +339,20 @@ class ExportNaming @Inject constructor(
 
         /** IDEA-07: template mặc định cho nội dung QR động khi user chưa tự đặt. */
         const val DEFAULT_QR_CONTENT_TEMPLATE = "{hash}|{date}|{portfolio_link}"
+
+        /**
+         * BUG-40: ký tự cấm hệ thống file/MediaStore/SAF (Windows + POSIX gộp) — nguồn regex DUY
+         * NHẤT dùng chung với [com.mckimquyen.watermark.utils.ExportZipHelper.sanitizeAndDeduplicateEntryName],
+         * tránh lặp lại quy tắc ở 2 nơi rồi lệch nhau dần theo thời gian.
+         */
+        private val FORBIDDEN_FILENAME_CHARS = "[/\\\\?%*:|\"<>]".toRegex()
+
+        /**
+         * BUG-40: token EXIF như `{exposure}`("1/125s")/`{fnumber}`("f/2.8") sinh ra `/` — nối
+         * thẳng vào tên file MediaStore/legacy path làm export thất bại. Hàm thuần, không rút gọn
+         * chuỗi rỗng/chỉ-toàn-ký-tự-cấm về fallback nào — caller tự quyết fallback theo ngữ cảnh
+         * (xem [generateOutputName], [ExportZipHelper.sanitizeAndDeduplicateEntryName]).
+         */
+        fun sanitizeFileName(raw: String): String = raw.replace(FORBIDDEN_FILENAME_CHARS, "_")
     }
 }

@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
-import android.util.Log
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -69,7 +68,7 @@ class SplashActivity : BaseActivity() {
                 }
             }
         } ?: run {
-            Log.w(LOG_TAG, "requestConsentInfoUpdate timeout — SDK hung, skip ads")
+            AppLog.w(LOG_TAG, "requestConsentInfoUpdate timeout — SDK hung, skip ads")
             false
         }
 
@@ -92,7 +91,7 @@ class SplashActivity : BaseActivity() {
                     }
                 }
             } ?: run {
-                Log.w(LOG_TAG, "AdManager.initialize timeout — SDK hung, proceeding without ads")
+                AppLog.w(LOG_TAG, "AdManager.initialize timeout — SDK hung, proceeding without ads")
                 false
             }
             isAdInitialized = success
@@ -102,7 +101,7 @@ class SplashActivity : BaseActivity() {
         runCatching {
             AdManager.awaitSplashComplete(this@SplashActivity)
         }.onFailure {
-            Log.w(LOG_TAG, "awaitSplashComplete failed, continuing to main", it)
+            AppLog.w(LOG_TAG, "awaitSplashComplete failed, continuing to main", it)
         }
 
         val elapsed = System.currentTimeMillis() - startTime

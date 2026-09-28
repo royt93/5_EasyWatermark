@@ -75,7 +75,8 @@ object ExportZipHelper {
         val sanitized = if (baseRaw.isBlank()) {
             "watermark_image_$fallbackIndex.jpg"
         } else {
-            baseRaw.replace("[/\\\\?%*:|\"<>]".toRegex(), "_")
+            // BUG-40: dùng chung 1 nguồn regex duy nhất với ExportNaming.generateOutputName().
+            com.mckimquyen.watermark.export.ExportNaming.sanitizeFileName(baseRaw)
         }
 
         var candidate = sanitized

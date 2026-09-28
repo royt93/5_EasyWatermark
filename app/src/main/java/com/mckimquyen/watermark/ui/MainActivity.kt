@@ -14,7 +14,6 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -1193,7 +1192,7 @@ class MainActivity : BaseActivity() {
 
             if (result.isFailure) {
                 toast(R.string.tips_not_app_can_open_images, long = true)
-                Log.i("performFileSearch", result.exceptionOrNull()?.message ?: "No msg provided")
+                AppLog.i("performFileSearch", result.exceptionOrNull()?.message ?: "No msg provided")
             }
         } else {
             GalleryFragment().apply {

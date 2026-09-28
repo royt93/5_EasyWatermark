@@ -3,7 +3,6 @@ package com.mckimquyen.watermark.ui.adapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.text.format.Formatter
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +15,7 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
@@ -249,7 +249,7 @@ class SaveImageListAdapter(
         if (index == -1) return
         pendingList[index] = it
         differ.submitList(pendingList.toList()) {
-            Log.i("onBindViewHolder", "payloads, in $index")
+            AppLog.i("onBindViewHolder", "payloads, in $index")
             notifyItemChanged(index, "state")
         }
     }

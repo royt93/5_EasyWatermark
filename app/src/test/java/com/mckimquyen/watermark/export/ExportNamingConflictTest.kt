@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.data.model.ConflictPolicy
+import com.mckimquyen.watermark.data.model.ExifModel
 import com.mckimquyen.watermark.data.model.ImageInfo
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -76,5 +77,36 @@ class ExportNamingConflictTest {
             outputFormat = Bitmap.CompressFormat.JPEG
         )
         assertThat(name).isEqualTo("watermark_1.jpg")
+    }
+
+    /** BUG-40: {exposure}→"1/125s" (BitmapUtils.kt) chứa '/' — không được lọt nguyên vào tên file. */
+    @Test
+    fun generateOutputName_exposureTokenContainsSlash_sanitizedInOutputName() {
+        val dummyUri = Uri.parse("content://media/external/images/media/123")
+        val info = ImageInfo(dummyUri).copy(exifModel = ExifModel(exposureTime = "1/125s"))
+        val name = exportNaming.generateOutputName(
+            context.contentResolver,
+            info,
+            index = 0,
+            outputNamePattern = "photo_{exposure}",
+            outputFormat = Bitmap.CompressFormat.JPEG
+        )
+        assertThat(name).isEqualTo("photo_1_125s.jpg")
+        assertThat(name).doesNotContain("/")
+    }
+
+    /** BUG-40: {fnumber}→"f/2.8" — cùng lý do trên. */
+    @Test
+    fun generateOutputName_fnumberTokenContainsSlash_sanitizedInOutputName() {
+        val dummyUri = Uri.parse("content://media/external/images/media/123")
+        val info = ImageInfo(dummyUri).copy(exifModel = ExifModel(fNumber = "f/2.8"))
+        val name = exportNaming.generateOutputName(
+            context.contentResolver,
+            info,
+            index = 0,
+            outputNamePattern = "photo_{fnumber}",
+            outputFormat = Bitmap.CompressFormat.JPEG
+        )
+        assertThat(name).isEqualTo("photo_f_2.8.jpg")
     }
 }

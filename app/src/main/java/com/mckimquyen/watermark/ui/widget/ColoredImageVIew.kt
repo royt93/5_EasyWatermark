@@ -28,7 +28,7 @@ class ColoredImageVIew : AppCompatImageView {
     )
 
     private var refreshRate: Float = 60F
-    private var sizeHasChanged: Boolean = true
+    internal var sizeHasChanged: Boolean = true
     private val paint by lazy { Paint() }
     private var enable = true
 
@@ -76,7 +76,8 @@ class ColoredImageVIew : AppCompatImageView {
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        sizeHasChanged = w != oldh || h != oldh
+        // BUG-42: cùng lỗi copy-paste với CircleImageView — so w với oldh thay vì oldw.
+        sizeHasChanged = w != oldw || h != oldh
     }
 
     @SuppressLint("DrawAllocation")

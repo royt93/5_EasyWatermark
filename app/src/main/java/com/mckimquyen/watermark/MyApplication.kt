@@ -8,7 +8,6 @@ import android.util.Log
 import androidx.core.content.edit
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.google.android.material.color.DynamicColors
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.roy.sdkadbmob.AdManager
@@ -64,8 +63,12 @@ class MyApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        DynamicColors.applyToActivitiesIfAvailable(this)
         setupAdmob()
+        // BUG-41: trước đây gọi DynamicColors.applyToActivitiesIfAvailable(this) VÔ ĐIỀU KIỆN ở
+        // đây, RỒI CMonet.init(this, true) bên dưới lại tự gọi lại đúng hàm này lần 2 (đăng ký
+        // trùng ActivityLifecycleCallbacks) — vế gọi trần này còn bỏ qua hẳn lựa chọn user (switch
+        // "Dynamic Color" ở About), khiến tắt switch không có tác dụng. Bỏ hẳn, chỉ còn 1 đường
+        // gọi qua CMonet.init() (tôn trọng CMonet.isDynamicColorAvailable() = thiết bị VÀ user).
         // BUG-23: CMonet.init() KHÔNG được đặt trong nhánh else của checkRecoveryMode() — khi app
         // đang recovery mode, mọi màn hình đọc màu theme qua ContextExtension.kt (colorPrimary/
         // colorSecondary/... — ~30 điểm gọi CMonet.isDynamicColorAvailable()) sẽ crash

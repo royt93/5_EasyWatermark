@@ -17,11 +17,11 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.text.TextPaint
-import android.util.Log
 import androidx.core.content.FileProvider
 import androidx.core.graphics.withSave
 import androidx.documentfile.provider.DocumentFile
 import androidx.palette.graphics.Palette
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ConflictPolicy
@@ -251,7 +251,7 @@ class BatchExportEngine @Inject constructor(
                     info = info.copy(result = failResult, jobState = JobState.Failure(failResult))
                     onProgress(info)
                 }
-                Log.i("generateList", "${info.uri} : ${info.result}")
+                AppLog.i("generateList", "${info.uri} : ${info.result}")
                 info
             }
             onProgress(null)
@@ -357,7 +357,7 @@ class BatchExportEngine @Inject constructor(
                     bitmapWidth = imageInfo.width,
                     bitmapHeight = imageInfo.height
                 )
-                Log.i(
+                AppLog.i(
                     "generateImage",
                     """
                         imageMatrix = $imageMatrix,

@@ -37,11 +37,14 @@ class CircleImageView : AppCompatImageView {
 
     private var sourceImageBitmap: Bitmap? = null
 
-    private var destCircleBitmap: Bitmap? = null
+    internal var destCircleBitmap: Bitmap? = null
+        private set
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        sizeHasChanged = w != oldh || h != oldh
+        // BUG-42: so w với oldh (thay vì oldw) — view GẦN VUÔNG (avatar/logo tròn cỡ cố định) có
+        // w == oldh thường xuyên, bỏ lỡ resize thật, destCircleBitmap giữ mask cũ sai kích thước.
+        sizeHasChanged = w != oldw || h != oldh
         if (!sizeHasChanged) {
             return
         }

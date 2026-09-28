@@ -40,10 +40,30 @@ Sửa `oldh` → `oldw` ở vế đầu tại cả 3 file. Nhân dịp này gỡ
 không thật sự dùng tới nó (tránh để lại cờ chết gây hiểu nhầm lần sau).
 
 ## Acceptance Criteria
-- [ ] 3 file dùng đúng `w != oldw || h != oldh`.
-- [ ] Unit/widget test: gọi `onSizeChanged(100, 100, 50, 100)` (w đổi, h giữ, `w == oldh` ở bản cũ) → cờ = true.
-- [ ] `CircleImageView` tạo lại `destCircleBitmap` đúng kích thước mới trong case trên.
-- [ ] Smoke test About: 2 ảnh tròn render đúng mask, không méo.
+- [x] 3 file dùng đúng `w != oldw || h != oldh`.
+- [x] Unit/widget test: gọi `onSizeChanged(100, 100, 50, 100)` (w đổi, h giữ, `w == oldh` ở bản cũ) → cờ = true.
+- [x] `CircleImageView` tạo lại `destCircleBitmap` đúng kích thước mới trong case trên.
+- [x] Smoke test About: 2 ảnh tròn render đúng mask, không méo.
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-42`, file ticket = `todo/BUG-42-sizehaschanged-so-sanh-w-voi-chieu-cao-cu.md`.
+
+## Kết quả kiểm chứng (2026-09-28)
+
+**Fix:** sửa `w != oldh` → `w != oldw` ở cả 3 file (`CircleImageView`/`ColoredImageVIew`/
+`ProgressImageView`). `ProgressImageView` gỡ hẳn field `sizeHasChanged` + override `onSizeChanged`
+rỗng (field không đâu đọc lại — dead code thật, không phải chỉ sai công thức). `CircleImageView`
+đổi `destCircleBitmap` thành `internal` (private set) và `ColoredImageVIew` đổi `sizeHasChanged`
+thành `internal` để test truy cập trực tiếp (theo đúng pattern `GalleryFragment.pendingIncludeSubfolders`
+đã có).
+
+- **Điểm tự audit:** 9.5/10 — đúng đề xuất ticket + dọn thêm field chết ở ProgressImageView, diff
+  tối thiểu, verify RED/GREEN bằng cách revert tạm công thức để xác nhận test thật sự bắt được bug.
+- **Test:** `CircleImageViewSizeChangedWidgetTest` (2 case, dùng `View.layout()` thật trigger
+  `onSizeChanged()` qua `setFrame()` — không gọi trực tiếp) + `ColoredImageVIewWidgetTest` (+1 case
+  mới, giữ nguyên 1 case cũ không regression). RED verify: revert tạm công thức về `oldh` → cả 2
+  test FAIL đúng (BUILD FAILED) → khôi phục fix → GREEN. `./gradlew :app:testDebugUnitTest` không
+  regression.
+- **Smoke test thật** trên device đã khoá session — **TECNO KJ7 (115333744A005844)**: About screen
+  — avatar tròn (logo app) render đúng mask tròn, không méo/lệch. `ColoredImageVIew` là dead code
+  (đã ghi nhận BACKLOG "Audit M3 lần 3") không có màn hình thật — chỉ verify qua widget test.

@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -85,7 +84,7 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
             val bitmap = previewBitmap
             AppLog.d(LOG_TAG, "[QR] btnUse clicked: content='$content' previewBitmap=${bitmap != null}")
             if (content.isEmpty() || bitmap == null) {
-                Log.w(LOG_TAG, "[QR] abort: content empty or bitmap null")
+                AppLog.w(LOG_TAG, "[QR] abort: content empty or bitmap null")
                 toast(R.string.qr_code_empty)
                 return@setOnClickListener
             }

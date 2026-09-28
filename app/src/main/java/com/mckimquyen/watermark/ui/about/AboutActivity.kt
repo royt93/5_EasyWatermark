@@ -257,10 +257,14 @@ class AboutActivity : BaseActivity() {
                 viewModel.toggleBounds(isChecked)
             }
 
-            val isDynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && CMonet.isDynamicColorAvailable()
+            // BUG-41: isEnabled theo NĂNG LỰC thiết bị (CMonet.isDeviceSupported()), isChecked
+            // theo LỰA CHỌN user (CMonet.isUserEnabled()) — trước đây cả 2 đều đọc
+            // isDynamicColorAvailable() (đã gộp || isForceSupport luôn true trên API31+) nên tắt
+            // switch xong mở lại About luôn thấy lại BẬT.
+            val isDynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && CMonet.isDeviceSupported()
             if (isDynamicColorSupported) {
                 switchDynamicColor.isEnabled = true
-                switchDynamicColor.isChecked = CMonet.isDynamicColorAvailable()
+                switchDynamicColor.isChecked = CMonet.isUserEnabled()
                 tvDynamicColorStatus.setText(R.string.dynamic_color_subtitle_supported)
             } else {
                 switchDynamicColor.isEnabled = false

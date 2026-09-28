@@ -19,7 +19,6 @@ import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import androidx.core.animation.doOnEnd
@@ -137,8 +136,8 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
 
     private var exceptionHandler: CoroutineExceptionHandler =
         CoroutineExceptionHandler { _: CoroutineContext, throwable: Throwable ->
-            Log.e(
-                this::class.simpleName,
+            AppLog.e(
+                this::class.simpleName.orEmpty(),
                 "Throw Exception in WaterMarkImageView ${throwable.message}"
             )
             throwable.printStackTrace()
@@ -512,7 +511,6 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        Log.i("onSizeChanged", "$w, $h, $oldh, $oldh")
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -749,7 +747,6 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
             /* right = */ newX + bitmapWith,
             /* bottom = */ newY + bitmapHeight
         )
-        Log.i(TAG, "isOutOfDrawable $touchRect, drawableBounds: $drawableBounds")
         return touchRect.right < drawableBounds.left ||
             touchRect.left > drawableBounds.right ||
             touchRect.top > drawableBounds.bottom ||
@@ -845,11 +842,9 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 1 - (1 - mScaleFactor).absoluteValue * 0.1f
             }
             if (textSize > MAX_TEXT_SIZE && mScaleFactor > 1f) {
-                Log.i(TAG, "onScale: $textSize, $mScaleFactor, to max")
                 return true
             }
             if (textSize < MIN_TEXT_SIZE && mScaleFactor < 1f) {
-                Log.i(TAG, "onScale: $textSize, $mScaleFactor, to min")
                 return true
             }
             pendingTextSize = textSize
@@ -860,7 +855,6 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                 return true
             }
             lastShaderRebuildAtMs = now
-            Log.i(TAG, "onScale $mScaleFactor, textSize: ${config?.textSize} ==> $textSize")
             config = config?.copy(textSize = textSize)
             invalidate()
             return true
@@ -868,7 +862,6 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
 
         override fun onScaleEnd(detector: ScaleGestureDetector) {
             super.onScaleEnd(detector)
-            Log.i(TAG, "onScaleEnd $mScaleFactor")
             // ENH-16: đảm bảo giá trị CUỐI CÙNG luôn phản ánh đúng lúc nhả tay, kể cả khi frame
             // cuối cùng của pinch bị throttle bỏ qua rebuild.
             if (config?.textSize != pendingTextSize) {
@@ -887,7 +880,6 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         // Let the ScaleGestureDetector inspect all events.
-        Log.i(TAG, "onTouch $event")
         if (enableTouch.not()) {
             return false
         }
@@ -1065,7 +1057,7 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
             bitmapWidth: Int,
             bitmapHeight: Int
         ): Matrix {
-            Log.i(
+            AppLog.i(
                 TAG,
                 "width = $viewWidth, height = $viewHeight, bitmapWidth = $bitmapWidth, bitmapHeight = $bitmapHeight"
             )

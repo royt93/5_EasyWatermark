@@ -47,4 +47,23 @@ class ColoredImageVIewWidgetTest {
             themedContext.colorTertiary
         ).inOrder()
     }
+
+    /**
+     * BUG-42: cùng lỗi so `w != oldh` (thay vì `w != oldw`) với CircleImageView. Reset cờ về
+     * false thủ công (mô phỏng đúng `onDraw()` "tiêu thụ" cờ trong app thật) trước khi trigger
+     * layout thứ 2 — nếu không, cờ mặc định `true` lúc khởi tạo sẽ làm test pass giả ngay cả khi
+     * còn bug (không phân biệt được công thức đúng/sai).
+     */
+    @Test
+    fun layout_newWidthEqualsOldHeight_stillDetectsSizeChange() {
+        val view = ColoredImageVIew(themedContext)
+        view.layout(0, 0, 50, 100)
+        view.sizeHasChanged = false
+
+        view.layout(0, 0, 100, 100)
+
+        // Công thức cũ (w != oldh || h != oldh) = (100!=100 || 100!=100) = false → bug.
+        // Công thức đúng (w != oldw || h != oldh) = (100!=50 || 100!=100) = true.
+        assertThat(view.sizeHasChanged).isTrue()
+    }
 }

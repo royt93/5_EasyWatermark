@@ -1,7 +1,6 @@
 package com.mckimquyen.watermark.ui.adapter
 
 import android.animation.ObjectAnimator
-import android.util.Log
 import android.view.ViewGroup
 import androidx.constraintlayout.utils.widget.ImageFilterView
 import androidx.core.animation.doOnEnd
@@ -10,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.ui.Image
 import com.mckimquyen.watermark.ui.widget.AsyncSquareFrameLayout
@@ -194,7 +194,7 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
     fun select(recyclerView: RecyclerView, endPos: Int) {
         val start = latestSelectedItem.coerceAtLeast(0)
         val end = endPos.coerceAtMost(itemCount - 1)
-        Log.i(TAG, "selectTo $start .. $end")
+        AppLog.i(TAG, "selectTo $start .. $end")
         val list = differ.currentList
         if (start < 0 || end >= list.size || start >= end) {
             return
@@ -217,7 +217,7 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
     }
 
     fun unSelect(recyclerView: RecyclerView, position: Int) {
-        Log.i(TAG, "unSelect pos = $position")
+        AppLog.i(TAG, "unSelect pos = $position")
         val list = differ.currentList
         if (position < 0 || position >= list.size) {
             return

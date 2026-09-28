@@ -8,7 +8,6 @@ import android.graphics.Color
 import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -357,7 +356,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         try {
             binding.rvContent.adapter = null
         } catch (e: Exception) {
-            Log.w(LOG_TAG, "GalleryFragment onDestroyView adapter clear error: ${e.message}")
+            AppLog.w(LOG_TAG, "GalleryFragment onDestroyView adapter clear error: ${e.message}")
         }
         super.onDestroyView()
     }

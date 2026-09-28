@@ -40,12 +40,9 @@ class AboutViewModel @Inject constructor(
         }
     }
 
+    /** BUG-41: forceSupportDynamicColor()/disableSupportDynamicColor() cũ gộp lại còn 1 hàm rõ nghĩa. */
     fun toggleSupportDynamicColor(enable: Boolean) {
-        if (enable) {
-            CMonet.forceSupportDynamicColor()
-        } else {
-            CMonet.disableSupportDynamicColor()
-        }
+        CMonet.setUserEnabled(enable)
     }
 
     /** Đề xuất F: xuất Template + Signature ra file zip user chọn qua SAF. */

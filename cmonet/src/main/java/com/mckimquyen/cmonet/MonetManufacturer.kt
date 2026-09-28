@@ -3,31 +3,34 @@ package com.mckimquyen.cmonet
 import android.content.Context
 import com.google.android.material.color.DynamicColors
 
+/**
+ * BUG-41: `isDynamicColorAvailable()` cũ = `DynamicColors.isDynamicColorAvailable() || isForceSupport`
+ * — trên API 31+ vế đầu luôn true nên switch "Dynamic Color" ở About (đọc/ghi qua field thứ 2)
+ * hoàn toàn vô tác dụng, tắt xong mở lại app vẫn hiện màu động. Tách rõ 2 khái niệm: NĂNG LỰC
+ * thiết bị ([isDeviceCapable], không đổi theo lựa chọn user) và LỰA CHỌN user ([isUserEnabled],
+ * mặc định true, lưu bền qua [sp]) — [shouldApplyDynamicColor] gộp cả 2, là nguồn sự thật DUY NHẤT
+ * cho mọi quyết định vẽ màu động thật sự (xem [CMonet.isDynamicColorAvailable]).
+ */
 class MonetManufacturer(
     context: Context
 ) : IMonetManufacturer {
     private val sp: IStorage = SimpleSp(context)
 
-    /**
-     * cache in memory
-     */
-    private var isForceSupport = sp.getValue(KEY_DYNAMIC_COLOR_FORCE, false)
+    /** Cache trong RAM — tránh đọc SharedPreferences mỗi lần gọi (nhiều điểm gọi mỗi lần vẽ UI). */
+    private var isUserEnabledCache = sp.getValue(KEY_DYNAMIC_COLOR_USER_ENABLED, true)
 
-    // ENH-12: trước đây có thêm 1 allow-list thủ công theo tên hãng (Build.MANUFACTURER/BRAND) —
-    // deny-list/allow-list cứng dễ lỗi thời (thiết bị/OEM mới không nằm trong danh sách bị tắt
-    // oan dù thực sự hỗ trợ). `DynamicColors.isDynamicColorAvailable()` là API chính thức của
-    // Material, đủ tin cậy làm nguồn sự thật duy nhất.
-    override fun isDynamicColorAvailable(): Boolean {
-        return DynamicColors.isDynamicColorAvailable() || isForceSupport
+    override fun isDeviceCapable(): Boolean = DynamicColors.isDynamicColorAvailable()
+
+    override fun isUserEnabled(): Boolean = isUserEnabledCache
+
+    override fun setUserEnabled(enabled: Boolean) {
+        sp.save(KEY_DYNAMIC_COLOR_USER_ENABLED, enabled)
+        isUserEnabledCache = enabled
     }
 
-    override fun setForceSupport(supported: Boolean) {
-        sp.save(KEY_DYNAMIC_COLOR_FORCE, supported)
-        isForceSupport = supported
-    }
+    override fun shouldApplyDynamicColor(): Boolean = isDeviceCapable() && isUserEnabled()
 
     companion object {
-        //        private const val TAG = "MonetManufacturer"
-        private const val KEY_DYNAMIC_COLOR_FORCE = "dynamic_color_force"
+        private const val KEY_DYNAMIC_COLOR_USER_ENABLED = "dynamic_color_user_enabled"
     }
 }

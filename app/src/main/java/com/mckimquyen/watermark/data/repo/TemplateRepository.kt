@@ -1,6 +1,6 @@
 package com.mckimquyen.watermark.data.repo
 
-import android.util.Log
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.data.db.dao.TemplateDao
 import com.mckimquyen.watermark.data.model.entity.Template
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +28,7 @@ class TemplateRepository @Inject constructor(
     fun getAllTemplate(): Flow<List<Template>> {
         return (templateDao?.getAllTemplate() ?: flow { emit(listOf()) })
             .catch { e ->
-                Log.e("TemplateRepository", "getAllTemplate failed", e)
+                AppLog.e("TemplateRepository", "getAllTemplate failed", e)
                 emit(listOf())
             }
     }
@@ -37,7 +37,7 @@ class TemplateRepository @Inject constructor(
         try {
             templateDao?.insertTemplate(template)
         } catch (e: Exception) {
-            Log.e("TemplateRepository", "insertTemplate failed", e)
+            AppLog.e("TemplateRepository", "insertTemplate failed", e)
         }
     }
 
@@ -45,7 +45,7 @@ class TemplateRepository @Inject constructor(
         try {
             templateDao?.deleteTemplate(template)
         } catch (e: Exception) {
-            Log.e("TemplateRepository", "deleteTemplate failed", e)
+            AppLog.e("TemplateRepository", "deleteTemplate failed", e)
         }
     }
 
@@ -53,7 +53,7 @@ class TemplateRepository @Inject constructor(
         try {
             templateDao?.updateTemplate(template)
         } catch (e: Exception) {
-            Log.e("TemplateRepository", "updateTemplate failed", e)
+            AppLog.e("TemplateRepository", "updateTemplate failed", e)
         }
     }
 }

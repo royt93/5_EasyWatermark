@@ -2,7 +2,6 @@ package com.mckimquyen.watermark.ui.widget
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -58,10 +57,6 @@ class PhotoPreviewItem : ViewGroup {
                         MotionEvent.ACTION_DOWN -> {
                             x = motionEvent.rawX
                             y = motionEvent.rawY
-                            Log.i(
-                                "gestureDetectorCompat",
-                                "onTouch event = down, isLongPress = $isLongPress"
-                            )
                             view.parent.requestDisallowInterceptTouchEvent(isLongPress)
                         }
 
@@ -73,10 +68,6 @@ class PhotoPreviewItem : ViewGroup {
                                 (motionEvent.rawY - y).coerceAtMost(0f)
                                     .coerceAtLeast(topEdge)
                             view.parent.requestDisallowInterceptTouchEvent(isLongPress)
-                            Log.i(
-                                "gestureDetectorCompat",
-                                "onTouch event = move, isLongPress = $isLongPress"
-                            )
                             curIsPreview = if (view.translationY == topEdge && !curIsPreview) {
                                 onRemovePreview.invoke()
                                 true
@@ -121,10 +112,6 @@ class PhotoPreviewItem : ViewGroup {
                             curIsPreview = false
                             view.parent.requestDisallowInterceptTouchEvent(isLongPress)
                             (view.parent as ViewGroup).translationZ = 0f
-                            Log.i(
-                                "gestureDetectorCompat",
-                                "onTouch event = up, isLongPress = $isLongPress"
-                            )
                         }
                     }
                     if (motionEvent?.actionMasked != MotionEvent.ACTION_MOVE && !isRemoved) {
@@ -137,15 +124,9 @@ class PhotoPreviewItem : ViewGroup {
         }
     }
 
-    private var onRemovePreview: () -> Unit = {
-        Log.i("gestureDetectorCompat", "onRemovePreview")
-    }
-    private var onRemove: () -> Unit = {
-        Log.i("gestureDetectorCompat", "onRemove")
-    }
-    private var onRemoveCancel: () -> Unit = {
-        Log.i("gestureDetectorCompat", "onRemoveCancel")
-    }
+    private var onRemovePreview: () -> Unit = {}
+    private var onRemove: () -> Unit = {}
+    private var onRemoveCancel: () -> Unit = {}
 
     fun onRemovePreview(block: () -> Unit = {}) {
         this.onRemovePreview = block
