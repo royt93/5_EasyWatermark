@@ -1,5 +1,6 @@
 package com.mckimquyen.watermark.ui.dlg
 
+import android.graphics.Bitmap
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
@@ -13,18 +14,32 @@ import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.databinding.FComparePreviewBottomSheetBinding
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * FEAT-18 AC2: xem so sánh trước/sau cho 1 ảnh NGAY từ grid preview batch — KHÔNG cần export thật.
  * [com.mckimquyen.watermark.ui.MainViewModel.generateCompareBitmaps] decode + vẽ watermark 1 lần
- * (không ghi MediaStore), trả về 2 bitmap độc lập. Dùng `View.clipBounds` để lộ dần `ivWatermarked`
- * đè lên `ivOriginal` (2 ImageView cùng kích thước, cùng scaleType, xếp chồng) thay vì tự vẽ canvas
- * — đơn giản hơn, không cần custom View riêng.
+ * (không ghi MediaStore), trả về 2 bitmap ĐỘC LẬP (caller sở hữu, không chia sẻ buffer với
+ * `BitmapCache`). Dùng `View.clipBounds` để lộ dần `ivWatermarked` đè lên `ivOriginal` (2 ImageView
+ * cùng kích thước, cùng scaleType, xếp chồng) thay vì tự vẽ canvas — đơn giản hơn, không cần custom
+ * View riêng.
+ *
+ * BUG-38: theo đúng pattern [SurvivabilityBottomSheetFragment] — giữ [renderJob] để cancel và giữ
+ * 2 bitmap đang hiển thị để recycle trong [onDestroyView]; nếu job bị huỷ giữa chừng (user đóng
+ * sheet sớm) thì recycle ngay bản mồ côi vừa sinh ra thay vì set vào view đã destroy.
  */
 class ComparePreviewBottomSheetFragment : BaseBindBSDFragment<FComparePreviewBottomSheetBinding>() {
 
     private var revealFraction = 1f
+    private var renderJob: Job? = null
+    internal var originalBitmap: Bitmap? = null
+        private set
+    internal var watermarkedBitmap: Bitmap? = null
+        private set
 
     override fun bindView(
         layoutInflater: LayoutInflater,
@@ -49,13 +64,24 @@ class ComparePreviewBottomSheetFragment : BaseBindBSDFragment<FComparePreviewBot
         }
 
         val imageInfo = shareViewModel.imageList.value?.first?.find { it.uri == uri } ?: ImageInfo(uri)
-        viewLifecycleOwner.lifecycleScope.launch {
-            val result = shareViewModel.generateCompareBitmaps(requireActivity().contentResolver, imageInfo, index)
+        renderJob = viewLifecycleOwner.lifecycleScope.launch {
+            // Không huỷ giữa chừng tác vụ đã cấp phát bitmap — nếu job bị huỷ (user đóng sheet
+            // sớm) thì recycle ngay bản mồ côi ở dưới thay vì để rò rỉ (BUG-38).
+            val result = withContext(NonCancellable) {
+                shareViewModel.generateCompareBitmaps(requireActivity().contentResolver, imageInfo, index)
+            }
+            if (!isActive || view == null) {
+                result?.original?.recycle()
+                result?.watermarked?.recycle()
+                return@launch
+            }
             binding.progress.isVisible = false
             if (result == null) {
                 binding.tvError.isVisible = true
                 return@launch
             }
+            originalBitmap = result.original
+            watermarkedBitmap = result.watermarked
             binding.ivOriginal.setImageBitmap(result.original)
             binding.ivWatermarked.setImageBitmap(result.watermarked)
             applyReveal(1f)
@@ -72,6 +98,18 @@ class ComparePreviewBottomSheetFragment : BaseBindBSDFragment<FComparePreviewBot
             return
         }
         ivWatermarked.clipBounds = Rect(0, 0, (w * fraction).toInt(), h)
+    }
+
+    override fun onDestroyView() {
+        renderJob?.cancel()
+        renderJob = null
+        binding.ivOriginal.setImageDrawable(null)
+        binding.ivWatermarked.setImageDrawable(null)
+        originalBitmap?.takeIf { !it.isRecycled }?.recycle()
+        watermarkedBitmap?.takeIf { !it.isRecycled }?.recycle()
+        originalBitmap = null
+        watermarkedBitmap = null
+        super.onDestroyView()
     }
 
     companion object {
