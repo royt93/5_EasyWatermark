@@ -31,6 +31,7 @@ import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.view.forEach
+import androidx.core.view.isVisible
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -499,6 +500,15 @@ class MainActivity : BaseActivity() {
                 }
             }
         }
+        // IDEA-12: banner gợi ý style "quen dùng" — null = ẩn (chưa đủ lịch sử/không nổi bật/trùng cấu hình hiện tại).
+        lifecycleScope.launch {
+            viewModel.styleSuggestionFlow.flowWithLifecycle(
+                this@MainActivity.lifecycle,
+                Lifecycle.State.STARTED
+            ).collect { suggestion ->
+                launchView.cardStyleSuggestion.isVisible = suggestion != null
+            }
+        }
         viewModel.waterMark.observe(this) {
             if (it == null) {
                 AppLog.d(LOG_TAG, "[MAIN] waterMark observer: value is NULL, skip")
@@ -699,6 +709,13 @@ class MainActivity : BaseActivity() {
         // FEAT-21: Paste image directly from clipboard
         launchView.ivPasteFromClipboard.setOnClickListener {
             pasteImageFromClipboard()
+        }
+        // IDEA-12: banner gợi ý style "quen dùng" — hiện/ẩn do initObserver() điều khiển qua styleSuggestionFlow.
+        launchView.btnStyleSuggestionApply.setOnClickListener {
+            viewModel.applySuggestedStyle()
+        }
+        launchView.btnStyleSuggestionDismiss.setOnClickListener {
+            viewModel.dismissStyleSuggestion()
         }
         // setting bg
         launchView.ivPhoto.apply {

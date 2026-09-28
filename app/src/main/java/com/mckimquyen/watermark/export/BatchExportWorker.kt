@@ -25,6 +25,7 @@ import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.repo.BatchHistoryRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.mckimquyen.watermark.data.repo.WatermarkStyleHistoryRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
@@ -44,7 +45,8 @@ class BatchExportWorker @AssistedInject constructor(
     private val waterMarkRepo: WaterMarkRepository,
     private val userRepo: UserConfigRepository,
     private val engine: BatchExportEngine,
-    private val batchHistoryRepo: BatchHistoryRepository
+    private val batchHistoryRepo: BatchHistoryRepository,
+    private val styleHistoryRepo: WatermarkStyleHistoryRepository
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): WorkResult {
@@ -163,6 +165,10 @@ class BatchExportWorker @AssistedInject constructor(
             failedInputUris = failedInputUris,
             settings = settings
         )
+        // IDEA-12: ít nhất 1 ảnh export thành công mới tính là 1 lần dùng "gu" style này.
+        if (outputUris.isNotEmpty()) {
+            styleHistoryRepo.record(settings.config)
+        }
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo = createForegroundInfo(0, waterMarkRepo.imageInfoList.size)

@@ -15,15 +15,18 @@ import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.data.db.dao.BatchHistoryDao
+import com.mckimquyen.watermark.data.db.dao.WatermarkStyleHistoryDao
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.model.entity.BatchHistoryEntity
+import com.mckimquyen.watermark.data.model.entity.WatermarkStyleHistoryEntity
 import com.mckimquyen.watermark.data.repo.BatchHistoryRepository
 import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.mckimquyen.watermark.data.repo.WatermarkStyleHistoryRepository
 import com.mckimquyen.watermark.export.BatchExportEngine
 import com.mckimquyen.watermark.export.BatchExportWorker
 import com.mckimquyen.watermark.export.ExportNaming
@@ -61,6 +64,13 @@ class MainViewModelSaveImageImmutabilityRoboTest {
         override suspend fun trimOldest(keepCount: Int) = Unit
     }
 
+    /** IDEA-12: fake nhẹ, mirror [NoopBatchHistoryDao]. */
+    private class NoopWatermarkStyleHistoryDao : WatermarkStyleHistoryDao {
+        override suspend fun insert(entity: WatermarkStyleHistoryEntity): Long = 0
+        override suspend fun recent(n: Int): List<WatermarkStyleHistoryEntity> = emptyList()
+        override suspend fun pruneKeepLatest(keep: Int) = Unit
+    }
+
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val waterMarkDataStore = newTestWaterMarkDataStore(context)
     private val userDataStore = newTestUserDataStore(context)
@@ -74,12 +84,14 @@ class MainViewModelSaveImageImmutabilityRoboTest {
         }
         waterMarkRepo = WaterMarkRepository(context, waterMarkDataStore)
         val userRepo = UserConfigRepository(userDataStore)
+        val styleHistoryRepo = WatermarkStyleHistoryRepository(NoopWatermarkStyleHistoryDao())
         viewModel = MainViewModel(
             appContext = context,
             userRepo = userRepo,
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
-            templateRepo = TemplateRepository(null)
+            templateRepo = TemplateRepository(null),
+            styleHistoryRepo = styleHistoryRepo
         )
         viewModel.waterMark.observeForever {}
         viewModel.imageList.observeForever {}
@@ -93,7 +105,7 @@ class MainViewModelSaveImageImmutabilityRoboTest {
                 workerParameters: WorkerParameters
             ): ListenableWorker? {
                 return if (workerClassName == BatchExportWorker::class.java.name) {
-                    BatchExportWorker(appContext, workerParameters, waterMarkRepo, userRepo, engine, BatchHistoryRepository(NoopBatchHistoryDao()))
+                    BatchExportWorker(appContext, workerParameters, waterMarkRepo, userRepo, engine, BatchHistoryRepository(NoopBatchHistoryDao()), styleHistoryRepo)
                 } else {
                     null
                 }
@@ -206,7 +218,8 @@ class MainViewModelSaveImageImmutabilityRoboTest {
             userRepo = UserConfigRepository(userDataStore),
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
-            templateRepo = TemplateRepository(null)
+            templateRepo = TemplateRepository(null),
+            styleHistoryRepo = WatermarkStyleHistoryRepository(NoopWatermarkStyleHistoryDao())
         )
         freshViewModel.reattachExportWorkIfRunning()
 

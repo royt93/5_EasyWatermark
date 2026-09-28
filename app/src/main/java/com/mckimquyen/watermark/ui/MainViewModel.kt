@@ -37,10 +37,13 @@ import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.data.model.WatermarkLayer
 import com.mckimquyen.watermark.data.model.entity.Template
+import com.mckimquyen.watermark.data.model.entity.WatermarkStyleHistoryEntity
 import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.mckimquyen.watermark.data.repo.WatermarkStyleCoach
+import com.mckimquyen.watermark.data.repo.WatermarkStyleHistoryRepository
 import com.mckimquyen.watermark.export.BatchExportWorker
 import com.mckimquyen.watermark.utils.ktx.formatDate
 import com.mckimquyen.watermark.utils.ktx.launch
@@ -54,6 +57,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -68,6 +72,8 @@ class MainViewModel @Inject constructor(
     internal val waterMarkRepo: WaterMarkRepository,
     private val memorySettingRepo: MemorySettingRepo,
     private val templateRepo: TemplateRepository,
+    private val styleHistoryRepo: WatermarkStyleHistoryRepository,
+    private val styleCoach: WatermarkStyleCoach = WatermarkStyleCoach(),
     private val exportNaming: com.mckimquyen.watermark.export.ExportNaming = com.mckimquyen.watermark.export.ExportNaming(),
     private val batchExportEngine: com.mckimquyen.watermark.export.BatchExportEngine =
         com.mckimquyen.watermark.export.BatchExportEngine(appContext, exportNaming),
@@ -114,6 +120,57 @@ class MainViewModel @Inject constructor(
         waterMarkRepo.imageInfoMapFlow.asLiveData().map { Pair(it, autoScroll) }
 
     val galleryPickedImageList: MutableLiveData<List<Image>> = MutableLiveData()
+
+    /**
+     * IDEA-12: gợi ý style watermark "quen dùng" khi mở batch mới — `null` nếu chưa đủ lịch sử
+     * ([WatermarkStyleCoach.MIN_SAMPLES]), không style nào đạt ngưỡng, hoặc style đề xuất trùng
+     * cấu hình đang áp dụng (tránh gợi ý cái đang dùng sẵn). Tính lại mỗi lần [updateImageList] nạp
+     * batch ảnh mới; "Bỏ qua" chỉ ẩn trong session ViewModel hiện tại (không persist).
+     */
+    private val _styleSuggestion = MutableStateFlow<WatermarkStyleHistoryEntity?>(null)
+    val styleSuggestionFlow: StateFlow<WatermarkStyleHistoryEntity?> = _styleSuggestion.asStateFlow()
+
+    private fun refreshStyleSuggestion() {
+        launch {
+            val suggestion = styleCoach.suggest(styleHistoryRepo.recent())
+            _styleSuggestion.value = suggestion?.let {
+                val current = WatermarkStyleHistoryRepository.currentSignature(waterMarkRepo.waterMark.first())
+                it.takeIf { s -> styleCoach.isDifferentFromCurrent(s, current) }
+            }
+        }
+    }
+
+    /** Áp cấu hình style đề xuất, GIỮ NGUYÊN `text`/`iconUri`/layer phụ hiện tại — chỉ đổi phần "signature". */
+    fun applySuggestedStyle() {
+        val suggestion = _styleSuggestion.value ?: return
+        launch {
+            val current = waterMarkRepo.waterMark.first()
+            waterMarkRepo.applyWaterMark(
+                current.copy(
+                    textColor = suggestion.textColor,
+                    textStyle = TextPaintStyle.obtainSealedClass(suggestion.textStyleKey),
+                    textTypeface = TextTypeface.obtainSealedClass(suggestion.textTypefaceKey),
+                    alpha = suggestion.alpha,
+                    anchor = suggestion.anchor,
+                    markMode = if (suggestion.markModeValue == WaterMarkRepository.MarkMode.Image.value) {
+                        WaterMarkRepository.MarkMode.Image
+                    } else {
+                        WaterMarkRepository.MarkMode.Text
+                    },
+                    exifFrameStyle = suggestion.exifFrameStyle,
+                    textEffectStroke = suggestion.textEffectStroke,
+                    textEffectShadow = suggestion.textEffectShadow,
+                    textEffectPillBackground = suggestion.textEffectPillBackground
+                )
+            )
+            _styleSuggestion.value = null
+        }
+    }
+
+    /** Ẩn banner, không hỏi lại trong session batch hiện tại (không persist — cố ý, xem ticket). */
+    fun dismissStyleSuggestion() {
+        _styleSuggestion.value = null
+    }
 
     val selectedImage: LiveData<ImageInfo> = waterMarkRepo.selectedImage.asLiveData()
 
@@ -482,6 +539,7 @@ class MainViewModel @Inject constructor(
             nextSelectedPos = 0
             waterMarkRepo.updateImageList(list)
         }
+        refreshStyleSuggestion()
     }
 
     private suspend fun generateImageInfoList(list: List<Uri>) =

@@ -431,6 +431,10 @@
     <string name="watermark_profile_apply_confirm_message">現在のウォーターマーク設定は「%1$s」に置き換えられます。</string>
     <string name="watermark_profile_apply_confirm_title">このプロファイルを適用しますか？</string>
     <string name="watermark_profile_delete_confirm_message">このプロファイルを削除しますか？</string>
+    <!-- IDEA-12: On-device Style Coach banner -->
+    <string name="style_suggestion_banner_message">いつものスタイルを適用しますか？</string>
+    <string name="style_suggestion_action_apply">適用</string>
+    <string name="style_suggestion_action_dismiss">閉じる</string>
     <string name="watermark_profile_empty">保存済みのプロファイルはまだありません</string>
     <string name="watermark_profile_name_hint">プロファイル名（例：Instagram）</string>
     <string name="watermark_profile_saved">プロファイルを保存しました</string>

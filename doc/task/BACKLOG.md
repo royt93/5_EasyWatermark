@@ -52,7 +52,7 @@
 | [M3-08](done/M3-08-migrate-edit-panels-dialogs-bottom-sheets.md) | P1 | M | Migrate toàn bộ Dialogs, Bottom Sheets và Panels chỉnh sửa sang Material You M3 | **DONE** |
 | [M3-09](done/M3-09-cleanup-ios-glass-assets-lint-verification.md) | P2 | S | Dọn dẹp triệt để tài nguyên iOS Glass, Lint & Kiểm thử hồi quy toàn diện | **DONE** |
 
-## UNIQUE_IDEAS (5, +13 done) — tính năng độc quyền/đột phá, effort cao
+## UNIQUE_IDEAS (4, +14 done) — tính năng độc quyền/đột phá, effort cao
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
@@ -60,7 +60,8 @@
 | [IDEA-04](todo/IDEA-04-cloud-sync-brand-kit.md) | XL | Cloud sync Brand Kit đa thiết bị |
 | [IDEA-05](todo/IDEA-05-cho-template-cong-dong.md) | XL | Chợ template cộng đồng (network effect) |
 | [IDEA-11](todo/IDEA-11-live-camera-watermark-ar-preview-xem-watermark-ngay-tren-vie.md) | XL | Live Camera Watermark / AR preview — watermark ngay trên viewfinder trước khi chụp (mới 2026-09-16, 2 nguồn đồng thuận) |
-| [IDEA-12](todo/IDEA-12-on-device-style-coach-goi-y-fontmauopacityvi-tri-theo-phong.md) | L | On-device Style Coach — gợi ý font/màu/opacity/vị trí theo phong cách ảnh cá nhân, thuần local heuristic (mới 2026-09-16, **đã có thiết kế kỹ thuật chi tiết, brainstorm 2026-09-27** — hạ effort XL→L sau khi bỏ hướng ML/palette, dùng đếm tần suất + tái dùng `WatermarkProfileDatabase`) |
+
+✅ **[IDEA-12](done/IDEA-12-on-device-style-coach-goi-y-fontmauopacityvi-tri-theo-phong.md)** — On-device Style Coach — heuristic đếm tần suất thuần (≥10 lần export, ≥60% cùng signature) gợi ý áp lại style watermark quen dùng, banner M3 trong editor — done 2026-09-28, smoke test TECNO_KJ7 (verify trực tiếp SQLite thật trên device: migration + record + banner render + apply đổi đúng màu).
 
 ✅ **[IDEA-14](done/IDEA-14-smart-redaction-watermark-tu-phat-hien-thong-tin-nhay-cam-tr.md)** — Smart Redaction + Watermark — tự phát hiện thông tin nhạy cảm (email, SĐT, mặt người) bằng ML Kit Text Recognition + Face Detection, khoanh vùng cho user tap chọn rồi mosaic hoá TRƯỚC KHI đóng dấu bản quyền — done 2026-09-27, smoke test Samsung Galaxy S24 Ultra.
 

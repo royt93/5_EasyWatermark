@@ -12,6 +12,7 @@ import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -49,7 +50,8 @@ class MainViewModelCompressImgRoboTest {
             userRepo = UserConfigRepository(userDataStore),
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
-            templateRepo = TemplateRepository(null)
+            templateRepo = TemplateRepository(null),
+            styleHistoryRepo = noopWatermarkStyleHistoryRepository()
         )
         // Kích hoạt collect waterMark Flow -> LiveData (giống các test khác), đảm bảo
         // waterMark.value != null trước khi gọi compressImg (imageInfoList rỗng mới là điều kiện test).

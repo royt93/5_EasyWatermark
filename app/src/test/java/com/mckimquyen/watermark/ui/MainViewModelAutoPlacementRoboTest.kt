@@ -15,6 +15,7 @@ import com.mckimquyen.watermark.export.AutoPlacementEngine
 import com.mckimquyen.watermark.export.ExportNaming
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import com.mckimquyen.watermark.utils.facedetection.FaceDetectionSource
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -63,6 +64,7 @@ class MainViewModelAutoPlacementRoboTest {
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
             templateRepo = TemplateRepository(null),
+            styleHistoryRepo = noopWatermarkStyleHistoryRepository(),
             autoPlacementEngine = fakeEngine
         )
         runBlocking { waterMarkRepo.waterMark.first() } // warm-up: xem MainViewModelCompressImgRoboTest comment

@@ -13,6 +13,7 @@ import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -46,7 +47,8 @@ class MainViewModelGenerateOutputNameRoboTest {
             userRepo = UserConfigRepository(userDataStore),
             waterMarkRepo = WaterMarkRepository(context, waterMarkDataStore),
             memorySettingRepo = MemorySettingRepo(),
-            templateRepo = TemplateRepository(null)
+            templateRepo = TemplateRepository(null),
+            styleHistoryRepo = noopWatermarkStyleHistoryRepository()
         )
         shadowOf(Looper.getMainLooper()).idle()
         return viewModel

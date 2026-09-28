@@ -10,6 +10,7 @@ import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -42,7 +43,8 @@ class MainViewModelCompareRoboTest {
             userRepo = UserConfigRepository(userDataStore),
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
-            templateRepo = TemplateRepository(null)
+            templateRepo = TemplateRepository(null),
+            styleHistoryRepo = noopWatermarkStyleHistoryRepository()
         )
         viewModel.compareReveal.observeForever {}
     }

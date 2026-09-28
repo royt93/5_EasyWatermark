@@ -438,6 +438,10 @@
     <string name="watermark_profile_apply_confirm_message">Текущие настройки водяного знака будут заменены на «%1$s».</string>
     <string name="watermark_profile_apply_confirm_title">Применить этот профиль?</string>
     <string name="watermark_profile_delete_confirm_message">Удалить этот профиль?</string>
+    <!-- IDEA-12: On-device Style Coach banner -->
+    <string name="style_suggestion_banner_message">Применить обычный стиль?</string>
+    <string name="style_suggestion_action_apply">Применить</string>
+    <string name="style_suggestion_action_dismiss">Отклонить</string>
     <string name="watermark_profile_empty">Сохранённых профилей пока нет</string>
     <string name="watermark_profile_name_hint">Название профиля (например, Instagram)</string>
     <string name="watermark_profile_saved">Профиль сохранён</string>

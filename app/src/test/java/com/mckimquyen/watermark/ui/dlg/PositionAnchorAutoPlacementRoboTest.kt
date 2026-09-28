@@ -21,6 +21,7 @@ import com.mckimquyen.watermark.export.AutoPlacementEngine
 import com.mckimquyen.watermark.export.ExportNaming
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import com.mckimquyen.watermark.ui.MainViewModel
 import com.mckimquyen.watermark.utils.facedetection.FaceDetectionSource
 import kotlinx.coroutines.runBlocking
@@ -81,6 +82,7 @@ class PositionAnchorAutoPlacementRoboTest {
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
             templateRepo = TemplateRepository(null),
+            styleHistoryRepo = noopWatermarkStyleHistoryRepository(),
             autoPlacementEngine = fakeEngine
         )
         testViewModel = viewModel

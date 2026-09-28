@@ -15,6 +15,7 @@ import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -47,7 +48,8 @@ class MainViewModelExifFrameSuggestionRoboTest {
             userRepo = UserConfigRepository(userDataStore),
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
-            templateRepo = TemplateRepository(null)
+            templateRepo = TemplateRepository(null),
+            styleHistoryRepo = noopWatermarkStyleHistoryRepository()
         )
         // waterMark/selectedImage là LiveData.asLiveData() từ Flow — chỉ bắt đầu collect khi có
         // observer (LiveData chỉ ACTIVE khi có observer), nếu không .value giữ null vĩnh viễn dù

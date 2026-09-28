@@ -429,6 +429,10 @@
     <string name="watermark_profile_apply_confirm_message">Les paramètres actuels du filigrane seront remplacés par « %1$s ».</string>
     <string name="watermark_profile_apply_confirm_title">Appliquer ce profil ?</string>
     <string name="watermark_profile_delete_confirm_message">Supprimer ce profil ?</string>
+    <!-- IDEA-12: On-device Style Coach banner -->
+    <string name="style_suggestion_banner_message">Appliquer votre style habituel ?</string>
+    <string name="style_suggestion_action_apply">Appliquer</string>
+    <string name="style_suggestion_action_dismiss">Ignorer</string>
     <string name="watermark_profile_empty">Aucun profil enregistré pour l\'instant</string>
     <string name="watermark_profile_name_hint">Nom du profil (ex. Instagram)</string>
     <string name="watermark_profile_saved">Profil enregistré</string>

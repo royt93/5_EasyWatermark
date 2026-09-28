@@ -6,16 +6,19 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.net.Uri
 import androidx.datastore.preferences.core.edit
+import androidx.room.Room
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
+import com.mckimquyen.watermark.data.db.WatermarkProfileDatabase
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.mckimquyen.watermark.data.repo.WatermarkStyleHistoryRepository
 import com.mckimquyen.watermark.di.userDataStore
 import com.mckimquyen.watermark.di.waterMarkDataStore
 import com.mckimquyen.watermark.ui.about.OpenSourceActivity
@@ -55,22 +58,29 @@ class MainViewModelCompressImgIntegrationTest {
     private lateinit var waterMarkRepo: WaterMarkRepository
     private lateinit var viewModel: MainViewModel
     private var sourceFile: File? = null
+    private lateinit var styleHistoryDb: WatermarkProfileDatabase
 
     @Before
     fun setUp() {
         runBlocking { context.waterMarkDataStore.edit { it.clear() } }
         waterMarkRepo = WaterMarkRepository(context, context.waterMarkDataStore)
+        // IDEA-12: không liên quan tính năng compress đang test — DB in-memory thật, không cần fake.
+        styleHistoryDb = Room.inMemoryDatabaseBuilder(context, WatermarkProfileDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
         viewModel = MainViewModel(
             appContext = context,
             userRepo = UserConfigRepository(context.userDataStore),
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
-            templateRepo = TemplateRepository(null)
+            templateRepo = TemplateRepository(null),
+            styleHistoryRepo = WatermarkStyleHistoryRepository(styleHistoryDb.watermarkStyleHistoryDao())
         )
     }
 
     @After
     fun tearDown() {
+        styleHistoryDb.close()
         sourceFile?.delete()
         cacheTmpFiles().forEach { it.delete() }
         runBlocking { context.waterMarkDataStore.edit { it.clear() } }

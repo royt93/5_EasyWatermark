@@ -14,6 +14,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.export.ExportNaming
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import com.mckimquyen.watermark.utils.LocationNameResolver
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -46,7 +47,8 @@ class MainViewModelResolvePreviewTextRoboTest {
             userRepo = UserConfigRepository(userDataStore),
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
-            templateRepo = TemplateRepository(null)
+            templateRepo = TemplateRepository(null),
+            styleHistoryRepo = noopWatermarkStyleHistoryRepository()
         )
     }
 
@@ -132,6 +134,7 @@ class MainViewModelResolvePreviewTextRoboTest {
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
             templateRepo = TemplateRepository(null),
+            styleHistoryRepo = noopWatermarkStyleHistoryRepository(),
             exportNaming = ExportNaming(LocationNameResolver { _, _ -> "Hà Nội, Việt Nam" })
         )
         val gps = imageInfo(Uri.parse("content://media/gps"), ExifModel(latitude = 21.0285, longitude = 105.8542))

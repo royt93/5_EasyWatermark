@@ -435,6 +435,10 @@
     <string name="watermark_profile_apply_confirm_message">当前水印设置将被替换为“%1$s”。</string>
     <string name="watermark_profile_apply_confirm_title">应用此预设？</string>
     <string name="watermark_profile_delete_confirm_message">删除此预设？</string>
+    <!-- IDEA-12: On-device Style Coach banner -->
+    <string name="style_suggestion_banner_message">应用您常用的样式？</string>
+    <string name="style_suggestion_action_apply">应用</string>
+    <string name="style_suggestion_action_dismiss">忽略</string>
     <string name="watermark_profile_empty">暂无已保存的预设</string>
     <string name="watermark_profile_name_hint">预设名称（例如 Instagram）</string>
     <string name="watermark_profile_saved">预设已保存</string>

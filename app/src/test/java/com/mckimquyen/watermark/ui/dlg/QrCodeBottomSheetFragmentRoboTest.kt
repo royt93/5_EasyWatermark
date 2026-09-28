@@ -15,6 +15,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.export.ExportNaming
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import com.mckimquyen.watermark.ui.MainViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -72,7 +73,8 @@ class QrCodeBottomSheetFragmentRoboTest {
             userRepo = UserConfigRepository(newTestUserDataStore(context)),
             waterMarkRepo = WaterMarkRepository(context, waterMarkDataStore),
             memorySettingRepo = MemorySettingRepo(),
-            templateRepo = TemplateRepository(null)
+            templateRepo = TemplateRepository(null),
+            styleHistoryRepo = noopWatermarkStyleHistoryRepository()
         )
         testViewModel = viewModel
         // `waterMark`/`selectedImage` là LiveData bọc Flow lazy (`asLiveData()`) — chỉ bắt đầu

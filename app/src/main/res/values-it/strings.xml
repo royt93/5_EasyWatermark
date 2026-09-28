@@ -433,6 +433,10 @@
     <string name="watermark_profile_apply_confirm_message">Le impostazioni watermark attuali saranno sostituite da "%1$s".</string>
     <string name="watermark_profile_apply_confirm_title">Applicare questo profilo?</string>
     <string name="watermark_profile_delete_confirm_message">Eliminare questo profilo?</string>
+    <!-- IDEA-12: On-device Style Coach banner -->
+    <string name="style_suggestion_banner_message">Applicare il tuo stile abituale?</string>
+    <string name="style_suggestion_action_apply">Applica</string>
+    <string name="style_suggestion_action_dismiss">Ignora</string>
     <string name="watermark_profile_empty">Nessun profilo salvato ancora</string>
     <string name="watermark_profile_name_hint">Nome profilo (es. Instagram)</string>
     <string name="watermark_profile_saved">Profilo salvato</string>

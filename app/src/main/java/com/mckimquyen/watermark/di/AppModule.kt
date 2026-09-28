@@ -66,11 +66,16 @@ object AppModule {
         context = app,
         klass = WatermarkProfileDatabase::class.java,
         name = "watermark-profile-db"
-    ).addMigrations(WatermarkProfileDatabase.MIGRATION_1_2).build()
+    ).addMigrations(WatermarkProfileDatabase.MIGRATION_1_2, WatermarkProfileDatabase.MIGRATION_2_3).build()
 
     @Singleton
     @Provides
     fun provideWatermarkProfileDao(db: WatermarkProfileDatabase) = db.watermarkProfileDao()
+
+    /** IDEA-12: bảng chung [WatermarkProfileDatabase], không mở DB riêng. */
+    @Singleton
+    @Provides
+    fun provideWatermarkStyleHistoryDao(db: WatermarkProfileDatabase) = db.watermarkStyleHistoryDao()
 
     /** IDEA-10: DB riêng (không seed từ asset) cho quản lý Người nhận (Recipient). */
     @Singleton

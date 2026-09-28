@@ -412,6 +412,68 @@ class LaunchView : CustomViewGroup {
         }
     }
 
+    /**
+     * IDEA-12: banner gợi ý style watermark "quen dùng" — NẰM NGOÀI [editorViews] cố ý, vì hiện/ẩn
+     * do `MainViewModel.styleSuggestionFlow` quyết định (qua MainActivity), KHÔNG theo chuyển đổi
+     * Launch/Editor mode chung như các view khác. Mặc định GONE.
+     */
+    val cardStyleSuggestion: MaterialCardView by lazy {
+        MaterialCardView(context).apply {
+            layoutParams = MarginLayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).also {
+                it.setMargins(16.dp, 0, 16.dp, 8.dp)
+            }
+            radius = 16.dp.toFloat()
+            cardElevation = 2.dp.toFloat()
+            val containerColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorSecondaryContainer, Color.LTGRAY)
+            setCardBackgroundColor(containerColor)
+            addView(
+                LinearLayout(context).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = Gravity.CENTER_VERTICAL
+                    setPadding(16.dp, 8.dp, 8.dp, 8.dp)
+                    layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                    addView(tvStyleSuggestionMessage)
+                    addView(btnStyleSuggestionDismiss)
+                    addView(btnStyleSuggestionApply)
+                }
+            )
+        }
+    }
+
+    val tvStyleSuggestionMessage: TextView by lazy {
+        MaterialTextView(context).apply {
+            layoutParams = LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
+            text = context.getString(R.string.style_suggestion_banner_message)
+            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
+            val onSecondaryContainer = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSecondaryContainer, Color.BLACK)
+            setTextColor(onSecondaryContainer)
+        }
+    }
+
+    val btnStyleSuggestionApply: com.google.android.material.button.MaterialButton by lazy {
+        com.google.android.material.button.MaterialButton(
+            context,
+            null,
+            com.google.android.material.R.attr.materialButtonStyle
+        ).apply {
+            layoutParams = LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).also { it.marginStart = 4.dp }
+            text = context.getString(R.string.style_suggestion_action_apply)
+            isAllCaps = false
+        }
+    }
+
+    val btnStyleSuggestionDismiss: com.google.android.material.button.MaterialButton by lazy {
+        com.google.android.material.button.MaterialButton(
+            context,
+            null,
+            com.google.android.material.R.attr.borderlessButtonStyle
+        ).apply {
+            layoutParams = LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).also { it.marginStart = 4.dp }
+            text = context.getString(R.string.style_suggestion_action_dismiss)
+            isAllCaps = false
+        }
+    }
+
     val rvPhotoList: TouchSensitiveRv by lazy {
         TouchSensitiveRv(context).apply {
             layoutParams = MarginLayoutParams(
@@ -478,6 +540,8 @@ class LaunchView : CustomViewGroup {
             it.isVisible = false
             addView(it)
         }
+        cardStyleSuggestion.isVisible = false
+        addView(cardStyleSuggestion)
         post {
             // Only play the launch-mode appear animation if we're still in launch mode.
             // Share-image entry (ACTION_SEND) can switch to Editor before this runs; without the
@@ -502,6 +566,8 @@ class LaunchView : CustomViewGroup {
             .plus(rvPanel.measuredHeightWithMargins)
             .plus(fcFunctionDetail.measuredHeightWithMargins)
             .plus(rvPhotoList.measuredHeightWithMargins)
+            // IDEA-12: chỉ trừ vào canvas khi banner đang hiện — GONE không chiếm chỗ.
+            .plus(if (cardStyleSuggestion.isVisible) cardStyleSuggestion.measuredHeightWithMargins else 0)
 
         AppLog.d(
             TAG,
@@ -592,6 +658,13 @@ class LaunchView : CustomViewGroup {
             // 16dp gap above fcFunctionDetail for thumbnails
             val yOffset = fcFunctionDetail.top - 16.dp - it.measuredHeight
             it.layout(it.marginStart, yOffset)
+        }
+        // IDEA-12: banner gợi ý style, ngay trên dải thumbnail — chỉ có ý nghĩa khi đang hiện.
+        if (cardStyleSuggestion.isVisible) {
+            cardStyleSuggestion.let {
+                val yOffset = rvPhotoList.top - 8.dp - it.measuredHeight
+                it.layout(it.marginStart, yOffset)
+            }
         }
     }
     //endregion

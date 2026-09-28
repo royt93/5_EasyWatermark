@@ -14,11 +14,14 @@ import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.data.db.dao.BatchHistoryDao
+import com.mckimquyen.watermark.data.db.dao.WatermarkStyleHistoryDao
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.entity.BatchHistoryEntity
+import com.mckimquyen.watermark.data.model.entity.WatermarkStyleHistoryEntity
 import com.mckimquyen.watermark.data.repo.BatchHistoryRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.mckimquyen.watermark.data.repo.WatermarkStyleHistoryRepository
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import kotlinx.coroutines.flow.Flow
@@ -47,6 +50,8 @@ class BatchExportWorkerRoboTest {
     private lateinit var userRepo: UserConfigRepository
     private lateinit var fakeHistoryDao: FakeBatchHistoryDao
     private lateinit var batchHistoryRepo: BatchHistoryRepository
+    private lateinit var fakeStyleHistoryDao: FakeWatermarkStyleHistoryDao
+    private lateinit var styleHistoryRepo: WatermarkStyleHistoryRepository
 
     /** FEAT-04: fake nhẹ thay vì Room thật — Room DAO test dành cho androidTest theo quy ước repo này. */
     private class FakeBatchHistoryDao : BatchHistoryDao {
@@ -60,6 +65,17 @@ class BatchExportWorkerRoboTest {
         override suspend fun trimOldest(keepCount: Int) = Unit
     }
 
+    /** IDEA-12: fake nhẹ, mirror [FakeBatchHistoryDao]. */
+    private class FakeWatermarkStyleHistoryDao : WatermarkStyleHistoryDao {
+        val inserted = mutableListOf<WatermarkStyleHistoryEntity>()
+        override suspend fun insert(entity: WatermarkStyleHistoryEntity): Long {
+            inserted.add(entity)
+            return inserted.size.toLong()
+        }
+        override suspend fun recent(n: Int): List<WatermarkStyleHistoryEntity> = inserted.takeLast(n).reversed()
+        override suspend fun pruneKeepLatest(keep: Int) = Unit
+    }
+
     @Before
     fun setUp() {
         runBlocking {
@@ -70,6 +86,8 @@ class BatchExportWorkerRoboTest {
         userRepo = UserConfigRepository(userDataStore)
         fakeHistoryDao = FakeBatchHistoryDao()
         batchHistoryRepo = BatchHistoryRepository(fakeHistoryDao)
+        fakeStyleHistoryDao = FakeWatermarkStyleHistoryDao()
+        styleHistoryRepo = WatermarkStyleHistoryRepository(fakeStyleHistoryDao)
 
         val engine = BatchExportEngine(context, ExportNaming())
         val testWorkerFactory = object : WorkerFactory() {
@@ -79,7 +97,7 @@ class BatchExportWorkerRoboTest {
                 workerParameters: WorkerParameters
             ): ListenableWorker? {
                 return if (workerClassName == BatchExportWorker::class.java.name) {
-                    BatchExportWorker(appContext, workerParameters, waterMarkRepo, userRepo, engine, batchHistoryRepo)
+                    BatchExportWorker(appContext, workerParameters, waterMarkRepo, userRepo, engine, batchHistoryRepo, styleHistoryRepo)
                 } else {
                     null
                 }
@@ -153,6 +171,10 @@ class BatchExportWorkerRoboTest {
         assertThat(BatchHistoryRepository.decodeUriList(entry.inputUris)).containsExactly(original.uri)
         assertThat(BatchHistoryRepository.decodeUriList(entry.outputUris)).isEmpty()
         assertThat(BatchHistoryRepository.decodeUriList(entry.failedInputUris)).containsExactly(original.uri)
+
+        // IDEA-12: 0 ảnh thành công (toàn bộ decode-fail) → KHÔNG ghi "style signature" nào, tránh
+        // học nhầm 1 lần chạy thất bại hoàn toàn thành 1 lần dùng style thật.
+        assertThat(fakeStyleHistoryDao.inserted).isEmpty()
     }
 
     /**

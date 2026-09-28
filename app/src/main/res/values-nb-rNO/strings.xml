@@ -428,6 +428,10 @@
     <string name="watermark_profile_apply_confirm_message">Nåværende vannmerkeinnstillinger blir erstattet med «%1$s».</string>
     <string name="watermark_profile_apply_confirm_title">Bruke denne profilen?</string>
     <string name="watermark_profile_delete_confirm_message">Slette denne profilen?</string>
+    <!-- IDEA-12: On-device Style Coach banner -->
+    <string name="style_suggestion_banner_message">Bruke din vanlige stil?</string>
+    <string name="style_suggestion_action_apply">Bruk</string>
+    <string name="style_suggestion_action_dismiss">Avvis</string>
     <string name="watermark_profile_empty">Ingen lagret profil ennå</string>
     <string name="watermark_profile_name_hint">Profilnavn (f.eks. Instagram)</string>
     <string name="watermark_profile_saved">Profil lagret</string>
