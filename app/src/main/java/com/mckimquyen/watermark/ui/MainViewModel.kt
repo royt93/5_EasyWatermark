@@ -250,6 +250,16 @@ class MainViewModel @Inject constructor(
     private var exportWorkLiveData: LiveData<androidx.work.WorkInfo?>? = null
 
     /**
+     * BUG thật phát hiện lúc smoke test BUG-39: WorkManager giữ WorkInfo SUCCEEDED/CANCELLED CŨ
+     * (unique work `batch_export`) sau khi đã finish — mỗi lần [reattachExportWorkIfRunning] gọi
+     * lại (mở `SaveImageBSDialogFragment` cho ảnh MỚI), [observeExportWork] re-subscribe LiveData
+     * và bị WorkManager REPLAY NGAY WorkInfo cũ đó cho observer mới, dù chưa có work mới nào được
+     * enqueue — ghi đè `saveResult` về `TYPE_JOB_FINISH` dù vừa [resetJobStatus] (user sửa cấu
+     * hình). Ghi nhớ id WorkInfo FINISHED đã xử lý — bỏ qua nếu observer mới thấy LẠI đúng id đó.
+     */
+    private var lastHandledFinishedWorkId: java.util.UUID? = null
+
+    /**
      * ENH-01: chạy qua `BatchExportWorker` (WorkManager) thay vì `viewModelScope` — batch sống sót
      * khi app xuống nền (Doze/OEM background-kill, đã thấy trên chính các máy Samsung/TECNO dùng
      * để test trong dự án này). `contentResolver`/`imageList` không cần truyền cho Worker nữa
@@ -358,6 +368,12 @@ class MainViewModel @Inject constructor(
             if (info == null) return@Observer
             if (info.state.isFinished) {
                 exportWorkObserver?.let { liveData.removeObserver(it) }
+                if (info.id == lastHandledFinishedWorkId) {
+                    // WorkManager replay lại đúng work CŨ đã xử lý rồi (không phải hoàn thành mới)
+                    // — không ghi đè saveResult, nếu không sẽ xoá mất resetJobStatus() vừa chạy.
+                    return@Observer
+                }
+                lastHandledFinishedWorkId = info.id
                 // Progress Data của item cuối cùng có thể đã bị WorkManager xoá trước khi observer
                 // này kịp thấy (xem BatchExportWorker.doWork()) — đẩy lại toàn bộ trạng thái cuối
                 // (đã ghi vào repo, tự imageList cập nhật) qua saveProcess để adapter không bị kẹt

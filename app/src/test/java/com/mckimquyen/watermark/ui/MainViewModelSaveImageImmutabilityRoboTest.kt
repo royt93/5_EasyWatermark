@@ -223,6 +223,51 @@ class MainViewModelSaveImageImmutabilityRoboTest {
         assertThat(freshViewModel.saveResult.value?.code).isEqualTo(MainViewModel.TYPE_JOB_FINISH)
     }
 
+    /**
+     * BUG thật phát hiện lúc smoke test BUG-39: sau 1 lần export THÀNH CÔNG, user sửa cấu hình
+     * (→ `resetJobStatus()` qua `MainActivity.viewModel.waterMark.observe`) rồi mở LẠI
+     * `SaveImageBSDialogFragment` cho ảnh MỚI (`onViewCreated` gọi `reattachExportWorkIfRunning()`
+     * TRƯỚC khi đọc `saveResult.value`) — `observeExportWork()` re-subscribe LiveData WorkManager
+     * unique-work và bị WorkManager replay lại NGAY WorkInfo SUCCEEDED CŨ (chưa có work mới nào
+     * enqueue), ghi đè `saveResult` về `TYPE_JOB_FINISH` dù vừa `resetJobStatus()` — nút Export
+     * hiện nhầm label "Chia sẻ" (route `openShare()`) thay vì bắt đầu export mới.
+     */
+    @Test
+    fun reattachExportWorkIfRunning_afterResetJobStatus_doesNotReplayStaleFinishedWork() {
+        val original = ImageInfo(Uri.parse("content://does.not.exist/fake.jpg"))
+        val viewInfo = ViewInfo(
+            width = 100,
+            height = 100,
+            paddingLeft = 0,
+            paddingTop = 0,
+            paddingRight = 0,
+            paddingBottom = 0,
+            scaleType = ImageView.ScaleType.FIT_CENTER,
+            matrix = Matrix()
+        )
+        runBlocking { waterMarkRepo.updateImageList(listOf(original)) }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // 1) Export lần đầu chạy xong thật (TYPE_JOB_FINISH) — giống 1 lần export thành công trước đó.
+        viewModel.saveImage(context.contentResolver, viewInfo, listOf(original))
+        awaitJobFinished()
+        assertThat(viewModel.saveResult.value?.code).isEqualTo(MainViewModel.TYPE_JOB_FINISH)
+
+        // 2) User sửa cấu hình watermark → MainActivity gọi resetJobStatus() (mô phỏng lại đúng
+        // gọi thật ở MainActivity.kt:531, không qua UI vì test này không dựng Activity).
+        viewModel.resetJobStatus()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertThat(viewModel.saveResult.value?.code).isNull()
+
+        // 3) Mở lại sheet Export cho ảnh MỚI — KHÔNG có work mới nào được enqueue từ bước 2 tới
+        // đây, WorkManager vẫn chỉ có đúng 1 WorkInfo SUCCEEDED cũ ở bước 1.
+        viewModel.reattachExportWorkIfRunning()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        // Trước fix: dòng dưới FAIL vì saveResult bị replay ngược về TYPE_JOB_FINISH.
+        assertThat(viewModel.saveResult.value?.code).isNull()
+    }
+
     /** R5: `exportWorkObserver` dùng `observeForever` — `onCleared()` phải gỡ, không rò rỉ observer. */
     @Test
     fun onCleared_removesExportWorkObserver_soLaterWorkUpdatesDoNotLeakIntoDeadViewModel() {
