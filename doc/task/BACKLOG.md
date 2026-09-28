@@ -11,7 +11,7 @@
 - `sources`: agent nào tìm ra/đồng thuận — độ đồng thuận cao = độ tin cậy cao.
 - **Prompt loop:** mỗi ticket trong `todo/` có section "## Prompt loop" trỏ tới [PROMPT_TEMPLATE.md](PROMPT_TEMPLATE.md) — Definition of Done dùng chung (audit >9/10 + unit/widget/integration test đủ mọi case + smoke test thật trên device đã khoá → mới được move `done/` + push).
 
-## BUGS_TO_FIX (2 deferred + 34 done) — ưu tiên P0 trước
+## BUGS_TO_FIX (7 todo + 2 deferred + 34 done) — ưu tiên P0 trước
 
 > **Re-audit 2026-09-16** (xem `## Re-audit 2026-09-16` cuối file) tìm thêm 1 finding P0 thật NGOÀI danh sách dưới — **`app/keystore.jks` + `gradle.properties` (chứa password ký release plaintext) đang commit vào git, cả 2 remote GitHub đều PUBLIC** — user đã xác nhận biết và sẽ tự xử lý riêng (không phải task thường, không tạo ticket .md — đây là sự cố bảo mật cần quyết định business, không phải code fix qua `/loop`).
 
@@ -19,14 +19,22 @@
 |---|---|---|---|
 | [BUG-14](todo/BUG-14-vip-secret-hardcode-trong-apk.md) | P0 | M | VIP secret hardcode base64, lặp 3 chỗ + 1 secret thứ 2 chưa từng ticket hoá (mở rộng 2026-09-10) — **deferred, xem ghi chú cuối file** |
 | [BUG-15](todo/BUG-15-admob-rewarded-release-dung-test-id.md) | P0 | XS | `ADMOB_REWARDED_ID` build release vẫn dùng ID test — mất doanh thu, vi phạm chính sách AdMob — **deferred, xem ghi chú cuối file** |
+| [BUG-37](todo/BUG-37-mediastore-overwrite-ghi-that-bai-de-lai-anh-cu-mac-is-pending.md) | P1 | S | MediaStore OVERWRITE ghi thất bại để lại ảnh CŨ mắc `IS_PENDING=1` — ảnh mất khỏi gallery (mới 2026-09-27) |
+| [BUG-38](todo/BUG-38-comparepreview-bottomsheet-khong-recycle-2-bitmap.md) | P1 | XS | `ComparePreviewBottomSheetFragment` không recycle 2 bitmap compare — leak mỗi lần mở (mới 2026-09-27) |
+| [BUG-39](todo/BUG-39-auto-contrast-chi-ap-preview-editor-export-bo-qua.md) | P1 | M | Auto-contrast (IDEA-06) chỉ áp preview editor, export bỏ qua → ảnh xuất khác preview (mới 2026-09-27) |
+| [BUG-40](todo/BUG-40-ten-file-xuat-khong-sanitize-token-chua-dau-gach-cheo.md) | P2 | S | Tên file xuất không sanitize — token `{exposure}`/`{fnumber}` chứa `/` làm export lỗi (mới 2026-09-27) |
+| [BUG-41](todo/BUG-41-switch-dynamic-color-khong-tat-duoc.md) | P2 | S | Switch Dynamic Color ở About không tắt được + `applyToActivitiesIfAvailable` gọi 2 lần (mới 2026-09-27) |
+| [BUG-42](todo/BUG-42-sizehaschanged-so-sanh-w-voi-chieu-cao-cu.md) | P2 | XS | `sizeHasChanged = w != oldh` — so rộng mới với cao cũ, 3 custom view (mới 2026-09-27) |
+| [BUG-43](todo/BUG-43-exif-focal-exposure-parse-khong-guard.md) | P2 | XS | EXIF focal/exposure parse không guard → `NumberFormatException`/`Infinity` (mới 2026-09-27) |
 
 **Đã DONE** (xem `doc/task/done/`): BUG-01..13, 16..27, 28 (release bitmap refcount in reset), 29..31, 32 (outputNamePattern save sync), 33 (safe gallery/share in failed batch), 34, 35 (SAF folder pick SecurityException catch fallback), 36.
 
-## ENHANCEMENTS (0 todo, 1 deferred + 31 done) — cải tiến tính năng có sẵn
+## ENHANCEMENTS (1 todo, 1 deferred + 31 done) — cải tiến tính năng có sẵn
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
 | [ENH-17](todo/ENH-17-vip-key-device-bound.md) | S | VIP key gắn thiết bị (device-bound) — mitigation cho BUG-14 (mới 2026-09-10) — **deferred cùng BUG-14/15** |
+| [ENH-36](todo/ENH-36-gate-log-i-w-e-con-sot-ngoai-enh-03.md) | S | 41 `Log.i`/`Log.w`/`Log.e` chưa gate `BuildConfig.DEBUG` — sót khỏi ENH-03, gồm `onDraw`/`onTouch` mỗi frame (mới 2026-09-27) |
 
 **Đã DONE**: ENH-01..16, ENH-18..20, ENH-21 (gate SimpleSp debug log), ENH-22 (xoá 167 dòng dead code Applovin.kt), ENH-23 (gỡ @Named nhầm ở provideMemorySettingRepository), ENH-24 (gỡ saveVersionCode/KEY_CHANGE_LOG vô ích), ENH-25 (compileSdk đã tự đồng bộ 37, xoá dead `Apps`/`Dependencies.kt` khỏi buildSrc), ENH-26 (gộp bỏ 2 flavor rỗng `appTest`/`appRelease`, đổi tên task Gradle), ENH-27 (sửa selectedPos khi xoá ảnh cuối), ENH-28..29 (fix fd leak + dọn temp cache), ENH-30 (dọn field et thừa TextWatermarkBSDFragment), ENH-31 (validate bounds ảnh thật trước khi ghi signature restore từ backup), ENH-32 (cancel preview job per ViewHolder), ENH-33 (quét SAF đệ quy có giới hạn + dialog switch + fix chạy background thread tránh treo UI), ENH-34 (tách WEBP_LOSSY/WEBP_LOSSLESS trên API 30+, fallback an toàn API cũ), ENH-35 (PreviewResult flag ảnh lỗi).
 
@@ -60,7 +68,7 @@
 | [IDEA-04](todo/IDEA-04-cloud-sync-brand-kit.md) | XL | Cloud sync Brand Kit đa thiết bị |
 | [IDEA-05](todo/IDEA-05-cho-template-cong-dong.md) | XL | Chợ template cộng đồng (network effect) |
 | [IDEA-11](todo/IDEA-11-live-camera-watermark-ar-preview-xem-watermark-ngay-tren-vie.md) | XL | Live Camera Watermark / AR preview — watermark ngay trên viewfinder trước khi chụp (mới 2026-09-16, 2 nguồn đồng thuận) |
-| [IDEA-12](todo/IDEA-12-on-device-style-coach-goi-y-fontmauopacityvi-tri-theo-phong.md) | XL | On-device Style Coach — gợi ý font/màu/opacity/vị trí theo phong cách ảnh cá nhân (mới 2026-09-16) |
+| [IDEA-12](todo/IDEA-12-on-device-style-coach-goi-y-fontmauopacityvi-tri-theo-phong.md) | L | On-device Style Coach — gợi ý font/màu/opacity/vị trí theo phong cách ảnh cá nhân, thuần local heuristic (mới 2026-09-16, **đã có thiết kế kỹ thuật chi tiết, brainstorm 2026-09-27** — hạ effort XL→L sau khi bỏ hướng ML/palette, dùng đếm tần suất + tái dùng `WatermarkProfileDatabase`) |
 
 ✅ **[IDEA-14](done/IDEA-14-smart-redaction-watermark-tu-phat-hien-thong-tin-nhay-cam-tr.md)** — Smart Redaction + Watermark — tự phát hiện thông tin nhạy cảm (email, SĐT, mặt người) bằng ML Kit Text Recognition + Face Detection, khoanh vùng cho user tap chọn rồi mosaic hoá TRƯỚC KHI đóng dấu bản quyền — done 2026-09-27, smoke test Samsung Galaxy S24 Ultra.
 
@@ -289,3 +297,23 @@ Cả 2 ticket implement độc lập ngoài luồng `/loop` chuẩn (session kh�
 - **Smoke test thực tế trên thiết bị TECNO BG6 (`118743744X002560`):**
   - Cài đặt APK thành công, kiểm tra trực quan giao diện LaunchView hiển thị đầy đủ 4 card M3 chuẩn kích thước và tỉ lệ.
   - Bấm nút "Take a photo" kích hoạt thành công camera hệ thống `com.transsion.camera.app.CaptureActivity`.
+
+## Self-audit 2026-09-27 (Claude, 1 nguồn — verify trực tiếp từng dòng)
+
+Phạm vi: toàn bộ `app/src/main` (~26.9k dòng Kotlin, 260 file) + `cmonet/src/main` (5 file, ~200 dòng) — đọc trực tiếp `WaterMarkImageView`, `BatchExportEngine`, `BatchExportWorker`, `ExportNaming`, `BitmapUtils`/`BitmapCache`/`ExifBorderRenderer`, toàn bộ `data/repo/`, `ui/adapter/`, `ui/dlg/`, `ui/panel/`, `ui/widget/`, `MainActivity`/`MainViewModel`, `MyApplication`, 4 file `cmonet`. Đối chiếu 114 ticket `done/` + 8 ticket `todo/` để loại trùng.
+
+8 finding mới, tất cả verify bằng đọc code + đối chiếu ticket cũ (không suy đoán): BUG-37..43, ENH-36. 3 finding P1 đều thuộc nhóm "không crash, chỉ SAI kết quả / mất dữ liệu im lặng" — loại khó phát hiện nhất, khớp bài học FEAT-16/IDEA-14 trước đó.
+
+Đáng chú ý: **BUG-39 cho thấy AC gốc của IDEA-06 (đã ở `done/`) thực tế chưa đạt** — smoke test khi đó chỉ verify preview editor, không verify file export; auto-contrast chưa từng được nối vào `BatchExportEngine`. **BUG-37** là lỗ hổng phát sinh do FEAT-19 (OVERWRITE) thêm sau BUG-19: cleanup `IS_PENDING` chỉ cover nhánh insert.
+
+Phạm vi CHỦ ĐỘNG loại trừ theo yêu cầu (không audit, không đề xuất): Ad SDK/AdMob/AppLovin (`AdManager`, `AdSdkConfig`, buildConfigField ad id, `setupAdmob()`, banner `AboutActivity`), VIP/monetization/license/device-bound/referral (`feature/vip/`, `VipKeys`, `AdKeys`, `VIP_SECRET_*`), mọi phương án cần backend/server/cloud (Firebase, API riêng, cloud sync) — app local-only (DataStore + 3 Room DB local + SAF).
+
+**Đã quét, KHÔNG tạo ticket** (đã cover hoặc không phải bug):
+- `BitmapCache` refcount, `WaterMarkImageView` leak/detach/reset — đã kín (ENH-15, BUG-06/28).
+- `SaveImageListAdapter` preview job/pendingList, `MultiSelectRv` handler, `MainViewModel.observeForever` — đã có guard đúng.
+- `applyCropAndRotate`/`applyRedaction` ownership bitmap — nhất quán, không double-recycle.
+- `WatermarkLayer.serializeList` percent-encode, `ExportZipHelper` zip-slip, `SignatureRepository` bounds-validate — đúng.
+- `BatchExportEngine.calculateDrawLimitHeight(viewInfo.height, viewInfo.paddingRight)` (dòng 338 dùng `paddingRight` thay `paddingTop`) — cố ý sao chép nguyên bản từ `MainViewModel` cũ, chỉ ảnh hưởng `inSample` không dùng tới về sau; không đủ tác động để ticket hoá.
+- `baseline-prof.txt` còn 171 dòng package cũ `me.rosuh.easywatermark`, 0 dòng `mckimquyen` — profile chết hoàn toàn, nhưng file KHÔNG được wire vào `app/build.gradle.kts` nên không tác động runtime; ghi nhận, không ticket.
+
+**Tổng dòng audit qua**: ~27.100 dòng Kotlin (`app/src/main` 26.9k + `cmonet/src/main` ~200), cộng `dlg_save_file.xml`/`f_base_pb.xml`/`proguard-rules.pro`/`coroutines.pro` và 12 file ticket `done/` liên quan để loại trùng.
