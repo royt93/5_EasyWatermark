@@ -33,6 +33,26 @@ class BitmapUtilsTest {
             .isEqualTo(4)
     }
 
+    // ══ BUG-46 — reqWidth/reqHeight <= 0 không treo loop overflow chia cho 0 ══
+
+    @Test
+    fun calculateInSampleSize_reqZero_returns1_doesNotHangOrThrow() {
+        assertThat(calculateInSampleSize(width = 64, height = 64, reqWidth = 0, reqHeight = 0))
+            .isEqualTo(1)
+        assertThat(calculateInSampleSize(width = 4000, height = 3000, reqWidth = 0, reqHeight = 1000))
+            .isEqualTo(1)
+        assertThat(calculateInSampleSize(width = 4000, height = 3000, reqWidth = 1000, reqHeight = 0))
+            .isEqualTo(1)
+    }
+
+    @Test
+    fun calculateInSampleSize_reqNegative_returns1_doesNotHangOrThrow() {
+        assertThat(calculateInSampleSize(width = 1000, height = 1000, reqWidth = -10, reqHeight = -10))
+            .isEqualTo(1)
+        assertThat(calculateInSampleSize(width = 1000, height = 1000, reqWidth = -1, reqHeight = 500))
+            .isEqualTo(1)
+    }
+
     @Test
     fun shouldInterchangeSize_90degrees_returnsTrue() {
         assertThat(shouldInterchangeSize(90f)).isTrue()

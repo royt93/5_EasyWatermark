@@ -49,3 +49,21 @@ Guard đầu hàm `calculateInSampleSize`: nếu `reqWidth <= 0 || reqHeight <= 
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-46`, file ticket = `todo/BUG-46-calculateinsamplesize-treo-chia-cho-0-khi-reqwidthreqheight-0.md`.
+
+## Kết quả (2026-09-28)
+
+- **Fix:** guard đầu `calculateInSampleSize()` (`BitmapUtils.kt`) — `reqWidth <= 0 || reqHeight <= 0`
+  → return `1` ngay, cùng quy ước `calculateInSampleSizeForLongEdge`. Không đổi hành vi case bình
+  thường (reqWidth/reqHeight > 0).
+- **Test:** thêm 2 unit test JVM thuần vào `BitmapUtilsTest.kt`
+  (`calculateInSampleSize_reqZero_returns1_doesNotHangOrThrow`,
+  `calculateInSampleSize_reqNegative_returns1_doesNotHangOrThrow`) — tái hiện đúng case crash thật
+  trên TECNO_KJ7 (`w=64,h=64,reqW=0,reqH=0`) + case âm. `./gradlew :app:testDebugUnitTest ktlintCheck`
+  PASS 100%, không regression case cũ.
+- **Smoke test thật** trên device đã khoá session — **Samsung S928B (R5CX613VZBR)**: cài bản debug
+  chứa fix, mở app (Splash → MainActivity) — không crash, logcat sạch `FATAL EXCEPTION`/
+  `ArithmeticException`, process sống ổn định.
+- **Điểm tự audit:** 9/10 — guard tối thiểu đúng root cause, không đổi logic case bình thường, có
+  test khoá cả 2 hướng (zero + âm). Trừ 1 điểm: chưa viết integration test tái hiện đúng race
+  condition thật (canvas chưa layout lúc export) — chấp nhận được vì effort XS/P2, unit test JVM đã
+  đủ chứng minh hàm pure không còn treo/crash với input biên.
