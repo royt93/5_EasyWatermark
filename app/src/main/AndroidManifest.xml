@@ -15,10 +15,10 @@ riêng cần thiết kế, không phải lint nông — xem IDEA-19. -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <!-- IDEA-16: đọc EXIF GPS chưa bị redact cho token {location} -->
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
-    <!-- ENH-01: batch export chạy foreground qua WorkManager (setForeground), sống sót khi app xuống nền. -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-    <!-- Giữ CPU thức trong lúc BatchExportWorker chạy foreground (xem BatchExportWorker.doWork). -->
+    <!-- 2026-09-28: bỏ FOREGROUND_SERVICE/FOREGROUND_SERVICE_DATA_SYNC (ENH-01 gốc) — Play Console
+    bắt buộc video demo cho mọi foreground service type khai báo, không ngoại lệ; đổi sang
+    WorkManager thường, xem KDoc BatchExportWorker. -->
+    <!-- Giữ CPU thức trong lúc BatchExportWorker chạy (xem BatchExportWorker.doWork). -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -147,15 +147,6 @@ riêng cần thiết kế, không phải lint nông — xem IDEA-19. -->
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
-
-        <!-- ENH-01: BatchExportWorker.setForeground() promote với FOREGROUND_SERVICE_TYPE_DATA_SYNC
-             (API 34+) — hệ thống đối chiếu type này với foregroundServiceType khai báo trên chính
-             service chạy nó (SystemForegroundService của WorkManager, mặc định type "none"), không
-             khớp sẽ crash IllegalArgumentException ngay khi gọi. Phải override tường minh ở đây. -->
-        <service
-            android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="dataSync"
-            tools:node="merge" />
     </application>
 
 </manifest>

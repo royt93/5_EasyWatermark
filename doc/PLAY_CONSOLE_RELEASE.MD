@@ -52,34 +52,24 @@ Kết luận nhanh cho phần "core app" (bỏ Ad SDK): có thể chọn **"App 
 the specified types of user data"** cho nhóm Photos/Location, vì toàn bộ xử lý ảnh + GPS đều
 on-device, không transmit ra ngoài. Phần Ad ID/quảng cáo do người phụ trách Ad SDK khai riêng.
 
-## 3. Foreground Service permission declaration (Play Console > App content)
+## 3. Foreground Service — ĐÃ BỎ (2026-09-28, quyết định business)
 
-App khai `FOREGROUND_SERVICE_DATA_SYNC` cho `BatchExportWorker` (WorkManager, xuất watermark hàng
-loạt nhiều ảnh cùng lúc — xem `AndroidManifest.xml` dòng ~152 và `BatchExportWorker.kt`).
+`BatchExportWorker` từng dùng `setForeground()` + khai `FOREGROUND_SERVICE_DATA_SYNC` (ENH-01 gốc).
+Đã audit kỹ chính sách Play Console: **video demo bắt buộc cho MỌI foreground service type khai
+báo, không có ngoại lệ** (quy mô app, số lượt cài, hay dùng job type khác đều không miễn) — user
+chọn bỏ hẳn foreground service thay vì làm thủ tục khai báo + quay video.
 
-**Use case nên chọn**: nhóm gần nhất với "xử lý/xuất dữ liệu cục bộ" (theo tài liệu Google, dataSync
-gồm cả *"local processing: import/export, resize"* — đúng bản chất tính năng này). Nếu dropdown
-Play Console không có tên khớp 100%, chọn mục gần nghĩa nhất rồi ghi rõ trong phần mô tả.
+**Đổi gì trong code**: `BatchExportWorker` giờ chạy như WorkManager work thường (không
+`setForeground()`/`getForegroundInfo()`), xoá 2 permission `FOREGROUND_SERVICE`/
+`FOREGROUND_SERVICE_DATA_SYNC` + service override trong `AndroidManifest.xml`. Notification tiến
+trình (số ảnh đã xong/tổng số, nút Huỷ) **vẫn hiện bình thường** — không cần foreground service để
+post notification.
 
-**Mô tả (dán vào ô description)**:
-```
-Tính năng "Xuất ảnh hàng loạt" cho phép người dùng gắn watermark lên nhiều ảnh cùng lúc (có thể
-hàng trăm ảnh). Vì thời gian xử lý có thể vượt quá giới hạn tác vụ nền thông thường của Android,
-app dùng foreground service (loại dataSync) để: đọc ảnh gốc, xử lý watermark, ghi ảnh kết quả ra
-bộ nhớ/thư mục người dùng chọn — toàn bộ xử lý diễn ra trên thiết bị, không upload lên server.
-Thông báo tiến trình (số ảnh đã xong/tổng số) hiển thị suốt quá trình để người dùng biết app đang
-hoạt động và có thể huỷ giữa chừng.
-```
-
-**Tác động nếu bị hệ thống trì hoãn/ngắt**: tiến trình xuất ảnh hàng loạt dừng giữa chừng, ảnh đã
-xử lý xong vẫn được giữ (không mất), người dùng có thể chạy lại từ ảnh còn thiếu.
-
-**⚠️ Việc bạn cần tự làm — không thể làm thay**: Play Console **bắt buộc kèm link video** quay màn
-hình demo tính năng dùng foreground service này. Cách làm nhanh:
-1. Quay màn hình ~20-30 giây: mở app → chọn nhiều ảnh → bấm xuất hàng loạt → cho thấy thông báo
-   tiến trình xuất hiện trên thanh trạng thái.
-2. Upload video lên YouTube ở chế độ "Unlisted" (không public, chỉ ai có link mới xem được).
-3. Dán link đó vào ô "video demo" của mục khai báo Foreground Service.
+**Đánh đổi thật cần biết**: nếu người dùng đưa app xuống nền lâu hoặc thiết bị vào Doze giữa lúc
+đang xuất batch dài (nhiều ảnh), hệ thống có thể hoãn/dừng tiến trình giữa chừng — khác hành vi cũ
+"sống sót khi xuống nền" của ENH-01. Ảnh đã xử lý xong trước đó không mất (đã ghi vào bộ nhớ), chỉ
+phần còn lại trong batch bị treo tới khi app quay lại foreground hoặc hệ thống cho chạy tiếp. Không
+cần khai báo/video gì thêm cho mục này khi submit Play Console.
 
 ## Nguồn tham khảo
 - [Foreground service declaration requirements — Play Console Help](https://support.google.com/googleplay/android-developer/answer/13392821?hl=en)

@@ -3,7 +3,6 @@ package com.mckimquyen.watermark.export
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.pm.ServiceInfo
 import android.graphics.Matrix
 import android.os.Build
 import android.os.PowerManager
@@ -13,7 +12,6 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
-import androidx.work.ForegroundInfo
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -32,11 +30,18 @@ import kotlinx.coroutines.flow.first
 import androidx.work.ListenableWorker.Result as WorkResult
 
 /**
- * ENH-01: chạy batch export qua WorkManager (sống sót khi app xuống nền, Doze/background-kill)
- * thay vì `viewModelScope` — logic export thật nằm ở [BatchExportEngine] (di chuyển nguyên vẹn từ
- * `MainViewModel`). Đọc danh sách ảnh/config TRỰC TIẾP từ repository (Hilt `@Singleton`, cùng
- * instance app đang dùng) thay vì serialize qua `Data` — chỉ [ViewInfo] (toàn số nguyên, không có
- * state phức tạp) cần truyền qua `inputData`.
+ * ENH-01: chạy batch export qua WorkManager thay vì `viewModelScope` — logic export thật nằm ở
+ * [BatchExportEngine] (di chuyển nguyên vẹn từ `MainViewModel`). Đọc danh sách ảnh/config TRỰC
+ * TIẾP từ repository (Hilt `@Singleton`, cùng instance app đang dùng) thay vì serialize qua `Data`
+ * — chỉ [ViewInfo] (toàn số nguyên, không có state phức tạp) cần truyền qua `inputData`.
+ *
+ * KHÔNG dùng `setForeground()`/foreground service (bỏ 2026-09-28, quyết định business): Play
+ * Console bắt buộc video demo cho MỌI foreground service type đã khai báo (kể cả `dataSync`),
+ * không có ngoại lệ — user chọn đánh đổi lấy việc không phải làm thủ tục này. Hệ quả thật: nếu
+ * app bị đưa xuống nền lâu/hệ thống Doze giữa batch dài, WorkManager (chạy work thường, không
+ * foreground) có thể bị hoãn/dừng giữa chừng — khác với hành vi cũ "sống sót khi xuống nền" của
+ * ENH-01 gốc. Notification tiến trình vẫn hiện (regular notification qua [notifyProgress], không
+ * cần foreground để post), chỉ mất phần "được hệ thống ưu tiên không giết khi app background".
  */
 @HiltWorker
 class BatchExportWorker @AssistedInject constructor(
@@ -76,10 +81,13 @@ class BatchExportWorker @AssistedInject constructor(
         )
         val total = infoList.size
         var doneCount = 0
-        setForeground(createForegroundInfo(doneCount, total))
+        // Không còn setForeground() (xem KDoc lớp) — vẫn hiện notification tiến trình ngay từ đầu
+        // (0/total) bằng notify() thường thay vì chờ item đầu tiên xong mới có notification.
+        notifyProgress(doneCount, total)
 
-        // Foreground service KHÔNG tự giữ CPU thức — nếu màn hình tắt giữa batch (nhiều ảnh, tốn
-        // thời gian), thiết bị có thể đi ngủ sâu làm export chậm/dừng giữa chừng. Giữ PARTIAL wake
+        // WorkManager thường (không foreground) KHÔNG tự giữ CPU thức — nếu màn hình tắt giữa batch
+        // (nhiều ảnh, tốn thời gian), thiết bị có thể đi ngủ sâu làm export chậm/dừng giữa chừng
+        // (rủi ro này lớn hơn trước vì đã bỏ foreground service, xem KDoc lớp). Giữ PARTIAL wake
         // lock (chỉ CPU, không giữ sáng màn hình — màn hình đã có FLAG_KEEP_SCREEN_ON riêng ở
         // BaseActivity khi app đang mở) trong suốt doWork(), luôn release ở finally kể cả lỗi/huỷ.
         val wakeLock = acquireWakeLock()
@@ -179,8 +187,6 @@ class BatchExportWorker @AssistedInject constructor(
         }
     }
 
-    override suspend fun getForegroundInfo(): ForegroundInfo = createForegroundInfo(0, waterMarkRepo.imageInfoList.size)
-
     private fun readViewInfo(): ViewInfo = ViewInfo(
         width = inputData.getInt(KEY_VIEW_WIDTH, 0),
         height = inputData.getInt(KEY_VIEW_HEIGHT, 0),
@@ -208,16 +214,6 @@ class BatchExportWorker @AssistedInject constructor(
         )
     }
 
-    private fun createForegroundInfo(done: Int, total: Int): ForegroundInfo {
-        ensureNotificationChannel()
-        val notification = buildNotification(done, total)
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            ForegroundInfo(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
-        } else {
-            ForegroundInfo(NOTIFICATION_ID, notification)
-        }
-    }
-
     private fun buildNotification(done: Int, total: Int) = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
         .setContentTitle(applicationContext.getString(R.string.export_notification_title))
         .setContentText(applicationContext.getString(R.string.export_notification_progress, done, total))
@@ -234,8 +230,10 @@ class BatchExportWorker @AssistedInject constructor(
 
     private fun notifyProgress(done: Int, total: Int) {
         val manager = applicationContext.getSystemService(NotificationManager::class.java) ?: return
-        // Không cần quyền POST_NOTIFICATIONS bổ sung: đã dùng cho notification foreground service
-        // này ngay từ setForeground() ở doWork(), quyền đã được xin trước đó nếu Android 13+.
+        // Không còn setForeground() tự tạo channel — phải tự đảm bảo channel tồn tại trước khi
+        // notify() lần đầu (gọi lại vô hại ở các lần sau, ensureNotificationChannel() tự no-op nếu
+        // channel đã có). Quyền POST_NOTIFICATIONS đã khai trong manifest, xin lúc app khởi động.
+        ensureNotificationChannel()
         manager.notify(NOTIFICATION_ID, buildNotification(done, total))
     }
 

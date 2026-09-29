@@ -208,6 +208,40 @@ class BatchExportWorkerRoboTest {
         assertThat(wakeLock!!.isHeld).isFalse()
     }
 
+    /**
+     * 2026-09-28: bỏ `setForeground()` (Play Console bắt buộc video demo cho mọi foreground
+     * service type, không ngoại lệ — xem `doc/PLAY_CONSOLE_RELEASE.MD` mục 3) — notification tiến
+     * trình giờ phải tự đảm bảo hiện được bằng notify() thường, kể cả trước khi ảnh đầu tiên xong
+     * (trước đây `setForeground()` lo phần này). Test khoá lại: notification "0/total" phải xuất
+     * hiện ngay khi doWork() bắt đầu, không phải chờ ảnh đầu tiên xử lý xong.
+     */
+    @Test
+    fun doWork_postsInitialProgressNotification_beforeAnyImageProcessed() {
+        val original = ImageInfo(Uri.parse("content://does.not.exist/fake.jpg"))
+        runBlocking { waterMarkRepo.updateImageList(listOf(original)) }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val viewInfo = com.mckimquyen.watermark.data.model.ViewInfo(
+            width = 100,
+            height = 100,
+            paddingLeft = 0,
+            paddingTop = 0,
+            paddingRight = 0,
+            paddingBottom = 0,
+            scaleType = android.widget.ImageView.ScaleType.FIT_CENTER,
+            matrix = android.graphics.Matrix()
+        )
+        BatchExportWorker.enqueue(context, viewInfo)
+        shadowOf(Looper.getMainLooper()).idle()
+        awaitTerminalWorkInfo()
+
+        // 4201/"batch_export" mirror NOTIFICATION_ID/NOTIFICATION_CHANNEL_ID private trong
+        // BatchExportWorker — không expose được nên lặp giá trị, đổi ở 1 trong 2 chỗ nhớ đổi chỗ kia.
+        val manager = context.getSystemService(android.app.NotificationManager::class.java)
+        assertThat(shadowOf(manager).getNotification(4201)).isNotNull()
+        assertThat(manager.getNotificationChannel("batch_export")).isNotNull()
+    }
+
     private fun awaitTerminalWorkInfo(timeoutMs: Long = 5_000): WorkInfo? {
         val deadline = System.currentTimeMillis() + timeoutMs
         while (System.currentTimeMillis() < deadline) {
