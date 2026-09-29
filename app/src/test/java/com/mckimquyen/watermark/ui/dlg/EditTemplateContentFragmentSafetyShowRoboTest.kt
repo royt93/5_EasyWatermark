@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
+import com.mckimquyen.watermark.data.model.entity.Template
 import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
 import com.mckimquyen.watermark.data.repo.UserConfigRepository
@@ -23,6 +24,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import java.util.Date
 
 /**
  * BUG-24: `EditTemplateContentFragment.safetyShow()` ép kiểu `manager.findFragmentByTag(TAG) as?
@@ -78,5 +80,29 @@ class EditTemplateContentFragmentSafetyShowRoboTest {
 
         val matching = manager.fragments.filterIsInstance<EditTemplateContentFragment>()
         assertThat(matching).hasSize(1)
+    }
+
+    /**
+     * BUG-AUDIT-2026-09-29: `safetyShow()` gọi lại trên instance đã `isAdded` (double-tap 2 template
+     * KHÁC nhau liên tiếp) trước đây set `arguments` trên fragment đang active — ném
+     * `IllegalStateException("Fragment already active")` bị `catch` nuốt âm thầm, dialog giữ nguyên
+     * nội dung của template ĐẦU TIÊN. Sau fix, `updateTemplateForReuse()` cập nhật field + UI trực
+     * tiếp, không đụng `arguments`.
+     */
+    @Test
+    fun safetyShow_calledTwiceWithDifferentTemplates_showsSecondTemplateContent_notStale() {
+        val activity = Robolectric.buildActivity(TestHostActivity::class.java).setup().get()
+        val manager = activity.supportFragmentManager
+        val t1 = Template(id = 1, content = "Template A", creationDate = Date(1_000L), lastModifiedDate = null)
+        val t2 = Template(id = 2, content = "Template B", creationDate = Date(2_000L), lastModifiedDate = null)
+
+        EditTemplateContentFragment.safetyShow(manager, t1)
+        shadowOf(Looper.getMainLooper()).idle()
+        EditTemplateContentFragment.safetyShow(manager, t2)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        val matching = manager.fragments.filterIsInstance<EditTemplateContentFragment>()
+        assertThat(matching).hasSize(1)
+        assertThat(matching.single().binding.etWaterText.text.toString()).isEqualTo("Template B")
     }
 }

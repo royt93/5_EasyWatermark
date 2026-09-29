@@ -61,6 +61,21 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
          */
         internal fun computeSliderScrollPercent(scrollRange: Int, totalHeight: Int): Float =
             scrollRange.toFloat() / totalHeight
+
+        /**
+         * BUG-AUDIT-2026-09-29: list ít ảnh (vừa màn hình, không cuộn được) khiến
+         * `verticalScrollRange` = 0 → chia cho 0 ra NaN → `coerceAtLeast(0f)` không clamp được
+         * (so sánh với NaN luôn false) → translationY dính NaN, slider lệch vị trí. Tách hàm riêng
+         * để test được trực tiếp không cần dựng RecyclerView thật (theo đúng pattern BUG-29 ở trên).
+         */
+        internal fun computeSliderTranslationY(
+            offset: Int,
+            verticalScrollRange: Int,
+            recyclerViewVisibleHeight: Int
+        ): Float {
+            if (verticalScrollRange <= 0) return 0f
+            return ((offset.toFloat() / verticalScrollRange) * recyclerViewVisibleHeight).coerceAtLeast(0f)
+        }
     }
 
     private var isScrollSliderManually: Boolean = false
@@ -209,11 +224,11 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                     val offset = recyclerView.computeVerticalScrollOffset()
                     AppLog.d(LOG_TAG, "GalleryFragment scroll — offset=$offset range=$verticalScrollRange")
 
-                    rootView.sliderCard.translationY =
-                        (
-                            (offset.toFloat() / verticalScrollRange) *
-                                (recyclerView.bottom - recyclerView.paddingBottom)
-                            ).coerceAtLeast(0f)
+                    rootView.sliderCard.translationY = computeSliderTranslationY(
+                        offset = offset,
+                        verticalScrollRange = verticalScrollRange,
+                        recyclerViewVisibleHeight = recyclerView.bottom - recyclerView.paddingBottom
+                    )
                 }
             })
         }

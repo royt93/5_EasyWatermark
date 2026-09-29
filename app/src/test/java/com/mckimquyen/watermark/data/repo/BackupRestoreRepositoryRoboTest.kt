@@ -98,6 +98,34 @@ class BackupRestoreRepositoryRoboTest {
     }
 
     @Test
+    fun restoreFrom_backupContainsDuplicateContentWithinSameFile_dedupsToOne() {
+        // BUG-AUDIT-2026-09-29-JUNIT-TRAP: `= runBlocking { ... }` (expression body) khiến hàm suy
+        // luận kiểu trả về theo statement CUỐI trong lambda — nếu đó là `containsExactly(...)` (trả
+        // `Ordered`, không phải Unit), JUnit4 `ParentRunner.validate()` ném `InvalidTestClassError`
+        // chặn CẢ CLASS (không chỉ test này). Dùng block body `{ runBlocking { ... } }` để hàm luôn
+        // suy luận Unit bất kể statement cuối trong lambda trả gì.
+        runBlocking {
+            // BUG-AUDIT-2026-09-29: trước fix, `existingContents` chỉ tính 1 lần TRƯỚC vòng lặp (dựa
+            // trên DB hiện có) — 2 template TRÙNG content NẰM TRONG CÙNG 1 file backup (DB đích trống,
+            // vd. máy mới) không dedup lẫn nhau, cả 2 đều lọt qua filter. Insert 2 template trùng
+            // content trực tiếp qua Room (không cấm trùng content) để tạo được tình huống này.
+            db.templateDao().insertTemplate(Template(id = 0, content = "© Brand", creationDate = Date(1_000L), lastModifiedDate = null))
+            db.templateDao().insertTemplate(Template(id = 0, content = "© Brand", creationDate = Date(2_000L), lastModifiedDate = null))
+            assertThat(db.templateDao().getAllTemplate().first()).hasSize(2)
+
+            val zipFile = tmp.newFile("dup_backup.zip")
+            val zipUri = Uri.fromFile(zipFile)
+            assertThat(repo.backupTo(zipUri)).isTrue()
+
+            // Xoá sạch DB — mô phỏng restore trên máy MỚI (đích trống), chỉ còn dedup NỘI BỘ file backup.
+            db.templateDao().getAllTemplate().first().forEach { db.templateDao().deleteTemplate(it) }
+
+            assertThat(repo.restoreFrom(zipUri)).isTrue()
+            assertThat(db.templateDao().getAllTemplate().first().map { it.content }).containsExactly("© Brand")
+        }
+    }
+
+    @Test
     fun restoreFrom_invalidZip_doesNotCrashOrInsertGarbage() = runBlocking {
         // ZipInputStream không throw với input không phải zip hợp lệ (đọc được 0 entry) — hành vi
         // đúng cần verify là KHÔNG crash và KHÔNG chèn rác vào DB, không phải giá trị return cụ thể.

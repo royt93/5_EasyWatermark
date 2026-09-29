@@ -1,13 +1,8 @@
 package com.mckimquyen.watermark.di
 
-import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import com.mckimquyen.watermark.data.db.dao.TemplateDao
 import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
-import com.mckimquyen.watermark.data.repo.UserConfigRepository
-import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.utils.facedetection.FaceDetectionSource
 import com.mckimquyen.watermark.utils.facedetection.MlKitFaceDetectionSource
 import com.mckimquyen.watermark.utils.textdetection.MlKitSensitiveTextSource
@@ -15,31 +10,18 @@ import com.mckimquyen.watermark.utils.textdetection.SensitiveTextSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Named
 import javax.inject.Singleton
 
+/**
+ * BUG-AUDIT-2026-09-29: đã xoá `provideUserRepository`/`provideWaterMarkRepository`
+ * (`@Named("UserPreferences")`/`@Named("WaterMarkPreferences")`) — dead code, không nơi nào trong
+ * repo request 2 binding `@Named(...)` này (2 repo tương ứng được cung cấp qua constructor Hilt
+ * @Inject bình thường ở nơi khác, không qua module này).
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {
-
-    @Named("UserPreferences")
-    @Provides
-    @Singleton
-    fun provideUserRepository(dataStore: DataStore<Preferences>): UserConfigRepository {
-        return UserConfigRepository(dataStore)
-    }
-
-    @Named("WaterMarkPreferences")
-    @Provides
-    @Singleton
-    fun provideWaterMarkRepository(
-        @ApplicationContext context: Context,
-        dataStore: DataStore<Preferences>
-    ): WaterMarkRepository {
-        return WaterMarkRepository(context, dataStore)
-    }
 
     @Provides
     @Singleton

@@ -2,6 +2,69 @@
 
 > Cập nhật: 2026-09-29. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## Review pass 5 — `di/`, `ui/dlg/`, `data/repo/` (phạm vi mới), 2026-09-29
+
+Audit vòng 5 (loop tiếp theo sau review pass 4, phạm vi hoàn toàn mới, loại trừ mọi file đã audit ở
+4 vòng trước): `/code-review --level max` trên `di/`, `ui/dlg/`, `data/repo/`. 5 finding, verify tay
+từng cái — **tất cả ĐÚNG**, tất cả đều fix theo lựa chọn user:
+
+- [x] **`ComparePreviewBottomSheetFragment.applyReveal()` không guard view đã huỷ** — khi
+  width/height view còn 0 (chưa layout xong), hàm tự `post{}` lặp lại chính nó; nếu user đóng sheet
+  TRƯỚC khi callback trễ đó chạy, `onDestroyView()` đã set `binding` null, callback chạm `binding`
+  ném NPE. Fix: guard `view == null` (Fragment.view, tự null hoá trong `onDestroyView()`) ở cả điểm
+  vào lẫn trong callback trễ. Test mới: `applyReveal_goiSauKhiViewDaHuy_khongNemNpe` (reflection gọi
+  thẳng hàm private sau khi view đã huỷ hẳn — deterministic, không phụ thuộc timing).
+- [x] **`GalleryFragment` scroll listener chia cho `verticalScrollRange` có thể = 0** (list ít ảnh,
+  vừa màn hình không cuộn được) → `NaN` → `coerceAtLeast(0f)` không clamp được (so sánh với NaN
+  luôn false) → `sliderCard.translationY` dính NaN, slider lệch vị trí. Fix: tách hàm
+  `computeSliderTranslationY()` (theo đúng pattern `computeSliderScrollPercent` đã có từ BUG-29) với
+  guard `verticalScrollRange <= 0 -> 0f`. Test mới: `GalleryFragmentSliderTranslationYTest` (4 test:
+  range=0, range âm, tính đúng tỉ lệ, kết quả âm clamp về 0).
+- [x] **`BackupRestoreRepository.backupTo()`/`restoreFrom()` nuốt `CancellationException`** — catch
+  chung `Exception` phá cooperative cancellation (user rời màn hình giữa lúc backup/restore chạy
+  trong `viewModelScope`, coroutine đáng lẽ phải dừng lại bị nuốt exception, trả `false` như lỗi
+  thường). Fix: thêm `catch (e: CancellationException) { throw e }` TRƯỚC catch chung, ở cả 2 hàm.
+  *(ponytail: không có test tự động cho nhánh rethrow — cần huỷ Job đúng lúc đang chạy giữa
+  `withContext(Dispatchers.IO)` thật, không có hook để chèn `cancel()` tại điểm chính xác mà không
+  tạo test timing-race giả; nếu cần sau này, inject Dispatcher giống pattern
+  `DelegatingWorkerFactory` ở test worker để dùng `TestDispatcher` điều khiển thời điểm tất định.)*
+- [x] **`BackupRestoreRepository.restoreFrom()` dedup chỉ tính 1 lần TRƯỚC vòng lặp** — 2 template
+  TRÙNG content nằm trong CÙNG 1 file backup (máy đích trống, vd. máy mới) không dedup lẫn nhau,
+  cả 2 đều lọt qua filter (chỉ dedup được với DB đích hiện có, không dedup nội bộ file). Fix: đổi
+  `existingContents` thành `MutableSet` cập nhật `.add()` ngay sau mỗi insert trong vòng lặp. Test
+  mới: `restoreFrom_backupContainsDuplicateContentWithinSameFile_dedupsToOne`.
+- [x] **`EditTemplateContentFragment.safetyShow()` gọi lại trên instance đã `isAdded`** (double-tap
+  2 template KHÁC nhau liên tiếp) set `arguments` trên fragment đang active → ném
+  `IllegalStateException("Fragment already active")` bị `catch` nuốt âm thầm, dialog giữ nguyên nội
+  dung của template ĐẦU TIÊN thay vì cái vừa bấm. Fix: tách `bindTemplateToViews()` +
+  `updateTemplateForReuse()` — cập nhật field + UI trực tiếp, không đụng `arguments` khi fragment đã
+  active. Test mới: `safetyShow_calledTwiceWithDifferentTemplates_showsSecondTemplateContent_notStale`.
+- [x] **`RepositoryModule` có 2 `@Provides` binding chết** (`provideUserRepository` /
+  `provideWaterMarkRepository`, `@Named("UserPreferences")`/`@Named("WaterMarkPreferences")`) —
+  grep toàn repo không nơi nào request 2 binding `@Named(...)` này (2 repo tương ứng dùng constructor
+  Hilt `@Inject` bình thường ở nơi khác). Fix: xoá cả 2 method + import không dùng, xoá 2 test tương
+  ứng trong `RepositoryModuleTest` (không xoá được vì gọi hàm đã xoá, không phải vì bug).
+
+**Verify:** `./gradlew testDebugUnitTest` full suite PASS khi chạy độc lập (không có tiến trình
+Gradle/emulator khác chạy song song) — 3 lần chạy trước đó bị 1-4 test fail KHÁC NHAU mỗi lần do
+máy chạy song song Android Studio (38% CPU) + emulator + ktlint, xác nhận lại bằng cách chạy riêng
+từng test fail (PASS ngay khi cô lập) → kết luận flaky do tải máy, không phải regression từ round
+5. `ktlintCheck` PASS (không cần `ktlintFormat` sửa gì thêm). `lintDebug` PASS. `compileDebugKotlin`
+PASS (1 warning `Condition is always 'false'` tại `ComparePreviewBottomSheetFragment.kt:73` — dead
+code CÓ SẴN TỪ TRƯỚC, tham số `view: View` non-null của `onViewCreated()` che khuất property
+`Fragment.view` bên trong lambda coroutine, không liên quan fix `applyReveal` ở trên; ghi nhận cho
+vòng audit sau).
+
+**Smoke test thật trên TECNO_KJ7:** cài lại, mở "Thông tin" → "Sao lưu" → chọn nơi lưu qua SAF →
+"Sao lưu dữ liệu thành công" (chứng minh `backupTo()` với fix CancellationException/dedup không hồi
+quy). Vào "Chọn ảnh" (gallery có sẵn ~30+ ảnh test cũ), scroll nhanh lên xuống nhiều lần (chứng minh
+fix NaN `computeSliderTranslationY`) — không crash. Chọn 5 ảnh vào editor, mở "So sánh" (chính
+`ComparePreviewBottomSheetFragment`), kéo slider rồi bấm back đóng NGAY LẬP TỨC lặp lại — không
+crash (chứng minh guard `view == null`). `logcat` sạch suốt phiên, không `FATAL EXCEPTION` nào của
+`com.mckimquyen.watermark`. (`EditTemplateContentFragment` không có đường dẫn UI nhanh để smoke
+test trong phiên này — đã có `EditTemplateContentFragmentSafetyShowRoboTest` cover trực tiếp đúng
+code path fix.)
+
 ## Review pass 4 — data/repo+db, di/, adapter, Signature Studio, 2026-09-29
 
 Audit vòng 4 (loop tiếp theo sau review pass 3, phạm vi hoàn toàn mới): `/code-review --level max`

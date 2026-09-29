@@ -79,4 +79,24 @@ class ComparePreviewBottomSheetFragmentRoboTest {
             assertThat(fragment.view).isNull()
         }
     }
+
+    /**
+     * BUG-AUDIT-2026-09-29: `applyReveal()` khi width/height view còn 0 (chưa layout xong) tự
+     * `post{}` lặp lại chính nó — nếu callback trễ đó chạy SAU khi `onDestroyView()` đã set
+     * `binding` null (user đóng sheet trước khi callback chạy), truy cập `binding.ivWatermarked`
+     * ném NPE. Test gọi thẳng `applyReveal()` (reflection, hàm private) SAU khi view đã huỷ hẳn —
+     * mô phỏng đúng tình huống callback trễ, xác nhận guard `view == null` chặn được không crash.
+     */
+    @Test
+    fun applyReveal_goiSauKhiViewDaHuy_khongNemNpe() {
+        val (activity, fragment) = setup()
+        activity.supportFragmentManager.beginTransaction().remove(fragment).commit()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertThat(fragment.view).isNull()
+
+        val method = ComparePreviewBottomSheetFragment::class.java.getDeclaredMethod("applyReveal", Float::class.java)
+        method.isAccessible = true
+        // Không throw (InvocationTargetException bọc NPE) tới đây là đã chứng minh guard hoạt động.
+        method.invoke(fragment, 0.5f)
+    }
 }

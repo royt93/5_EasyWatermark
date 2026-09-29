@@ -90,11 +90,18 @@ class ComparePreviewBottomSheetFragment : BaseBindBSDFragment<FComparePreviewBot
 
     private fun applyReveal(fraction: Float) {
         revealFraction = fraction
+        // BUG-AUDIT-2026-09-29: khi width/height còn 0 (view chưa layout xong), hàm tự post{} lặp
+        // lại chính nó — nếu user đóng sheet TRƯỚC khi callback đó chạy, onDestroyView() đã set
+        // binding null, callback trễ chạm vào `binding` sẽ NPE. Guard `view == null` (Fragment.view,
+        // được framework tự null hoá trong onDestroyView) ở cả điểm vào lẫn trong callback trễ.
+        if (view == null) return
         val ivWatermarked = binding.ivWatermarked
         val w = ivWatermarked.width
         val h = ivWatermarked.height
         if (w == 0 || h == 0) {
-            ivWatermarked.post { applyReveal(fraction) }
+            ivWatermarked.post {
+                if (view != null) applyReveal(fraction)
+            }
             return
         }
         ivWatermarked.clipBounds = Rect(0, 0, (w * fraction).toInt(), h)
