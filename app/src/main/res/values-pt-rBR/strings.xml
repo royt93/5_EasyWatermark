@@ -255,6 +255,8 @@
     <string name="conflict_policy_rename_version">Renomear automaticamente (_v2, _v3)</string>
     <string name="conflict_policy_skip">Pular</string>
     <string name="dialog_save_cancel">Cancelar</string>
+    <string name="export_conflict_dialog_title">Outra exportação está em andamento</string>
+    <string name="export_conflict_dialog_message">Iniciar uma nova exportação vai cancelar o lote em execução no momento. Continuar?</string>
     <string name="dialog_save_config_conflict_policy">Se o arquivo já existir</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>
     <string name="dialog_save_config_copyright_hint">© Seu nome</string>

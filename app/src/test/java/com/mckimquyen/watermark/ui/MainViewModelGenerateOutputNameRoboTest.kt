@@ -63,7 +63,9 @@ class MainViewModelGenerateOutputNameRoboTest {
 
         val name = viewModel.generateOutputName(context.contentResolver, info, 0)
 
-        assertThat(name).matches("""ewm_\d+\.jpg""")
+        // Review pass 2026-09-29: thêm hậu tố `_${index+1}` để 2 ảnh cùng batch rơi trúng cùng
+        // millisecond vẫn không đụng tên (xem ExportNaming.generateOutputName).
+        assertThat(name).matches("""ewm_\d+_1\.jpg""")
     }
 
     @Test
@@ -74,7 +76,7 @@ class MainViewModelGenerateOutputNameRoboTest {
 
         val name = viewModel.generateOutputName(context.contentResolver, info, 0)
 
-        assertThat(name).matches("""ewm_\d+\.jpg""")
+        assertThat(name).matches("""ewm_\d+_1\.jpg""")
     }
 
     @Test

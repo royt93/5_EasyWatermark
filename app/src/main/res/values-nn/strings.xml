@@ -250,6 +250,8 @@
     <string name="conflict_policy_rename_version">Gje nytt namn automatisk (_v2, _v3)</string>
     <string name="conflict_policy_skip">Hopp over</string>
     <string name="dialog_save_cancel">Avbryt</string>
+    <string name="export_conflict_dialog_title">Ein annan eksport pågår</string>
+    <string name="export_conflict_dialog_message">Å starte ein ny eksport vil avbryte batchen som køyrer no. Halde fram?</string>
     <string name="dialog_save_config_conflict_policy">Om fila finst</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>
     <string name="dialog_save_config_copyright_hint">© Namnet ditt</string>

@@ -370,10 +370,11 @@ class BatchExportEngine @Inject constructor(
                 )
                 // calculate the scale factor
                 imageMatrix.getValues(matrixValues)
-                imageInfo = imageInfo.copy(
-                    scaleX = 1 / matrixValues[Matrix.MSCALE_X],
-                    scaleY = 1 / matrixValues[Matrix.MSCALE_X]
-                )
+                // BUG-AUDIT-2026-09-29: scaleY từng bị copy-paste đọc nhầm MSCALE_X — vô hại hiện
+                // tại vì WaterMarkImageView.adjustMatrix() luôn postScale đồng nhất X/Y, nhưng đọc
+                // đúng field để không bẫy bug âm thầm nếu sau này scale lệch trục.
+                val (resolvedScaleX, resolvedScaleY) = resolveImageScale(matrixValues)
+                imageInfo = imageInfo.copy(scaleX = resolvedScaleX, scaleY = resolvedScaleY)
                 // BUG-39: preview editor đã đảo màu/alpha theo auto-contrast (IDEA-06) từ trước —
                 // export thật phải áp CÙNG kết quả lên chính textPaint dùng để vẽ, nếu không ảnh
                 // xuất ra giữ màu cũ dù preview đã đổi. isScale=false ở đây nên textSize hiệu dụng
@@ -1365,5 +1366,13 @@ class BatchExportEngine @Inject constructor(
     companion object {
         /** FEAT-07: cạnh dài tối đa (px) khi decode cho grid preview — đủ nét cho thumbnail, rẻ hơn nhiều so với full-res. */
         const val PREVIEW_MAX_SIZE = 480
+
+        /**
+         * BUG-AUDIT-2026-09-29: tách riêng để unit test được field-mapping (trước đây `scaleY` bị
+         * copy-paste đọc nhầm [Matrix.MSCALE_X]) — hàm thuần, không phụ thuộc Android thật ngoài
+         * hằng số [Matrix.MSCALE_X]/[Matrix.MSCALE_Y] (chỉ là index Int, JVM test không cần mock).
+         */
+        fun resolveImageScale(matrixValues: FloatArray): Pair<Float, Float> =
+            1 / matrixValues[Matrix.MSCALE_X] to 1 / matrixValues[Matrix.MSCALE_Y]
     }
 }

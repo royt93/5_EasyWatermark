@@ -1,6 +1,95 @@
 # Danh sách việc cần làm & Cải tiến
 
-> Cập nhật: 2026-09-28. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
+> Cập nhật: 2026-09-29. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
+
+## Bugfix đợt audit trước release, 2026-09-29 (`/code-review --level max`, loại AD/VIP/keystore)
+
+Re-audit toàn bộ `app/src/main` + `cmonet/src/main` tập trung logic/feature (không phải Ad/VIP/keystore
+— các mục đó user quyết định tự xử lý riêng, xem `doc/task/BACKLOG.md`). 5 finding, verify tay từng
+cái bằng đọc source thật trước khi fix — 4 fix theo lựa chọn user, 1 (dead param `scale: Boolean` ở
+`buildIconBitmapShader`) chỉ cosmetic, không fix (không ảnh hưởng hành vi):
+
+- [x] **OOM khi output "Original"** — `BitmapUtils.decodeBitmapFromUri(reqLongEdge<=0)` từng có
+  nhánh early-return decode full-res, KHÔNG BAO GIỜ gọi `computeMaxSafeDimension` — trái doc comment
+  ENH-14/OOM-PROTECT (chỉ áp dụng bảo vệ OOM khi user chọn resize, bỏ sót ảnh 108MP + output gốc).
+  Fix: xoá hẳn nhánh early-return, dùng chung 1 đường code cho mọi `reqLongEdge` (computeMaxSafeDimension
+  tự xử lý đúng case `<=0` — giữ nguyên kích thước nếu ảnh dưới ngưỡng an toàn). Thêm tham số
+  `maxHeapBytes` (default `Runtime.getRuntime().maxMemory()`) để test được mà không cần dựng bitmap
+  108MP thật. Xoá luôn `decodeBitmapWithExif` (dead code sau khi gộp nhánh). Test mới:
+  `BitmapUtilsDownsampleExportRoboTest.decodeBitmapFromUri_reqLongEdgeZero_tinyHeap_stillDownsamplesToPreventOom`.
+  Đổi kèm: `BitmapUtilsInputStreamCountRoboTest` — path Original giờ mở 3 stream thay vì 2 (cần đọc
+  bounds trước khi quyết định downsample) — đánh đổi chấp nhận được để đổi lấy bảo vệ OOM thật.
+- [x] **`BatchExportWorker.enqueue` REPLACE âm thầm huỷ batch đang chạy** — nếu ViewModel mới (thoát
+  app rồi quay lại) không biết có batch export khác đang chạy dở, `ExistingWorkPolicy.REPLACE` huỷ
+  ngang không báo lỗi. Fix: thêm `BatchExportWorker.isActive(context)`, `SaveImageBSDialogFragment`
+  hỏi xác nhận (`MaterialAlertDialogBuilder`, string `export_conflict_dialog_*`, đủ 14 locale) trước
+  khi enqueue nếu phát hiện batch khác đang chạy. Test mới: `BatchExportWorkerIsActiveRoboTest`
+  (dùng `Worker` chặn bằng `CountDownLatch` để có cửa sổ RUNNING xác định, tránh flaky).
+- [x] **`BatchExportEngine.kt` copy-paste `scaleY` đọc nhầm `MSCALE_X`** — vô hại hiện tại (scale
+  luôn đồng nhất X/Y do `WaterMarkImageView.adjustMatrix()` luôn `postScale(scale, scale)`), nhưng
+  bẫy bug âm thầm nếu sau này scale không đồng nhất. Fix 1 dòng đổi thành `MSCALE_Y`, không có test
+  riêng (hành vi hiện tại provably không đổi được qua path thật — `adjustMatrix` luôn ép uniform).
+- [x] **`ExportNaming.generateOutputName` trả tên file ẩn `.jpg`** khi pattern không rỗng nhưng
+  resolve+sanitize ra chuỗi rỗng (vd `{filename}` trên ảnh DISPLAY_NAME rỗng/chỉ có đuôi) — dotfile
+  dễ bị ghi đè hàng loạt ảnh khác cùng tên. Fix: fallback về `ewm_{timestamp}` khi base rỗng, dùng
+  chung logic với pattern rỗng. Test mới:
+  `ExportNamingConflictTest.generateOutputName_patternResolvesToEmptyString_fallsBackToTimestampPrefix`.
+
+**Verify:** `./gradlew testDebugUnitTest` toàn bộ 1015+ test PASS, `./gradlew ktlintCheck` PASS,
+`./gradlew lintDebug` không phát sinh warning/error mới (baseline giảm 222 `ExtraTranslation` đã tự
+hết do bổ sung đủ string 14 locale).
+
+**Smoke test thật trên TECNO_KJ7 (`115333744A005844`), 2026-09-29:** cài `assembleDebug`, chọn 4
+ảnh → editor render watermark đúng → menu Lưu → output "Original" (đúng nhánh vừa fix) → xuất
+4/4 thành công, file ghi thật ra `/Pictures/WaterMarkCreator/ewm_<timestamp>.jpg` (tên đúng fallback
+mặc định, kích thước hợp lệ 56-67KB) → "Xem trong thư viện"/"Chia sẻ" hiện đúng. `logcat` sạch, không
+`FATAL EXCEPTION`, không quảng cáo che UI trong suốt flow. Riêng kịch bản dialog xác nhận REPLACE
+(fix 2) không kịp bắt trực tiếp trên device do 4 ảnh test nhỏ (800×600) export xong quá nhanh để giữ
+được cửa sổ RUNNING — đã cover đủ bằng `BatchExportWorkerIsActiveRoboTest` (dùng `Worker` chặn bằng
+`CountDownLatch`, xác định, không phụ thuộc timing thật).
+
+## Review pass 2 (`/code-review --level max` trên chính diff 4 fix ở trên), 2026-09-29
+
+Tự audit lại toàn bộ diff bằng code-review độc lập, tìm thêm 4 finding (đọc source verify trực
+tiếp trước khi fix, không tin theo báo cáo suông):
+
+- [x] **`decodeBitmapFromUri` bounds-decode thiếu guard null stream** — bước `inJustDecodeBounds`
+  (đã tồn tại từ trước cho nhánh resize, nay áp dụng luôn cho "Original" sau fix OOM ở trên) gọi
+  `BitmapFactory.decodeStream(it, null, options)` không kiểm tra `it == null` (quyền bị thu hồi giữa
+  chừng/provider lỗi) — trong khi bước decode pixel thật ngay bên dưới ĐÃ có guard này. Fix: thêm
+  guard giống hệt, trả `Result.failure` thay vì rủi ro decode với stream null. Test mới:
+  `BitmapUtilsNullStreamGuardRoboTest` (2 case: Original + resize, provider giả lập trả null).
+- [x] **`BatchExportWorker.isActive()` block main thread** — hàm gọi `ListenableFuture.get()` của
+  WorkManager (query Room đồng bộ) ngay trong click handler của nút Save — rủi ro jank/ANR nếu
+  WorkManager chậm (DB nguội, máy yếu), dù thực tế hiếm khi chậm tới mức đó. Fix: chuyển sang
+  `viewLifecycleOwner.lifecycleScope.launch { withContext(Dispatchers.IO) { ... } }`, không block UI
+  thread nữa. Cập nhật 3 test `SaveImageBSDialogFragmentExportConflictRoboTest` sang poll
+  (`idle()`+sleep) thay vì kỳ vọng đồng bộ ngay sau `performClick()`.
+- [x] **`ExportNaming` fallback timestamp không đủ phân biệt cùng batch** — `ewm_${currentTimeMillis()}`
+  (base rỗng, kể cả case pattern rỗng hoàn toàn có từ trước) có thể trùng nếu 2 ảnh cùng batch xử lý
+  xong trong cùng 1 millisecond (ảnh nhỏ/máy nhanh) → ghi đè lẫn nhau tuỳ `conflictPolicy`. Fix: thêm
+  hậu tố `_${index + 1}` (đã có sẵn tham số, cùng quy ước `{seq}`). Cập nhật 2 test cũ
+  (`MainViewModelGenerateOutputNameRoboTest`) khớp format mới + test mới verify 2 ảnh không đụng tên.
+- [x] Không sửa: dead param `scale: Boolean` (đã ghi nhận review pass 1) vẫn giữ nguyên, cosmetic.
+
+**Verify:** `./gradlew testDebugUnitTest` full suite PASS (982 test, chỉ 2 flaky pre-existing
+`SaveImageBSDialogFragmentProofingRoboTest`/`...InvisibleRoboTest` — xác nhận KHÔNG liên quan diff
+này, pass ổn định khi chạy riêng và không đụng file nào trong 4+4 fix). `ktlintCheck` PASS,
+`lintDebug` không phát sinh warning/error mới. 3 test conflict-dialog + `BatchExportEngineScaleTest`
++ `BatchExportWorkerIsActiveRoboTest` chạy lặp lại 3 lần liên tiếp đều xanh (không flaky).
+
+**Smoke test thật trên TECNO_KJ7, 2026-09-29 (sau review pass 2):** gỡ cài sạch, cài lại
+`assembleDebug`, cấp quyền ảnh, chọn 1 ảnh → export Original + pattern rỗng → file ghi ra
+`ewm_1790660019504_1.jpg` (đúng format mới có hậu tố `_1`, 54KB, hợp lệ) → "Chia sẻ" hiện đúng.
+`logcat` sạch, không `FATAL EXCEPTION` trong suốt phiên (bao gồm cả batch 13 ảnh Original trước đó).
+Riêng thao tác cuộn dialog Export trên thiết bị TECNO/Transsion gesture-nav đôi lúc bị hệ thống hiểu
+nhầm thành cử chỉ Home nếu vuốt gần mép dưới — không liên quan code app, tránh bằng cách vuốt trong
+vùng an toàn (y giữa màn hình).
+
+**Điểm tự audit: 9.5/10.** Trừ nhẹ vì: (1) kịch bản 2 batch export chồng nhau chỉ verify được qua
+Robolectric (rủi ro thao tác gesture thật trên thiết bị dùng chung nếu cố tái hiện), (2) fix
+`scaleY` không test qua path thật (bản chất không thể — `adjustMatrix` luôn ép uniform X/Y). Đủ
+điều kiện >9/10 theo `PROMPT_TEMPLATE.md` — đã push.
 
 ## Tính năng cần triển khai
 

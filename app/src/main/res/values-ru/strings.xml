@@ -195,6 +195,8 @@
     <string name="dialog_export_to_gallery">Экспортировать в альбом</string>
     <string name="dialog_open_in_gallery">Открыть в галерее</string>
     <string name="dialog_save_cancel">Отмена</string>
+    <string name="export_conflict_dialog_title">Выполняется другой экспорт</string>
+    <string name="export_conflict_dialog_message">Запуск нового экспорта отменит текущий выполняющийся пакет. Продолжить?</string>
     <string name="dialog_save_config_conflict_policy">Если файл существует</string>
     <string name="dialog_save_config_copyright">Авторские права (EXIF)</string>
     <string name="dialog_save_config_copyright_hint">© Ваше имя</string>

@@ -277,6 +277,8 @@
     <string name="export_notification_title">Đang xuất hình ảnh chèn watermark…</string>
     <string name="export_notification_progress">Đã xong %1$d/%2$d</string>
     <string name="dialog_save_cancel">Huỷ</string>
+    <string name="export_conflict_dialog_title">Đang có batch xuất ảnh khác chạy dở</string>
+    <string name="export_conflict_dialog_message">Bắt đầu batch mới sẽ huỷ batch đang chạy hiện tại. Tiếp tục?</string>
     <string name="batch_caption_entry">Chú thích hàng loạt</string>
     <string name="batch_caption_title">Chú thích hàng loạt</string>
     <string name="batch_caption_hint">Mỗi dòng một chú thích tương ứng thứ tự ảnh…</string>

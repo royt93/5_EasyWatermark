@@ -23,12 +23,14 @@ import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
 import com.mckimquyen.watermark.data.model.Result
 import com.mckimquyen.watermark.databinding.DlgSaveFileBinding
+import com.mckimquyen.watermark.export.BatchExportWorker
 import com.mckimquyen.watermark.ui.MainActivity
 import com.mckimquyen.watermark.ui.MainViewModel
 import com.mckimquyen.watermark.ui.adapter.SaveImageListAdapter
@@ -214,13 +216,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                             shareViewModel.saveOutputNamePattern(etOutputName.text?.toString().orEmpty().trim())
                             shareViewModel.saveProofingMode(swProofingMode.isChecked)
                             requireActivity().preCheckStoragePermission {
-                                shareViewModel.saveImage(
-                                    requireActivity().contentResolver,
-                                    (requireContext() as MainActivity).getImageViewInfo(),
-                                    (requireContext() as MainActivity).getImageList(),
-                                    selectedRecipientCode,
-                                    selectedRecipientName
-                                )
+                                startExportOrConfirmReplace()
                             }
                         }
                     }
@@ -529,6 +525,47 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 val theAdapter = binding.rvResult.adapter as SaveImageListAdapter
                 binding.tvResult.text = exportCountText(theAdapter)
             }
+        }
+    }
+
+    /**
+     * BUG-AUDIT-2026-09-29: [MainViewModel.saveImage] enqueue qua [BatchExportWorker] với
+     * `ExistingWorkPolicy.REPLACE`. [shareViewModel.saveResult] đã tự chặn double-tap KHI CÙNG
+     * ViewModel (nhánh `TYPE_SAVING` phía trên chuyển nút Save thành Cancel) — case còn sót là
+     * ViewModel MỚI (thoát rồi mở lại dialog cho ảnh khác) không biết có batch cũ đang chạy dở ở
+     * WorkManager. Hỏi xác nhận trước khi âm thầm huỷ batch đó.
+     *
+     * [BatchExportWorker.isActive] block thread gọi (query `ListenableFuture.get()` của
+     * WorkManager) — review pass 2026-09-29: KHÔNG gọi trực tiếp trên main thread (click handler),
+     * chuyển qua [Dispatchers.IO] trong `lifecycleScope` để tránh treo UI/rủi ro ANR nếu WorkManager
+     * chậm (DB nguội, thiết bị yếu).
+     */
+    private fun startExportOrConfirmReplace() {
+        val activity = requireActivity() as MainActivity
+        val proceed = {
+            shareViewModel.saveImage(
+                activity.contentResolver,
+                activity.getImageViewInfo(),
+                activity.getImageList(),
+                selectedRecipientCode,
+                selectedRecipientName
+            )
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            val isActive = withContext(Dispatchers.IO) { BatchExportWorker.isActive(activity) }
+            if (!isActive) {
+                proceed()
+                return@launch
+            }
+            MaterialAlertDialogBuilder(activity)
+                .setTitle(R.string.export_conflict_dialog_title)
+                .setMessage(R.string.export_conflict_dialog_message)
+                .setNegativeButton(R.string.tips_cancel_dialog) { dialog, _ -> dialog.dismiss() }
+                .setPositiveButton(R.string.tips_confirm_dialog) { dialog, _ ->
+                    proceed()
+                    dialog.dismiss()
+                }
+                .show()
         }
     }
 

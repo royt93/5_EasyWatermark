@@ -21,17 +21,6 @@ import java.io.InputStream
 
 private const val TAG = "BitmapUtils"
 
-suspend fun decodeBitmapWithExif(
-    context: Context,
-    uri: Uri,
-    inputStream: InputStream,
-    options: BitmapFactory.Options? = null
-): Result<BitmapCache.BitmapValue> =
-    withContext(Dispatchers.IO) {
-        val (rotation, exifModel) = readExifOrientationAndModel(context, uri)
-        return@withContext decodeBitmapWithExifSync(inputStream, options, rotation, exifModel)
-    }
-
 /**
  * ENH-06: [rotation]/[exifModel] phải được đọc TRƯỚC (qua [readExifOrientationAndModel], 1 lần
  * mở stream duy nhất) và truyền vào đây — hàm này KHÔNG tự mở thêm stream nào để đọc EXIF, tránh
@@ -360,27 +349,32 @@ suspend fun decodeBitmapFromUri(
     context: Context,
     resolver: ContentResolver,
     uri: Uri,
-    reqLongEdge: Int = 0
+    reqLongEdge: Int = 0,
+    maxHeapBytes: Long = Runtime.getRuntime().maxMemory()
 ): Result<BitmapCache.BitmapValue> =
     withContext(Dispatchers.IO) {
-        if (reqLongEdge <= 0) {
-            val opts = BitmapFactory.Options().apply { inMutable = true }
-            resolver.openInputStream(uri).use { inputStream ->
-                if (inputStream == null) {
-                    return@withContext Result.failure(null, "-1", "Open input stream failed.")
-                }
-                return@withContext decodeBitmapWithExif(context, uri, inputStream, opts)
-            }
-        }
+        // BUG-AUDIT-2026-09-29: nhánh early-return riêng cho reqLongEdge<=0 (decode full-res,
+        // không gọi computeMaxSafeDimension) đã bị xoá — bỏ sót bảo vệ OOM cho output "Original"
+        // trái với doc comment ENH-14/OOM-PROTECT phía trên. computeMaxSafeDimension đã tự xử lý
+        // đúng case reqLongEdge<=0 (giữ nguyên kích thước nếu ảnh dưới ngưỡng an toàn), nên dùng
+        // chung 1 đường code duy nhất bên dưới cho mọi giá trị reqLongEdge.
         val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(uri).use { BitmapFactory.decodeStream(it, null, options) }
+        // BUG-AUDIT-2026-09-29 (review pass): guard rõ ràng stream null (quyền bị thu hồi giữa
+        // chừng/provider lỗi) TRƯỚC khi gọi BitmapFactory — trước đây chỉ nhánh reqLongEdge>0 mới
+        // đi qua dòng này nên rủi ro thấp/chưa gặp; giờ "Original" cũng dùng chung đường này.
+        resolver.openInputStream(uri).use { boundsStream ->
+            if (boundsStream == null) {
+                return@withContext Result.failure(null, "-1", "Open input stream failed.")
+            }
+            BitmapFactory.decodeStream(boundsStream, null, options)
+        }
         val (rotation, exifModel) = readExifOrientationAndModel(context, uri)
         val (oHeight: Int, oWidth: Int) = if (shouldInterchangeSize(rotation)) {
             options.run { outWidth to outHeight }
         } else {
             options.run { outHeight to outWidth }
         }
-        val safeLongEdge = computeMaxSafeDimension(oWidth, oHeight, reqLongEdge)
+        val safeLongEdge = computeMaxSafeDimension(oWidth, oHeight, reqLongEdge, maxHeapBytes)
         options.inSampleSize = calculateInSampleSizeForLongEdge(maxOf(oWidth, oHeight), safeLongEdge)
         options.inJustDecodeBounds = false
         options.inMutable = true

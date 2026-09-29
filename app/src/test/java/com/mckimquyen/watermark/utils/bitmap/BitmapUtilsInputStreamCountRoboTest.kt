@@ -105,7 +105,7 @@ class BitmapUtilsInputStreamCountRoboTest {
     }
 
     @Test
-    fun decodeBitmapFromUri_opensAtMostTwoStreams_perUri() = runBlocking {
+    fun decodeBitmapFromUri_opensAtMostThreeStreams_perUri() = runBlocking {
         val file = createRotatedJpeg()
         val provider = setupProvider("wm.stream.count.fromuri", file)
         val uri = Uri.parse("content://wm.stream.count.fromuri/test.jpg")
@@ -113,8 +113,11 @@ class BitmapUtilsInputStreamCountRoboTest {
         val result = decodeBitmapFromUri(context, context.contentResolver, uri)
 
         assertThat(result.isFailure()).isFalse()
-        // Trước fix: 3 (decode + orientation + exif). Sau fix: decode + exif(gộp) = 2.
-        assertThat(provider.openCount).isEqualTo(2)
+        // BUG-AUDIT-2026-09-29: reqLongEdge<=0 ("Original") giờ dùng CHUNG đường code với
+        // reqLongEdge>0 để không bỏ sót computeMaxSafeDimension (OOM protection) — cần biết
+        // bounds TRƯỚC khi quyết định có downsample hay không, nên tăng lại từ 2 lên 3 (bounds +
+        // exif + decode), đổi lại đổi bảo vệ OOM cho ảnh siêu lớn dù user chọn Original.
+        assertThat(provider.openCount).isEqualTo(3)
         result.data?.bitmap?.recycle()
         Unit
     }
@@ -129,7 +132,8 @@ class BitmapUtilsInputStreamCountRoboTest {
         val exif = result.data?.exifModel
         assertThat(exif?.latitude).isWithin(GPS_TOLERANCE).of(HANOI_LAT)
         assertThat(exif?.longitude).isWithin(GPS_TOLERANCE).of(HANOI_LON)
-        assertThat(provider.openCount).isEqualTo(2)
+        // BUG-AUDIT-2026-09-29: xem giải thích ở decodeBitmapFromUri_opensAtMostTwoStreams_perUri.
+        assertThat(provider.openCount).isEqualTo(3)
         result.data?.bitmap?.recycle()
         Unit
     }

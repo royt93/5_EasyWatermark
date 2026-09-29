@@ -109,4 +109,52 @@ class ExportNamingConflictTest {
         )
         assertThat(name).isEqualTo("photo_f_2.8.jpg")
     }
+
+    /**
+     * BUG-AUDIT-2026-09-29: pattern "{filename}" trên ảnh có DISPLAY_NAME rỗng/chỉ-đuôi (lastPathSegment
+     * ".jpg" -> substringBeforeLast('.') ra "") từng sinh tên file ẩn ".jpg" (dotfile, dễ bị ghi đè
+     * hàng loạt). Phải fallback về pattern rỗng ("ewm_{timestamp}") thay vì trả base rỗng.
+     */
+    @Test
+    fun generateOutputName_patternResolvesToEmptyString_fallsBackToTimestampPrefix() {
+        val emptyNameUri = Uri.parse("content://media/external/images/media/.jpg")
+        val info = ImageInfo(emptyNameUri)
+        val name = exportNaming.generateOutputName(
+            context.contentResolver,
+            info,
+            index = 0,
+            outputNamePattern = "{filename}",
+            outputFormat = Bitmap.CompressFormat.JPEG
+        )
+        assertThat(name).startsWith("ewm_")
+        assertThat(name).isNotEqualTo(".jpg")
+    }
+
+    /**
+     * Review pass 2026-09-29: fallback timestamp thô (millisecond) không đủ phân biệt nếu nhiều
+     * ảnh trong CÙNG 1 batch đều rơi vào case base rỗng và xử lý xong trong cùng 1 millisecond
+     * (ảnh nhỏ/thiết bị nhanh) — 2 ảnh khác nhau (`index` khác nhau) phải LUÔN ra tên khác nhau.
+     */
+    @Test
+    fun generateOutputName_multipleImagesSameEmptyBase_neverCollide_evenAtSameTimestamp() {
+        val emptyNameUri = Uri.parse("content://media/external/images/media/.jpg")
+        val info = ImageInfo(emptyNameUri)
+        val name0 = exportNaming.generateOutputName(
+            context.contentResolver,
+            info,
+            index = 0,
+            outputNamePattern = "{filename}",
+            outputFormat = Bitmap.CompressFormat.JPEG
+        )
+        val name1 = exportNaming.generateOutputName(
+            context.contentResolver,
+            info,
+            index = 1,
+            outputNamePattern = "{filename}",
+            outputFormat = Bitmap.CompressFormat.JPEG
+        )
+        assertThat(name0).isNotEqualTo(name1)
+        assertThat(name0).endsWith("_1.jpg")
+        assertThat(name1).endsWith("_2.jpg")
+    }
 }

@@ -260,6 +260,8 @@
     <string name="conflict_policy_rename_version">Automatisch umbenennen (_v2, _v3)</string>
     <string name="conflict_policy_skip">Überspringen</string>
     <string name="dialog_save_cancel">Abbrechen</string>
+    <string name="export_conflict_dialog_title">Ein anderer Export läuft</string>
+    <string name="export_conflict_dialog_message">Ein neuer Export bricht den aktuell laufenden Batch ab. Fortfahren?</string>
     <string name="dialog_save_config_conflict_policy">Wenn Datei existiert</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>
     <string name="dialog_save_config_copyright_hint">© Dein Name</string>

@@ -255,6 +255,8 @@
     <string name="conflict_policy_rename_version">Rinomina automaticamente (_v2, _v3)</string>
     <string name="conflict_policy_skip">Salta</string>
     <string name="dialog_save_cancel">Annulla</string>
+    <string name="export_conflict_dialog_title">È in corso un\'altra esportazione</string>
+    <string name="export_conflict_dialog_message">Avviare una nuova esportazione annullerà il batch attualmente in corso. Continuare?</string>
     <string name="dialog_save_config_conflict_policy">Se il file esiste già</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>
     <string name="dialog_save_config_copyright_hint">© Il tuo nome</string>

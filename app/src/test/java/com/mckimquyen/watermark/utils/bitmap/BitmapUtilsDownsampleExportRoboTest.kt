@@ -93,6 +93,36 @@ class BitmapUtilsDownsampleExportRoboTest {
         Unit
     }
 
+    /**
+     * BUG-AUDIT-2026-09-29: trước fix, nhánh reqLongEdge<=0 decode full-res KHÔNG BAO GIỜ gọi
+     * computeMaxSafeDimension — user chọn output "Original" với ảnh siêu lớn (108MP) sẽ luôn OOM
+     * bất kể RAM thiết bị. Test bằng heap giả lập cực nhỏ (không cần dựng bitmap 108MP thật trong
+     * JVM test, tránh chính cái OOM đang test) để chứng minh Original giờ CŨNG được bảo vệ.
+     */
+    @Test
+    fun decodeBitmapFromUri_reqLongEdgeZero_tinyHeap_stillDownsamplesToPreventOom() = runBlocking {
+        val file = createLargeJpeg()
+        val uri = Uri.parse("content://wm.downsample.tinyheap/test.jpg")
+        setupProvider("wm.downsample.tinyheap", file)
+
+        // Heap giả lập 1MB: 1MB*0.35/4B ~ 91,750 px an toàn -> ảnh gốc 3200x1600 (5.12MP) vượt xa
+        // ngưỡng này, computeMaxSafeDimension buộc phải hạ cạnh dài.
+        val tinyHeap = 1L * 1024L * 1024L
+        val result = decodeBitmapFromUri(
+            context,
+            context.contentResolver,
+            uri,
+            reqLongEdge = 0,
+            maxHeapBytes = tinyHeap
+        )
+
+        assertThat(result.isFailure()).isFalse()
+        val bitmap = result.data!!.bitmap!!
+        assertThat(bitmap.width).isLessThan(3200)
+        bitmap.recycle()
+        Unit
+    }
+
     @Test
     fun decodeBitmapFromUri_reqLongEdgeZero_behavesExactlyLikeBefore_fullResolution() = runBlocking {
         val file = createLargeJpeg()

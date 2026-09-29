@@ -256,6 +256,8 @@
     <string name="conflict_policy_rename_version">自動リネーム（_v2、_v3）</string>
     <string name="conflict_policy_skip">スキップ</string>
     <string name="dialog_save_cancel">キャンセル</string>
+    <string name="export_conflict_dialog_title">別のエクスポートが進行中です</string>
+    <string name="export_conflict_dialog_message">新しいエクスポートを開始すると、現在実行中のバッチがキャンセルされます。続行しますか？</string>
     <string name="dialog_save_config_conflict_policy">ファイルが存在する場合</string>
     <string name="dialog_save_config_copyright">著作権表示（EXIF）</string>
     <string name="dialog_save_config_copyright_hint">© あなたの名前</string>

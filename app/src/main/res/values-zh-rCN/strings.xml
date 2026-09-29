@@ -260,6 +260,8 @@
     <string name="conflict_policy_rename_version">自动重命名（_v2、_v3）</string>
     <string name="conflict_policy_skip">跳过</string>
     <string name="dialog_save_cancel">取消</string>
+    <string name="export_conflict_dialog_title">另一个导出正在进行中</string>
+    <string name="export_conflict_dialog_message">开始新的导出将取消当前正在运行的批处理。是否继续？</string>
     <string name="dialog_save_config_conflict_policy">文件已存在时</string>
     <string name="dialog_save_config_copyright">版权信息（EXIF）</string>
     <string name="dialog_save_config_copyright_hint">© 您的名字</string>

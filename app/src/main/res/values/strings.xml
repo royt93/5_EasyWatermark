@@ -302,6 +302,9 @@
     <!-- lint PluralsCandidate: bộ đếm tiến trình "x/y done", không phải câu số ít/nhiều. -->
     <string name="export_notification_progress" tools:ignore="PluralsCandidate">%1$d/%2$d done</string>
     <string name="dialog_save_cancel">Cancel</string>
+    <!-- BUG-AUDIT-2026-09-29: cảnh báo trước khi ExistingWorkPolicy.REPLACE âm thầm huỷ 1 batch export khác đang chạy dở. -->
+    <string name="export_conflict_dialog_title">Another export is in progress</string>
+    <string name="export_conflict_dialog_message">Starting a new export will cancel the batch that is currently running. Continue?</string>
 
     <!-- FEAT-13: caption riêng theo từng ảnh trong batch (CSV multi-line). -->
     <string name="batch_caption_entry">Batch captions</string>

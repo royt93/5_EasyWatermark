@@ -254,6 +254,8 @@
     <string name="conflict_policy_rename_version">Gi nytt navn automatisk (_v2, _v3)</string>
     <string name="conflict_policy_skip">Hopp over</string>
     <string name="dialog_save_cancel">Avbryt</string>
+    <string name="export_conflict_dialog_title">En annen eksport pågår</string>
+    <string name="export_conflict_dialog_message">Å starte en ny eksport vil avbryte batchen som kjører nå. Fortsette?</string>
     <string name="dialog_save_config_conflict_policy">Hvis filen finnes</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>
     <string name="dialog_save_config_copyright_hint">© Ditt navn</string>

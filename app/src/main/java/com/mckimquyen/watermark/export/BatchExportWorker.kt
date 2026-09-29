@@ -292,5 +292,22 @@ class BatchExportWorker @AssistedInject constructor(
         fun cancel(context: Context) {
             WorkManager.getInstance(context).cancelUniqueWork(UNIQUE_WORK_NAME)
         }
+
+        /**
+         * BUG-AUDIT-2026-09-29: [enqueue] dùng [ExistingWorkPolicy.REPLACE] — nếu 1 batch đang
+         * chạy dở (vd ViewModel mới không biết, do user thoát rồi quay lại) mà [enqueue] được gọi
+         * lại, WorkManager âm thầm huỷ batch cũ không báo lỗi. Gọi hàm này TRƯỚC [enqueue] để hỏi
+         * xác nhận nếu có batch đang chạy. Query Room cục bộ của WorkManager, không gọi mạng —
+         * chấp nhận block ngắn trên thread gọi (UI click handler), tương tự các app khác dùng
+         * WorkManager theo cách này.
+         */
+        fun isActive(context: Context): Boolean = try {
+            WorkManager.getInstance(context)
+                .getWorkInfosForUniqueWork(UNIQUE_WORK_NAME)
+                .get()
+                .any { !it.state.isFinished }
+        } catch (e: Exception) {
+            false
+        }
     }
 }

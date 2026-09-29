@@ -142,14 +142,21 @@ class ExportNaming @Inject constructor(
         recipient: String? = null
     ): String {
         val pattern = outputNamePattern.trim()
-        val base = if (pattern.isEmpty()) {
-            "ewm_${System.currentTimeMillis()}"
+        val resolvedBase = if (pattern.isEmpty()) {
+            ""
         } else {
             // BUG-40: token EXIF ({exposure}/{fnumber}/{exif}) và chuỗi tự do ({filename}/
             // {recipient}/{location}) có thể chứa ký tự cấm hệ thống file — sanitize SAU khi
             // resolve token, TRƯỚC khi nối extension.
             sanitizeFileName(resolveTextTokens(pattern, imageInfo, contentResolver, index, recipient))
         }
+        // BUG-AUDIT-2026-09-29: pattern không rỗng nhưng resolve+sanitize ra chuỗi rỗng (vd
+        // "{filename}" trên ảnh có DISPLAY_NAME rỗng/chỉ có đuôi) từng lọt qua, sinh tên file ẩn
+        // ".jpg" — dùng chung fallback timestamp để không bao giờ trả base rỗng. Kèm `index` (đã
+        // có sẵn ở tham số hàm, cùng quy ước {seq}=index+1) để 2 ảnh cùng batch không đụng tên nếu
+        // rơi đúng cùng 1 millisecond (review pass: timestamp thô không đủ phân biệt khi batch
+        // nhanh/ảnh nhỏ) — áp dụng luôn cho case pattern rỗng hoàn toàn, cùng 1 fallback duy nhất.
+        val base = resolvedBase.ifEmpty { "ewm_${System.currentTimeMillis()}_${index + 1}" }
         return "$base.${trapOutputExtension(outputFormat)}"
     }
 
