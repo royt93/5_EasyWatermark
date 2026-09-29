@@ -81,13 +81,21 @@ class WatermarkProfileDaoIntegrationTest {
     }
 
     @Test
-    fun deleteById_removesOnlyThatProfile() = runBlocking {
-        val keepId = dao.insert(entity("keep", 1_000L))
-        val removeId = dao.insert(entity("remove", 2_000L))
+    fun deleteById_removesOnlyThatProfile() {
+        // BUG-AUDIT-2026-09-29-JUNIT-TRAP: `= runBlocking { ... }` (expression body) suy luận kiểu
+        // trả về theo statement CUỐI trong lambda — `containsExactly(...)` trả `Ordered` (không phải
+        // `Unit`) khiến JUnit4 `ParentRunner.validate()` ném `InvalidTestClassError`, chặn CẢ CLASS
+        // (không chỉ test này) — mất luôn `initializationError` với `instantiate test runner class
+        // AndroidJUnit4ClassRunner`. Cùng bẫy đã gặp ở `BatchHistoryDaoIntegrationTest`. Dùng block
+        // body `{ runBlocking { ... } }` để hàm luôn suy luận `Unit` bất kể statement cuối trả gì.
+        runBlocking {
+            val keepId = dao.insert(entity("keep", 1_000L))
+            val removeId = dao.insert(entity("remove", 2_000L))
 
-        dao.deleteById(removeId)
+            dao.deleteById(removeId)
 
-        val all = dao.getAll().first()
-        assertThat(all.map { it.id }).containsExactly(keepId)
+            val all = dao.getAll().first()
+            assertThat(all.map { it.id }).containsExactly(keepId)
+        }
     }
 }
