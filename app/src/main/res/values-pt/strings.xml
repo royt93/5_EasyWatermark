@@ -19,7 +19,6 @@
     <string name="tips_not_app_can_open_images">Nenhum gestor de ficheiros detectado.</string>
     <string name="tips_choose_other_file_type">Imagem inválida</string>
     <string name="error_save_oom">Memória insuficiente, por favor limpe os processos em segundo plano e tente novamente</string>
-    <string name="dev_comment">Qualquer tecnologia suficientemente avançada é indistinguível da mágica.</string>
     <string name="dialog_title_exist_confirm">Aviso</string>
     <string name="dialog_cancel_exist_confirm">Cancelar</string>
     <string name="dialog_content_exist_confirm">Descartar a edição\?</string>
@@ -255,10 +254,6 @@
     <string name="conflict_policy_overwrite">Substituir</string>
     <string name="conflict_policy_rename_version">Renomear automaticamente (_v2, _v3)</string>
     <string name="conflict_policy_skip">Ignorar</string>
-    <string name="debug_title">Depuração</string>
-    <string name="designed_with_by_tovi">Concebido com ♥ por tovi</string>
-    <string name="designer_comment">Um designer.</string>
-    <string name="developed_with_by_rosu">Desenvolvido com ♥ por rosu</string>
     <string name="dialog_save_cancel">Cancelar</string>
     <string name="dialog_save_config_conflict_policy">Se o ficheiro já existir</string>
     <string name="dialog_save_config_copyright">Direitos de autor (EXIF)</string>

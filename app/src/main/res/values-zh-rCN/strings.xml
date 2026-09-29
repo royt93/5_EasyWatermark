@@ -47,7 +47,6 @@
     <string name="style_alpha">不透明度</string>
     <string name="tips_not_app_can_open_images">看起来您安装没有文件管理器？</string>
     <string name="error_save_oom">内存不足，请清理后台后重试</string>
-    <string name="dev_comment">任何先进的科技，初看皆与魔法无异</string>
     <!--exit confirm dialog-->
     <string name="dialog_title_exist_confirm">提示</string>
     <string name="dialog_content_exist_confirm">丢弃修改？</string>
@@ -260,10 +259,6 @@
     <string name="conflict_policy_overwrite">覆盖</string>
     <string name="conflict_policy_rename_version">自动重命名（_v2、_v3）</string>
     <string name="conflict_policy_skip">跳过</string>
-    <string name="debug_title">调试</string>
-    <string name="designed_with_by_tovi">由 tovi 用 ♥ 设计</string>
-    <string name="designer_comment">一名设计师。</string>
-    <string name="developed_with_by_rosu">由 rosu 用 ♥ 开发</string>
     <string name="dialog_save_cancel">取消</string>
     <string name="dialog_save_config_conflict_policy">文件已存在时</string>
     <string name="dialog_save_config_copyright">版权信息（EXIF）</string>

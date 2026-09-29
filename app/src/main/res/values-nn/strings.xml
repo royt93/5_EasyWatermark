@@ -48,7 +48,6 @@
     <string name="config_default_water_mark_text">👋 IKKJE DEL</string>
     <string name="style_alpha">Synlegskap</string>
     <string name="tips_not_app_can_open_images">Fann ingen filhandsamar.</string>
-    <string name="dev_comment">Høgt nok utvikla teknologi ser ut som magi.</string>
     <string name="dialog_title_exist_confirm">Varsel</string>
     <string name="dialog_cancel_exist_confirm">Avbryt</string>
     <string name="dialog_content_exist_confirm">Avvis brigde\?</string>
@@ -250,10 +249,6 @@
     <string name="conflict_policy_overwrite">Skriv over</string>
     <string name="conflict_policy_rename_version">Gje nytt namn automatisk (_v2, _v3)</string>
     <string name="conflict_policy_skip">Hopp over</string>
-    <string name="debug_title">Feilsøking</string>
-    <string name="designed_with_by_tovi">Designa med ♥ av tovi</string>
-    <string name="designer_comment">Ein designar.</string>
-    <string name="developed_with_by_rosu">Utvikla med ♥ av rosu</string>
     <string name="dialog_save_cancel">Avbryt</string>
     <string name="dialog_save_config_conflict_policy">Om fila finst</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>

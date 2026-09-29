@@ -67,7 +67,6 @@
     <string name="tips_not_app_can_open_images">Không tìm thấy ứng dụng quản lý tệp.</string>
     <string name="tips_choose_other_file_type">Tệp hình ảnh không hợp lệ</string>
     <string name="error_save_oom">Bộ nhớ không đủ, vui lòng giải phóng ứng dụng chạy ngầm và thử lại</string>
-    <string name="dev_comment">Bất kỳ công nghệ nào đủ tiên tiến đều không thể phân biệt được với phép thuật.</string>
     <string name="dialog_title_exist_confirm">Cảnh báo</string>
     <string name="dialog_cancel_exist_confirm">Huỷ</string>
     <string name="dialog_content_exist_confirm">Huỷ bỏ mọi thay đổi?</string>
@@ -169,7 +168,6 @@
     <string name="glide">Glide</string>
     <string name="material_components_for_android">Material Components cho Android</string>
     <string name="compressor">Compressor</string>
-    <string name="developed_with_by_rosu">Phát triển với ♥ bởi rosu</string>
     <string name="force_open_dynamic_color_support">Bật giao diện Dynamic Color</string>
     <string name="dynamic_color_subtitle_supported">Tự động đổi màu theo hình nền hệ thống (Material You)</string>
     <string name="dynamic_color_subtitle_unsupported">Yêu cầu Android 12+ (Thiết bị dùng bảng màu chuẩn Material 3)</string>
@@ -305,9 +303,6 @@
     <string name="about_section_data">Quản lý dữ liệu</string>
     <string name="backup_data_subtitle">Sao lưu mẫu đóng dấu và chữ ký</string>
     <string name="restore_data_subtitle">Khôi phục mẫu đóng dấu và chữ ký</string>
-    <string name="debug_title">Gỡ lỗi</string>
-    <string name="designed_with_by_tovi">Thiết kế với ♥ bởi tovi</string>
-    <string name="designer_comment">Nhà thiết kế.</string>
     <string name="action_select_all">Chọn tất cả</string>
     <string name="action_deselect_all">Bỏ chọn tất cả</string>
     <string name="action_edit">Chỉnh sửa</string>

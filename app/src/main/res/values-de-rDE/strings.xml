@@ -49,7 +49,6 @@
     <string name="dialog_title_exist_confirm">Tipps</string>
     <string name="error_save_oom">Nicht genügend Speicher vorhanden. Bitte Hintergrundprozesse beenden und erneut versuchen</string>
     <string name="request_permission_failed">Berechtigung abgelehnt</string>
-    <string name="dev_comment">Jede hinreichend fortschrittliche Technologie ist von Magie nicht zu unterscheiden.</string>
     <string name="text_paint_fill">Füllung</string>
     <string name="text_paint_stroke">Strich</string>
     <string name="text_typeface_normal">Normal</string>
@@ -260,10 +259,6 @@
     <string name="conflict_policy_overwrite">Überschreiben</string>
     <string name="conflict_policy_rename_version">Automatisch umbenennen (_v2, _v3)</string>
     <string name="conflict_policy_skip">Überspringen</string>
-    <string name="debug_title">Debug</string>
-    <string name="designed_with_by_tovi">Gestaltet mit ♥ von tovi</string>
-    <string name="designer_comment">Ein Designer.</string>
-    <string name="developed_with_by_rosu">Entwickelt mit ♥ von rosu</string>
     <string name="dialog_save_cancel">Abbrechen</string>
     <string name="dialog_save_config_conflict_policy">Wenn Datei existiert</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>

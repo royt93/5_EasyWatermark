@@ -45,7 +45,6 @@
     <string name="tips_not_app_can_open_images">Aucun gestionnaire de fichiers n\'a été détecté.</string>
     <string name="tips_choose_other_file_type">Image invalide</string>
     <string name="error_save_oom">Mémoire insuffisante, veuillez nettoyer l\'arrière-plan et réessayer</string>
-    <string name="dev_comment">Toute technologie suffisamment avancée est indiscernable de la magie.</string>
     <string name="dialog_title_exist_confirm">Avertissement</string>
     <string name="dialog_cancel_exist_confirm">Annuler</string>
     <string name="dialog_content_exist_confirm">Abandonner les changements \?</string>
@@ -257,10 +256,6 @@
     <string name="conflict_policy_overwrite">Remplacer</string>
     <string name="conflict_policy_rename_version">Renommer automatiquement (_v2, _v3)</string>
     <string name="conflict_policy_skip">Ignorer</string>
-    <string name="debug_title">Débogage</string>
-    <string name="designed_with_by_tovi">Conçu avec ♥ par tovi</string>
-    <string name="designer_comment">Un designer.</string>
-    <string name="developed_with_by_rosu">Développé avec ♥ par rosu</string>
     <string name="dialog_save_cancel">Annuler</string>
     <string name="dialog_save_config_conflict_policy">Si le fichier existe</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>

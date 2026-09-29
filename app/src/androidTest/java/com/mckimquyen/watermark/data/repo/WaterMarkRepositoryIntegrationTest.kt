@@ -234,6 +234,27 @@ class WaterMarkRepositoryIntegrationTest {
         assertThat(repo.waterMark.first().textEffectPillBackground).isTrue()
     }
 
+    /**
+     * ENH-37 (dọn `a_about.xml` dead view): `switchDebug`/card bọc nó GIỮ NGUYÊN (không thuộc
+     * phạm vi xoá, dù UI luôn `visibility="gone"`) vì có listener sống gọi
+     * [AboutViewModel.toggleBounds] → [toggleBounds] → `enableBounds`. Test này verify hành vi
+     * đó vẫn đúng qua DataStore thật trên thiết bị (chưa từng có integration test nào cover
+     * trước đợt dọn — thêm để chứng minh cleanup không đụng nhầm sang field này).
+     */
+    @Test
+    fun waterMark_emptyDataStore_defaultEnableBoundsIsFalse() = runBlocking {
+        assertThat(repo.waterMark.first().enableBounds).isFalse()
+    }
+
+    @Test
+    fun toggleBounds_thenReadWaterMark_reflectsNewValue_roundTrip() = runBlocking {
+        repo.toggleBounds(true)
+        assertThat(repo.waterMark.first().enableBounds).isTrue()
+
+        repo.toggleBounds(false)
+        assertThat(repo.waterMark.first().enableBounds).isFalse()
+    }
+
     @Test
     fun textEffects_areIndependent_enablingOneDoesNotAffectOthers() = runBlocking {
         repo.updateTextEffectShadow(true)

@@ -45,7 +45,6 @@
     <string name="tips_not_app_can_open_images">No se detectó ningún administrador de archivos.</string>
     <string name="tips_choose_other_file_type">Parece que no escogió una imagen</string>
     <string name="error_save_oom">Memoria insuficiente, limpie la caché y vuelva a intentarlo</string>
-    <string name="dev_comment">Cualquier tecnología avanzada, a primera vista, no es diferente de la magia.</string>
     <string name="dialog_content_exist_confirm">¿Descartar editar?</string>
     <string name="dialog_cancel_exist_confirm">Cancelar</string>
     <string name="dialog_title_exist_confirm">Consejo</string>
@@ -256,10 +255,6 @@
     <string name="conflict_policy_overwrite">Sobrescribir</string>
     <string name="conflict_policy_rename_version">Renombrar automáticamente (_v2, _v3)</string>
     <string name="conflict_policy_skip">Omitir</string>
-    <string name="debug_title">Depuración</string>
-    <string name="designed_with_by_tovi">Diseñado con ♥ por tovi</string>
-    <string name="designer_comment">Un Diseñador.</string>
-    <string name="developed_with_by_rosu">Desarrollado con ♥ por rosu</string>
     <string name="dialog_save_cancel">Cancelar</string>
     <string name="dialog_save_config_conflict_policy">Si el archivo ya existe</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>

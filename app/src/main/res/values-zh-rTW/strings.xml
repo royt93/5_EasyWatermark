@@ -45,7 +45,6 @@
     <string name="title_vertical_layout">垂直</string>
     <string name="water_mark_mode_image">圖標</string>
     <string name="water_mark_mode_text">文字</string>
-    <string name="dev_comment">任何先进的科技，初看皆与魔法无异</string>
     <string name="dialog_content_exist_confirm">丟棄修改？</string>
     <string name="dialog_cancel_exist_confirm">取消</string>
     <string name="dialog_title_exist_confirm">溫馨提示</string>
@@ -257,10 +256,6 @@
     <string name="conflict_policy_overwrite">覆寫</string>
     <string name="conflict_policy_rename_version">自動重新命名（_v2、_v3）</string>
     <string name="conflict_policy_skip">跳過</string>
-    <string name="debug_title">偵錯</string>
-    <string name="designed_with_by_tovi">由 tovi 用 ♥ 設計</string>
-    <string name="designer_comment">一名設計師。</string>
-    <string name="developed_with_by_rosu">由 rosu 用 ♥ 開發</string>
     <string name="dialog_save_cancel">取消</string>
     <string name="dialog_save_config_conflict_policy">檔案已存在時</string>
     <string name="dialog_save_config_copyright">版權資訊（EXIF）</string>

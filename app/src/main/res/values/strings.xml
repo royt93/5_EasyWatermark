@@ -66,7 +66,6 @@
     <string name="tips_not_app_can_open_images">No file manager detected.</string>
     <string name="tips_choose_other_file_type">Invalid image</string>
     <string name="error_save_oom">Insufficient memory, please clean up the background and try again</string>
-    <string name="dev_comment">Any sufficiently advanced technology is indistinguishable from magic.</string>
     <string name="dialog_title_exist_confirm">Warning</string>
     <string name="dialog_cancel_exist_confirm">Cancel</string>
     <string name="dialog_content_exist_confirm">Discard changes?</string>
@@ -184,7 +183,6 @@
     <string name="glide">Glide</string>
     <string name="material_components_for_android">Material Components for Android</string>
     <string name="compressor">Compressor</string>
-    <string name="developed_with_by_rosu">Developed with ♥ by rosu</string>
     <string name="force_open_dynamic_color_support">Force Open Dynamic Color Support</string>
     <string name="dynamic_color_subtitle_supported">Automatically adapt to system wallpaper palette (Material You)</string>
     <string name="dynamic_color_subtitle_unsupported">Requires Android 12+ (Device uses standard Material 3 palette)</string>
@@ -335,9 +333,6 @@
     <string name="about_section_data">Data Management</string>
     <string name="backup_data_subtitle">Export templates and signatures</string>
     <string name="restore_data_subtitle">Import templates and signatures</string>
-    <string name="debug_title">Debug</string>
-    <string name="designed_with_by_tovi">Designed with ♥ by tovi</string>
-    <string name="designer_comment">A Designer.</string>
     <string name="action_select_all">Select all</string>
     <string name="action_deselect_all">Deselect all</string>
     <string name="action_edit">Edit</string>

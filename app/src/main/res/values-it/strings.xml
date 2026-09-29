@@ -45,7 +45,6 @@
     <string name="tips_not_app_can_open_images">Nessun file manager rilevato.</string>
     <string name="tips_choose_other_file_type">Immagine non valida</string>
     <string name="error_save_oom">Memoria insufficiente, ripulisci in background e riprova</string>
-    <string name="dev_comment">Qualsiasi tecnologia sufficientemente avanzata è indistinguibile dalla magia.</string>
     <string name="dialog_title_exist_confirm">Attenzione</string>
     <string name="dialog_cancel_exist_confirm">Annulla</string>
     <string name="dialog_content_exist_confirm">Scartare le modifiche?</string>
@@ -255,10 +254,6 @@
     <string name="conflict_policy_overwrite">Sovrascrivi</string>
     <string name="conflict_policy_rename_version">Rinomina automaticamente (_v2, _v3)</string>
     <string name="conflict_policy_skip">Salta</string>
-    <string name="debug_title">Debug</string>
-    <string name="designed_with_by_tovi">Progettato con ♥ da tovi</string>
-    <string name="designer_comment">Un Designer.</string>
-    <string name="developed_with_by_rosu">Sviluppato con ♥ da rosu</string>
     <string name="dialog_save_cancel">Annulla</string>
     <string name="dialog_save_config_conflict_policy">Se il file esiste già</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>

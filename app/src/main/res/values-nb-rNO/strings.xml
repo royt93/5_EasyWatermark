@@ -76,7 +76,6 @@
     <string name="pick_via_system">mer …</string>
     <string name="recovery_title">Gjenopprettingsmodus</string>
     <string name="copy_success">Kopiert</string>
-    <string name="dev_comment">All tilstrekkelig avansert teknologi er uadskillelig fra magi.</string>
     <string name="style_alpha">Alfa</string>
     <string name="tips_compress_create_uri_failed">Sammenpakking fullført, men klarte ikke å opprette URI. Start programmet igjen og prøv på ny. %1$s</string>
     <string name="config_default_water_mark_text">👋 IKKE DEL</string>
@@ -254,10 +253,6 @@
     <string name="conflict_policy_overwrite">Overskriv</string>
     <string name="conflict_policy_rename_version">Gi nytt navn automatisk (_v2, _v3)</string>
     <string name="conflict_policy_skip">Hopp over</string>
-    <string name="debug_title">Feilsøking</string>
-    <string name="designed_with_by_tovi">Designet med ♥ av tovi</string>
-    <string name="designer_comment">En designer.</string>
-    <string name="developed_with_by_rosu">Utviklet med ♥ av rosu</string>
     <string name="dialog_save_cancel">Avbryt</string>
     <string name="dialog_save_config_conflict_policy">Hvis filen finnes</string>
     <string name="dialog_save_config_copyright">Copyright (EXIF)</string>

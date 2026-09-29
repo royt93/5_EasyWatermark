@@ -225,22 +225,6 @@ class AboutActivity : BaseActivity() {
                 AppLog.d(LOG_TAG, "AboutActivity tvVerifyAuthenticity clicked — opening SAF open-document")
                 verifyLauncher.launch(arrayOf("image/*"))
             }
-//            tvChangeLog.setOnClickListener {
-//                openLink("https://github.com/rosuH/EasyWatermark/releases/")
-//            }
-//            tvOpenSource.setOnClickListener {
-//                kotlin.runCatching {
-//                    startActivity(
-//                        Intent(
-//                            this@AboutActivity,
-//                            OpenSourceActivity::class.java
-//                        )
-//                    )
-//                }
-//            }
-//            tvPrivacyCn.setOnClickListener {
-//                openLink(Uri.parse("https://github.com/rosuH/EasyWatermark/blob/master/PrivacyPolicy_zh-CN.md"))
-//            }
             tvPrivacyEng.setOnClickListener {
                 AppLog.d(LOG_TAG, "AboutActivity tvPrivacyEng clicked — opening privacy policy")
                 openLink(Uri.parse(BuildConfig.PRIVACY_POLICY_URL))
