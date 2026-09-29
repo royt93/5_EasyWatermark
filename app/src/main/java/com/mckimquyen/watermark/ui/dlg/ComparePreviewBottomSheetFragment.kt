@@ -70,7 +70,11 @@ class ComparePreviewBottomSheetFragment : BaseBindBSDFragment<FComparePreviewBot
             val result = withContext(NonCancellable) {
                 shareViewModel.generateCompareBitmaps(requireActivity().contentResolver, imageInfo, index)
             }
-            if (!isActive || view == null) {
+            // BUG-AUDIT-2026-09-29-DEADCODE: `view` không định danh (unqualified) ở đây phân giải
+            // thành tham số `view: View` non-null của `onViewCreated()` (che khuất property
+            // `Fragment.view` nullable) — compiler cảnh báo "Condition is always false", nhánh
+            // `view == null` chưa từng chạy. Dùng `this@...view` để trỏ đúng property Fragment.
+            if (!isActive || this@ComparePreviewBottomSheetFragment.view == null) {
                 result?.original?.recycle()
                 result?.watermarked?.recycle()
                 return@launch
