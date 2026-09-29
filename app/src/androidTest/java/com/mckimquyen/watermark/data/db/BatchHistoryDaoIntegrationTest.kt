@@ -81,6 +81,10 @@ class BatchHistoryDaoIntegrationTest {
 
         val all = dao.getAll().first()
         assertThat(all.map { it.id }).containsExactly(keepId)
+        // BUG-AUDIT-2026-09-29: containsExactly() trả Ordered (không phải Unit) -> runBlocking{}
+        // suy ra kiểu trả về khớp Ordered, JUnit4 từ chối method @Test không trả void, chặn CẢ
+        // CLASS này chạy (InvalidTestClassError, không riêng gì test này).
+        Unit
     }
 
     @Test
@@ -101,5 +105,29 @@ class BatchHistoryDaoIntegrationTest {
         dao.trimOldest(20)
 
         assertThat(dao.getAll().first()).hasSize(2)
+    }
+
+    /**
+     * BUG-AUDIT-2026-09-29: [BatchHistoryDao.recordAndTrim] gộp insert+trim vào 1 `@Transaction`
+     * (trước đây `BatchHistoryRepository.record()` gọi 2 lời rời — process chết đúng giữa 2 lệnh
+     * hiếm khi làm bảng vượt cap tạm thời). Room thật xác nhận: gọi 1 lần `recordAndTrim` cho kết
+     * quả giống hệt gọi tay `insert` rồi `trimOldest`.
+     */
+    @Test
+    fun recordAndTrim_insertsThenPrunes_inOneCall() = runBlocking {
+        repeat(4) { i -> dao.insert(entity((i + 1) * 1_000L)) }
+
+        dao.recordAndTrim(entity(5_000L), keepCount = 3)
+
+        val all = dao.getAll().first()
+        assertThat(all.map { it.timestamp }).containsExactly(5_000L, 4_000L, 3_000L).inOrder()
+    }
+
+    @Test
+    fun recordAndTrim_returnsInsertedRowId() = runBlocking {
+        val id = dao.recordAndTrim(entity(1_000L), keepCount = 20)
+
+        val all = dao.getAll().first()
+        assertThat(all.single().id).isEqualTo(id)
     }
 }

@@ -88,9 +88,13 @@ class FuncPanelAdapter(
 
     @SuppressLint("NotifyDataSetChanged")
     fun seNewData(contentFunList: List<FuncTitleModel>, toPos: Int = selectedPos) {
-        selectedPos = toPos
+        // BUG-AUDIT-2026-09-29: đổi dataSet TRƯỚC khi gán selectedPos — trước đây gán selectedPos
+        // (trigger notifyItemChanged trên dataSet CŨ) rồi mới đổi dataSet, nên `toPos` bị validate
+        // sai theo item count cũ. `notifyDataSetChanged()` cuối hàm hiện đang che mất hệ quả, nhưng
+        // sửa cho đúng thứ tự để không phụ thuộc vào việc đó (đề phòng ai bỏ bớt notify sau này).
         dataSet.clear()
         dataSet.addAll(contentFunList)
+        selectedPos = toPos
         notifyDataSetChanged()
     }
 

@@ -2,12 +2,9 @@ package com.mckimquyen.watermark.data.repo
 
 import androidx.palette.graphics.Palette
 import com.mckimquyen.watermark.MyApplication
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,7 +13,6 @@ import javax.inject.Singleton
  */
 @Singleton
 class MemorySettingRepo @Inject constructor() {
-    private val scope = CoroutineScope(Dispatchers.Main)
 
     /**
      * The color palette extracted from the picture, used to modify the overall theme color
@@ -25,9 +21,12 @@ class MemorySettingRepo @Inject constructor() {
 
     val paletteFlow = _palette.stateIn(MyApplication.applicationScope, SharingStarted.Eagerly, null)
 
+    /**
+     * BUG-AUDIT-2026-09-29: trước đây launch 1 coroutine trên `CoroutineScope(Dispatchers.Main)`
+     * riêng (không bao giờ cancel — vi phạm R5) chỉ để emit `MutableStateFlow` — gán `.value` trực
+     * tiếp cho cùng hiệu quả, không cần coroutine/scope nào cả.
+     */
     fun updatePalette(palette: Palette?) {
-        scope.launch {
-            _palette.emit(palette)
-        }
+        _palette.value = palette
     }
 }

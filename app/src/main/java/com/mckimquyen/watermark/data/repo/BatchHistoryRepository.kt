@@ -29,7 +29,7 @@ class BatchHistoryRepository @Inject constructor(
     ) {
         // Batch rỗng (không có ảnh nào input) không phải 1 lần export thật sự — không đáng ghi lịch sử.
         if (inputUris.isEmpty()) return
-        dao.insert(
+        dao.recordAndTrim(
             BatchHistoryEntity(
                 timestamp = System.currentTimeMillis(),
                 inputUris = encodeUriList(inputUris),
@@ -44,9 +44,9 @@ class BatchHistoryRepository @Inject constructor(
                 outputDirectoryUri = settings.outputDirectoryUri?.toString(),
                 recipientCode = settings.recipientCode,
                 recipientName = settings.recipientName
-            )
+            ),
+            MAX_HISTORY_ENTRIES
         )
-        dao.trimOldest(MAX_HISTORY_ENTRIES)
     }
 
     suspend fun delete(entry: BatchHistoryEntity) = dao.deleteById(entry.id)

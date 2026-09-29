@@ -2,6 +2,65 @@
 
 > Cập nhật: 2026-09-29. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## Review pass 4 — data/repo+db, di/, adapter, Signature Studio, 2026-09-29
+
+Audit vòng 4 (loop tiếp theo sau review pass 3, phạm vi hoàn toàn mới): `/code-review --level max`
+trên `data/`, `di/`, `ui/adapter/`, `SignatureActivity.kt`/`SignatureView.kt`. 7 finding, verify tay
+từng cái — **tất cả ĐÚNG**, severity thấp-trung bình (không có crash nào ở call site hiện tại), tất
+cả đều fix theo lựa chọn user:
+
+- [x] **`RecipientRepository.findMatching()` substring thô không ranh giới từ** — tên người nhận
+  ngắn (vd "An") match nhầm bất kỳ chuỗi nào chứa nó làm substring (vd "Standard"), gán sai người
+  nhận trong tính năng dò rỉ nguồn ảnh. Fix: thêm `containsAsWord()` (kiểm tra 2 đầu vị trí match
+  không phải chữ/số — không dùng regex `\b` vì không nhận diện đúng ký tự có dấu tiếng Việt). Test
+  mới: 3 test trong `RecipientRepositoryTest` (substring không khớp, từ độc lập khớp đúng, unit
+  test riêng cho `containsAsWord`).
+- [x] **`AppModule.provideYourDatabase()` nuốt exception chỉ `printStackTrace()`** — không log qua
+  `AppLog` như mọi repo khác, Template DB lỗi tắt câm lặng không dấu vết debug production. Fix:
+  đổi sang `AppLog.e(...)`.
+- [x] **`BatchHistoryRepository.record()` insert+trimOldest không `@Transaction`** — pattern đã fix
+  ở `WatermarkStyleHistoryDao.recordAndPrune` nhưng bỏ sót ở đây, app kill giữa 2 lệnh (hiếm) làm
+  bảng vượt cap 20 dòng tạm thời. Fix: thêm `BatchHistoryDao.recordAndTrim()` bọc `@Transaction`,
+  gộp insert+trim thành 1 lời gọi. Test mới: 2 test trong `BatchHistoryDaoIntegrationTest`
+  (androidTest, Room thật) — **phát hiện thêm 1 bug JUnit thật đang chặn CẢ FILE này chạy**
+  (`deleteById_removesOnlyThatEntry()` trả `Ordered` từ `containsExactly()` thay vì `Unit`, JUnit4
+  từ chối cả class với `InvalidTestClassError`) — fix luôn (thêm `Unit` cuối hàm).
+- [x] **`MemorySettingRepo` tạo `CoroutineScope(Dispatchers.Main)` riêng không bao giờ cancel** (vi
+  phạm R5) — `updatePalette()` launch coroutine chỉ để emit `MutableStateFlow`. Fix: bỏ hẳn scope,
+  gán `.value` đồng bộ. Test mới: `MemorySettingRepoTest` (đọc field qua reflection, chứng minh
+  đồng bộ — không cần `runBlocking`/`idle()` như trước).
+- [x] **`ColorPreviewAdapter` init block `previewList.last()` không guard rỗng** — crash
+  `NoSuchElementException` nếu construct với list rỗng (chưa call site nào làm vậy hiện tại). Fix:
+  guard `isNotEmpty()`. Test mới: `ColorPreviewAdapterRoboTest` (3 test).
+- [x] **`FuncPanelAdapter.seNewData()` gán `selectedPos` (notify trên dataSet CŨ) TRƯỚC khi đổi
+  dataSet** — `notifyDataSetChanged()` ngay sau vô hiệu hoá hệ quả (gần như vô hại thực tế), nhưng
+  sửa đúng thứ tự phòng ai bỏ bớt notify sau này. Test mới:
+  `seNewData_toPosBeyondOldDataSetSize_doesNotCrash_selectsCorrectItemInNewDataSet`.
+- [x] **`SignatureActivity.SignatureHistoryAdapter` gọi lại `findViewById()` + tính
+  `Rect`/`TouchDelegate` MỖI LẦN bind** thay vì cache 1 lần — khác các adapter dùng ViewBinding
+  khác. Fix: tách `SignatureHistoryViewHolder` cache view + tính touch target 1 lần lúc tạo. Test
+  mới: `SignatureHistoryAdapterRoboTest` (3 test, gắn adapter vào `RecyclerView` thật để
+  `bindingAdapterPosition` hoạt động đúng — `@Config(sdk=N)` vì `ImageView.setImageURI()` trên API
+  28+ dùng `ImageDecoder` mà `ShadowImageDecoder` của Robolectric không decode được ảnh test tối
+  giản, giới hạn môi trường test không liên quan code thật).
+
+**Verify:** `./gradlew testDebugUnitTest` full suite PASS (1066 test — 3 flaky pre-existing không
+liên quan diff này, đã xác nhận pass riêng lẻ nhiều lần trong session). `ktlintCheck` PASS,
+`lintDebug` không phát sinh warning/error mới. `connectedDebugAndroidTest` (Room thật, TECNO_KJ7)
+7/7 test PASS cho `BatchHistoryDaoIntegrationTest` sau khi fix bug JUnit chặn cả file.
+
+**Smoke test thật trên TECNO_KJ7:** cài lại, mở Signature Studio (`SignatureActivity`) — màu
+`ColorPreviewAdapter` render đúng 7 màu + màu đã chọn (viền xanh), vẽ chữ ký + "Áp dụng chữ ký"
+thành công (áp watermark, quay lại editor không crash), mở lại panel thấy đúng "Chữ ký đã lưu"
+(`SignatureHistoryAdapter` cache view mới) hiển thị thumbnail + nút xoá đúng vị trí. `logcat` sạch
+suốt phiên, không `FATAL EXCEPTION`.
+
+**Lưu ý vận hành:** giữa vòng audit này phát hiện máy có 2 tài khoản GitHub đăng nhập
+(`gj-loitp`/`royt93`) và active account tự đổi giữa phiên khiến `git push` bị 403 — đã
+`gh auth switch --user royt93` để khôi phục quyền ghi trước khi push. Cũng phát hiện + tự sửa 1
+lần vi phạm R3 (chạy nhầm `connectedDebugAndroidTest` trên cả device chưa khoá do dùng sai Gradle
+property lọc device) — dùng `ANDROID_SERIAL=<serial>` mới là cách đúng giới hạn 1 device.
+
 ## Review pass 3 — `:cmonet` + memory leak/hiệu năng + M3 compliance, 2026-09-29
 
 Audit mở rộng theo yêu cầu user (loop tiếp theo sau đợt release-readiness ở trên): `/code-review

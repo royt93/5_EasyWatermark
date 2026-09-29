@@ -69,7 +69,7 @@ class RecipientRepository @Inject constructor(
                 if (ownerText.contains("[${recipient.code}]", ignoreCase = true) ||
                     ownerText.contains("(${recipient.code})", ignoreCase = true) ||
                     ownerText.equals(recipient.code, ignoreCase = true) ||
-                    ownerText.contains(recipient.name, ignoreCase = true)
+                    containsAsWord(ownerText, recipient.name)
                 ) {
                     return recipient
                 }
@@ -77,5 +77,27 @@ class RecipientRepository @Inject constructor(
         }
 
         return null
+    }
+
+    companion object {
+        /**
+         * BUG-AUDIT-2026-09-29: `contains(name, ignoreCase = true)` thô từng match cả khi [name]
+         * chỉ là substring của 1 từ khác (vd tên ngắn/phổ biến) — gán nhầm người nhận. Chỉ coi là
+         * khớp khi 2 đầu vị trí match KHÔNG phải chữ/số (ranh giới từ thật, không dùng regex `\b`
+         * vì mặc định không nhận diện đúng ký tự có dấu tiếng Việt).
+         */
+        internal fun containsAsWord(haystack: String, needle: String): Boolean {
+            if (needle.isBlank()) return false
+            var fromIndex = 0
+            while (true) {
+                val idx = haystack.indexOf(needle, fromIndex, ignoreCase = true)
+                if (idx < 0) return false
+                val beforeOk = idx == 0 || !haystack[idx - 1].isLetterOrDigit()
+                val afterIdx = idx + needle.length
+                val afterOk = afterIdx >= haystack.length || !haystack[afterIdx].isLetterOrDigit()
+                if (beforeOk && afterOk) return true
+                fromIndex = idx + 1
+            }
+        }
     }
 }

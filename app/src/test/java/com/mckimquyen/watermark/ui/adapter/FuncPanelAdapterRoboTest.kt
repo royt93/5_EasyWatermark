@@ -81,4 +81,27 @@ class FuncPanelAdapterRoboTest {
         assertThat(adapter.itemCount).isEqualTo(1)
         assertThat(holder.tvTitle.text).isEqualTo("Degree")
     }
+
+    /**
+     * BUG-AUDIT-2026-09-29: `seNewData()` trước đây gán `selectedPos = toPos` (trigger notify trên
+     * dataSet CŨ) TRƯỚC khi đổi dataSet — `toPos` vượt size dataSet CŨ nhưng hợp lệ với dataSet
+     * MỚI (dài hơn) phải không crash, kết thúc ở trạng thái đúng (item được chọn hiển thị đúng).
+     */
+    @Test
+    fun seNewData_toPosBeyondOldDataSetSize_doesNotCrash_selectsCorrectItemInNewDataSet() {
+        val adapter = FuncPanelAdapter(context, dataSet()) // size cũ = 2
+        val longerList = listOf(
+            FuncTitleModel(FuncTitleModel.FuncType.Text, "A", R.drawable.ic_func_text),
+            FuncTitleModel(FuncTitleModel.FuncType.Text, "B", R.drawable.ic_func_text),
+            FuncTitleModel(FuncTitleModel.FuncType.Text, "C", R.drawable.ic_func_text),
+            FuncTitleModel(FuncTitleModel.FuncType.Text, "D", R.drawable.ic_func_text)
+        )
+
+        adapter.seNewData(longerList, toPos = 3) // 3 >= size cũ (2), hợp lệ với size mới (4)
+
+        assertThat(adapter.itemCount).isEqualTo(4)
+        assertThat(adapter.selectedPos).isEqualTo(3)
+        val holder = createBoundHolder(adapter, 3)
+        assertThat(holder.flIconBg.isSelected).isTrue()
+    }
 }

@@ -2,6 +2,7 @@ package com.mckimquyen.watermark.di
 
 import android.content.Context
 import androidx.room.Room
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.data.db.AppDatabase
 import com.mckimquyen.watermark.data.db.BatchHistoryDatabase
 import com.mckimquyen.watermark.data.db.RecipientDatabase
@@ -33,7 +34,10 @@ object AppModule {
         try {
             return builder.build()
         } catch (e: Exception) {
-            e.printStackTrace()
+            // BUG-AUDIT-2026-09-29: trước đây chỉ printStackTrace() (không log qua AppLog như mọi
+            // repo khác trong app) — nếu asset DB hỏng/schema bump quên cập nhật asset, Template
+            // tắt câm lặng vĩnh viễn (TemplateRepository tự no-op khi dao null) không dấu vết debug.
+            AppLog.e("AppModule", "provideYourDatabase: Room.build() failed, Template feature disabled", e)
         }
         return null
     }

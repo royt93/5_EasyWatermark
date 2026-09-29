@@ -15,10 +15,14 @@ class ColorPreviewAdapter(
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     init {
-        previewList.find {
-            it.selected
-        } ?: run {
-            previewList.last().selected = true
+        // BUG-AUDIT-2026-09-29: guard rỗng — previewList.last() ném NoSuchElementException nếu
+        // adapter được dựng với list rỗng (chưa call site nào làm vậy hiện tại, nhưng phòng ngừa).
+        if (previewList.isNotEmpty()) {
+            previewList.find {
+                it.selected
+            } ?: run {
+                previewList.last().selected = true
+            }
         }
     }
 

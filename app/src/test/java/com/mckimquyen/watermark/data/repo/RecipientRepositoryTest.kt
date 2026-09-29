@@ -141,4 +141,40 @@ class RecipientRepositoryTest {
         assertThat(repo.getByCode("VIP-B")).isEqualTo(clientB)
         assertThat(repo.getByCode("KHONG-CO")).isNull()
     }
+
+    /**
+     * BUG-AUDIT-2026-09-29: nhánh so tên trong `findMatching` từng dùng `contains` thô — tên NGẮN
+     * là substring của 1 từ khác trong owner text vẫn bị coi là khớp, gán nhầm người nhận. Test
+     * này phải FAIL trước fix (khi còn `contains` thô) và PASS sau khi thêm ranh giới từ.
+     */
+    @Test
+    fun `ten nguoi nhan la substring cua tu khac trong owner text thi KHONG duoc khop nham`() = runBlocking {
+        val an = Recipient(id = 3, name = "An", code = "VIP-AN")
+        val repo = repoWith(an)
+
+        // "Standard" chứa substring "an" (viết thường) nhưng KHÔNG phải từ "An" độc lập.
+        val found = repo.findMatching(ownerText = "Standard export by studio", currentOwner = owner)
+
+        assertThat(found).isNull()
+    }
+
+    @Test
+    fun `ten nguoi nhan la tu doc lap trong owner text van khop dung`() = runBlocking {
+        val an = Recipient(id = 3, name = "An", code = "VIP-AN")
+        val repo = repoWith(an)
+
+        val found = repo.findMatching(ownerText = "Exported for An, thanks", currentOwner = owner)
+
+        assertThat(found).isEqualTo(an)
+    }
+
+    @Test
+    fun `containsAsWord nhan dien dung ranh gioi tu voi dau cau xung quanh`() {
+        assertThat(RecipientRepository.containsAsWord("Photo by An.", "An")).isTrue()
+        assertThat(RecipientRepository.containsAsWord("An's photo", "An")).isTrue()
+        assertThat(RecipientRepository.containsAsWord("(An)", "An")).isTrue()
+        assertThat(RecipientRepository.containsAsWord("Anna's photo", "An")).isFalse()
+        assertThat(RecipientRepository.containsAsWord("Standard", "An")).isFalse()
+        assertThat(RecipientRepository.containsAsWord("An", "An")).isTrue()
+    }
 }

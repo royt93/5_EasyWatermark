@@ -32,44 +32,55 @@ import javax.inject.Inject
 
 class SignatureHistoryAdapter(
     val data: MutableList<SignatureModel> = mutableListOf()
-) : RecyclerView.Adapter<BaseViewHolder>() {
+) : RecyclerView.Adapter<SignatureHistoryAdapter.SignatureHistoryViewHolder>() {
 
     var onItemClick: ((Int) -> Unit)? = null
     var onDeleteClick: ((Int) -> Unit)? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
+    /**
+     * BUG-AUDIT-2026-09-29: trước đây `onBindViewHolder` gọi lại `findViewById()` (2 lần) + tính
+     * `Rect`/`TouchDelegate` MỖI LẦN bind (kể cả rebind lúc cuộn danh sách) — cache 1 lần lúc tạo
+     * ViewHolder, đúng nhất quán với các adapter khác dùng ViewBinding trong repo này
+     * (`BatchHistoryAdapter`/`WatermarkProfileAdapter`).
+     */
+    class SignatureHistoryViewHolder(itemView: View) : BaseViewHolder(itemView) {
+        val ivSignature: ImageView = itemView.findViewById(R.id.ivSignature)
+        val btnDelete: ImageView = itemView.findViewById(R.id.ivDeleteBtn)
+
+        init {
+            itemView.contentDescription = itemView.context.getString(R.string.signature_history_item)
+            btnDelete.contentDescription = itemView.context.getString(R.string.signature_history_delete)
+            itemView.post {
+                val rect = android.graphics.Rect()
+                btnDelete.getHitRect(rect)
+                val minSize = (48 * itemView.resources.displayMetrics.density).toInt()
+                val dx = maxOf(0, (minSize - rect.width()) / 2)
+                val dy = maxOf(0, (minSize - rect.height()) / 2)
+                rect.left -= dx
+                rect.top -= dy
+                rect.right += dx
+                rect.bottom += dy
+                itemView.touchDelegate = android.view.TouchDelegate(rect, btnDelete)
+            }
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SignatureHistoryViewHolder {
         val root = LayoutInflater.from(parent.context).inflate(R.layout.item_signature_history, parent, false)
-        return BaseViewHolder(root)
+        return SignatureHistoryViewHolder(root)
     }
 
     override fun getItemCount(): Int = data.size
 
-    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: SignatureHistoryViewHolder, position: Int) {
         val item = data[position]
-        val iv = holder.itemView.findViewById<ImageView>(R.id.ivSignature)
-        val btnDelete = holder.itemView.findViewById<ImageView>(R.id.ivDeleteBtn)
-
-        iv.setImageURI(item.uri)
-        holder.itemView.contentDescription = holder.itemView.context.getString(R.string.signature_history_item)
-        btnDelete.contentDescription = holder.itemView.context.getString(R.string.signature_history_delete)
-        holder.itemView.post {
-            val rect = android.graphics.Rect()
-            btnDelete.getHitRect(rect)
-            val minSize = (48 * holder.itemView.resources.displayMetrics.density).toInt()
-            val dx = maxOf(0, (minSize - rect.width()) / 2)
-            val dy = maxOf(0, (minSize - rect.height()) / 2)
-            rect.left -= dx
-            rect.top -= dy
-            rect.right += dx
-            rect.bottom += dy
-            holder.itemView.touchDelegate = android.view.TouchDelegate(rect, btnDelete)
-        }
+        holder.ivSignature.setImageURI(item.uri)
 
         holder.itemView.setOnClickListener {
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) onItemClick?.invoke(pos)
         }
-        btnDelete.setOnClickListener {
+        holder.btnDelete.setOnClickListener {
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) onDeleteClick?.invoke(pos)
         }
