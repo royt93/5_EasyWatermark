@@ -1,12 +1,20 @@
 package com.mckimquyen.watermark.ui.widget
 
 import android.graphics.Bitmap
+import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.utils.bitmap.BitmapCache
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 
 /**
  * BUG-28: [WaterMarkImageView.reset()] (được MainActivity.resetView() gọi khi huỷ quay về LaunchMode)
@@ -48,6 +56,44 @@ class WaterMarkImageViewResetRoboTest {
         assertThat(mainValue.getRefCount()).isEqualTo(0)
         assertThat(iconValue.getRefCount()).isEqualTo(0)
         assertThat(mainBmp.isRecycled).isTrue()
+        assertThat(iconBmp.isRecycled).isTrue()
+    }
+
+    @Test
+    fun reset_whileGenerateJobStillReading_defersBitmapReleaseUntilJobEnds() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val imageView = WaterMarkImageView(context)
+        val iconBmp = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888)
+        val iconValue = BitmapCache.BitmapValue(iconBmp, 1).apply { retain() }
+        iconValue.markEvictedAndRecycleIfUnused()
+        imageView.setIconBitmapValueForTesting(iconValue)
+
+        val jobStarted = CompletableDeferred<Unit>()
+        val allowJobToFinish = CompletableDeferred<Unit>()
+        val generateJob = launch(Dispatchers.Default) {
+            // Mô phỏng đoạn Bitmap.createScaledBitmap() đồng bộ đang chạy giữa chừng: cancellation
+            // từ reset() KHÔNG thể ngắt ngay, job chỉ xong khi đoạn này tự trả về.
+            withContext(NonCancellable) {
+                jobStarted.complete(Unit)
+                allowJobToFinish.await()
+            }
+        }
+        jobStarted.await()
+        imageView.setGenerateBitmapJobForTesting(generateJob)
+
+        imageView.reset()
+
+        // Field null ngay (caller sau reset không thấy bitmap cũ), nhưng refcount/bitmap vẫn còn sống
+        // cho tới khi generateJob thật sự xong — tránh recycle trong lúc worker đang đọc pixel.
+        assertThat(imageView.getIconBitmapValue()).isNull()
+        assertThat(iconValue.getRefCount()).isEqualTo(1)
+        assertThat(iconBmp.isRecycled).isFalse()
+
+        allowJobToFinish.complete(Unit)
+        generateJob.join()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(iconValue.getRefCount()).isEqualTo(0)
         assertThat(iconBmp.isRecycled).isTrue()
     }
 

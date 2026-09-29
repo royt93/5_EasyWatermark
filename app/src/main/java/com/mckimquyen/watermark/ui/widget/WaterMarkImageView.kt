@@ -153,15 +153,48 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
 
     private var generateBitmapJob: Job? = null
 
+    // BUG-AUDIT-2026-09-29-R6: Job của applyBg() trước đây không được lưu -> không cancel được khi
+    // view detach (khác generateBitmapJob).
+    private var bgJob: Job? = null
+
+    /**
+     * BUG-AUDIT-2026-09-29-R6: `Bitmap` không thread-safe — release()/recycle() một
+     * `BitmapCache.BitmapValue` đang được [buildIconBitmapShader]/[buildTextBitmapShader] đọc
+     * pixel trên `Dispatchers.Default` (chạy trong [jobToAwait]) cùng lúc có thể ném
+     * `IllegalStateException` hoặc đọc dữ liệu rác — `cancel()` không dừng được đoạn code đồng bộ
+     * (không có suspension point) đang chạy giữa chừng. `join()` đợi đoạn đó tự chạy xong (cooperative
+     * cancellation chỉ có tác dụng ở lần suspend kế tiếp) trước khi thật sự release(), trong khi
+     * field vẫn được null hoá NGAY để logic gọi sau đó (vd. gán bitmap mới) không thấy giá trị cũ.
+     */
+    private fun cancelAndScheduleBitmapValueRelease(jobToAwait: Job?) {
+        val mainValueToRelease = mainImageBitmapValue
+        val iconValueToRelease = iconBitmapValue
+        mainImageBitmapValue = null
+        iconBitmapValue = null
+        if (jobToAwait == null) {
+            // Không có job nào đang chạy -> không có race, release() ngay (giữ đúng hành vi đồng bộ
+            // cũ cho trường hợp phổ biến, tránh đổi hành vi ngoài phạm vi race cần fix).
+            mainValueToRelease?.release()
+            iconValueToRelease?.release()
+        } else {
+            launch {
+                jobToAwait.join()
+                mainValueToRelease?.release()
+                iconValueToRelease?.release()
+            }
+        }
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        val jobToAwait = generateBitmapJob
         generateBitmapJob?.cancel()
+        bgJob?.cancel()
+        drawableAlphaAnimator.cancel()
+        animator?.cancel()
         // ENH-15: View không còn dùng 2 bitmap này nữa — release() để BitmapCache được phép
         // recycle() nếu chúng đã (hoặc sẽ) bị evict.
-        mainImageBitmapValue?.release()
-        mainImageBitmapValue = null
-        iconBitmapValue?.release()
-        iconBitmapValue = null
+        cancelAndScheduleBitmapValueRelease(jobToAwait)
         // FEAT-03: bitmap trong shader layer phụ không qua BitmapCache (giống layoutShader layer
         // chính) — tự GC được, chỉ cần bỏ tham chiếu.
         extraLayerShaders = emptyList()
@@ -388,7 +421,8 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
     }
 
     private fun applyBg(imageBitmap: Bitmap?) {
-        launch {
+        bgJob?.cancel()
+        bgJob = launch {
             generatePalette(imageBitmap)?.let { palette ->
                 setBackgroundColor(Color.TRANSPARENT)
                 this@WaterMarkImageView.onBgReady.invoke(palette)
@@ -658,11 +692,12 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         // BUG-28: giống onDetachedFromWindow(), khi MainActivity.resetView() gọi reset() để quay về
         // LaunchMode (View không bị detach), phải release refcount của mainImageBitmapValue và
         // iconBitmapValue để BitmapCache không tích luỹ bitmap mồ côi giữ refCount > 0.
+        val jobToAwait = generateBitmapJob
         generateBitmapJob?.cancel()
-        mainImageBitmapValue?.release()
-        mainImageBitmapValue = null
-        iconBitmapValue?.release()
-        iconBitmapValue = null
+        bgJob?.cancel()
+        // BUG-AUDIT-2026-09-29-R6: release() qua cancelAndScheduleBitmapValueRelease() (đợi
+        // jobToAwait join() trước khi release thật) thay vì release() ngay — xem doc ở hàm đó.
+        cancelAndScheduleBitmapValueRelease(jobToAwait)
         transformedMainBitmap?.let { if (!it.isRecycled) it.recycle() }
         transformedMainBitmap = null
         iconBitmap = null
@@ -677,8 +712,26 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         lastAppliedRedactionRects = null
     }
 
+    /** BUG-AUDIT-2026-09-29-R6: cho phép test trigger applyBg()/kiểm tra bgJob mà không cần dựng
+     *  cả pipeline decode ảnh thật (applyNewConfig -> generateBitmapJob -> applyBg). */
+    @androidx.annotation.VisibleForTesting
+    internal fun applyBgForTesting(imageBitmap: Bitmap?) = applyBg(imageBitmap)
+
+    @androidx.annotation.VisibleForTesting
+    internal fun getBgJobForTesting(): Job? = bgJob
+
+    @androidx.annotation.VisibleForTesting
+    internal fun setBgJobForTesting(job: Job?) {
+        bgJob = job
+    }
+
     @androidx.annotation.VisibleForTesting
     internal fun getMainImageBitmapValue(): BitmapCache.BitmapValue? = mainImageBitmapValue
+
+    @androidx.annotation.VisibleForTesting
+    internal fun setGenerateBitmapJobForTesting(job: Job?) {
+        generateBitmapJob = job
+    }
 
     @androidx.annotation.VisibleForTesting
     internal fun getIconBitmapValue(): BitmapCache.BitmapValue? = iconBitmapValue
@@ -949,6 +1002,19 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
         fun shouldRebuildShader(nowMs: Long, lastRebuildAtMs: Long, throttleMs: Long = SHADER_REBUILD_THROTTLE_MS): Boolean =
             nowMs - lastRebuildAtMs >= throttleMs
 
+        /**
+         * BUG-AUDIT-2026-09-29-R6: `Bitmap.createScaledBitmap()` CÓ THỂ trả về CHÍNH `source`
+         * (không copy) khi kích thước đích trùng kích thước nguồn — recycle() vô điều kiện sẽ
+         * recycle nhầm bitmap KHÔNG thuộc sở hữu hàm gọi (vd `iconBitmap` field). Tách hàm thuần
+         * để test trực tiếp guard này không cần dựng cả `buildIconBitmapShader`.
+         */
+        @androidx.annotation.VisibleForTesting
+        internal fun recycleScaledBitmapIfDistinct(scaled: Bitmap, source: Bitmap) {
+            if (scaled !== source) {
+                scaled.recycle()
+            }
+        }
+
         /** IDEA-06: alpha đầy đủ (không trong suốt) — dùng khi chỉ cần lấy RGB đen/trắng thuần. */
         const val ALPHA_OPAQUE = 255
 
@@ -1169,6 +1235,10 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
             if (showDebugRect) {
                 canvas.restore()
             }
+            // BUG-AUDIT-2026-09-29-R6: scaleBitmap là bitmap TRUNG GIAN riêng của hàm này (khác
+            // targetBitmap được trả về) — đã vẽ xong lên canvas, không còn dùng nữa. Trước đây
+            // không recycle() → leak 1 bitmap mỗi lần đổi icon/pinch-scale.
+            recycleScaledBitmapIfDistinct(scaleBitmap, srcBitmap)
             val bitmapShader = BitmapShader(
                 /* bitmap = */ targetBitmap,
                 /* tileX = */ tileMode,

@@ -2,6 +2,69 @@
 
 > Cập nhật: 2026-09-29. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## Review pass 6 — `ui/widget/` (WaterMarkImageView, LaunchView) + `utils/ktx/` (ViewExtension), 2026-09-29
+
+Audit vòng 6 (loop tiếp theo sau review pass 5, phạm vi: `ui/widget/WaterMarkImageView.kt`,
+`ui/widget/LaunchView.kt`, `utils/ktx/ViewExtension.kt`): 6 finding, verify tay từng cái — **tất cả
+ĐÚNG**, tất cả đều fix theo lựa chọn user:
+
+- [x] **`WaterMarkImageView.buildIconBitmapShader()` không recycle `scaleBitmap` trung gian** —
+  `Bitmap.createScaledBitmap()` tạo bitmap mới (khi kích thước khác nguồn), sau khi vẽ lên canvas
+  không được `recycle()`. Mỗi lần pinch-scale hoặc đổi icon leak 1 bitmap mới cho đến khi GC thu
+  hồi. Fix: thêm `recycleScaledBitmapIfDistinct()` tách hàm thuần, chỉ recycle khi khác `srcBitmap`
+  (tránh recycle nhầm bitmap nguồn mà hàm gọi sở hữu khi kích thước trùng khớp). Test mới:
+  `WaterMarkImageViewRecycleScaledBitmapTest` (2 test: khác instance thì recycle, cùng instance không
+  recycle nguồn).
+- [x] **`WaterMarkImageView.reset()`/`onDetachedFromWindow()` release bitmap cùng lúc với worker coroutine đang đọc** —
+  `generateBitmapJob?.cancel()` chỉ có hiệu lực ở suspension point kế tiếp, đoạn
+  `createScaledBitmap()` đồng bộ đang chạy giữa chừng trên `Dispatchers.Default` vẫn tiếp tục đọc
+  pixel; nếu `reset()` release/recycle `BitmapValue` ngay lúc đó có thể ném `IllegalStateException`
+  hoặc đọc rác. Fix: thêm `cancelAndScheduleBitmapValueRelease(jobToAwait)` — null hoá field ngay
+  (để caller sau reset không thấy bitmap cũ), nhưng nếu có job đang chạy thì launch coroutine đợi
+  `jobToAwait.join()` trước khi thật sự gọi `release()`. Test mới:
+  `reset_whileGenerateJobStillReading_defersBitmapReleaseUntilJobEnds` trong
+  `WaterMarkImageViewResetRoboTest` (chứng minh refCount/bitmap còn sống trong lúc job đang chạy và
+  chỉ bị recycle sau khi job kết thúc).
+- [x] **`WaterMarkImageView.applyBg()` launch coroutine fire-and-forget không lưu Job** — khi view
+  detach, `generatePalette()` vẫn tiếp tục chạy trên `Dispatchers.Default` rồi callback
+  `onBgReady()` vào Activity đã destroy. Fix: lưu `bgJob: Job?`, cancel trong
+  `onDetachedFromWindow()` và `reset()`. Test mới: trong `WaterMarkImageViewLifecycleRoboTest`.
+- [x] **`WaterMarkImageView` không cancel 2 animator khi detach** — `drawableAlphaAnimator` và
+  `animator` (của `backToCenter()`) không được cancel trong `onDetachedFromWindow()`, tiếp tục tick
+  ngầm trên view đã detach. Fix: gọi `.cancel()` cho cả 2 trong `onDetachedFromWindow()`. Test mới:
+  `onDetachedFromWindow_cancelsBgJobAndBothAnimators` trong `WaterMarkImageViewLifecycleRoboTest`.
+- [x] **`ViewExtension.kt:View.disappear()` đảo ngược tham số `translationX`/`translationY`** —
+  `.translationY(toX)` và `.translationX(toY)` bị swap. Caller thật duy nhất
+  (`SaveImageListAdapter.kt:278 ivDone.disappear()`, dùng default `toX=0f, toY=10dp`) khiến icon check
+  trượt NGANG 10dp thay vì trượt XUỐNG khi fade-out. Fix: đổi lại đúng `.translationX(toX)` và
+  `.translationY(toY)`. Test mới: `ViewExtensionRoboTest` (1 test).
+- [x] **`LaunchView.transformLayout()` không cancel `launchModeAppearAnimationList` khi vào Editor** —
+  appear animation dùng `SpringAnimation` riêng (chạy lúc mở app), không bị hủy bởi
+  `it.animate().cancel()` (chỉ huỷ `ViewPropertyAnimator` hiệu ứng chạm card). Nếu user chạm card
+  nhanh trong lúc animation đang chạy (300-500ms), animation cũ tiếp tục ghi đè alpha/translationY
+  sau khi view đã ẩn, gây giật khi quay lại LaunchMode. Fix: thêm
+  `launchModeAppearAnimationList.forEach { it.cancel() }` vào nhánh `ViewMode.Editor`. Test mới:
+  `toEditorMode_cancelsLaunchAppearSpringAnimations` trong `LaunchViewRoboTest`.
+- [x] **`LaunchView.toolbar` lazy block: xoá dead code `overflowIcon?.setTint(...)`** — `overflowIcon`
+  luôn null lúc Toolbar vừa construct (menu chưa inflate). Đã xoá dòng dead code (overflow icon
+  được tint đúng qua `applyConsistentIconTint()` gọi sau ở MainActivity). *(ponytail: không thêm test
+  mới cho dead code deletion — 0 behavioral delta, tự chứng minh qua compile).*
+
+**Verify:** 5 test class liên quan (14 test) PASS 100%. `ktlintCheck` PASS. `lintDebug` PASS.
+Full suite `connectedDebugAndroidTest` (121 test Room/repo/E2E thật) PASS trên Pixel 7 Pro (1 skip
+có điều kiện do Geocoder mạng).
+
+**Lưu ý vận hành (R3):** device cũ TECNO_KJ7 bị ngắt kết nối USB giữa chừng; đã hỏi người dùng qua
+`AskUserQuestion` và người dùng đã duyệt chuyển khoá sang **Pixel 7 Pro (`2B051FDH3006MU`)**. Mọi
+thao tác sau đó chỉ target Pixel 7 Pro.
+
+**Smoke test thật trên Pixel 7 Pro (2B051FDH3006MU, Android 17):** cài APK mới, cấp quyền media
+Android 14+, vào Gallery chọn ảnh vào Editor (kích hoạt `WaterMarkImageView`), xử lý đúng lúc gặp
+Interstitial Ad (dừng theo quy tắc R4, chờ user xác nhận "done"), bấm back và "Xác nhận huỷ" để
+gọi `resetView()` → `ivPhoto.reset()` (chứng minh fix `cancelAndScheduleBitmapValueRelease` không
+deadlock/crash), quay về LaunchMode trơn tru không nhấp nháy (chứng minh fix SpringAnimation cancel).
+`logcat` sạch suốt phiên, không `FATAL EXCEPTION` hay `NullPointerException`.
+
 ## Review pass 5 — `di/`, `ui/dlg/`, `data/repo/` (phạm vi mới), 2026-09-29
 
 Audit vòng 5 (loop tiếp theo sau review pass 4, phạm vi hoàn toàn mới, loại trừ mọi file đã audit ở

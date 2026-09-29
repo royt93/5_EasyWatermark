@@ -8,6 +8,7 @@ import com.google.android.material.tabs.TabLayout
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.R
+import com.mckimquyen.watermark.ui.widget.utils.ViewAnimation
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -114,6 +115,24 @@ class LaunchViewRoboTest {
         launchView.toLaunchMode()
 
         assertThat(launchView.cardStyleSuggestion.isVisible).isFalse()
+    }
+
+    @Test
+    fun toEditorMode_cancelsLaunchAppearSpringAnimations() {
+        // BUG-AUDIT-2026-09-29-R6: appear animation dùng SpringAnimation riêng, KHÔNG phải
+        // ViewPropertyAnimator của `view.animate()`. Trước fix, `toEditorMode()` chỉ gọi
+        // `view.animate().cancel()` nên SpringAnimation cũ vẫn chạy và tiếp tục ghi đè
+        // alpha/translationY sau khi card đã bị ẩn.
+        val delegateField = LaunchView::class.java.getDeclaredField("launchModeAppearAnimationList\$delegate")
+        delegateField.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        val animations = (delegateField.get(launchView) as Lazy<List<ViewAnimation>>).value
+        animations.forEach { it.start() }
+        assertThat(animations.any { it.animation?.isRunning == true }).isTrue()
+
+        launchView.toEditorMode()
+
+        assertThat(animations.any { it.animation?.isRunning == true }).isFalse()
     }
 
     @Test

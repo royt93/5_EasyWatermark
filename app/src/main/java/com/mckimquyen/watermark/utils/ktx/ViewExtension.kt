@@ -63,9 +63,12 @@ fun View.disappear(
     toAlpha: Float = 0.5f,
     duration: Long = 200
 ) {
+    // BUG-AUDIT-2026-09-29-R6: translationX/Y bị đảo ngược so với tham số — toX phải đi vào
+    // translationX, toY vào translationY (tên hàm/tham số mô tả rõ). Với default (toX=0f,
+    // toY=10dp), lỗi cũ làm view trượt NGANG 10dp thay vì trượt XUỐNG khi fade-out.
     this.animate()
-        .translationY(toX)
-        .translationX(toY)
+        .translationX(toX)
+        .translationY(toY)
         .alpha(toAlpha)
         .setDuration(duration)
         .withStartAction {

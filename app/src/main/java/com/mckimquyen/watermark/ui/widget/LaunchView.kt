@@ -316,7 +316,10 @@ class LaunchView : CustomViewGroup {
                 Color.BLACK
             )
             setNavigationIconTint(defaultIconColor)
-            overflowIcon?.setTint(defaultIconColor)
+            // BUG-AUDIT-2026-09-29-R6: overflowIcon luôn null tại đây (menu chưa inflate lúc
+            // Toolbar vừa construct) — dead code, đã xoá. Overflow icon được tint đúng qua
+            // applyConsistentIconTint() gọi sau ở MainActivity (kể cả post{} deferred, xử lý đúng
+            // timing sau khi menu inflate).
 //            setBackgroundColor(context.colorSurface)
         }
     }
@@ -687,6 +690,13 @@ class LaunchView : CustomViewGroup {
         TransitionManager.beginDelayedTransition(this, transition)
         when (toMode) {
             ViewMode.Editor -> {
+                // BUG-AUDIT-2026-09-29-R6: `it.animate().cancel()` chỉ huỷ ViewPropertyAnimator
+                // (hiệu ứng chạm card ở createActionCard) — launchModeAppearAnimationList dùng
+                // SpringAnimation RIÊNG (chạy lúc mở app, xem init{}), không bị huỷ bởi dòng trên.
+                // Nếu user chạm card NGAY trong lúc appear-animation còn chạy, animation cũ tiếp
+                // tục ghi đè alpha/translationY sau khi đã set isVisible=false, gây giật/nhấp nháy
+                // thoáng qua khi quay lại LaunchMode.
+                launchModeAppearAnimationList.forEach { it.cancel() }
                 launchViews.forEach {
                     it.animate().cancel()
                     it.isVisible = false
