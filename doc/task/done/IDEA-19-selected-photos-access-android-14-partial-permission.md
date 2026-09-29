@@ -34,3 +34,20 @@ trước release — đang suppress bằng `tools:ignore="SelectedPhotoAccess"` 
 
 ## Prompt loop
 Xem [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md) — Definition of Done dùng chung.
+
+## ❌ Skipped (2026-09-29, user phát hiện + verify code)
+Ticket sinh ra chỉ từ lint cảnh báo Manifest, không đọc code thật của chính file liệt kê
+(`GalleryFragment.kt`) — verify lại: app **đã** dùng Android Photo Picker làm luồng chính (ENH-10,
+comment dòng 75 file này: "không cần quyền READ_MEDIA_IMAGES/READ_EXTERNAL_STORAGE"). Nút menu
+`ivSysImage` (dòng 222-233) gọi `pickImageVisualMediaLauncher.launch(...)` mỗi lần bấm — chính là
+nút "Chọn thêm ảnh" ticket này đòi làm, đã có sẵn: Photo Picker mở picker mới mỗi lần, không giữ
+persistent read permission nên không có khái niệm "giới hạn tồn đọng" mà Selected Photos Access
+giải quyết.
+
+`READ_MEDIA_IMAGES` runtime request (`ContextExtension.kt` `preCheckStoragePermission`) chỉ là
+fallback khi Photo Picker không khả dụng (comment `MainActivity.kt`: "chỉ gate quyền khi phải
+fallback về ACTION_PICK") — case đó là Android <11/thiếu Play Services, không tồn tại Selected
+Photos Access (tính năng chỉ có từ Android 14+, mà Android 14+ luôn có Photo Picker). Dùng Photo
+Picker làm luồng chính chính là giải pháp Google khuyến nghị để né hoàn toàn permission model cũ —
+không cần code thêm gì. `tools:ignore="SelectedPhotoAccess"` trong Manifest giữ nguyên (đúng, vì
+fallback path không thật sự vi phạm best practice này về mặt UX).

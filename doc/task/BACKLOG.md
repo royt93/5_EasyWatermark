@@ -56,17 +56,18 @@
 | [M3-08](done/M3-08-migrate-edit-panels-dialogs-bottom-sheets.md) | P1 | M | Migrate toàn bộ Dialogs, Bottom Sheets và Panels chỉnh sửa sang Material You M3 | **DONE** |
 | [M3-09](done/M3-09-cleanup-ios-glass-assets-lint-verification.md) | P2 | S | Dọn dẹp triệt để tài nguyên iOS Glass, Lint & Kiểm thử hồi quy toàn diện | **DONE** |
 
-## UNIQUE_IDEAS (5, +14 done) — tính năng độc quyền/đột phá, effort cao
+## UNIQUE_IDEAS (4, +15 done) — tính năng độc quyền/đột phá, effort cao
 
 | ID | Effort | Tiêu đề |
 |---|---|---|
-| [IDEA-19](todo/IDEA-19-selected-photos-access-android-14-partial-permission.md) | M | Xử lý "Selected Photos Access" Android 14+ — nút "Chọn thêm ảnh" khi quyền ảnh bị giới hạn (mới 2026-09-28, phát hiện lúc dọn lint trước release) |
 | [IDEA-08](todo/IDEA-08-referral-vip-qua-share-app.md) | M | Referral VIP qua Share App — tái dùng hạ tầng sẵn có, không cần backend (mới 2026-09-10) |
 | [IDEA-04](todo/IDEA-04-cloud-sync-brand-kit.md) | XL | Cloud sync Brand Kit đa thiết bị |
 | [IDEA-05](todo/IDEA-05-cho-template-cong-dong.md) | XL | Chợ template cộng đồng (network effect) |
 | [IDEA-11](todo/IDEA-11-live-camera-watermark-ar-preview-xem-watermark-ngay-tren-vie.md) | XL | Live Camera Watermark / AR preview — watermark ngay trên viewfinder trước khi chụp (mới 2026-09-16, 2 nguồn đồng thuận) |
 
 ✅ **[IDEA-12](done/IDEA-12-on-device-style-coach-goi-y-fontmauopacityvi-tri-theo-phong.md)** — On-device Style Coach — heuristic đếm tần suất thuần (≥10 lần export, ≥60% cùng signature) gợi ý áp lại style watermark quen dùng, banner M3 trong editor — done 2026-09-28, smoke test TECNO_KJ7 (verify trực tiếp SQLite thật trên device: migration + record + banner render + apply đổi đúng màu).
+
+❌ **[IDEA-19](done/IDEA-19-selected-photos-access-android-14-partial-permission.md)** — Selected Photos Access Android 14+ — **Skipped 2026-09-29** (user phát hiện + verify code): ticket sinh chỉ từ lint Manifest, không đọc code thật — app đã dùng Android Photo Picker (ENH-10) làm luồng chính, né hoàn toàn vấn đề này; nút "Chọn thêm ảnh" ticket đòi làm chính là nút menu picker có sẵn.
 
 ✅ **[IDEA-14](done/IDEA-14-smart-redaction-watermark-tu-phat-hien-thong-tin-nhay-cam-tr.md)** — Smart Redaction + Watermark — tự phát hiện thông tin nhạy cảm (email, SĐT, mặt người) bằng ML Kit Text Recognition + Face Detection, khoanh vùng cho user tap chọn rồi mosaic hoá TRƯỚC KHI đóng dấu bản quyền — done 2026-09-27, smoke test Samsung Galaxy S24 Ultra.
 
