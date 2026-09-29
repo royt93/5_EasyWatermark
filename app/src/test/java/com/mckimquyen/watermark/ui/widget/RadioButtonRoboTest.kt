@@ -52,6 +52,26 @@ class RadioButtonRoboTest {
         assertThat(observedState).isFalse()
     }
 
+    /**
+     * BUG-AUDIT-2026-09-29: setter `isChecked` trước đây gọi `listener.invoke(value)` TRƯỚC khi
+     * gán `field = value` — callback nào đọc lại `radioButton.isChecked` (thay vì dùng param
+     * `isChecked` truyền vào) sẽ thấy giá trị CŨ. Fix: gán field trước, đúng ngữ nghĩa property
+     * setter chuẩn (callback luôn thấy state đã cập nhật).
+     */
+    @Test
+    fun setChecked_listenerReadsBackProperty_seesNewValueNotStale() {
+        var readBackDuringCallback: Boolean? = null
+        radioButton.setOnCheckedChangeListener {
+            readBackDuringCallback = radioButton.isChecked
+        }
+
+        radioButton.isChecked = true
+        assertThat(readBackDuringCallback).isTrue()
+
+        radioButton.isChecked = false
+        assertThat(readBackDuringCallback).isFalse()
+    }
+
     @Test
     fun draw_bothStates_doesNotCrash() {
         radioButton.measure(

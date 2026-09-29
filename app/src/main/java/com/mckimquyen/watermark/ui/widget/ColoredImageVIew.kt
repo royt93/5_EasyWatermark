@@ -88,8 +88,19 @@ class ColoredImageVIew : AppCompatImageView {
         if (measuredWidth + measuredHeight <= 0) {
             return
         }
-        innerBitmap = drawable.toBitmap(measuredWidth, measuredHeight)
-        sizeHasChanged = false
+        // BUG-AUDIT-2026-09-29: trước đây tạo bitmap mới MỖI lần onDraw kể cả khi chỉ shader
+        // đổi màu (không đổi ảnh nguồn) — colorAnimator repeatCount=INFINITE gọi
+        // postInvalidateDelayed liên tục nên onDraw chạy liên tục, mỗi lần cấp phát 1 bitmap
+        // full-size mới và bỏ rơi bản cũ không recycle -> GC churn nặng/rủi ro OOM khi
+        // animation chạy lâu. Chỉ tạo lại khi thật sự cần (chưa có hoặc đổi size).
+        if (innerBitmap == null || sizeHasChanged) {
+            val old = innerBitmap
+            innerBitmap = drawable.toBitmap(measuredWidth, measuredHeight)
+            if (old != null && !old.isRecycled && old !== innerBitmap) {
+                old.recycle()
+            }
+            sizeHasChanged = false
+        }
         innerBitmap?.let {
             val sc = canvas?.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null) ?: return
             canvas.drawBitmap(it, 0f, 0f, paint)
@@ -109,7 +120,11 @@ class ColoredImageVIew : AppCompatImageView {
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        colorAnimator.pause()
+        // BUG-AUDIT-2026-09-29: pause() giữ animator INFINITE trong AnimationHandler (vẫn giữ
+        // tham chiếu View/Context qua addUpdateListener) tới khi resume/cancel — nếu view không
+        // bao giờ re-attach (Activity/Fragment host bị huỷ), đây là leak vĩnh viễn. cancel() giải
+        // phóng hẳn; onAttachedToWindow đã tự start() lại từ đầu khi re-attach nên không mất gì.
+        colorAnimator.cancel()
     }
 
     fun start() {

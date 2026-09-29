@@ -1,10 +1,10 @@
 package com.mckimquyen.watermark.ui.widget
 
-import android.animation.ObjectAnimator
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
 
 class BlinkCursorView : View {
 
@@ -19,8 +19,11 @@ class BlinkCursorView : View {
     private val alphaAnimation by lazy {
         AlphaAnimation(1f, 0f).apply {
             duration = 400
-            repeatCount = ObjectAnimator.INFINITE
-            repeatMode = ObjectAnimator.REVERSE
+            // BUG-AUDIT-2026-09-29: đúng ra dùng hằng số Animation.INFINITE/REVERSE (class của
+            // chính AlphaAnimation) thay vì ObjectAnimator.INFINITE/REVERSE — giá trị số trùng
+            // nhau (-1, 2) nên chạy đúng từ trước, chỉ sửa cho rõ ý, không đổi hành vi.
+            repeatCount = Animation.INFINITE
+            repeatMode = Animation.REVERSE
         }
     }
 

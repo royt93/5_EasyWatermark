@@ -2,6 +2,57 @@
 
 > Cập nhật: 2026-09-29. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## Review pass 3 — `:cmonet` + memory leak/hiệu năng + M3 compliance, 2026-09-29
+
+Audit mở rộng theo yêu cầu user (loop tiếp theo sau đợt release-readiness ở trên): `/code-review
+--level max` trên `cmonet/src/main` + `app/src/main`, 3 phạm vi (1) `:cmonet` module — clean, không
+tìm thấy issue nào ngoài BUG-41 đã fix trước đó; (2) memory leak/hiệu năng dài hạn trong custom
+view/fragment; (3) UI M3 compliance còn sót — clean, không còn widget legacy/hardcode màu theme.
+7 finding (2) verify tay từng cái bằng đọc source trước khi fix — **tất cả ĐÚNG**, tất cả đều fix:
+
+- [x] **`ColoredImageVIew.onDraw()` cấp phát bitmap MỖI FRAME** — animation shimmer `colorAnimator`
+  (`repeatCount=INFINITE`) gọi `postInvalidateDelayed` liên tục nên `onDraw()` chạy liên tục, mỗi
+  lần tạo `innerBitmap` mới không check null/size, không recycle bản cũ → GC churn nặng/rủi ro OOM.
+  Fix: chỉ tạo lại khi `innerBitmap == null || sizeHasChanged`, recycle bản cũ trước khi thay.
+- [x] **`ColoredImageVIew.onDetachedFromWindow()` dùng `pause()` thay vì `cancel()`** — animator
+  INFINITE vẫn "started" khi pause, sống mãi trong `AnimationHandler` giữ tham chiếu View/Context
+  nếu view không bao giờ re-attach. Fix: đổi sang `cancel()` (an toàn — `onAttachedToWindow()` tự
+  `start()` lại từ đầu khi re-attach). Test mới: `ColoredImageVIewWidgetTest` (3 test: reuse bitmap
+  cùng size, recycle bitmap cũ khi resize, animator hết "started" sau detach).
+- [x] **`CircleImageView` `sourceImageBitmap` không recycle khi resize** — bất đối xứng với
+  `destCircleBitmap` ngay bên cạnh (`onSizeChanged`) vốn đã recycle đúng. Fix: recycle bản cũ trước
+  khi gán bitmap mới trong `onDraw()`, giống hệt pattern đã có. Test mới:
+  `CircleImageViewSizeChangedWidgetTest` (2 test: recycle khi resize, reuse khi cùng size).
+- [x] **`QrCodeBottomSheetFragment` bitmap QR preview không recycle** — cả khi refresh (mỗi
+  keystroke debounce 250ms) lẫn khi đóng sheet (không có `onDestroyView`) — đúng lớp bug BUG-38 đã
+  fix nơi khác nhưng bỏ sót ở đây. Fix: recycle bản cũ trước khi gán bitmap mới, thêm
+  `onDestroyView()` recycle + clear ImageView. Test mới: 3 test trong
+  `QrCodeBottomSheetFragmentRoboTest` (recycle khi đổi nội dung, khi xoá nội dung, khi đóng sheet).
+- [x] **`Context.colorBackground` fallback luôn trả màu DARK** bất kể theme sáng/tối thật — khác
+  mọi property màu khác trong cùng file (`colorPrimary`/`colorSurface`/`colorTertiary` đều branch
+  theo `isNight()`/`supportNight()`). Property hiện chưa có code nào gọi (dead code) nên chưa gây
+  bug thật, nhưng bẫy sẵn cho tương lai — cùng bài học `scaleY` ở review pass 2. Fix: thêm branch
+  `isNight()` đúng pattern. Test mới: `ContextExtensionColorBackgroundRoboTest` (light/dark theme,
+  ép `CMonet.setUserEnabled(false)` để chắc chắn rơi vào nhánh fallback đang test).
+- [x] **`RadioButton.isChecked` setter gọi listener TRƯỚC khi gán field** — callback đọc lại
+  `isChecked` (thay vì dùng param) sẽ thấy giá trị CŨ. Fix: gán field trước, đúng ngữ nghĩa property
+  setter chuẩn. Test mới: `RadioButtonRoboTest.setChecked_listenerReadsBackProperty_seesNewValueNotStale`.
+- [x] **`BlinkCursorView` dùng nhầm `ObjectAnimator.INFINITE/REVERSE`** cho `AlphaAnimation` (giá
+  trị số trùng nên chạy đúng, chỉ sai class tham chiếu) — fix đổi sang `Animation.INFINITE/REVERSE`
+  đúng class, cosmetic, không có test riêng (không đổi hành vi runtime).
+
+**Verify:** `./gradlew testDebugUnitTest` full suite PASS (1037 test — 3 flaky pre-existing không
+liên quan diff này, đã xác nhận pass riêng lẻ). `ktlintCheck` PASS, `lintDebug` sạch (222
+`LintBaselineFixed` thông tin + 7 warning baseline, không đổi).
+
+**Smoke test thật trên TECNO_KJ7, 2026-09-29:** cài lại APK — mở About (CircleImageView avatar
+render đúng, không crash) → chọn ảnh vào editor → mở Mã QR (`QrCodeBottomSheetFragment`), gõ nội
+dung 2 lần liên tiếp (refresh + recycle bitmap cũ), đóng sheet (`onDestroyView` recycle) — tất cả
+không crash, `logcat` sạch không `FATAL EXCEPTION`/"recycled bitmap" trong suốt phiên. RadioButton
+(gallery multi-select) đã exercise nhiều lần qua các lần chọn ảnh trong phiên, không lỗi.
+`colorBackground`/`BlinkCursorView` không có UI trực tiếp để check bằng mắt (dead code/cosmetic),
+verify đủ bằng unit test.
+
 ## Bugfix đợt audit trước release, 2026-09-29 (`/code-review --level max`, loại AD/VIP/keystore)
 
 Re-audit toàn bộ `app/src/main` + `cmonet/src/main` tập trung logic/feature (không phải Ad/VIP/keystore

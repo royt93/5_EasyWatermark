@@ -119,8 +119,8 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
     private fun refreshPreview(rawInput: String) {
         refreshJob?.cancel()
         if (rawInput.isBlank()) {
-            previewBitmap = null
             binding.ivPreview.setImageBitmap(null)
+            recyclePreviewBitmap()
             return
         }
         val isDynamic = binding.swQrDynamic.isChecked
@@ -143,10 +143,35 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
                 }
                 QrCodeGenerator.generate(content, size = QrCodeGenerator.DEFAULT_SIZE)
             }
+            // BUG-AUDIT-2026-09-29: bitmap CŨ (nếu có) bị ghi đè thẳng không recycle mỗi lần
+            // refresh (mỗi keystroke, debounce 250ms) — set bitmap MỚI vào view trước, sau đó mới
+            // recycle bản cũ (đã hết được view tham chiếu, an toàn).
+            val old = previewBitmap
             previewBitmap = bitmap
             binding.ivPreview.setImageBitmap(bitmap)
+            if (old != null && !old.isRecycled && old !== bitmap) {
+                old.recycle()
+            }
             AppLog.d(LOG_TAG, "[QR] refreshPreview: dynamic=$isDynamic rawInput.len=${rawInput.length} bitmap=${bitmap != null}")
         }
+    }
+
+    /** Gỡ bitmap khỏi field (không đụng ImageView — caller tự lo `setImageBitmap(null)` nếu cần
+     *  tránh vẽ lên bitmap vừa recycle). */
+    private fun recyclePreviewBitmap() {
+        val old = previewBitmap
+        previewBitmap = null
+        if (old != null && !old.isRecycled) {
+            old.recycle()
+        }
+    }
+
+    override fun onDestroyView() {
+        refreshJob?.cancel()
+        refreshJob = null
+        binding.ivPreview.setImageBitmap(null)
+        recyclePreviewBitmap()
+        super.onDestroyView()
     }
 
     internal fun saveBitmapToCache(bitmap: Bitmap): Uri? {

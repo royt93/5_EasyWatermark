@@ -461,8 +461,15 @@ val Context.colorBackground: Int
                 )
             }
 
-            else -> {
+            // BUG-AUDIT-2026-09-29: fallback (không có dynamic color) từng LUÔN trả màu dark bất
+            // kể theme thật — khác mọi property màu khác trong file này (colorPrimary/colorSurface/
+            // colorTertiary...) đều branch theo isNight()/supportNight() trước khi chọn light/dark.
+            isNight() || !supportNight() -> {
                 ContextCompat.getColor(this, R.color.md_theme_dark_background)
+            }
+
+            else -> {
+                ContextCompat.getColor(this, R.color.md_theme_light_background)
             }
         }
     }

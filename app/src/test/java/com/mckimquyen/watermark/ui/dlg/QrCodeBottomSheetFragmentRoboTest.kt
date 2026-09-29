@@ -148,6 +148,12 @@ class QrCodeBottomSheetFragmentRoboTest {
     private fun previewDrawableIsSet(fragment: QrCodeBottomSheetFragment): Boolean =
         fragment.binding.ivPreview.drawable != null
 
+    private fun readPreviewBitmap(fragment: QrCodeBottomSheetFragment): android.graphics.Bitmap? {
+        val field = QrCodeBottomSheetFragment::class.java.getDeclaredField("previewBitmap")
+        field.isAccessible = true
+        return field.get(fragment) as android.graphics.Bitmap?
+    }
+
     /**
      * Sau khi debounce hết hạn, `generate` thật chạy trên `Dispatchers.Default` thật (một thread
      * pool thật, không phải virtual time của Robolectric) rồi mới post kết quả trở lại Main —
@@ -214,6 +220,69 @@ class QrCodeBottomSheetFragmentRoboTest {
         val remaining = cacheDir.listFiles()?.filter { it.name.contains("_temp_") } ?: emptyList()
         // ENH-29: Giữ tối đa 3 file cũ mới nhất + 1 file mới tạo = tối đa 4
         assertThat(remaining.size).isAtMost(4)
+    }
+
+    // --- BUG-AUDIT-2026-09-29: recycle previewBitmap (đúng pattern BUG-38) ---
+
+    /** Gõ nội dung mới (sau khi bitmap cũ đã generate xong) phải recycle bản CŨ, không bỏ rơi. */
+    @Test
+    fun refreshPreview_replacingContent_recyclesOldPreviewBitmap() {
+        val fragment = launchFragment()
+
+        fragment.binding.etContent.setText("hello")
+        shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        awaitPreviewGenerated(fragment)
+        val old = readPreviewBitmap(fragment)
+        assertThat(old).isNotNull()
+        assertThat(old!!.isRecycled).isFalse()
+
+        fragment.binding.etContent.setText("hello world, nội dung khác hẳn")
+        shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        // Đợi bitmap MỚI khác instance cũ xuất hiện (awaitPreviewGenerated chỉ check "có drawable
+        // hay chưa", drawable cũ vẫn "có" nên không đủ để biết đã sinh xong bản mới).
+        val deadline = System.currentTimeMillis() + 5_000
+        var new = readPreviewBitmap(fragment)
+        while (new === old && System.currentTimeMillis() < deadline) {
+            shadowOf(Looper.getMainLooper()).idle()
+            Thread.sleep(20)
+            new = readPreviewBitmap(fragment)
+        }
+
+        assertThat(new).isNotSameInstanceAs(old)
+        assertThat(old.isRecycled).isTrue()
+    }
+
+    /** Xoá nội dung (input rỗng) phải recycle bitmap đang có, không chỉ set null field. */
+    @Test
+    fun refreshPreview_clearingContent_recyclesPreviewBitmap() {
+        val fragment = launchFragment()
+        fragment.binding.etContent.setText("hello")
+        shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        awaitPreviewGenerated(fragment)
+        val old = readPreviewBitmap(fragment)
+        assertThat(old).isNotNull()
+
+        fragment.binding.etContent.setText("")
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(readPreviewBitmap(fragment)).isNull()
+        assertThat(old!!.isRecycled).isTrue()
+    }
+
+    /** Đóng sheet (view destroy) phải recycle bitmap đang giữ, không rò rỉ khi user chỉ đóng sheet. */
+    @Test
+    fun onDestroyView_recyclesPreviewBitmap() {
+        val fragment = launchFragment()
+        fragment.binding.etContent.setText("hello")
+        shadowOf(Looper.getMainLooper()).idleFor(300, TimeUnit.MILLISECONDS)
+        awaitPreviewGenerated(fragment)
+        val bitmap = readPreviewBitmap(fragment)
+        assertThat(bitmap).isNotNull()
+
+        activityController?.pause()?.stop()?.destroy()
+        activityController = null // tránh @After destroy() lần 2 (không idempotent an toàn)
+
+        assertThat(bitmap!!.isRecycled).isTrue()
     }
 
     // --- IDEA-07: QR động theo từng ảnh ---

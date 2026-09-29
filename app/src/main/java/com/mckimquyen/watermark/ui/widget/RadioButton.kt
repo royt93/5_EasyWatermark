@@ -89,10 +89,16 @@ class RadioButton : View {
     var isChecked = false
         set(value) {
             if (field != value) {
+                // BUG-AUDIT-2026-09-29: field phải gán TRƯỚC khi gọi listener — trước đây gọi
+                // listener rồi mới gán field, nên callback nào đọc lại `isChecked` (thay vì dùng
+                // param `value`) sẽ thấy giá trị CŨ (property setter chuẩn phải phản ánh giá trị
+                // mới trước khi thông báo ra ngoài).
+                field = value
                 invalidate()
                 listener.invoke(value)
+            } else {
+                field = value
             }
-            field = value
         }
 
     fun toggle() {

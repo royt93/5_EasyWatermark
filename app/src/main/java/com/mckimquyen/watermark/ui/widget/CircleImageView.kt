@@ -72,7 +72,14 @@ class CircleImageView : AppCompatImageView {
     override fun onDraw(canvas: Canvas) {
         if (sourceImageBitmap == null || (sizeHasChanged && width > 0 && height > 0)) {
             super.onDraw(canvas)
+            // BUG-AUDIT-2026-09-29: bất đối xứng với destCircleBitmap ở onSizeChanged (đã recycle
+            // đúng bản cũ trước khi tạo mới) — sourceImageBitmap ở đây từng bị ghi đè thẳng, bỏ rơi
+            // bản cũ không recycle mỗi lần resize.
+            val old = sourceImageBitmap
             sourceImageBitmap = drawable.toBitmap(width, height)
+            if (old != null && !old.isRecycled && old !== sourceImageBitmap) {
+                old.recycle()
+            }
             sizeHasChanged = false
             invalidate()
         }
