@@ -2,6 +2,26 @@
 
 > Cập nhật: 2026-09-29. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## Review pass 7 — `utils/` (ShareIntentResolver, VibrateHelper), 2026-09-29
+
+Audit vòng 7 (loop tiếp theo sau review pass 6, phạm vi các file `utils/` chưa audit): 2 finding,
+verify tay từng cái — **tất cả ĐÚNG**, tất cả đều fix theo lựa chọn user:
+
+- [x] **`ShareIntentResolver.kt:14` dùng `getParcelableExtra` deprecated trên API 33+** — type-unsafe,
+  tiềm ẩn `ClassCastException` nếu app khác gửi intent sai kiểu. Fix: đổi sang
+  `IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, Uri::class.java)` type-safe từ
+  AndroidX, hoạt động đúng trên mọi API 24–37. Test: 6 test trong `ShareIntentResolverTest` PASS.
+- [x] **`VibrateHelper.kt:8-19` cooldown `cd=20ms` vô tác dụng** — `latestVibration` chỉ khởi tạo = 0
+  và KHÔNG bao giờ được gán lại sau khi rung → gọi liên tục đều rung mọi lần, gây spam haptic. Fix:
+  gán `latestVibration = now` ngay sau khi check cooldown, tách hàm thuần `shouldVibrate()` để test.
+  Test mới: `VibrateHelperTest` (5 test: lần đầu, trong cooldown, đúng cooldown, sau cooldown, custom cooldown).
+
+**Verify:** `VibrateHelperTest` (5 test) + `ShareIntentResolverTest` (6 test) PASS 100%. `ktlintCheck`
+PASS. `lintDebug` PASS.
+
+**Smoke test thật trên Pixel 7 Pro (2B051FDH3006MU):** cài APK v2026.09.29 (Build 20260929) mới,
+khởi động app mượt mà, logcat sạch không FATAL EXCEPTION.
+
 ## Review pass 6 — `ui/widget/` (WaterMarkImageView, LaunchView) + `utils/ktx/` (ViewExtension), 2026-09-29
 
 Audit vòng 6 (loop tiếp theo sau review pass 5, phạm vi: `ui/widget/WaterMarkImageView.kt`,
