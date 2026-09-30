@@ -32,7 +32,6 @@ class SelectableImageView : View {
             innerCircleWidth = getDimension(R.styleable.SelectableImageView_siv_circle_width, 10f)
             circleResId = getResourceId(R.styleable.SelectableImageView_siv_src, -1)
             circleColor = getColor(R.styleable.SelectableImageView_siv_color, Color.WHITE)
-            srcBitmap = createSrcBitmapFromRes()
             recycle()
         }
     }
@@ -46,17 +45,19 @@ class SelectableImageView : View {
     var circleColor: Int = Color.TRANSPARENT
         set(value) {
             field = value
+            replaceSrcBitmap()
             invalidate()
         }
 
     var circleResId: Int = 0
         set(value) {
             field = value
-            srcBitmap = createSrcBitmapFromRes()
+            replaceSrcBitmap()
             invalidate()
         }
 
     private var srcBitmap: Bitmap? = null
+    private var ownsSrcBitmap = false
 
     private val paint: Paint by lazy {
         generatePaint().apply {
@@ -121,12 +122,25 @@ class SelectableImageView : View {
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        srcBitmap = createSrcBitmapFromRes()
+        replaceSrcBitmap()
     }
 
     override fun setSelected(selected: Boolean) {
         super.setSelected(selected)
         invalidate()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        // RecyclerView (ColorPreviewAdapter) luôn set lại circleColor/circleResId trước khi 1
+        // ViewHolder tái sử dụng hiển thị lại — an toàn recycle bitmap tự tạo ở đây, replaceSrcBitmap()
+        // sẽ tự tạo bitmap mới đúng lúc rebind.
+        val bmp = srcBitmap
+        if (ownsSrcBitmap && bmp != null && !bmp.isRecycled) {
+            bmp.recycle()
+        }
+        srcBitmap = null
+        ownsSrcBitmap = false
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -172,38 +186,50 @@ class SelectableImageView : View {
         }
     }
 
+    /**
+     * Thay bitmap nguồn và recycle bản CŨ nếu view tự tạo (màu/vector). Bitmap lấy thẳng từ
+     * [BitmapDrawable] là resource shared — không thuộc sở hữu view, tuyệt đối không recycle.
+     */
+    private fun replaceSrcBitmap() {
+        val old = srcBitmap
+        val oldOwned = ownsSrcBitmap
+        val (replacement, owned) = createSrcBitmapFromRes()
+        srcBitmap = replacement
+        ownsSrcBitmap = owned
+        if (oldOwned && old != null && old !== replacement && !old.isRecycled) {
+            old.recycle()
+        }
+    }
+
     private fun createSrcBitmapFromRes(
         resId: Int = circleResId,
         w: Int = measuredWidth,
         h: Int = measuredHeight,
         color: Int = circleColor
-    ): Bitmap? {
-        var b: Bitmap? = null
+    ): Pair<Bitmap?, Boolean> {
         if (resId > 0) {
-            b = AppCompatResources.getDrawable(context, resId)?.let {
-                if (it is BitmapDrawable) {
-                    it.bitmap
-                } else if (it.intrinsicHeight > 0 && it.intrinsicWidth > 0) {
-                    val bitmap = Bitmap.createBitmap(
-                        /* width = */ it.intrinsicWidth,
-                        /* height = */ it.intrinsicHeight,
-                        /* config = */ Bitmap.Config.ARGB_8888
-                    )
-                    val canvas = Canvas(bitmap)
-                    it.setBounds(0, 0, canvas.width, canvas.height)
-                    it.draw(canvas)
-                    bitmap
-                } else {
-                    null
-                }
+            val drawable = AppCompatResources.getDrawable(context, resId)
+            if (drawable is BitmapDrawable) {
+                return drawable.bitmap to false
+            }
+            if (drawable != null && drawable.intrinsicHeight > 0 && drawable.intrinsicWidth > 0) {
+                val bitmap = Bitmap.createBitmap(
+                    /* width = */ drawable.intrinsicWidth,
+                    /* height = */ drawable.intrinsicHeight,
+                    /* config = */ Bitmap.Config.ARGB_8888
+                )
+                val canvas = Canvas(bitmap)
+                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                drawable.draw(canvas)
+                return bitmap to true
             }
         }
-        if (b == null && color != 0 && w > 0 && h > 0) {
-            b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).apply {
+        if (color != 0 && w > 0 && h > 0) {
+            return Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).apply {
                 eraseColor(color)
-            }
+            } to true
         }
-        return b
+        return null to false
     }
 
     private fun generatePaint(): Paint {

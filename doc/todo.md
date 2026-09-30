@@ -2,6 +2,46 @@
 
 > Cập nhật: 2026-09-30. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## Review pass 11 — nốt `ui/widget/` (14 file còn lại), 2026-09-30
+
+Audit vòng 11 (loop tiếp theo sau pass 10, quét nốt toàn bộ `ui/widget/`: `PhotoPreviewItem`,
+`SelectableImageView`, `MultiSelectRv`, `TouchSensitiveRv`, `ProgressImageView`, `ColoredImageVIew`,
+`DetectedPerformanceSeekBarListener`, `SquareFrameLayout`, `LaunchViewListener`, `CustomViewGroup`,
+`ItemClickSupport`, `CenterLayoutManager`, `RadioButton`, `CircleImageView`,
+`UniformScrollGridLayoutManager`, `AsyncSquareFrameLayout`). 1 bug thật (đúng TDD — repro FAIL
+trước fix, PASS sau), verify tay:
+
+- [x] **`SelectableImageView` — bitmap màu/vector tự tạo (`srcBitmap`) bị ghi đè ở
+  `circleResId`/`onSizeChanged` setter mà KHÔNG recycle bản CŨ** — dùng trong
+  `ColorPreviewAdapter`/`ColorFragment` VÀ panel màu Chữ ký (`SignatureActivity`, chung layout
+  `item_color_preview.xml`), RecyclerView rebind swatch liên tục (scroll/đổi list) tích luỹ bitmap
+  native cho tới GC. Kèm bug correctness: setter `circleColor` trước đây CHỈ `invalidate()`, không
+  tái tạo `srcBitmap` — bitmap theo màu chỉ refresh khi `circleResId`/kích thước đổi sau đó, có thể
+  vẽ nhầm màu cũ 1 nhịp. Fix: thêm `ownsSrcBitmap` phân biệt bitmap SỞ HỮU (màu/vector tự vẽ, phải
+  recycle) với bitmap SHARED từ `BitmapDrawable` (KHÔNG được recycle — resource dùng chung ngoài
+  view), gom logic vào `replaceSrcBitmap()` gọi từ cả 2 setter + `onSizeChanged` + `onDetachedFromWindow()`
+  (recycle sạch khi view detach, ColorPreviewAdapter luôn set lại field trước khi ViewHolder tái sử
+  dụng hiển thị lại nên an toàn). Test mới: `SelectableImageViewWidgetTest` — 2 test
+  (`rebindColorSwatch_recyclesPreviousOwnedBitmap` FAIL trước fix đúng bất biến dự đoán,
+  `circleColorSetter_refreshesOwnedBitmapImmediately` FAIL trước fix vì bitmap không refresh ngay —
+  cả 2 PASS sau fix).
+- Còn lại 15 file: đã đọc kỹ toàn bộ, không tìm thêm bug mới — nhiều file đã có sẵn comment
+  "BUG-AUDIT-2026-09-29"/"BUG-42" từ các đợt audit trước (đã fix), cleanup/animator-cancel đã đúng
+  (`TouchSensitiveRv`, `MultiSelectRv`, `ColoredImageVIew`).
+
+**Verify:** `SelectableImageViewWidgetTest` (5 test, gồm 2 test mới) PASS + toàn bộ `testDebugUnitTest`
+(143+ file) PASS 100% + `ktlintCheck` PASS.
+
+**Lưu ý vận hành (R3):** device đã khoá đầu session (TECNO_KJ7) bị ngắt kết nối USB giữa chừng; đã
+hỏi qua `AskUserQuestion`, user duyệt chuyển khoá sang **Samsung SM_S928B (`R5CX613VZBR`)**. Mọi
+thao tác sau đó chỉ target Samsung SM_S928B.
+
+**Smoke test thật trên Samsung SM_S928B (R5CX613VZBR, thiết bị cá nhân thật của user):** cài APK
+debug mới, chọn 1 ảnh phong cảnh (không đụng ảnh riêng tư khác trong gallery thật), vào editor mở
+panel Màu chữ ký (đúng code path `SelectableImageView`/`item_color_preview.xml`), chạm liên tục qua
+lại NHIỀU LẦN cả 7 màu (kịch bản rebind dồn dập vừa fix) — chọn đúng màu cuối cùng chạm (tím), viền
+selection hiển thị đúng, không kẹt màu cũ, không crash, `logcat` sạch không `FATAL EXCEPTION`.
+
 ## Review pass 10 — `ui/widget/` (24 file), 2026-09-30
 
 Audit vòng 10 (loop tiếp theo sau pass 9, phạm vi `ui/widget/` — 24 file, trừ `WaterMarkImageView`/

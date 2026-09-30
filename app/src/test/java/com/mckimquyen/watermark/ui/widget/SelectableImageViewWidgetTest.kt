@@ -63,6 +63,54 @@ class SelectableImageViewWidgetTest {
         assertThat(bitmap.width).isEqualTo(100)
     }
 
+    /**
+     * Review pass 11: `circleResId` setter/onSizeChanged trước đây ghi đè `srcBitmap` bằng bitmap
+     * màu/vector MỚI nhưng không recycle bitmap CŨ do chính view sở hữu. RecyclerView rebind swatch
+     * nhiều lần sẽ tích lũy bitmap native cho tới GC.
+     */
+    @Test
+    fun rebindColorSwatch_recyclesPreviousOwnedBitmap() {
+        val siv = SelectableImageView(themedContext)
+        siv.circleColor = Color.RED
+        siv.measure(
+            android.view.View.MeasureSpec.makeMeasureSpec(100, android.view.View.MeasureSpec.EXACTLY),
+            android.view.View.MeasureSpec.makeMeasureSpec(100, android.view.View.MeasureSpec.EXACTLY)
+        )
+        siv.layout(0, 0, 100, 100)
+
+        val field = SelectableImageView::class.java.getDeclaredField("srcBitmap").apply { isAccessible = true }
+        val oldBitmap = field.get(siv) as Bitmap
+        assertThat(oldBitmap.isRecycled).isFalse()
+
+        // Mô phỏng ColorPreviewAdapter rebind cùng ViewHolder: circleColor trước, circleResId sau.
+        siv.circleColor = Color.BLUE
+        siv.circleResId = -1
+
+        assertThat(oldBitmap.isRecycled).isTrue()
+        assertThat(field.get(siv)).isNotSameInstanceAs(oldBitmap)
+    }
+
+    @Test
+    fun circleColorSetter_refreshesOwnedBitmapImmediately() {
+        val siv = SelectableImageView(themedContext)
+        siv.circleColor = Color.RED
+        siv.measure(
+            android.view.View.MeasureSpec.makeMeasureSpec(100, android.view.View.MeasureSpec.EXACTLY),
+            android.view.View.MeasureSpec.makeMeasureSpec(100, android.view.View.MeasureSpec.EXACTLY)
+        )
+        siv.layout(0, 0, 100, 100)
+
+        val field = SelectableImageView::class.java.getDeclaredField("srcBitmap").apply { isAccessible = true }
+        val redBitmap = field.get(siv) as Bitmap
+
+        siv.circleColor = Color.BLUE
+
+        val blueBitmap = field.get(siv) as Bitmap
+        assertThat(blueBitmap).isNotSameInstanceAs(redBitmap)
+        assertThat(redBitmap.isRecycled).isTrue()
+        assertThat(blueBitmap.getPixel(50, 50)).isEqualTo(Color.BLUE)
+    }
+
     @Test
     fun dlgExifBorder_inflatesWithFrameIcon() {
         val root = LayoutInflater.from(themedContext).inflate(R.layout.dlg_exif_border, null, false)
