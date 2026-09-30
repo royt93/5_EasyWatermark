@@ -52,6 +52,10 @@ dependencyResolutionManagement {
             val daggerVersion = "2.57.2"
             library("dagger-hilt-android", "com.google.dagger:hilt-android:$daggerVersion")
             library("dagger-hilt-compiler", "com.google.dagger:hilt-compiler:$daggerVersion")
+            // BUG-FLAKY-2026-09-30: @TestInstallIn override DataStoreModule cho test Robolectric
+            // dùng Hilt thật (MainActivity) — cô lập DataStore, tránh deadlock Mutex singleton
+            // dùng chung (xem testutil/TestDataStores.kt).
+            library("dagger-hilt-android-testing", "com.google.dagger:hilt-android-testing:$daggerVersion")
 
             val glideVersion = "4.16.0"
             library("glide-glide", "com.github.bumptech.glide:glide:$glideVersion")

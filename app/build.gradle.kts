@@ -126,6 +126,16 @@ android {
             // treo thật (không crash, không log lỗi — chỉ đứng im) khi chạy full suite nhiều
             // lần trong phiên làm việc dài. Tăng heap + tách fork định kỳ để tránh tích luỹ
             // SDK cache/GC pressure qua nhiều class. Nâng thêm nếu vẫn treo khi thêm test mới.
+            // BUG-FLAKY-2026-09-30: đã thử forkEvery=10 cho SaveImageBSDialogFragment*RoboTest hay
+            // fail rải rác khi chạy full suite — KHÔNG cải thiện (đo 3 lần: vẫn fail 2/3, tốn thêm
+            // ~40% thời gian). Root cause thật KHÔNG phải fork/heap: 3 test đó dựng MainActivity
+            // qua Hilt thật (fragment ép kiểu requireActivity() as MainActivity) nên đụng DataStore
+            // singleton `context.userDataStore`/`waterMarkDataStore` dùng chung xuyên JVM fork —
+            // nếu 1 test khác bị Robolectric huỷ sandbox giữa lúc `edit{}` dở dang, Mutex ghi khoá
+            // VĨNH VIỄN (xem testutil/TestDataStores.kt). Đã fix bằng
+            // di/TestDataStoreModule.kt (`@TestInstallIn` cô lập DataStore cho test Hilt) — verify
+            // 7 lần chạy full suite liên tiếp không còn fail. forkEvery vẫn giữ 25 vì không phải
+            // nguyên nhân.
             all {
                 it.maxHeapSize = "3g"
                 it.forkEvery = 25
@@ -202,6 +212,10 @@ dependencies {
     testImplementation(libs.test.mockk)
     testImplementation(libs.test.core)
     testImplementation(libs.test.work)
+    // BUG-FLAKY-2026-09-30: @TestInstallIn override DataStoreModule (DataStore cô lập cho test
+    // Hilt thật qua MainActivity) — xem di/TestDataStoreModule.kt.
+    testImplementation(libs.dagger.hilt.android.testing)
+    kaptTest(libs.dagger.hilt.compiler)
 
     // instrumentation test (androidTest)
     androidTestImplementation(libs.test.core)

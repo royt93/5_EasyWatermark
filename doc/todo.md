@@ -1,6 +1,41 @@
 # Danh sách việc cần làm & Cải tiến
 
-> Cập nhật: 2026-09-29. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
+> Cập nhật: 2026-09-30. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
+
+## BUG-FLAKY-2026-09-30: `SaveImageBSDialogFragment{Invisible,Proofing,Authenticity}RoboTest` — Mutex deadlock DataStore singleton, KHÔNG phải flaky do tải máy
+
+Nhiều lần review trước (xem review pass 5/6, dòng ~193/249/331 file này) từng ghi nhận
+`SaveImageBSDialogFragmentInvisibleRoboTest`/`ProofingRoboTest` "fail rải rác khi chạy full suite,
+pass khi cô lập → kết luận flaky do tải máy". Kết luận đó **SAI** — điều tra lại kỹ (systematic
+debugging, không đoán mò):
+
+- **Root cause thật:** cả 3 test dựng `MainActivity` thật qua `Robolectric.buildActivity` (bắt
+  buộc — `SaveImageBSDialogFragment` ép kiểu `requireActivity() as MainActivity`) → Hilt thật inject
+  `MainViewModel` gắn với DataStore **singleton sản xuất** (`context.userDataStore`/
+  `waterMarkDataStore`, cache theo file path dùng chung xuyên suốt JVM fork — xem cảnh báo có sẵn ở
+  `testutil/TestDataStores.kt`). Nếu 1 test khác (bất kỳ test nào cũng dùng singleton này) bị
+  Robolectric huỷ sandbox đúng lúc `dataStore.edit{}` dở dang, Mutex ghi bị khoá **VĨNH VIỄN** — test
+  sau cùng file gọi `edit{}` treo mãi khi chạy full suite. Đây là DEADLOCK THẬT, không phải "chậm do
+  tải" — đã tăng deadline polling 3s→5s (khớp convention đa số test khác) và KHÔNG có tác dụng gì
+  (verify thực nghiệm 4/4 lần vẫn fail y hệt), loại trừ hẳn giả thuyết timing/tải máy. Cũng đã thử
+  `forkEvery` 25→10 (giảm số class dồn 1 JVM fork) — cũng KHÔNG cải thiện, loại trừ giả thuyết
+  heap/GC accumulation.
+- **Fix:** `app/src/test/java/.../di/TestDataStoreModule.kt` — module Hilt `@TestInstallIn` thay
+  `DataStoreModule` sản xuất, cấp DataStore CÔ LẬP (file tạm riêng mỗi lần build SingletonComponent)
+  cho mọi test Robolectric dùng Hilt thật. 3 test trên thêm `@HiltAndroidTest` +
+  `@Config(application = HiltTestApplication::class)` + `HiltAndroidRule` (kèm tự init lại
+  `CMonet.init()`/WorkManager test config vì `HiltTestApplication` không chạy `MyApplication.onCreate()`).
+- **Test mới:** `TestDataStoreModuleRoboTest` (unit, 3 test — chứng minh module không cache tĩnh/
+  không trùng singleton), mỗi file trong 3 file trên thêm 1 integration test
+  `setupDialog_hiltBindsIsolatedDataStore_khongTrungSingletonSanXuat` (so REFERENCE qua
+  `EntryPointAccessors`, không so giá trị — tránh phụ thuộc thứ tự chạy).
+- **Verify:** `./gradlew clean` + `--stop` (daemon mới) + `testDebugUnitTest --rerun` **7 lần liên
+  tiếp** — cả 3 test không fail lần nào (trước fix: fail hầu hết các lần chạy). 1 lần trong 7 có
+  `MainViewModelCompressImgRoboTest` fail (test KHÁC, đã dùng DataStore cô lập từ trước, không liên
+  quan) — pre-existing flaky thật (timing test polling dưới tải cao), không phải bug này.
+- **Bài học:** đừng vội gắn nhãn "flaky do tải máy" khi CHƯA loại trừ được deadlock/leak thật bằng
+  thực nghiệm (tăng timeout không giúp / giảm fork size không giúp) — 2 tín hiệu đó chính là bằng
+  chứng phủ định giả thuyết "chỉ là chậm", trỏ thẳng sang "bị chặn vĩnh viễn".
 
 ## Review pass 7 — `utils/` (ShareIntentResolver, VibrateHelper), 2026-09-29
 
