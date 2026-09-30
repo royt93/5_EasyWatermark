@@ -58,13 +58,22 @@ class ExportNaming @Inject constructor(
         recipient: String? = null
     ): Map<String, String> {
         val exif = imageInfo.exifModel
-        val date = exif?.dateTime?.takeIf { it.isNotBlank() }
-            ?: System.currentTimeMillis().formatDate("yyyy-MM-dd")
+        val rawDate = exif?.dateTime?.takeIf { it.isNotBlank() }
+        val parsedExifMs = rawDate?.let { com.mckimquyen.watermark.utils.bitmap.parseExifDateTime(it) }
+        val effectiveMs = parsedExifMs ?: queryFileLastModified(contentResolver, imageInfo.uri) ?: System.currentTimeMillis()
+
+        // FEAT-25: {date} chuẩn hoá yyyy-MM-dd nếu parse được, giữ rawDate nếu không parse được, fallback effectiveMs
+        val date = parsedExifMs?.formatDate("yyyy-MM-dd") ?: rawDate ?: effectiveMs.formatDate("yyyy-MM-dd")
+        val time = effectiveMs.formatDate("HH:mm")
+        val datetime = effectiveMs.formatDate("yyyy-MM-dd HH:mm")
+
         return mapOf(
             "filename" to queryDisplayName(contentResolver, imageInfo.uri),
             "seq" to (index + 1).toString(),
             "seq3" to (index + 1).toString().padStart(3, '0'),
             "date" to date,
+            "time" to time,
+            "datetime" to datetime,
             "model" to exif?.getCameraName().orEmpty(),
             "make" to exif?.make.orEmpty(),
             "iso" to exif?.iso.orEmpty(),
@@ -343,6 +352,47 @@ class ExportNaming @Inject constructor(
 
     companion object {
         const val LOCATION_TOKEN = "{location}"
+
+        /**
+         * FEAT-25: Truy vấn thời điểm sửa đổi hoặc chụp ảnh từ ContentResolver hoặc File Uri khi không có EXIF.
+         */
+        fun queryFileLastModified(contentResolver: ContentResolver, uri: Uri): Long? {
+            if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
+                val projection = arrayOf(
+                    android.provider.MediaStore.MediaColumns.DATE_MODIFIED,
+                    android.provider.MediaStore.Images.Media.DATE_TAKEN
+                )
+                return try {
+                    contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+                        if (cursor.moveToFirst()) {
+                            val takenIdx = cursor.getColumnIndex(android.provider.MediaStore.Images.Media.DATE_TAKEN)
+                            if (takenIdx >= 0 && !cursor.isNull(takenIdx)) {
+                                val taken = cursor.getLong(takenIdx)
+                                if (taken > 0) return@use taken
+                            }
+                            val modIdx = cursor.getColumnIndex(android.provider.MediaStore.MediaColumns.DATE_MODIFIED)
+                            if (modIdx >= 0 && !cursor.isNull(modIdx)) {
+                                val mod = cursor.getLong(modIdx)
+                                if (mod > 0) return@use mod * 1000L
+                            }
+                        }
+                        null
+                    }
+                } catch (_: Exception) {
+                    null
+                }
+            } else if (uri.scheme == ContentResolver.SCHEME_FILE) {
+                val path = uri.path
+                if (path != null) {
+                    val file = java.io.File(path)
+                    if (file.exists()) {
+                        val lm = file.lastModified()
+                        if (lm > 0) return lm
+                    }
+                }
+            }
+            return null
+        }
 
         /** IDEA-07: template mặc định cho nội dung QR động khi user chưa tự đặt. */
         const val DEFAULT_QR_CONTENT_TEMPLATE = "{hash}|{date}|{portfolio_link}"

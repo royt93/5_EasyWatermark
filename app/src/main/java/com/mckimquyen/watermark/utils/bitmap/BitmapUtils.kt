@@ -215,7 +215,10 @@ private fun buildExifModel(exif: ExifInterface?): com.mckimquyen.watermark.data.
     if (exif == null) return com.mckimquyen.watermark.data.model.ExifModel()
     val make = exif.getAttribute(ExifInterface.TAG_MAKE) ?: ""
     val model = exif.getAttribute(ExifInterface.TAG_MODEL) ?: ""
-    val dateTime = exif.getAttribute(ExifInterface.TAG_DATETIME) ?: ""
+    // FEAT-25: ưu tiên TAG_DATETIME_ORIGINAL (thời điểm bấm chụp thật) -> TAG_DATETIME -> TAG_DATETIME_DIGITIZED
+    val dateTime = exif.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL)?.takeIf { it.isNotBlank() }
+        ?: exif.getAttribute(ExifInterface.TAG_DATETIME)?.takeIf { it.isNotBlank() }
+        ?: exif.getAttribute(ExifInterface.TAG_DATETIME_DIGITIZED) ?: ""
     val fNumber = exif.getAttribute(ExifInterface.TAG_F_NUMBER) ?: ""
     val exposureTime = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME) ?: ""
     val focalLength = exif.getAttribute(ExifInterface.TAG_FOCAL_LENGTH) ?: ""
@@ -232,6 +235,42 @@ private fun buildExifModel(exif: ExifInterface?): com.mckimquyen.watermark.data.
         iso = iso,
         focalLength = parseFocalLength(focalLength)
     )
+}
+
+/**
+ * FEAT-25: Chuyển đổi chuỗi ngày giờ EXIF sang timestamp (epoch milliseconds).
+ * EXIF tiêu chuẩn dùng định dạng "yyyy:MM:dd HH:mm:ss".
+ * Hàm thuần (pure function), testable độc lập, hỗ trợ nhiều biến thể định dạng.
+ */
+fun parseExifDateTime(raw: String): Long? {
+    val trimmed = raw.trim()
+    if (trimmed.isEmpty()) return null
+
+    // Danh sách các pattern ngày giờ EXIF hay gặp
+    val patterns = listOf(
+        "yyyy:MM:dd HH:mm:ss",
+        "yyyy-MM-dd HH:mm:ss",
+        "yyyy/MM/dd HH:mm:ss",
+        "yyyy:MM:dd HH:mm",
+        "yyyy-MM-dd HH:mm",
+        "yyyy:MM:dd",
+        "yyyy-MM-dd"
+    )
+
+    for (pattern in patterns) {
+        try {
+            val sdf = java.text.SimpleDateFormat(pattern, java.util.Locale.US).apply {
+                isLenient = false
+            }
+            val date = sdf.parse(trimmed)
+            if (date != null) {
+                return date.time
+            }
+        } catch (_: Exception) {
+            // Thử pattern tiếp theo
+        }
+    }
+    return null
 }
 
 /**

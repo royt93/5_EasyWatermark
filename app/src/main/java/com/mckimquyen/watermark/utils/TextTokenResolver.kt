@@ -7,9 +7,9 @@ package com.mckimquyen.watermark.utils
  */
 object TextTokenResolver {
 
-    /** Các token được hỗ trợ (không bao gồm dấu ngoặc). */
+    /** Các token được hỗ trợ (không bao gồm dấu ngoặc). FEAT-25: thêm "time", "datetime". */
     val SUPPORTED_TOKENS = listOf(
-        "filename", "seq", "seq3", "date", "model", "make",
+        "filename", "seq", "seq3", "date", "time", "datetime", "model", "make",
         "iso", "fnumber", "exposure", "focal", "exif", "location", "recipient"
     )
 
