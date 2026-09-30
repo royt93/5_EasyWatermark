@@ -2,6 +2,40 @@
 
 > Cập nhật: 2026-09-30. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## Review pass 10 — `ui/widget/` (24 file), 2026-09-30
+
+Audit vòng 10 (loop tiếp theo sau pass 9, phạm vi `ui/widget/` — 24 file, trừ `WaterMarkImageView`/
+`LaunchView` đã audit ở pass 6). Đúng quy trình `systematic-debugging`: 2 giả thuyết bị BÁC BỎ bằng
+repro thật trước khi kết luận không phải bug (không đoán mò) — xem chi tiết trong lịch sử hội thoại,
+không ghi lại ở đây vì không dẫn tới thay đổi code. 1 bug thật + 3 dead code:
+
+- [x] **`GalleryAdapter.GalleryItemHolder` — click/long-click listener đọc `holder.cbImage`
+  (`lateinit`) TRƯỚC khi `AsyncLayoutInflater` (qua `AsyncSquareFrameLayout.inflate()`) gán xong** —
+  `onBindViewHolder()` gắn `setOnClickListener`/`setOnLongClickListener` NGAY LẬP TỨC (ngoài
+  `bindWhenInflated {}`), trong khi `cbImage`/`ivImage` chỉ được gán trong callback async inflate.
+  Chạm vào ô ảnh mới tạo/cuộn nhanh vào TRƯỚC khi inflate xong (main thread bận dưới tải cao — kịch
+  bản máy chậm như TECNO_KJ7 hay gặp trong dự án này) ném `kotlin.UninitializedPropertyAccessException`,
+  crash toàn app. Repro 100% xác định dưới Robolectric (main looper mặc định không tự chạy Runnable
+  đã post — giữ đúng cửa sổ trước khi inflate hoàn tất, không phụ thuộc timing thật). Fix: dời cả 2
+  listener vào TRONG `bindWhenInflated {}` (đúng chỗ toàn bộ logic bind còn lại đã chờ sẵn). Test
+  mới: `GalleryAdapterAsyncInflateClickRaceTest` (repro FAIL trước fix với đúng exception dự đoán,
+  PASS sau fix).
+- [x] **Dead code — 3 file không còn nơi nào tham chiếu (0 XML, 0 Kotlin)**: `ui/widget/Toolbar.kt`
+  (custom Toolbar tự vẽ, app dùng `MaterialToolbar` thật qua `LaunchView.toolbar`),
+  `ui/widget/GalleryItemView.kt` (trùng chức năng `AsyncSquareFrameLayout` + `item_image_gallery.xml`
+  đang dùng thật), `ui/widget/ControllableScrollView.kt` (`NestedScrollView` chặn scroll, không còn
+  layout nào dùng). Xoá cả 3 *(ponytail: không thêm test cho xoá dead code — 0 behavioral delta, tự
+  chứng minh qua compile + `testDebugUnitTest` xanh)*.
+
+**Verify:** `GalleryAdapterAsyncInflateClickRaceTest` PASS + toàn bộ `testDebugUnitTest` (143+ file)
+PASS 100% + `ktlintCheck` PASS.
+
+**Smoke test thật trên TECNO_KJ7 (115333744A005844):** cài APK debug mới, app khởi động bình thường
+(xác nhận xoá 3 file dead code không vỡ build/runtime), mở "Chọn ảnh" rồi CHẠM LIÊN TỤC RẤT NHANH 6
+ô ảnh khác nhau ngay lúc grid vừa mở (đúng kịch bản race vừa fix — ô mới tạo, `AsyncLayoutInflater`
+có thể chưa xong) — chọn đúng cả 6 ảnh, không crash, `logcat` sạch không `FATAL EXCEPTION`/
+`UninitializedPropertyAccessException`.
+
 ## Review pass 9 — `ui/` root (`MainActivity.kt`, `MainViewModel.kt`, `UiState.kt`), 2026-09-30
 
 Audit vòng 9 (loop tiếp theo sau review pass 8, phạm vi: bộ não app — `MainActivity`/`MainViewModel`/

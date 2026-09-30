@@ -107,20 +107,23 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
         val stateText = context.getString(if (item.check) R.string.state_enabled else R.string.state_disabled)
         holder.itemView.contentDescription = "$photoIndexDesc, $stateText"
 
-        // Set click listeners immediately
-        holder.itemView.setOnLongClickListener {
-            holder.cbImage.toggle()
-            latestSelectedItem = holder.absoluteAdapterPosition
-            true
-        }
-        holder.itemView.setOnClickListener {
-            holder.cbImage.toggle()
-        }
-
         holder.bindWhenInflated {
             val pos = holder.absoluteAdapterPosition
             if (pos < 0 || pos >= differ.currentList.size) return@bindWhenInflated
             val currentItem = getItem(pos) ?: return@bindWhenInflated
+
+            // Review pass 10: click listener đọc holder.cbImage (lateinit, chỉ gán xong trong
+            // callback AsyncLayoutInflater) — dời vào TRONG bindWhenInflated cùng chỗ với phần bind
+            // còn lại (trước đây gắn NGAY LẬP TỨC ở ngoài, chạm item trước khi async inflate xong
+            // ném UninitializedPropertyAccessException, dễ gặp trên máy chậm/dưới tải cao).
+            holder.itemView.setOnLongClickListener {
+                holder.cbImage.toggle()
+                latestSelectedItem = holder.absoluteAdapterPosition
+                true
+            }
+            holder.itemView.setOnClickListener {
+                holder.cbImage.toggle()
+            }
 
             // Setup checkbox
             holder.cbImage.setOnCheckedChangeListener {}
