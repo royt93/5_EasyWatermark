@@ -14,20 +14,24 @@ import android.net.Uri
  */
 object HiddenWatermarkReader {
 
-    /**
-     * Ảnh phải decode ĐÚNG kích thước gốc: lớp ẩn nằm trên lưới 8x8 của ảnh, downsample là lệch lưới
-     * và mất sạch. Vì vậy KHÔNG dùng `inSampleSize` ở đây, đánh đổi bằng RAM.
-     */
-    private val decodeOptions = BitmapFactory.Options().apply {
-        inPreferredConfig = Bitmap.Config.ARGB_8888
-        inMutable = false
-    }
-
     /** `null` khi không đọc được ảnh, hoặc ảnh không mang watermark ẩn đáng tin. */
     fun read(contentResolver: ContentResolver, uri: Uri): InvisibleWatermark.Result? {
         var bitmap: Bitmap? = null
         return try {
             bitmap = contentResolver.openInputStream(uri)?.use {
+                // Review pass 12: BitmapFactory.Options KHÔNG an toàn dùng chung giữa nhiều lần
+                // decode đồng thời (BitmapFactory ghi outWidth/outHeight/outConfig ngược lại vào
+                // đúng instance được truyền) — trước đây là field `object` (singleton) dùng chung
+                // cho MỌI lần gọi read(), 2 lần verify chạy chồng (user chọn ảnh xác thực nhanh
+                // liên tiếp trước khi lượt trước xong, mỗi lượt chạy trên Dispatchers.IO riêng)
+                // có thể ghi đè lẫn nhau. Tạo instance MỚI mỗi lần gọi — rẻ, và loại hẳn race.
+                //
+                // Ảnh phải decode ĐÚNG kích thước gốc: lớp ẩn nằm trên lưới 8x8 của ảnh, downsample
+                // là lệch lưới và mất sạch. Vì vậy KHÔNG dùng `inSampleSize` ở đây, đánh đổi bằng RAM.
+                val decodeOptions = BitmapFactory.Options().apply {
+                    inPreferredConfig = Bitmap.Config.ARGB_8888
+                    inMutable = false
+                }
                 BitmapFactory.decodeStream(it, null, decodeOptions)
             } ?: return null
             InvisibleWatermark.extract(bitmap)

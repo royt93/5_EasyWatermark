@@ -2,6 +2,47 @@
 
 > Cập nhật: 2026-09-30. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## Review pass 12 — `export/stego/` (IDEA-02, watermark ẩn DCT), 2026-09-30
+
+Audit vòng 12 (loop tiếp theo sau pass 11, scope `export/stego/` — 5 file: `StegoCodec`,
+`StegoPayload`, `InvisibleWatermark`, `HiddenWatermarkReader`, `Dct8x8`). Chạy `/code-review --level
+high` qua subagent nền + tự đọc verify tay từng finding trước khi quyết định sửa (không tin báo cáo
+suông). 5 finding raw, chỉ 1 đủ an toàn để tự sửa ngay trong pass này — 4 finding còn lại chạm vào
+thuật toán lõi đã tune kỹ theo số đo thật (`StegoRobustnessTest`), cần quyết định đánh đổi
+robustness/chất lượng từ user trước khi động vào — **KHÔNG** tự ý sửa:
+
+- [x] **`HiddenWatermarkReader.decodeOptions` là field `object` (singleton) dùng CHUNG cho mọi lần
+  gọi `read()`** — `BitmapFactory.Options` không an toàn dùng lại đồng thời (chính `BitmapFactory`
+  ghi ngược `outWidth`/`outHeight`/`outConfig` vào instance được truyền). `AboutViewModel.verifyAuthenticity`
+  không debounce nút chọn ảnh xác thực — user chọn 2 ảnh xác thực nhanh liên tiếp trước khi lượt đầu
+  xong (mỗi lượt `Dispatchers.IO` riêng) có thể khiến 2 lần decode ghi đè state của nhau. Fix: tạo
+  `BitmapFactory.Options` MỚI mỗi lần gọi thay vì field dùng chung. Test mới (chưa từng có test nào
+  cho class này): `HiddenWatermarkReaderIntegrationTest` (androidTest, decode ảnh THẬT qua
+  `ContentResolver`/`Uri`) — 3 test, gồm 1 test chạy 2 `Thread` đọc 2 ảnh khác chủ sở hữu THẬT SỰ
+  song song lặp 20 lần, xác nhận không lẫn kết quả.
+- 💭 **4 finding còn lại — cần quyết định đánh đổi, chưa sửa:**
+  1. `StegoCodec.decode()`: `confidence` luôn = 1.0 khi ảnh chỉ vừa đúng 1 vòng payload
+     (`votesTotal[i]==1` mọi bit) — ngưỡng `MIN_CONFIDENCE=0.90` (tuyến phòng thủ thứ 2 theo doc
+     comment) vô tác dụng ở ảnh nhỏ nhất chấp nhận được (64x64px). Thực tế vẫn được MAGIC+CRC
+     (`StegoPayload`) chặn ở mức ~1/2^32 nên rủi ro gán nhầm chủ sở hữu vẫn thấp — nhưng cần sửa lại
+     comment hoặc đổi công thức `confidence` (vd trộn thêm biên độ hệ số, không chỉ tỉ lệ phiếu) để
+     đúng như tài liệu mô tả.
+  2. `StegoCodec.applyBit()`: ép đủ `STRENGTH=26` bất kể khối 8x8 gốc gần như phẳng (trời/tường/phông
+     nền) — dễ tạo vệt méo nhìn thấy được trên vùng phẳng thật (`StegoRobustnessTest` tự nhận trong
+     comment "ảnh phẳng tuyệt đối không đại diện ảnh thật", chưa test case này).
+  3. `StegoCodec.writeLumaBlock()`: `clamp()` riêng từng kênh R/G/B sau khi cộng chung 1 `delta` độ
+     sáng — ở vùng gần trắng/đen, 1 kênh có thể bão hoà 255/0 trong khi 2 kênh kia chưa, khiến độ sáng
+     THẬT ghi lại lệch với hệ số DCT vừa mã hoá → giảm độ bền watermark đúng ở ảnh bầu trời/tuyết/nền
+     trắng/bóng tối sâu — không nằm trong phạm vi `texturedPixels()` hiện tại.
+  4. `InvisibleWatermark.embed()`: `Bitmap.createBitmap(pixels, w, h, ARGB_8888)` luôn tạo bitmap sRGB
+     mặc định, làm mất `ColorSpace` gốc (vd Display P3 — mặc định trên nhiều máy ảnh/gallery hiện đại)
+     → lệch màu thấy được trên ảnh wide-gamut CHỈ khi bật watermark ẩn. Sửa cần API 26+
+     (`Bitmap.createBitmap(w,h,config,hasAlpha,colorSpace)` qua `Canvas`, minSdk hiện tại là 24) nên
+     cần gate version + kiểm tra kỹ lại toàn bộ pipeline `embed()` đã có test bao phủ rộng.
+
+**Verify:** `HiddenWatermarkReaderIntegrationTest` (3 test) PASS thật trên Samsung SM_S928B (bao gồm
+test race 2 luồng) + toàn bộ `testDebugUnitTest` (143+ file) PASS 100% + `ktlintCheck` PASS.
+
 ## Review pass 11 — nốt `ui/widget/` (14 file còn lại), 2026-09-30
 
 Audit vòng 11 (loop tiếp theo sau pass 10, quét nốt toàn bộ `ui/widget/`: `PhotoPreviewItem`,
