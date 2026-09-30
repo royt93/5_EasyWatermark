@@ -16,7 +16,18 @@ import java.io.File
 /** IDEA-13: cấu hình watermark proof lớn + index HTML gửi khách duyệt ảnh. */
 object ProofingMode {
 
-    data class Entry(val sequence: Int, val fileName: String)
+    /**
+     * [uri]: nguồn ảnh thật để nhúng base64 (chỉ cần khi ghi qua [writeMediaStore], xem giải thích
+     * ở đó) — `null` nếu caller không có (test thuần hoặc nhánh SAF/legacy vẫn dùng path tương đối).
+     * [imageSrc]: giá trị thật sự đưa vào `<img src>` — mặc định = [fileName] (path tương đối, hành
+     * vi cũ, đúng cho SAF/legacy vì index và ảnh CÙNG thư mục ở 2 nhánh đó).
+     */
+    data class Entry(
+        val sequence: Int,
+        val fileName: String,
+        val uri: Uri? = null,
+        val imageSrc: String = fileName
+    )
 
     const val INDEX_FILE_NAME = "proof_index.html"
     const val PROOF_TEXT_SIZE = 48f
@@ -27,6 +38,14 @@ object ProofingMode {
     const val PROOF_HORIZONTAL_GAP = 20
     const val PROOF_VERTICAL_GAP = 20
     private const val DEFAULT_PROOF_TEXT = "PROOF"
+
+    // P1 review pass 8 (sửa lại sau khi smoke test thật phát hiện fix đầu tiên SAI): Android Q+
+    // CẤM insert() non-media file (HTML) vào "Pictures/" qua collection MediaStore.Files — chỉ
+    // cho phép [Download, Documents] (verify bằng log thật trên TECNO KJ7: "Primary directory
+    // Pictures not allowed for content://media/external_primary/file"). Robolectric KHÔNG mô
+    // phỏng giới hạn này (test cũ pass giả). Vì vậy KHÔNG THỂ đặt index cùng thư mục "Pictures" với
+    // ảnh qua MediaStore.Files — xem [writeMediaStore] cho cách fix thật (nhúng ảnh base64 thay vì
+    // path tương đối), giữ nguyên thư mục Documents (được phép).
     private const val DOCUMENTS_RELATIVE_PATH = "Documents/${FileUtils.outPutFolderName}"
     private const val LOG_TAG = "ProofingMode"
 
@@ -65,7 +84,8 @@ object ProofingMode {
         append("</style></head><body><h1>Client Proofs</h1><div class=\"grid\">")
         entries.forEach { entry ->
             val fileName = escapeHtml(entry.fileName)
-            append("<figure><img src=\"").append(fileName).append("\" alt=\"Proof #")
+            val imageSrc = escapeHtml(entry.imageSrc)
+            append("<figure><img src=\"").append(imageSrc).append("\" alt=\"Proof #")
                 .append(formatSequence(entry.sequence)).append("\"><figcaption>#")
                 .append(formatSequence(entry.sequence)).append(" · ").append(fileName)
                 .append("</figcaption></figure>")
@@ -75,17 +95,38 @@ object ProofingMode {
 
     suspend fun writeIndex(context: Context, entries: List<Entry>, outputDirectoryUri: Uri?): Uri? {
         if (entries.isEmpty()) return null
-        val html = buildHtml(entries)
         return try {
             when {
-                outputDirectoryUri != null -> writeSaf(context, outputDirectoryUri, html)
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> writeMediaStore(context.contentResolver, html)
-                else -> writeLegacy(html)
+                outputDirectoryUri != null -> writeSaf(context, outputDirectoryUri, buildHtml(entries))
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                    // Index KHÔNG THỂ ở cùng thư mục "Pictures" với ảnh qua MediaStore.Files (xem
+                    // comment DOCUMENTS_RELATIVE_PATH) -> nhúng thẳng ảnh base64 vào HTML, tự chứa,
+                    // không phụ thuộc thư mục nào (còn portable hơn: gửi/copy file .html đi đâu vẫn
+                    // xem được ảnh).
+                    val embedded = embedImages(context.contentResolver, entries)
+                    writeMediaStore(context.contentResolver, buildHtml(embedded))
+                }
+                else -> writeLegacy(buildHtml(entries))
             }
         } catch (e: Exception) {
             AppLog.d(LOG_TAG, "Không ghi được proof index: ${e.message}")
             null
         }
+    }
+
+    /** Đọc bytes thật từng ảnh qua [uri], nhúng base64 vào [Entry.imageSrc]. Entry thiếu [Entry.uri]
+     * hoặc đọc lỗi giữ nguyên path tương đối cũ (không crash cả batch vì 1 ảnh lỗi). */
+    internal fun embedImages(resolver: ContentResolver, entries: List<Entry>): List<Entry> = entries.map { entry ->
+        val uri = entry.uri ?: return@map entry
+        val dataUri = encodeAsDataUri(resolver, uri) ?: return@map entry
+        entry.copy(imageSrc = dataUri)
+    }
+
+    private fun encodeAsDataUri(resolver: ContentResolver, uri: Uri): String? {
+        val bytes = resolver.openInputStream(uri)?.use { it.readBytes() } ?: return null
+        val mime = resolver.getType(uri) ?: "image/jpeg"
+        val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+        return "data:$mime;base64,$base64"
     }
 
     internal fun writeIntoDocumentTree(root: DocumentFile, resolver: ContentResolver, entries: List<Entry>): Uri? {

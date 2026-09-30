@@ -2,6 +2,164 @@
 
 > Cập nhật: 2026-09-30. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## BUG-FLAKY-2026-09-30 (tiếp): `MainViewModelCompressImgRoboTest` — hardcode `Dispatchers.IO`, không phải "flaky do tải máy"
+
+Follow-up của mục BUG-FLAKY-2026-09-30 gốc (ngay dưới) — sau khi fix deadlock DataStore singleton,
+báo cáo đó tự nhận "1/7 lần `MainViewModelCompressImgRoboTest` vẫn fail, pre-existing flaky do
+timing polling dưới tải cao" nhưng KHÔNG điều tra sâu (không có log/stacktrace lần fail thật). Điều
+tra lại kỹ hơn (đúng bài học đã rút ra ở mục dưới — không gắn nhãn "flaky do tải" khi chưa loại trừ
+nguyên nhân xác định được):
+
+- **Root cause thật:** `MainViewModel.compressImg()` hardcode `viewModelScope.launch(Dispatchers.IO)`
+  — thread pool THẬT, hoàn toàn ngoài tầm kiểm soát `Robolectric.getForegroundThreadScheduler()`/
+  Main looper giả. Test phải bơm `idle()` + `Thread.sleep(20)` lặp lại (deadline 5s) làm cầu nối
+  giữa 2 thế giới — bản chất là race theo THỜI GIAN THẬT, không phải theo tick giả Robolectric. Dưới
+  tải CPU cao (full suite 1000+ test chạy song song), OS có thể trì hoãn việc schedule thread
+  `Dispatchers.IO` đủ lâu để chạm ngưỡng 5s dù việc bên trong cực ngắn.
+- **Fix:** `MainViewModel` nhận thêm tham số cuối `ioDispatcher: CoroutineDispatcher = Dispatchers.IO`
+  (default giữ nguyên hành vi production), `compressImg()` dùng `viewModelScope.launch(ioDispatcher)`.
+  Cần thêm 1 `@Provides fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO` trong
+  `AppModule.kt` — Dagger/Hilt **không** tự dùng Kotlin default value cho tham số không có
+  `@Inject constructor`/binding riêng (khác 4 tham số default khác của `MainViewModel`, vốn có
+  `@Inject constructor` riêng nên Dagger tự dựng được qua constructor injection, không phải nhờ
+  default value). Test đổi sang `StandardTestDispatcher` + `advanceUntilIdle()` — hết polling/sleep,
+  tất định 100% (coroutine chạy đồng bộ trên thread test).
+- **Verify:** `MainViewModelCompressImgRoboTest` PASS lặp lại ổn định (`--rerun` 3 lần liên tiếp,
+  không dùng thời gian thật để chờ nữa nên không còn phụ thuộc tải máy).
+
+## Review pass 8 — `export/`, `utils/bitmap+facedetection+redaction+textdetection`, `ui/about+panel+recipient`, `data/model+backup`, 2026-09-30
+
+3 agent audit song song quét toàn bộ module chưa từng audit ở pass 1-7 (loại trừ `feature/vip/`/Ad
+SDK theo quyết định user). Tổng **38 finding** (9 P1 + 29 P2) — nhiều hơn hẳn quy mô 1 pass thường
+(6-7 fix), nên chỉ fix hết 9 P1 trong pass này, 29 P2 dồn thành hàng đợi cho pass 9+ (danh sách cuối
+mục này).
+
+**9 finding P1 — tất cả ĐÃ FIX, verify tay từng cái:**
+
+- [x] **`export/ProofingMode.kt` ghi `proof_index.html` sai thư mục trên Android Q+** — ghi vào
+  `Documents/WaterMarkCreator/` nhưng ảnh thật nằm ở `Pictures/WaterMarkCreator/`
+  (`BatchExportEngine.kt`), HTML tham chiếu ảnh bằng đường dẫn TƯƠNG ĐỐI → mọi ảnh trong index vỡ
+  link trên đa số thiết bị (Q+). Nhánh SAF/legacy đã đúng từ trước, chỉ nhánh MediaStore Q+ lệch.
+  **Fix ĐẦU TIÊN SAI** (đổi `RELATIVE_PATH` sang `"Pictures/$outPutFolderName"`) — smoke test thật
+  trên TECNO KJ7 phát hiện Android Q+ **cấm** `MediaStore.Files.insert()` non-media file vào
+  `Pictures/`, chỉ cho `[Download, Documents]` (log thật: "Primary directory Pictures not allowed
+  for content://media/external_primary/file"); Robolectric không mô phỏng giới hạn này nên unit
+  test ban đầu pass giả — trên máy thật `insert()` ném exception, `writeIndex()` trả `null`, **không
+  sinh được file nào** (còn tệ hơn bug gốc). **Fix thật:** giữ `Documents/` (thư mục được phép),
+  nhúng ảnh base64 thẳng vào HTML (`ProofingMode.embedImages()` đọc bytes qua `ContentResolver`,
+  `Entry` thêm field `uri`/`imageSrc`) thay vì path tương đối — tự chứa hoàn toàn, không phụ thuộc
+  ảnh/index có cùng thư mục hay không (portable hơn: copy/gửi file đi đâu vẫn xem được ảnh). Nhánh
+  SAF/legacy giữ nguyên (không đổi, đã đúng). Test:
+  `ProofingModeMediaStoreDirectoryRoboTest` (regression guard `writeIndex` không còn trả `null` +
+  insert đúng `Documents/`, cộng 2 test cho `embedImages`/`buildHtml` dùng `imageSrc`). **Verify
+  thật trên TECNO KJ7:** export 2 ảnh + bật "Chế độ ảnh duyệt cho khách" → `proof_index.html` sinh
+  ra 497KB (thay vì 740 byte cũ), `pull` về kiểm tra chứa đúng `<img
+  src="data:image/jpeg;base64,...">` + caption đúng tên file thật, không còn log lỗi
+  "Không ghi được proof index".
+- [x] **`export/BatchExportWorker.kt` notification tiến trình không bao giờ bị `cancel()`** —
+  `setOngoing(true)` nhưng không nơi nào gọi `NotificationManager.cancel()` khi work xong/lỗi/huỷ →
+  treo vĩnh viễn, user không vuốt bỏ được. Fix: `dismissProgressNotification()` trong `finally` của
+  `doWork()` (cùng chỗ release wake lock — chạy mọi nhánh kể cả `CancellationException`). Test:
+  `BatchExportWorkerNotificationDismissRoboTest`. Phải sửa lại
+  `BatchExportWorkerRoboTest.doWork_postsInitialProgressNotification_...` (assertion cũ "vẫn còn
+  sau khi work terminal" giờ race với `finally`, luôn `null` — đổi sang chỉ verify channel tạo).
+- [x] **`export/BatchExportEngine.kt` OVERWRITE + exception giữa chừng làm mất ảnh gốc** — đặt
+  `IS_PENDING=1` lên row ảnh CŨ trước khi ghi đè, chỉ dọn ở nhánh `writeResult.isFailure()`; nếu 1
+  `Throwable` không phải `Exception` (`OutOfMemoryError` lúc `compress()` ảnh lớn — không bị
+  `catch (e: Exception)` cục bộ bắt) thoát ra ngoài, row giữ pending vĩnh viễn → ảnh gốc biến mất
+  khỏi mọi app gallery. Fix: bọc `try/finally` với cờ `pendingCleanupDone`, dọn về 0 trong `finally`
+  nếu chưa nhánh nào dọn. Test: `BatchExportEngineOverwritePendingCleanupRoboTest` (ép
+  `OutOfMemoryError` qua `spyk` trên `ContentResolver.openFileDescriptor`, verify bằng
+  `io.mockk.verify` — Robolectric không có row MediaStore thật để query lại).
+- [x] **`export/BatchExportEngine.kt:475` force-unwrap `iconBitmapValue.bitmap!!`** — site DUY NHẤT
+  không guard (5 site khác cùng file dùng `?: return`). Fix: đổi cùng pattern
+  `?: return@withContext Result.failure(...)`. Không thêm test riêng — path này provably unreachable
+  null (constructor `BitmapValue` luôn nhận bitmap non-null qua `decodeBitmapWithExifSync`), fix chỉ
+  để đồng nhất; verify qua test `generateImage`/icon đã có sẵn không regression.
+- [x] **`export/BatchExportEngine.kt` bitmap tạm rò rỉ khi render lỗi giữa chừng** —
+  `generatePreviewBitmap`/`generateCompareBitmaps` tạo bitmap `copy()` riêng (không qua
+  `BitmapCache`), nhánh `catch (e: Exception)` chỉ `bitmapValue.release()` (bitmap GỐC trong cache),
+  không recycle bitmap tạm → rò rỉ 1-2 bitmap mỗi lần lỗi. Fix: biến `leakGuardBitmap`/
+  `leakGuardOriginal`/`leakGuardWatermarked` theo dõi bitmap đang sống, recycle trong catch. Test:
+  `BatchExportEngineBitmapLeakOnExceptionRoboTest` (ép lỗi qua mock
+  `WaterMarkImageView.resolveAutoContrast`, capture bitmap bằng `slot<Bitmap>()`).
+- [x] **`data/model/JobState.kt` + `Result.kt` không phải `data class`** — `equals()` so reference
+  identity, `DiffUtil.areContentsTheSame` (`SaveImageListAdapter`) luôn `false` dù nội dung giống →
+  rebind/flicker thừa. Fix: đổi cả 2 sang `data class` (verify không field nào bị mutate sau khi
+  tạo). Test: `JobStateTest` (unit, equals/hashCode).
+- [x] **`ui/about/AboutActivity.showVerifyResult` thiếu guard `isFinishing`/`isDestroyed`** —
+  callback từ `viewModelScope` (sống ngoài Activity) show dialog trên window token đã chết nếu
+  Activity finish/rotate trước khi verify I/O xong → `BadTokenException`. Fix: `if (isFinishing ||
+  isDestroyed) return` đầu hàm (đổi `private` → `internal` để test gọi trực tiếp, cùng pattern
+  `buildVerifyMessage`). Test: `AboutActivityShowVerifyResultRoboTest` (verify qua
+  `ShadowDialog.getLatestDialog()` — `ShadowAlertDialog` không track dialog AndroidX/Material).
+- [x] **`ui/recipient/RecipientViewModel.save` check-then-act race** — `getByCode` rồi
+  `update`/`insert` không atomic; 2 lần gọi gần đồng thời cùng `code` có thể cả 2 vượt qua check rồi
+  1 trong 2 ghi Room ném `SQLiteConstraintException` thẳng trong `viewModelScope.launch` → crash cả
+  test class (không chỉ 1 test — exception thoát `Dispatchers.Main.immediate` làm Robolectric skip
+  luôn test còn lại). Fix: bọc try/catch quanh `insert`/`update`, `onResult(false)` khi bắt được.
+  Test: `RecipientViewModelSaveRoboTest` (DAO giả `getByCode` trả `null` nhưng `insert`/`update` ném
+  — mô phỏng đúng race).
+- [x] **`ui/panel/TextStyleFragment.kt` không có test nào** — 8 fragment panel khác đều có, mapping
+  `effectAdapter` position→handler + cross-callback `paintStyleAdapter`/`typefaceAdapter` đủ phức
+  tạp cần test. KHÔNG có bug thật (mapping đúng) — chỉ thiếu coverage. Test:
+  `TextStyleFragmentRoboTest` (3 test: 4 chip effect độc lập đúng mapping, paint style chip, typeface
+  chip — gắn `MainActivity` thật lấy `ConcatAdapter.adapters` để click đúng adapter con).
+
+**29 finding P2 — CHƯA fix, hàng đợi cho review pass 9+** (không tự bịa ticket `.md` riêng, theo
+đúng convention review pass — liệt kê đây để pass sau không phải audit lại từ đầu):
+
+*export/utils/bitmap (nhóm agent 1):*
+- `utils/bitmap/BitmapUtils.kt:330-348` — cursor leak khi `getInt(0)` ném (catch không đóng cursor,
+  cần `.use{}`).
+- `utils/bitmap/BitmapUtils.kt:436-447` — race get-then-put `BitmapCache`: `entryRemoved(evicted=false)`
+  không recycle bitmap cũ khi 2 coroutine decode song song cùng key.
+- `export/ExportNaming.kt:192-202` — `resolveVersionedName` `while(true)` không trần, treo vô hạn
+  nếu `isNameTaken` luôn true.
+- `export/BatchExportEngine.kt:78` — `matrixValues = FloatArray(9)` state cấp instance, nên là local.
+- `utils/facedetection/MlKitFaceDetectionSource.kt:26`, `utils/textdetection/MlKitSensitiveTextSource.kt:36`
+  — `FaceDetector`/`TextRecognizer` `Closeable` không bao giờ `.close()` (chấp nhận được vì
+  `@Singleton`, nhưng đáng ghi chú).
+- `utils/facedetection/FaceDetectionSource.kt:23-27` — `awaitTask()` thiếu
+  `invokeOnCancellation{}` + callback không dùng Executor (chạy main thread).
+- `export/BatchExportEngine.kt:290,301,430,462` + `utils/bitmap/BitmapUtils.kt:36,406,422,483,488,493`
+  — mã lỗi `"-1"` hardcode 11 lần thay vì const `MainViewModel.TYPE_ERROR_*`.
+- `utils/bitmap/BitmapUtils.kt:369,377` — magic number `0.35`/`1024L*1024L`/`1080` không tên.
+- `utils/bitmap/ExifBorderRenderer.kt:93-245` — ~30 hằng tỉ lệ layout hardcode, 4 style lặp nhóm số
+  khác giá trị, nên gom thành data class.
+- `export/BatchExportEngine.kt:741-755` — file rác nửa vời trên đĩa nếu `compress()` ném exception
+  (chỉ nhánh `compressOk==false` mới `delete()`).
+- `export/BatchExportEngine.kt:470,528,532,637,800` — 5 `!!` còn lại không comment giải thích
+  non-null (an toàn thực tế, chỉ thiếu ghi chú).
+- Thiếu test: `export/stego/HiddenWatermarkReader.kt`, `ProofingMode.writeIndex/writeMediaStore/writeLegacy`
+  (ngoài nhánh vừa fix), `BatchExportEngine.drawExtraLayers`, `ExportNaming.queryDisplayName`.
+
+*ui/about+panel+recipient, data/model+backup (nhóm agent 2):*
+- `ui/recipient/RecipientManagementActivity.kt:113-115` — callback lambda từ `viewModelScope` giữ
+  ref Activity qua rotation, nên đổi sang `Flow`/`SharedFlow` event.
+- `ui/recipient/RecipientPickerBottomSheetFragment.kt:31` — `_binding!!` không comment giải thích
+  (lifecycle thực tế đã guard, chỉ thiếu ghi chú).
+- `ui/panel/TextStyleFragment.kt:57-73` `effectAdapter` — `by lazy` đọc `waterMark.value` 1 lần, không
+  re-observe → chip state stale nếu config đổi từ nguồn khác trong lúc panel mở.
+- `ui/panel/ColorFragment.kt:29-46` — 5 màu hardcode `Color.parseColor(...)` thay vì `colors.xml`.
+- `ui/panel/TextStyleFragment.kt:4,8` — import chết `TextUtils.replace`/`ContentProviderCompat.requireContext`.
+- `data/model/WaterMark.kt:24` — `marginPercent = 0.05f` hardcode lặp, trong khi
+  `WatermarkLayer.kt:29` đã đúng dùng `WaterMarkRepository.DEFAULT_MARGIN_PERCENT`.
+- `data/model/Anchor.kt`, `ImageInfo.kt` (`obtainTileMode`, `isSameItem`) — thiếu unit test.
+- `data/model/Result.kt` — method `isSuccess()` bị comment chết (đã dọn `isFailure()` liên quan lúc
+  fix P1 #6, chưa dọn dòng comment chết này).
+- `data/model/FuncTitleModel.kt:16,28,32` — field `tag` khai báo nhưng 0 reference.
+- `data/model/entity/Template.kt:1-40` — ~15 dòng `Parceler` custom comment chết (đã thay `@Parcelize`).
+- `data/backup/BackupRestoreEngine.kt:71` — thiếu sanitize path traversal tại chính engine (hiện an
+  toàn nhờ caller duy nhất chặn hộ, rủi ro nếu có caller khác sau này).
+- `ui/about/AboutActivity.kt:39,156` + `OpenSourceActivity.kt:26` — magic number `32dp` lặp 2 nơi.
+- `ui/about/AboutActivity.kt:196` — `"SAIGON PHANTOM LABS"` hardcode inline.
+- `ui/about/AboutActivity.kt:191` — Play Store URL raw string (nên tách hàm như `buildMoreAppsUrl`).
+- `ui/about/OpenSourceActivity.kt:51,55,59,63` — GitHub URL hardcode trong click listener.
+- Thiếu test: `AboutViewModel.verifyAuthenticity`/`resolveLeakedRecipient`,
+  `RecipientViewModel`/`RecipientPickerBottomSheetFragment`/`RecipientManagementActivity` (case
+  duplicate-code), `data/model` các model thuần còn lại theo ghi chú agent.
+
 ## BUG-FLAKY-2026-09-30: `SaveImageBSDialogFragment{Invisible,Proofing,Authenticity}RoboTest` — Mutex deadlock DataStore singleton, KHÔNG phải flaky do tải máy
 
 Nhiều lần review trước (xem review pass 5/6, dòng ~193/249/331 file này) từng ghi nhận

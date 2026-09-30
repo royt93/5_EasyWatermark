@@ -1,13 +1,13 @@
 package com.mckimquyen.watermark.data.model
 
-class Result<T>(
+// P1 review pass 8: data class để equals()/hashCode() so nội dung (không phải reference) -
+// DiffUtil.areContentsTheSame qua JobState.Success/Failure phụ thuộc việc này.
+data class Result<T>(
     var type: Type,
     var data: T? = null,
     var code: String? = null,
     var message: String? = null
 ) {
-
-//    fun isSuccess() = type == Type.Success
 
     fun isFailure() = type == Type.Failure
 

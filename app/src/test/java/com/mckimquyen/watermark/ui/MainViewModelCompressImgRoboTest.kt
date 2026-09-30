@@ -15,6 +15,7 @@ import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.StandardTestDispatcher
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -32,6 +33,10 @@ class MainViewModelCompressImgRoboTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val waterMarkDataStore = newTestWaterMarkDataStore(context)
     private val userDataStore = newTestUserDataStore(context)
+
+    // BUG-FLAKY-2026-09-30: dispatcher ảo thời gian, chạy compressImg() đồng bộ trên thread test
+    // khi advanceUntilIdle() -> hết polling idle()+sleep() đua với thread IO thật.
+    private val testDispatcher = StandardTestDispatcher()
     private lateinit var viewModel: MainViewModel
 
     @Before
@@ -51,7 +56,8 @@ class MainViewModelCompressImgRoboTest {
             waterMarkRepo = waterMarkRepo,
             memorySettingRepo = MemorySettingRepo(),
             templateRepo = TemplateRepository(null),
-            styleHistoryRepo = noopWatermarkStyleHistoryRepository()
+            styleHistoryRepo = noopWatermarkStyleHistoryRepository(),
+            ioDispatcher = testDispatcher
         )
         // Kích hoạt collect waterMark Flow -> LiveData (giống các test khác), đảm bảo
         // waterMark.value != null trước khi gọi compressImg (imageInfoList rỗng mới là điều kiện test).
@@ -71,14 +77,11 @@ class MainViewModelCompressImgRoboTest {
 
         viewModel.compressImg(activity)
 
-        // compressImg chạy trên Dispatchers.IO (thread thật, ngoài tầm kiểm soát Robolectric
-        // scheduler) rồi postValue về Main looper -> phải idle lặp lại để "bơm" Main looper
-        // cho tới khi observer nhận được kết quả, thay vì chỉ idle 1 lần.
-        val deadline = System.currentTimeMillis() + 5_000
-        while (lastResultCode != MainViewModel.TYPE_COMPRESS_ERROR && System.currentTimeMillis() < deadline) {
-            shadowOf(Looper.getMainLooper()).idle()
-            Thread.sleep(20)
-        }
+        // testDispatcher ảo thời gian -> compressImg() chạy hết đồng bộ trên thread test ngay khi
+        // advance, không còn thread IO thật nào để "đua" nữa. Chỉ cần idle() Main looper 1 lần
+        // duy nhất để bơm postValue() đã enqueue vào Handler -> tất định 100%, hết polling/sleep.
+        testDispatcher.scheduler.advanceUntilIdle()
+        shadowOf(Looper.getMainLooper()).idle()
         assertThat(lastResultCode).isEqualTo(MainViewModel.TYPE_COMPRESS_ERROR)
     }
 }

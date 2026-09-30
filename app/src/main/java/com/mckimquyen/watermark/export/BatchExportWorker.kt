@@ -127,7 +127,9 @@ class BatchExportWorker @AssistedInject constructor(
                         applicationContext.contentResolver,
                         outputUri
                     ) ?: return@mapIndexedNotNull null
-                    ProofingMode.Entry(sequence = index + 1, fileName = fileName)
+                    // uri: chỉ dùng khi writeIndex() phải nhúng base64 (nhánh MediaStore Q+ không
+                    // SAF) — nhánh SAF/legacy bỏ qua, vẫn dùng fileName tương đối như cũ.
+                    ProofingMode.Entry(sequence = index + 1, fileName = fileName, uri = outputUri)
                 }
                 ProofingMode.writeIndex(applicationContext, entries, settings.outputDirectoryUri)
             }
@@ -135,7 +137,15 @@ class BatchExportWorker @AssistedInject constructor(
             return if (result.isFailure()) WorkResult.failure() else WorkResult.success()
         } finally {
             if (wakeLock?.isHeld == true) wakeLock.release()
+            // P1 review pass 8: setOngoing(true) không tự biến mất — không cancel() thì notification
+            // "n/total" treo vĩnh viễn (user không vuốt bỏ được) sau khi work xong/lỗi/bị huỷ.
+            dismissProgressNotification()
         }
+    }
+
+    private fun dismissProgressNotification() {
+        val manager = applicationContext.getSystemService(NotificationManager::class.java) ?: return
+        manager.cancel(NOTIFICATION_ID)
     }
 
     /**

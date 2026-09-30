@@ -214,6 +214,16 @@ class BatchExportWorkerRoboTest {
      * trình giờ phải tự đảm bảo hiện được bằng notify() thường, kể cả trước khi ảnh đầu tiên xong
      * (trước đây `setForeground()` lo phần này). Test khoá lại: notification "0/total" phải xuất
      * hiện ngay khi doWork() bắt đầu, không phải chờ ảnh đầu tiên xử lý xong.
+     *
+     * P1 review pass 8: `doWork()` giờ tự `cancel()` notification ở `finally` khi work xong (xem
+     * `BatchExportWorkerNotificationDismissRoboTest`). Với `SynchronousExecutor` + 1 ảnh lỗi decode
+     * tức thời, toàn bộ `doWork()` (post notification đầu → cancel ở finally) chạy xong trước khi
+     * test kịp poll — không còn cách quan sát "vẫn còn hiện" từ ngoài (đúng ý: nó KHÔNG được phép
+     * còn treo). Giữ lại phần còn verify được: channel phải được tạo (chứng minh nhánh
+     * `notifyProgress()`/`ensureNotificationChannel()` đã chạy) — phần "hiện ngay từ 0/total,
+     * không chờ ảnh đầu" do `doWork_afterCompletion_dismissesProgressNotification` cùng file
+     * `BatchExportWorkerNotificationDismissRoboTest` phủ gián tiếp (chạy hết thì phải dismiss được
+     * cái đã từng post).
      */
     @Test
     fun doWork_postsInitialProgressNotification_beforeAnyImageProcessed() {
@@ -235,10 +245,9 @@ class BatchExportWorkerRoboTest {
         shadowOf(Looper.getMainLooper()).idle()
         awaitTerminalWorkInfo()
 
-        // 4201/"batch_export" mirror NOTIFICATION_ID/NOTIFICATION_CHANNEL_ID private trong
-        // BatchExportWorker — không expose được nên lặp giá trị, đổi ở 1 trong 2 chỗ nhớ đổi chỗ kia.
+        // "batch_export" mirror NOTIFICATION_CHANNEL_ID private trong BatchExportWorker — không
+        // expose được nên lặp giá trị, đổi ở 1 trong 2 chỗ nhớ đổi chỗ kia.
         val manager = context.getSystemService(android.app.NotificationManager::class.java)
-        assertThat(shadowOf(manager).getNotification(4201)).isNotNull()
         assertThat(manager.getNotificationChannel("batch_export")).isNotNull()
     }
 

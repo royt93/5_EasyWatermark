@@ -470,9 +470,17 @@ class BatchExportEngine @Inject constructor(
                                 val iconBitmapValue = iconBitmapRect.data!!
                                 iconBitmapValue.retain()
                                 try {
+                                    // P1 review pass 8: site DUY NHẤT trong file còn `!!` không guard
+                                    // (5 site khác đều `?: return`) — đồng nhất cách xử lý, tránh NPE
+                                    // nếu tương lai BitmapValue.bitmap null theo đường khác.
+                                    val srcBitmap = iconBitmapValue.bitmap ?: return@withContext Result.failure(
+                                        data = null,
+                                        code = "-1",
+                                        message = "iconBitmapValue.bitmap == null"
+                                    )
                                     WaterMarkImageView.buildIconBitmapShader(
                                         imageInfo = imageInfo,
-                                        srcBitmap = iconBitmapValue.bitmap!!,
+                                        srcBitmap = srcBitmap,
                                         config = tmpConfig,
                                         textPaint = bitmapPaint,
                                         scale = true,
@@ -638,59 +646,79 @@ class BatchExportEngine @Inject constructor(
                     }
 
                     val imageContentUri = targetUri
-                    // BUG-19: openFileDescriptor() có thể trả null, và compress() có thể trả false
-                    // (trước đây cả 2 bị bỏ qua → báo "thành công" giả + để lại row IS_PENDING rác).
-                    val writeResult = try {
-                        val pfd = contentResolver.openFileDescriptor(imageContentUri, "w", null)
-                        val compressOk = pfd?.use { p ->
-                            exportBitmap.compress(
-                                /* format = */ settings.outputFormat,
-                                /* quality = */ settings.compressLevel,
-                                /* stream = */ FileOutputStream(p.fileDescriptor)
-                            )
-                        } ?: false
-                        MediaStoreWriteResolver.resolve(
-                            fdAvailable = pfd != null,
-                            compressSucceeded = compressOk,
-                            errorCode = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_WRITE
-                        )
-                    } catch (e: Exception) {
-                        Result.failure<Unit>(data = null, code = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_WRITE, message = e.message)
-                    }
-                    if (writeResult.isFailure()) {
-                        // BUG-37: row mới (KEEP_BOTH/RENAME_VERSION) → xoá row rác như BUG-19.
-                        // Row đã có sẵn bị đánh IS_PENDING=1 để OVERWRITE → trả về 0 thay vì xoá,
-                        // nếu không ảnh CŨ của user mất khỏi gallery vĩnh viễn.
-                        when (MediaStoreWriteFailureCleanup.decide(isNewRow)) {
-                            MediaStoreCleanupAction.DELETE_ROW ->
-                                contentResolver.delete(imageContentUri, null, null)
-                            MediaStoreCleanupAction.CLEAR_PENDING ->
-                                contentResolver.update(
-                                    imageContentUri,
-                                    ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) },
-                                    null,
-                                    null
+                    // P1 review pass 8: nếu OVERWRITE (isNewRow=false) và có Throwable bất ngờ
+                    // (vd OutOfMemoryError lúc compress ảnh lớn — KHÔNG bị `catch (e: Exception)`
+                    // cục bộ bên dưới bắt) thoát khỏi khối này TRƯỚC khi 1 trong 2 nhánh dưới kịp
+                    // dọn IS_PENDING, row CŨ giữ pending vĩnh viễn -> ảnh gốc biến mất khỏi mọi app
+                    // gallery. `finally` đảm bảo luôn dọn nếu chưa nhánh nào dọn (hàng mới isNewRow
+                    // thì không cần dọn gì, MediaStore tự ẩn row pending chưa hoàn tất).
+                    var pendingCleanupDone = isNewRow
+                    try {
+                        // BUG-19: openFileDescriptor() có thể trả null, và compress() có thể trả false
+                        // (trước đây cả 2 bị bỏ qua → báo "thành công" giả + để lại row IS_PENDING rác).
+                        val writeResult = try {
+                            val pfd = contentResolver.openFileDescriptor(imageContentUri, "w", null)
+                            val compressOk = pfd?.use { p ->
+                                exportBitmap.compress(
+                                    /* format = */ settings.outputFormat,
+                                    /* quality = */ settings.compressLevel,
+                                    /* stream = */ FileOutputStream(p.fileDescriptor)
                                 )
+                            } ?: false
+                            MediaStoreWriteResolver.resolve(
+                                fdAvailable = pfd != null,
+                                compressSucceeded = compressOk,
+                                errorCode = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_WRITE
+                            )
+                        } catch (e: Exception) {
+                            Result.failure<Unit>(data = null, code = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_WRITE, message = e.message)
                         }
-                        return@withContext Result.extendMsg(writeResult)
-                    }
-                    // Đã compress xong, không còn dùng bitmap này nữa (BUG-05).
-                    exportBitmap.recycle()
-                    bitmapGuard.release()
-                    val finalDetails = ContentValues().apply {
-                        put(MediaStore.Images.Media.IS_PENDING, 0)
-                    }
-                    contentResolver.update(imageContentUri, finalDetails, null, null)
-                    exportNaming.applyCopyrightExif(contentResolver, imageContentUri, settings.copyright, settings.outputFormat)
-                    if (settings.authenticityStamp) {
-                        val stampOwner = if (!settings.recipientCode.isNullOrBlank()) {
-                            "${settings.copyright} [${settings.recipientCode}]"
-                        } else {
-                            settings.copyright
+                        if (writeResult.isFailure()) {
+                            // BUG-37: row mới (KEEP_BOTH/RENAME_VERSION) → xoá row rác như BUG-19.
+                            // Row đã có sẵn bị đánh IS_PENDING=1 để OVERWRITE → trả về 0 thay vì xoá,
+                            // nếu không ảnh CŨ của user mất khỏi gallery vĩnh viễn.
+                            when (MediaStoreWriteFailureCleanup.decide(isNewRow)) {
+                                MediaStoreCleanupAction.DELETE_ROW ->
+                                    contentResolver.delete(imageContentUri, null, null)
+                                MediaStoreCleanupAction.CLEAR_PENDING ->
+                                    contentResolver.update(
+                                        imageContentUri,
+                                        ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) },
+                                        null,
+                                        null
+                                    )
+                            }
+                            pendingCleanupDone = true
+                            return@withContext Result.extendMsg(writeResult)
                         }
-                        exportNaming.applyAuthenticityExif(contentResolver, imageContentUri, stampOwner, settings.outputFormat)
+                        // Đã compress xong, không còn dùng bitmap này nữa (BUG-05).
+                        exportBitmap.recycle()
+                        bitmapGuard.release()
+                        val finalDetails = ContentValues().apply {
+                            put(MediaStore.Images.Media.IS_PENDING, 0)
+                        }
+                        contentResolver.update(imageContentUri, finalDetails, null, null)
+                        pendingCleanupDone = true
+                        exportNaming.applyCopyrightExif(contentResolver, imageContentUri, settings.copyright, settings.outputFormat)
+                        if (settings.authenticityStamp) {
+                            val stampOwner = if (!settings.recipientCode.isNullOrBlank()) {
+                                "${settings.copyright} [${settings.recipientCode}]"
+                            } else {
+                                settings.copyright
+                            }
+                            exportNaming.applyAuthenticityExif(contentResolver, imageContentUri, stampOwner, settings.outputFormat)
+                        }
+                        Result.success(imageContentUri)
+                    } finally {
+                        if (!pendingCleanupDone) {
+                            contentResolver.update(
+                                imageContentUri,
+                                ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) },
+                                null,
+                                null
+                            )
+                        }
                     }
-                    Result.success(imageContentUri)
                 } else {
                     // need request write_storage permission
                     // should check Pictures folder exist
@@ -945,10 +973,15 @@ class BatchExportEngine @Inject constructor(
             return@withContext PreviewResult.DecodeFailure(message = decodeResult.message)
         }
         bitmapValue.retain()
+        // P1 review pass 8: theo dõi bitmap tạm ĐANG SỐNG để recycle trong catch nếu render lỗi
+        // giữa chừng — trước đây chỉ `bitmapValue.release()` (bitmap GỐC trong cache), bitmap tạm
+        // (bản `copy()` riêng, không qua BitmapCache) bị mồ côi, chỉ chờ GC.
+        var leakGuardBitmap: Bitmap? = null
         try {
             val srcBitmap = bitmapValue.bitmap ?: return@withContext PreviewResult.DecodeFailure()
             var mutableBitmap = srcBitmap.copy(Bitmap.Config.ARGB_8888, true)
                 ?: return@withContext PreviewResult.DecodeFailure()
+            leakGuardBitmap = mutableBitmap
             // FEAT-16: mutableBitmap ở đây là bản copy riêng (không qua BitmapCache) — áp
             // crop/rotate TRƯỚC khi vẽ watermark, cùng thứ tự với generateImage()/preview editor.
             if (imageInfo.rotationDegrees != 0f || imageInfo.cropRect != null) {
@@ -957,6 +990,7 @@ class BatchExportEngine @Inject constructor(
                     mutableBitmap.recycle()
                 }
                 mutableBitmap = transformed
+                leakGuardBitmap = mutableBitmap
             }
             // IDEA-14: preview grid phải khớp đúng ảnh export thật — cũng che thông tin nhạy cảm.
             if (!imageInfo.redactionRectsNormalized.isNullOrEmpty()) {
@@ -965,6 +999,7 @@ class BatchExportEngine @Inject constructor(
                     mutableBitmap.recycle()
                 }
                 mutableBitmap = redacted
+                leakGuardBitmap = mutableBitmap
             }
             val approxOriginalWidth = mutableBitmap.width * bitmapValue.inSampleSize
             val approxOriginalHeight = mutableBitmap.height * bitmapValue.inSampleSize
@@ -1118,6 +1153,7 @@ class BatchExportEngine @Inject constructor(
         } catch (ce: CancellationException) {
             throw ce
         } catch (e: Exception) {
+            leakGuardBitmap?.let { if (!it.isRecycled) it.recycle() }
             e.printStackTrace()
             PreviewResult.DecodeFailure(e)
         } finally {
@@ -1153,13 +1189,19 @@ class BatchExportEngine @Inject constructor(
             return@withContext null
         }
         bitmapValue.retain()
+        // P1 review pass 8: theo dõi 2 bitmap tạm ĐANG SỐNG để recycle trong catch nếu render lỗi
+        // giữa chừng — xem giải thích ở generatePreviewBitmap (cùng pattern leak).
+        var leakGuardOriginal: Bitmap? = null
+        var leakGuardWatermarked: Bitmap? = null
         try {
             val srcBitmap = bitmapValue.bitmap ?: return@withContext null
             var originalCopy = srcBitmap.copy(Bitmap.Config.ARGB_8888, true) ?: return@withContext null
+            leakGuardOriginal = originalCopy
             var watermarkedCopy = srcBitmap.copy(Bitmap.Config.ARGB_8888, true) ?: run {
                 originalCopy.recycle()
                 return@withContext null
             }
+            leakGuardWatermarked = watermarkedCopy
 
             // FEAT-16: áp crop/rotate cho CẢ 2 bản độc lập — so sánh trước/sau phải cùng khung
             // đã crop, không riêng bản watermarked.
@@ -1169,11 +1211,13 @@ class BatchExportEngine @Inject constructor(
                     originalCopy.recycle()
                 }
                 originalCopy = transformedOriginal
+                leakGuardOriginal = originalCopy
                 val transformedWatermarked = applyCropAndRotate(watermarkedCopy, imageInfo.rotationDegrees, imageInfo.cropRect)
                 if (transformedWatermarked !== watermarkedCopy && !watermarkedCopy.isRecycled) {
                     watermarkedCopy.recycle()
                 }
                 watermarkedCopy = transformedWatermarked
+                leakGuardWatermarked = watermarkedCopy
             }
 
             // IDEA-14: che thông tin nhạy cảm cho CẢ 2 bản — bản "trước" không được lộ nội dung
@@ -1185,11 +1229,13 @@ class BatchExportEngine @Inject constructor(
                     originalCopy.recycle()
                 }
                 originalCopy = redactedOriginal
+                leakGuardOriginal = originalCopy
                 val redactedWatermarked = applyRedaction(watermarkedCopy, imageInfo.redactionRectsNormalized)
                 if (redactedWatermarked !== watermarkedCopy && !watermarkedCopy.isRecycled) {
                     watermarkedCopy.recycle()
                 }
                 watermarkedCopy = redactedWatermarked
+                leakGuardWatermarked = watermarkedCopy
             }
 
             val baseText = resolveBaseText(imageInfo, config)
@@ -1278,6 +1324,8 @@ class BatchExportEngine @Inject constructor(
         } catch (ce: CancellationException) {
             throw ce
         } catch (e: Exception) {
+            leakGuardOriginal?.let { if (!it.isRecycled) it.recycle() }
+            leakGuardWatermarked?.let { if (!it.isRecycled) it.recycle() }
             e.printStackTrace()
             null
         } finally {

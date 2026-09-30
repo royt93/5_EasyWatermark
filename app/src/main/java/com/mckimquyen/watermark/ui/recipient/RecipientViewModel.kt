@@ -1,5 +1,6 @@
 package com.mckimquyen.watermark.ui.recipient
 
+import android.database.sqlite.SQLiteConstraintException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mckimquyen.watermark.data.model.entity.Recipient
@@ -34,10 +35,19 @@ class RecipientViewModel @Inject constructor(
                 onResult(false)
                 return@launch
             }
-            if (recipient.id == 0L) {
-                repository.save(recipient)
-            } else {
-                repository.update(recipient)
+            // P1 review pass 8: check-then-act ở trên không atomic — 2 lần save() gần như đồng
+            // thời cùng code có thể cả 2 vượt qua check rồi 1 trong 2 ghi Room ném
+            // SQLiteConstraintException (unique index `code`). Bọc try/catch để báo lỗi trùng mã
+            // cho user thay vì để crash thẳng trong viewModelScope.
+            try {
+                if (recipient.id == 0L) {
+                    repository.save(recipient)
+                } else {
+                    repository.update(recipient)
+                }
+            } catch (e: SQLiteConstraintException) {
+                onResult(false)
+                return@launch
             }
             onResult(true)
         }

@@ -12,6 +12,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import java.util.Locale
 import javax.inject.Singleton
 
@@ -95,4 +97,10 @@ object AppModule {
     @Singleton
     @Provides
     fun provideRecipientDao(db: RecipientDatabase) = db.recipientDao()
+
+    // BUG-FLAKY-2026-09-30: binding cho CoroutineDispatcher inject vào MainViewModel.compressImg()
+    // -> test tự thay bằng StandardTestDispatcher, không phụ thuộc Dagger.
+    // ponytail: chỉ 1 dispatcher IO, chưa cần @Qualifier riêng cho Main/Default — thêm khi có ca dùng thứ 2.
+    @Provides
+    fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 }

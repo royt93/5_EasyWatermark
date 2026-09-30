@@ -69,8 +69,13 @@ class AboutActivity : BaseActivity() {
         viewModel.verifyAuthenticity(contentResolver, uri, ::showVerifyResult)
     }
 
-    /** IDEA-03 + IDEA-02: hiện kết quả kiểm tra. Nội dung dựng bởi [buildVerifyMessage] để test riêng được. */
-    private fun showVerifyResult(report: AboutViewModel.VerifyReport) {
+    /** IDEA-03 + IDEA-02: hiện kết quả kiểm tra. Nội dung dựng bởi [buildVerifyMessage] để test riêng được.
+     * `internal` (không `private`) để test gọi trực tiếp, giống [buildVerifyMessage]. */
+    internal fun showVerifyResult(report: AboutViewModel.VerifyReport) {
+        // P1 review pass 8: callback chạy từ viewModelScope (sống ngoài Activity) — nếu Activity
+        // đã finish/destroy trước khi verify I/O xong (user back ra ngay), show dialog trên
+        // window token đã chết -> WindowManager.BadTokenException.
+        if (isFinishing || isDestroyed) return
         val result = report.stamp
         val title = when {
             result is AuthenticityVerifier.Result.Stamped && result.intact -> R.string.authenticity_verify_intact

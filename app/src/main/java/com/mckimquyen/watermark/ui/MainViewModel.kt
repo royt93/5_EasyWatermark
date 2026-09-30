@@ -82,7 +82,10 @@ class MainViewModel @Inject constructor(
             appContext,
             com.mckimquyen.watermark.utils.facedetection.MlKitFaceDetectionSource(),
             exportNaming
-        )
+        ),
+    // BUG-FLAKY-2026-09-30 (compressImg): injectable để test dùng StandardTestDispatcher thay vì
+    // hardcode Dispatchers.IO thật (không kiểm soát được bằng Robolectric scheduler -> flaky).
+    private val ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     var nextSelectedPos: Int = 0
@@ -942,7 +945,7 @@ class MainViewModel @Inject constructor(
 
     fun compressImg(activity: Activity) {
         val appContext = activity.applicationContext
-        compressedJob = viewModelScope.launch(Dispatchers.IO) {
+        compressedJob = viewModelScope.launch(ioDispatcher) {
             val firstImage = waterMarkRepo.imageInfoList.firstOrNull()
             if (waterMark.value == null || firstImage == null) {
                 compressedResult.postValue(
