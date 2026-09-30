@@ -130,7 +130,14 @@ class SaveImageListAdapterPreviewRoboTest {
         val completer = kotlinx.coroutines.CompletableDeferred<BatchExportEngine.PreviewResult?>()
         val adapter = SaveImageListAdapter(
             context = context,
-            scope = CoroutineScope(Dispatchers.Default),
+            // BUG-FLAKY-2026-09-30: TỪNG dùng Dispatchers.Default — coroutine thật chạy trên
+            // thread pool dùng chung nên khi mất reference/không join(), nó sống sót SAU KHI test
+            // method return và rò rỉ sang class test khác trong cùng JVM fork (forkEvery=25),
+            // gây SaveImageBSDialogFragmentInvisibleRoboTest/ProofingRoboTest fail ngẫu nhiên do
+            // cạnh tranh thread với DataStore write. Unconfined (giống mọi test khác trong file
+            // này) resume đồng bộ ngay tại completer.complete() bên dưới — không thread nền, không
+            // thể rò rỉ.
+            scope = CoroutineScope(Dispatchers.Unconfined),
             generatePreview = { _, _ -> completer.await() },
             estimateOutput = { w, h -> (w to h) to 1L }
         )
@@ -154,7 +161,12 @@ class SaveImageListAdapterPreviewRoboTest {
 
         val adapter = SaveImageListAdapter(
             context = context,
-            scope = CoroutineScope(Dispatchers.Default),
+            // BUG-FLAKY-2026-09-30: xem giải thích ở onViewRecycled_... phía trên — Default khiến
+            // job "b" (generatePreview trả Success ngay, không suspend) chạy holder.ready() trên
+            // thread nền NGOÀI runBlocking này, rò rỉ crash "Animators may only be run on Looper
+            // threads" sang test khác. Unconfined chạy job "b" đồng bộ ngay trong onBindViewHolder
+            // bên dưới, trên chính main/test thread.
+            scope = CoroutineScope(Dispatchers.Unconfined),
             generatePreview = { info, _ ->
                 if (info.uri == Uri.parse("content://media/a")) {
                     kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
