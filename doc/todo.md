@@ -2,6 +2,35 @@
 
 > Cập nhật: 2026-09-30. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## Review pass 9 — `ui/` root (`MainActivity.kt`, `MainViewModel.kt`, `UiState.kt`), 2026-09-30
+
+Audit vòng 9 (loop tiếp theo sau review pass 8, phạm vi: bộ não app — `MainActivity`/`MainViewModel`/
+`UiState`, chưa từng có review pass riêng dù đã audit `di/`, `dlg/`, `repo/`, `widget/`, `adapter/`...):
+1 finding, verify tay — **ĐÚNG**, fix theo lựa chọn user:
+
+- [x] **`MainActivity.colorPalette.observe()` ghi đè `bgTransformAnimator`/animator textColor của
+  `funcAdapter` mà KHÔNG cancel animator cũ trước đó** — mỗi lần chọn ảnh khác, Palette mới sinh ra
+  gọi `currentBgColor.toColor(bgColor) {...}` tạo `ObjectAnimator` MỚI gán thẳng vào field, animator
+  CŨ (nếu chưa chạy xong `ANIMATION_DURATION`) mất tham chiếu, tiếp tục chạy ngầm không kiểm soát
+  được — đổi ảnh nhanh (vuốt dải thumbnail) khiến 2 animator cùng ghi `backgroundColor`/text color
+  lên cùng view, gây race/nhấp nháy màu, và chỉ animator MỚI NHẤT bị cancel ở `onDestroy()` (animator
+  cũ đã mất field tham chiếu từ trước, tiếp tục chạy sau khi Activity destroy). Riêng animator
+  `funcAdapter.textColor.toColor(...)` còn tệ hơn — không lưu field nào cả, không bao giờ cancel
+  được. Đúng pattern đã fix ở Review pass 6 (`LaunchView`/`WaterMarkImageView` animator/job không
+  cancel trước khi ghi đè). Fix: thêm field `funcTextColorAnimator`, `cancel()` cả 2 field ngay đầu
+  observer trước khi tạo animator mới, cancel cả 2 trong `onDestroy()`. Test mới:
+  `MainActivityColorPaletteAnimatorRoboTest` (2 test: đổi Palette lần 2 cancel cả 2 animator cũ
+  trước khi tạo animator mới; `onDestroy()` cancel cả 2 field).
+
+**Verify:** `MainActivityColorPaletteAnimatorRoboTest` (2 test) PASS. Toàn bộ test `MainActivity*`
++ `MainViewModel*` hiện có PASS 100%. `ktlintCheck` PASS.
+
+**Smoke test thật trên TECNO_KJ7 (115333744A005844):** cài APK debug mới, chọn 3 ảnh khác màu (nền
+trắng, xanh dương, QR trắng-đen) vào editor, vuốt đổi qua lại nhanh giữa 3 ảnh trong dải thumbnail
+(đúng kịch bản race vừa fix) — nền chuyển màu mượt không nhấp nháy/kẹt màu, `logcat` sạch suốt phiên
+không `FATAL EXCEPTION`. Bấm back → "Xác nhận huỷ" gọi `resetView()`/`onDestroy()` (chứng minh cả 2
+animator bị cancel đúng lúc), quay về LaunchMode trơn tru.
+
 ## BUG-FLAKY-2026-09-30 (tiếp): `MainViewModelCompressImgRoboTest` — hardcode `Dispatchers.IO`, không phải "flaky do tải máy"
 
 Follow-up của mục BUG-FLAKY-2026-09-30 gốc (ngay dưới) — sau khi fix deadlock DataStore singleton,

@@ -241,6 +241,10 @@ class MainActivity : BaseActivity() {
     private var vipBadge: BadgeDrawable? = null
 
     private var bgTransformAnimator: ObjectAnimator? = null
+
+    /** Review pass 9: animator đổi màu title/icon panel theo Palette — track riêng để cancel
+     * cùng lúc với [bgTransformAnimator], tránh 2 animator race khi đổi ảnh nhanh (xem bên dưới). */
+    private var funcTextColorAnimator: ObjectAnimator? = null
     private var showInterstitialRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -449,6 +453,8 @@ class MainActivity : BaseActivity() {
     override fun onDestroy() {
         bgTransformAnimator?.cancel()
         bgTransformAnimator = null
+        funcTextColorAnimator?.cancel()
+        funcTextColorAnimator = null
         showInterstitialRunnable?.let { launchView.removeCallbacks(it) }
         showInterstitialRunnable = null
         super.onDestroy()
@@ -617,6 +623,13 @@ class MainActivity : BaseActivity() {
             val bgColor = palette.bgColor(this)
             val titleTextColor = palette.titleTextColor(this)
 
+            // Review pass 9: đổi ảnh nhanh (vuốt dải thumbnail) có thể khiến Palette mới sinh ra
+            // trước khi animator cũ chạy xong (ANIMATION_DURATION) — không cancel animator cũ
+            // trước khi tạo mới khiến 2 ObjectAnimator cùng ghi backgroundColor/textColor lên
+            // cùng view, gây nhấp nháy màu + tiếp tục chạy ngầm sau khi Activity đã destroy.
+            bgTransformAnimator?.cancel()
+            funcTextColorAnimator?.cancel()
+
             bgTransformAnimator = currentBgColor.toColor(bgColor) {
                 val c = it.animatedValue as Int
                 if (launchView.isEdit()) {
@@ -643,7 +656,7 @@ class MainActivity : BaseActivity() {
                 MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface, Color.BLACK)
             }
 
-            funcAdapter.textColor.toColor(titleTextColor) {
+            funcTextColorAnimator = funcAdapter.textColor.toColor(titleTextColor) {
                 val c = it.animatedValue as Int
                 funcAdapter.applyTextColor(c)
             }
