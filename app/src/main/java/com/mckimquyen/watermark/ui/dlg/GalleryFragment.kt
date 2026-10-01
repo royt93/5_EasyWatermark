@@ -76,6 +76,15 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
             if (verticalScrollRange <= 0) return 0f
             return ((offset.toFloat() / verticalScrollRange) * recyclerViewVisibleHeight).coerceAtLeast(0f)
         }
+
+        /**
+         * BUG-49: `.bottom` là toạ độ Y tương đối so với PARENT (= `top + height`), KHÔNG phải
+         * chiều cao view. `rvContent` nằm dưới toolbar (`layout_constraintTop_toBottomOf="@id/abl"`)
+         * nên `.bottom` cộng dư đúng bằng offset top đó, làm tỉ lệ scroll của slider lệch. `.height`
+         * mới là chiều cao hiển thị thật, không phụ thuộc vị trí trong parent. Tách hàm riêng để
+         * test không cần dựng Fragment thật (theo đúng pattern BUG-29 ở trên).
+         */
+        internal fun visibleScrollHeight(view: View): Int = view.height - view.paddingBottom
     }
 
     private var isScrollSliderManually: Boolean = false
@@ -227,7 +236,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                     rootView.sliderCard.translationY = computeSliderTranslationY(
                         offset = offset,
                         verticalScrollRange = verticalScrollRange,
-                        recyclerViewVisibleHeight = recyclerView.bottom - recyclerView.paddingBottom
+                        recyclerViewVisibleHeight = visibleScrollHeight(recyclerView)
                     )
                 }
             })
@@ -277,7 +286,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
                 override fun onTouch(v: View?, event: MotionEvent?): Boolean {
                     if (v == null) return false
-                    val totalHeight = rootView.rvContent.bottom - rootView.rvContent.paddingBottom
+                    val totalHeight = visibleScrollHeight(rootView.rvContent)
                     val percent = computeSliderScrollPercent(binding.rvContent.computeVerticalScrollRange(), totalHeight)
                     AppLog.d(TAG, "ivSlider totalHeight=$totalHeight percent=$percent")
                     when (event?.actionMasked) {
