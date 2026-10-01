@@ -2,6 +2,33 @@
 
 > Cập nhật: 2026-10-01. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## UI polish — Responsive Grid 2x2 cho màn LaunchView, 2026-10-01
+
+User phản ánh: "ở màn hình menu, tôi thấy grid 4 item chọn ảnh, chụp ảnh từ..., dán từ bộ nhớ tạm,
+thông tin... có space không cân đối so với mép của device, tôi muốn space phải consistent".
+Phản biện kỹ thuật: HOÀN TOÀN ĐÚNG. Trước đây `LaunchView.kt` hardcode cố định chiều rộng card
+`GRID_CARD_WIDTH_DP = 156dp` rồi căn giữa khối grid (`(measuredWidth - gridWidth) / 2`):
+- Trên Pixel 7 Pro (412dp): lề ngoài lên tới 44dp trong khi rãnh giữa chỉ 12dp (lệch gần 4 lần),
+  card bị co cụm ở giữa, title dài bị truncate ("Chụp ảnh từ m...", "Dán từ bộ nh...").
+- Trên màn 360dp: lề ngoài 18dp vs rãnh giữa 12dp.
+
+Giải pháp theo lựa chọn user (Card co giãn theo màn hình / Responsive M3):
+- [x] Đặt lề 2 bên cố định `GRID_SIDE_MARGIN_DP = 16dp`, rãnh giữa `GRID_GUTTER_DP = 12dp`.
+- [x] Tính chiều rộng card động trong `onMeasure()`: `(parentWidth - totalMargins) / 2`, clamp trong
+  khoảng `[140dp, 220dp]` (chống bè to trên tablet/foldable).
+- [x] `layoutLaunch()` dùng kích thước thực sau measure (`measuredWidth`, `measuredHeight`) thay vì
+  hằng số hardcode.
+- [x] Test TDD mới: `LaunchViewRoboTest.layoutLaunch_arranges4ActionCards_withConsistentSideMargins()`
+  — verify lề trái đúng 16dp, lề phải đúng 16dp, rãnh giữa 12dp, và trên tablet lề vẫn đối xứng
+  tuyệt đối. Đã chạy RED (fail 16 vs 314) → GREEN (pass).
+- [x] Smoke test thật trên Pixel 7 Pro (2B051FDH3006MU, density 3.5, 1440x3120): dump uiautomator
+  cho kết quả chuẩn từng pixel:
+  - Cột 1 Card trái: `left = 56px` (`16dp` × 3.5)
+  - Cột 2 Card phải: `right = 1384px` → lề phải = `1440 - 1384 = 56px` (`16dp` × 3.5)
+  - Rãnh giữa: `741 - 699 = 42px` (`12dp` × 3.5)
+  - Chiều rộng 2 card: `643px` = `643px` đối xứng tuyệt đối.
+  - Text title hiển thị trọn vẹn, không còn bị cắt cụt.
+
 ## Review pass 14 — quét toàn bộ `setOnApplyWindowInsetsListener` edge-to-edge + gộp helper chung, 2026-10-01
 
 Tiếp loop ngay sau pass 13 (user yêu cầu chú ý lỗi edge-to-edge). Quét toàn bộ 13 file dùng

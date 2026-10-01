@@ -48,10 +48,13 @@ class LaunchView : CustomViewGroup {
     companion object {
         private const val TAG = "LaunchView"
 
-        // 4 action card (chọn ảnh/chụp ảnh/dán clipboard/thông tin) xếp lưới 2x2 thay vì list dọc.
-        private const val GRID_CARD_WIDTH_DP = 156
-        private const val GRID_CARD_HEIGHT_DP = 168
+        // 4 action card (chọn ảnh/chụp ảnh/dán clipboard/thông tin) xếp lưới 2x2 responsive:
+        // Lề ngoài 16dp (M3 standard), rãnh giữa cột 12dp. Chiều rộng card co giãn theo màn hình
+        // để khoảng cách tới 2 mép thiết bị luôn cân đối tuyệt đối.
+        private const val GRID_SIDE_MARGIN_DP = 16
         private const val GRID_GUTTER_DP = 12
+        private const val GRID_CARD_HEIGHT_DP = 168
+        private const val MAX_CARD_WIDTH_DP = 220
     }
 
     //region 1 constructor
@@ -143,7 +146,7 @@ class LaunchView : CustomViewGroup {
         descRes: Int
     ): MaterialCardView {
         val card = MaterialCardView(context).apply {
-            layoutParams = MarginLayoutParams(GRID_CARD_WIDTH_DP.dp, GRID_CARD_HEIGHT_DP.dp)
+            layoutParams = MarginLayoutParams(LayoutParams.WRAP_CONTENT, GRID_CARD_HEIGHT_DP.dp)
             radius = 24.dp.toFloat()
             isClickable = true
             isFocusable = true
@@ -512,6 +515,10 @@ class LaunchView : CustomViewGroup {
         )
     }
 
+    private val actionCards by lazy {
+        listOf(ivSelectedPhotoTips, ivCaptureFromCamera, ivPasteFromClipboard, ivGoAboutPage)
+    }
+
     private val editorViews by lazy {
         listOf(toolbar, ivPhoto, fcFunctionDetail, tabLayout, rvPanel, rvPhotoList)
     }
@@ -562,6 +569,24 @@ class LaunchView : CustomViewGroup {
 
     //region 4 override view rendering
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        // REVIEW: card trước đây hardcode 156dp rồi căn giữa cả khối — lề 2 bên không bằng rãnh
+        // giữa 2 cột (vd Pixel 7 Pro 412dp: lề ngoài 44dp vs rãnh giữa 12dp, lệch gần 4 lần).
+        // Tính lại chiều rộng card ĐỘNG theo chiều rộng màn hình thật, giữ lề 2 bên CỐ ĐỊNH
+        // (GRID_SIDE_MARGIN_DP) và rãnh giữa CỐ ĐỊNH (GRID_GUTTER_DP) — 2 mép luôn đối xứng tuyệt
+        // đối trên mọi kích thước màn hình. Clamp max để không bè to trên tablet/màn rộng.
+        val parentWidth = MeasureSpec.getSize(widthMeasureSpec)
+        if (parentWidth > 0) {
+            val totalMargins = 2 * GRID_SIDE_MARGIN_DP.dp + GRID_GUTTER_DP.dp
+            val dynamicCardWidth = ((parentWidth - totalMargins) / 2).coerceIn(140.dp, MAX_CARD_WIDTH_DP.dp)
+            actionCards.forEach { card ->
+                val lp = card.layoutParams
+                if (lp.width != dynamicCardWidth) {
+                    lp.width = dynamicCardWidth
+                    card.layoutParams = lp
+                }
+            }
+        }
+
         // measure children
         children.forEach {
             if (it != ivPhoto) {
@@ -613,14 +638,17 @@ class LaunchView : CustomViewGroup {
         val subtitleY = tvAppBrand.bottom + 8.dp
         tvAppTagline.layoutHorizontallyCentered(subtitleY)
 
-        // 4-7. 4 action card xếp lưới 2x2 (chọn ảnh / chụp ảnh / dán clipboard / thông tin)
+        // 4-7. 4 action card xếp lưới 2x2 responsive. Dùng kích thước ĐÃ measure thay vì hằng
+        // số hardcode — trên phone grid phủ từ lề 16dp bên trái tới lề 16dp bên phải; trên tablet
+        // card dừng ở MAX_CARD_WIDTH_DP và cả grid vẫn căn giữa.
         val gridTop = tvAppTagline.bottom + 20.dp
-        val cardW = GRID_CARD_WIDTH_DP.dp
-        val cardH = GRID_CARD_HEIGHT_DP.dp
-        val gridWidth = 2 * cardW + GRID_GUTTER_DP.dp
+        val cardW = ivSelectedPhotoTips.measuredWidth
+        val cardH = ivSelectedPhotoTips.measuredHeight
+        val gridGutter = GRID_GUTTER_DP.dp
+        val gridWidth = 2 * cardW + gridGutter
         val gridStartX = (measuredWidth - gridWidth) / 2
-        val row2Top = gridTop + cardH + GRID_GUTTER_DP.dp
-        val col2Left = gridStartX + cardW + GRID_GUTTER_DP.dp
+        val row2Top = gridTop + cardH + gridGutter
+        val col2Left = gridStartX + cardW + gridGutter
 
         ivSelectedPhotoTips.layout(gridStartX, gridTop, gridStartX + cardW, gridTop + cardH)
         ivCaptureFromCamera.layout(col2Left, gridTop, col2Left + cardW, gridTop + cardH)

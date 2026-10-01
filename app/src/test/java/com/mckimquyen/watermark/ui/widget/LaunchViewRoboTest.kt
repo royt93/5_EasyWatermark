@@ -87,6 +87,45 @@ class LaunchViewRoboTest {
     }
 
     @Test
+    fun layoutLaunch_arranges4ActionCards_withConsistentSideMargins() {
+        val density = context.resources.displayMetrics.density
+        val sideMarginPx = (16 * density).toInt()
+        val gutterPx = (12 * density).toInt()
+
+        // Chiều rộng phone tiêu chuẩn: 392dp (Pixel 7/8, Galaxy S-series)
+        val phoneWidthPx = (392 * density).toInt()
+        launchView.measure(
+            View.MeasureSpec.makeMeasureSpec(phoneWidthPx, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec((800 * density).toInt(), View.MeasureSpec.EXACTLY)
+        )
+        launchView.layout(0, 0, phoneWidthPx, (800 * density).toInt())
+
+        val pick = launchView.ivSelectedPhotoTips
+        val camera = launchView.ivCaptureFromCamera
+
+        // 1. Trên phone, lề trái (pick.left) đúng chuẩn 16dp
+        assertThat(pick.left).isEqualTo(sideMarginPx)
+
+        // 2. Lề phải đối xứng bằng đúng lề trái
+        val rightMargin = phoneWidthPx - camera.right
+        assertThat(rightMargin).isEqualTo(sideMarginPx)
+
+        // 3. Khoảng cách giữa 2 cột (gutter) đúng 12dp
+        val actualGutter = camera.left - pick.right
+        assertThat(actualGutter).isEqualTo(gutterPx)
+
+        // 4. Kiểm tra trên màn hình tablet rộng: 2 lề vẫn ĐỐI XỨNG tuyệt đối (căn giữa)
+        val tabletWidthPx = (800 * density).toInt()
+        launchView.measure(
+            View.MeasureSpec.makeMeasureSpec(tabletWidthPx, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec((1200 * density).toInt(), View.MeasureSpec.EXACTLY)
+        )
+        launchView.layout(0, 0, tabletWidthPx, (1200 * density).toInt())
+        assertThat(launchView.ivSelectedPhotoTips.left)
+            .isEqualTo(tabletWidthPx - launchView.ivCaptureFromCamera.right)
+    }
+
+    @Test
     fun layoutEditor_respectsSystemInsets_forToolbarAndTabLayout() {
         launchView.toEditorMode()
         launchView.setPadding(0, 120, 0, 168)
