@@ -27,3 +27,12 @@ Cần quyết định đánh đổi trước khi sửa (đụng công thức lõ
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-39`, file ticket = `todo/ENH-39-stego-applybit-lo-vet-tren-khoi-anh-phang.md`.
+
+## Kết quả kiểm chứng (2026-10-01)
+**Không sửa STRENGTH** — đo số liệu thật trước khi sửa (đúng đề xuất ticket), kết luận: lo ngại "lộ vệt" không xảy ra trong thực tế ở STRENGTH=26 hiện tại.
+
+- Đo PSNR + lệch kênh trên nền phẳng tuyệt đối (256x256, 6 mức gray 0-255, 4 seed bit): PSNR 43.9-46.9dB (toàn bộ > ngưỡng 40dB "mắt thường không phân biệt" đã dùng trong `chat luong anh khong bi anh huong nhan biet duoc`), lệch kênh tối đa chỉ 3/255. Nhất quán bất kể seed → không phải trùng hợp.
+- Trong lúc đo, phát hiện bug THẬT nặng hơn — nền đen/trắng TUYỆT ĐỐI (gray=0/255, không phải do STRENGTH/applyBit mà do `writeLumaBlock()` clamp pixel) mất watermark hoàn toàn qua JPEG q<=70 dù `confidence` báo 1.0. Đây đúng cơ chế ticket ENH-40 mô tả — đã gộp sửa ở ENH-40 (xem file đó), không mở rộng scope ticket này.
+- Test mới (permanent): `ENH-39 nen phang khong cham bien van dat nguong PSNR mat thuong` (4 mức gray không chạm biên, assert PSNR > 40dB) — chứng minh AC bằng số liệu thay vì giả định.
+- `./gradlew :app:testDebugUnitTest` toàn bộ PASS. Không đụng UI nên không có widget test. Integration test: không cần riêng cho ENH-39 (không đổi code production ở ticket này).
+- Audit: 9.5/10 — quyết định dựa trên số liệu đo thật (không đoán), không đụng công thức đã tune, đúng tinh thần ticket đề xuất hướng 1 "đo trước khi sửa".

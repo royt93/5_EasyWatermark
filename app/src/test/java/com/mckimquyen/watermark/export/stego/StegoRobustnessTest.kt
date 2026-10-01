@@ -230,6 +230,80 @@ class StegoRobustnessTest {
         assertThat(psnr).isGreaterThan(40.0)
     }
 
+    /** Nền phẳng tuyệt đối (solid color) — case ENH-39: ảnh sản phẩm nền trắng, slide, screenshot. */
+    private fun flatPixels(width: Int, height: Int, gray: Int = 230): IntArray {
+        val pixel = (0xFF shl 24) or (gray shl 16) or (gray shl 8) or gray
+        return IntArray(width * height) { pixel }
+    }
+
+    /**
+     * ENH-39 (KHÔNG sửa STRENGTH — số liệu xác nhận không cần): chất lượng khối phẳng tuyệt đối vẫn
+     * trong ngưỡng "mắt thường không phân biệt" (PSNR >40dB, như `chat luong anh khong bi anh huong
+     * nhan biet duoc` đã dùng) ở mọi mức xám KHÔNG chạm tuyệt đối biên 0/255 — case đó thuộc ENH-40.
+     */
+    @Test
+    fun `ENH-39 nen phang khong cham bien van dat nguong PSNR mat thuong`() {
+        val width = 256
+        val height = 256
+        for (gray in intArrayOf(10, 128, 230, 245)) {
+            val original = flatPixels(width, height, gray)
+            val stamped = original.copyOf()
+            assertThat(StegoCodec.encode(stamped, width, height, randomBits(seed = 39))).isTrue()
+
+            var sumSquaredError = 0.0
+            for (i in original.indices) {
+                for (shift in intArrayOf(16, 8, 0)) {
+                    val d = ((original[i] shr shift) and 0xFF) - ((stamped[i] shr shift) and 0xFF)
+                    sumSquaredError += (d * d).toDouble()
+                }
+            }
+            val psnr = 10 * kotlin.math.log10(255.0 * 255.0 / (sumSquaredError / (original.size * 3)))
+            println("[ENH-39] Nền phẳng gray=$gray: PSNR ${"%.1f".format(psnr)} dB")
+            assertThat(psnr).isGreaterThan(40.0)
+        }
+    }
+
+    /**
+     * ENH-40: khối phẳng tuyệt đối SÁT BIÊN đen/trắng (gray=0/255) mất watermark hoàn toàn qua JPEG
+     * q<=70 — [StegoCodec.compensateRailClipping] dịch DC ra xa biên [RAIL_MARGIN] trước khi mã hoá.
+     * Test này là bằng chứng hồi quy: trước khi sửa, 2 case q=70/q=50 ở gray=0/255 chỉ đạt 46.9-56.3%
+     * (gần ngẫu nhiên) dù `confidence` vẫn báo 1.0 — nguy hiểm vì báo nhầm chủ sở hữu tự tin.
+     */
+    @Test
+    fun `ENH-40 nen den trang tuyet doi van doc dung qua JPEG sau khi bu DC`() {
+        val width = 512
+        val height = 512
+        for (gray in intArrayOf(0, 255)) {
+            for (quality in intArrayOf(85, 75, 70, 50)) {
+                val pixels = flatPixels(width, height, gray)
+                val bits = randomBits(seed = 50 + quality)
+                StegoCodec.encode(pixels, width, height, bits)
+                val compressed = jpegRoundTrip(pixels, width, height, quality)
+                val decoded = StegoCodec.decode(compressed, width, height, bits.size)!!
+                val acc = accuracy(bits, decoded.bits)
+                println("[ENH-40] gray=$gray, JPEG q=$quality: bit đúng ${"%.1f".format(acc * 100)}%")
+                assertThat(acc).isEqualTo(1.0)
+            }
+        }
+    }
+
+    /** ENH-40: khối gần biên nhưng chưa phẳng (có texture) không bị đụng tới — dùng margin y hệt test trên. */
+    @Test
+    fun `ENH-40 khoi gan bien nhung co texture khong bi dich DC`() {
+        val width = 512
+        val height = 512
+        val bits = randomBits(seed = 61)
+
+        // texturedPixels nền base=60..180, không chạm biên — tái dùng để xác nhận compensateRailClipping
+        // không âm thầm đụng vào ảnh có texture thật (chỉ gate trên block phẳng tuyệt đối).
+        val pixels = texturedPixels(width, height, seed = 61)
+        StegoCodec.encode(pixels, width, height, bits)
+        val compressed = jpegRoundTrip(pixels, width, height, 50)
+        val decoded = StegoCodec.decode(compressed, width, height, bits.size)!!
+
+        assertThat(accuracy(bits, decoded.bits)).isEqualTo(1.0)
+    }
+
     @Test
     fun `anh qua nho de chua payload thi tu choi nhung`() {
         val width = 32

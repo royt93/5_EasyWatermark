@@ -53,6 +53,13 @@ class InvisibleWatermarkIntegrationTest {
         return bitmap
     }
 
+    /** ENH-39/40: nền phẳng tuyệt đối (solid color) — ảnh sản phẩm nền trắng, slide, vector art xuất PNG. */
+    private fun flatBitmap(width: Int, height: Int, gray: Int): Bitmap {
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        Canvas(bitmap).drawColor(Color.rgb(gray, gray, gray))
+        return bitmap
+    }
+
     /** Nén rồi giải nén bằng chính Skia — đúng đường mà ảnh đi qua khi chia sẻ lên mạng. */
     private fun recompress(bitmap: Bitmap, quality: Int): Bitmap {
         val bytes = ByteArrayOutputStream().use { out ->
@@ -203,6 +210,32 @@ class InvisibleWatermarkIntegrationTest {
         } finally {
             source.recycle()
             stamped.recycle()
+        }
+    }
+
+    /**
+     * ENH-40: nền đen/trắng TUYỆT ĐỐI (RGB 0,0,0 / 255,255,255) qua nén Skia thật ở q=70 (Zalo) —
+     * xác nhận lại bằng codec Android thật fix `StegoCodec.compensateRailClipping()` đo được trên
+     * JVM simulator (`StegoRobustnessTest`). Case gốc (trước fix) mất watermark hoàn toàn ở mức nén
+     * này dù `confidence` vẫn báo tự tin tuyệt đối.
+     */
+    @Test
+    fun nenDenTrangTuyetDoi_vanDocDungQuaNenSkiaThat() {
+        for (gray in intArrayOf(0, 255)) {
+            val source = flatBitmap(512, 512, gray)
+            val stamped = InvisibleWatermark.embed(source, StegoPayload.ownerIdOf(owner))!!
+            source.recycle()
+
+            val compressed = recompress(stamped, 70)
+            try {
+                val result = InvisibleWatermark.extract(compressed)
+                println("[ENH-40] gray=$gray, Skia JPEG q=70 → ${if (result != null) "đọc được" else "MẤT"}")
+                assertThat(result).isNotNull()
+                assertThat(result!!.ownerId).isEqualTo(StegoPayload.ownerIdOf(owner))
+            } finally {
+                stamped.recycle()
+                compressed.recycle()
+            }
         }
     }
 
