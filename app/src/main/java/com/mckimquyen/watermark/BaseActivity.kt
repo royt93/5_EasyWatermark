@@ -38,7 +38,7 @@ open class BaseActivity : AppCompatActivity() {
      * - Icon tint: adapts to Light/Dark theme (see isAppearanceLight* below)
      */
     protected fun applyEdgeToEdge() {
-        AppLog.d(LOG_TAG, "BaseActivity applyEdgeToEdge")
+        AppLog.d(LOG_TAG) { "BaseActivity applyEdgeToEdge" }
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         window.statusBarColor = Color.TRANSPARENT

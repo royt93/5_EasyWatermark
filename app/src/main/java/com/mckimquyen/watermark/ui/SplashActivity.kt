@@ -29,7 +29,7 @@ class SplashActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppLog.d(LOG_TAG, "onCreate")
+        AppLog.d(LOG_TAG) { "onCreate" }
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -54,7 +54,7 @@ class SplashActivity : BaseActivity() {
         val startTime = System.currentTimeMillis()
         // Fast-path: không có mạng → vào app ngay sau khi hiện thương hiệu đủ thời gian.
         if (!hasNetwork()) {
-            AppLog.d(LOG_TAG, "No network — skip all ads, go to main")
+            AppLog.d(LOG_TAG) { "No network — skip all ads, go to main" }
             val elapsed = System.currentTimeMillis() - startTime
             if (elapsed < MIN_SPLASH_DURATION_MS) {
                 kotlinx.coroutines.delay(MIN_SPLASH_DURATION_MS - elapsed)
@@ -90,7 +90,7 @@ class SplashActivity : BaseActivity() {
             val success = withTimeoutOrNull(INIT_TIMEOUT_MS) {
                 suspendCancellableCoroutine { cont ->
                     AdManager.initialize(application) { ok, gaid ->
-                        AppLog.d(LOG_TAG, "AdManager init success=$ok, gaid=$gaid")
+                        AppLog.d(LOG_TAG) { "AdManager init success=$ok, gaid=$gaid" }
                         if (cont.isActive) cont.resume(ok)
                     }
                 }

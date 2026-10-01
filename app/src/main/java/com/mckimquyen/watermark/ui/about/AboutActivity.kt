@@ -154,7 +154,7 @@ class AboutActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppLog.d(LOG_TAG, "AboutActivity onCreate")
+        AppLog.d(LOG_TAG) { "AboutActivity onCreate" }
         initView()
         // Edge-to-edge (BaseActivity.applyEdgeToEdge): push topAppBar down below status bar & camera cutout,
         // and add navigation bar bottom padding to nestedScrollView so all content is reachable.
@@ -171,12 +171,12 @@ class AboutActivity : BaseActivity() {
             insets
         }
         ViewCompat.requestApplyInsets(binding.root)
-        AppLog.d(LOG_TAG, "AboutActivity onCreate complete — adManager set")
+        AppLog.d(LOG_TAG) { "AboutActivity onCreate complete — adManager set" }
     }
 
     private fun initView() {
         with(binding) {
-            AppLog.d(LOG_TAG, "AboutActivity initView — versionName=${BuildConfig.VERSION_NAME}")
+            AppLog.d(LOG_TAG) { "AboutActivity initView — versionName=${BuildConfig.VERSION_NAME}" }
 
             // Version display
             tvVersionValue.text = getString(R.string.about_version_display, BuildConfig.VERSION_NAME)
@@ -186,23 +186,23 @@ class AboutActivity : BaseActivity() {
             val iconColor = MaterialColors.getColor(this@AboutActivity, com.google.android.material.R.attr.colorOnSurface, Color.BLACK)
             topAppBar.applyConsistentIconTint(iconColor)
             topAppBar.setNavigationOnClickListener {
-                AppLog.d(LOG_TAG, "AboutActivity back button clicked via topAppBar")
+                AppLog.d(LOG_TAG) { "AboutActivity back button clicked via topAppBar" }
                 finish()
             }
 
             tvRating.contentDescription = "${getString(R.string.action_rate_us)}, ${getString(R.string.rate_us_subtitle)}"
             tvRating.setOnClickListener {
-                AppLog.d(LOG_TAG, "AboutActivity tvRating clicked — opening Play Store")
+                AppLog.d(LOG_TAG) { "AboutActivity tvRating clicked — opening Play Store" }
                 openLink(Uri.parse("https://play.google.com/store/apps/details?id=${it.context.packageName}"))
             }
             tvMoreApp.contentDescription = "${getString(R.string.more_apps)}, ${getString(R.string.more_apps_subtitle)}"
             tvMoreApp.setOnClickListener {
-                AppLog.d(LOG_TAG, "AboutActivity tvMoreApp clicked — opening developer page")
+                AppLog.d(LOG_TAG) { "AboutActivity tvMoreApp clicked — opening developer page" }
                 openLink(buildMoreAppsUrl("SAIGON PHANTOM LABS"))
             }
             tvShareApp.contentDescription = "${getString(R.string.share_app)}, ${getString(R.string.share_app_subtitle)}"
             tvShareApp.setOnClickListener {
-                AppLog.d(LOG_TAG, "AboutActivity tvShareApp clicked — opening share sheet")
+                AppLog.d(LOG_TAG) { "AboutActivity tvShareApp clicked — opening share sheet" }
                 val message = getString(
                     R.string.share_app_message,
                     getString(R.string.app_name),
@@ -216,22 +216,22 @@ class AboutActivity : BaseActivity() {
             }
             tvBackupData.contentDescription = "${getString(R.string.backup_data)}, ${getString(R.string.backup_data_subtitle)}"
             tvBackupData.setOnClickListener {
-                AppLog.d(LOG_TAG, "AboutActivity tvBackupData clicked — opening SAF create-document")
+                AppLog.d(LOG_TAG) { "AboutActivity tvBackupData clicked — opening SAF create-document" }
                 backupLauncher.launch(getString(R.string.backup_file_name))
             }
             tvRestoreData.contentDescription = "${getString(R.string.restore_data)}, ${getString(R.string.restore_data_subtitle)}"
             tvRestoreData.setOnClickListener {
-                AppLog.d(LOG_TAG, "AboutActivity tvRestoreData clicked — opening SAF open-document")
+                AppLog.d(LOG_TAG) { "AboutActivity tvRestoreData clicked — opening SAF open-document" }
                 restoreLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
             }
             tvVerifyAuthenticity.contentDescription =
                 "${getString(R.string.authenticity_verify_entry)}, ${getString(R.string.authenticity_verify_entry_subtitle)}"
             tvVerifyAuthenticity.setOnClickListener {
-                AppLog.d(LOG_TAG, "AboutActivity tvVerifyAuthenticity clicked — opening SAF open-document")
+                AppLog.d(LOG_TAG) { "AboutActivity tvVerifyAuthenticity clicked — opening SAF open-document" }
                 verifyLauncher.launch(arrayOf("image/*"))
             }
             tvPrivacyEng.setOnClickListener {
-                AppLog.d(LOG_TAG, "AboutActivity tvPrivacyEng clicked — opening privacy policy")
+                AppLog.d(LOG_TAG) { "AboutActivity tvPrivacyEng clicked — opening privacy policy" }
                 openLink(Uri.parse(BuildConfig.PRIVACY_POLICY_URL))
             }
             rowVip.setOnClickListener {
@@ -242,7 +242,7 @@ class AboutActivity : BaseActivity() {
             }
 
             switchDebug.setOnCheckedChangeListener { _, isChecked ->
-                AppLog.d(LOG_TAG, "AboutActivity switchDebug changed -> isChecked=$isChecked")
+                AppLog.d(LOG_TAG) { "AboutActivity switchDebug changed -> isChecked=$isChecked" }
                 viewModel.toggleBounds(isChecked)
             }
 
@@ -260,10 +260,10 @@ class AboutActivity : BaseActivity() {
                 switchDynamicColor.isChecked = false
                 tvDynamicColorStatus.setText(R.string.dynamic_color_subtitle_unsupported)
             }
-            AppLog.d(LOG_TAG, "AboutActivity dynamicColor supported=$isDynamicColorSupported available=${CMonet.isDynamicColorAvailable()}")
+            AppLog.d(LOG_TAG) { "AboutActivity dynamicColor supported=$isDynamicColorSupported available=${CMonet.isDynamicColorAvailable()}" }
 
             switchDynamicColor.setOnCheckedChangeListener { _, isChecked ->
-                AppLog.d(LOG_TAG, "AboutActivity switchDynamicColor changed -> isChecked=$isChecked — triggering rebirth")
+                AppLog.d(LOG_TAG) { "AboutActivity switchDynamicColor changed -> isChecked=$isChecked — triggering rebirth" }
                 viewModel.toggleSupportDynamicColor(isChecked)
                 this@AboutActivity.toast(R.string.you_ll_need_to_close_and_restart_the_app_to_switch_themes)
                 ProcessPhoenix.triggerRebirth(this@AboutActivity)
@@ -271,7 +271,7 @@ class AboutActivity : BaseActivity() {
 
             viewModel.waterMark.observe(this@AboutActivity) {
                 val boundsEnabled = viewModel.waterMark.value?.enableBounds ?: false
-                AppLog.d(LOG_TAG, "AboutActivity waterMark observed — enableBounds=$boundsEnabled")
+                AppLog.d(LOG_TAG) { "AboutActivity waterMark observed — enableBounds=$boundsEnabled" }
                 switchDebug.isChecked = boundsEnabled
             }
 
@@ -328,9 +328,9 @@ class AboutActivity : BaseActivity() {
         isFinishingInternal = true
         AdManager.showInterstitial(this) { success ->
             if (success) {
-                AppLog.d(LOG_TAG, "Ad đã hiển thị và đóng thành công")
+                AppLog.d(LOG_TAG) { "Ad đã hiển thị và đóng thành công" }
             } else {
-                AppLog.d(LOG_TAG, "Ad không hiển thị được hoặc có lỗi")
+                AppLog.d(LOG_TAG) { "Ad không hiển thị được hoặc có lỗi" }
             }
             finish()
         }

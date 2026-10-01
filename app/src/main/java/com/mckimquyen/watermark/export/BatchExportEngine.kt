@@ -251,7 +251,7 @@ class BatchExportEngine @Inject constructor(
                     info = info.copy(result = failResult, jobState = JobState.Failure(failResult))
                     onProgress(info)
                 }
-                AppLog.i("generateList", "${info.uri} : ${info.result}")
+                AppLog.i("generateList") { "${info.uri} : ${info.result}" }
                 info
             }
             onProgress(null)
@@ -357,8 +357,7 @@ class BatchExportEngine @Inject constructor(
                     bitmapWidth = imageInfo.width,
                     bitmapHeight = imageInfo.height
                 )
-                AppLog.i(
-                    "generateImage",
+                AppLog.i("generateImage") {
                     """
                         imageMatrix = $imageMatrix,
                         inSample = $inSample,
@@ -367,7 +366,7 @@ class BatchExportEngine @Inject constructor(
                         bitmapW = ${mutableBitmap.width}
                         bitmapH = ${mutableBitmap.height},
                     """.trimIndent()
-                )
+                }
                 // calculate the scale factor
                 imageMatrix.getValues(matrixValues)
                 // BUG-AUDIT-2026-09-29: scaleY từng bị copy-paste đọc nhầm MSCALE_X — vô hại hiện

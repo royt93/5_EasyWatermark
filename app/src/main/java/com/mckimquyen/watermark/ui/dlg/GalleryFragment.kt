@@ -114,7 +114,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppLog.d(LOG_TAG, "GalleryFragment onCreate")
+        AppLog.d(LOG_TAG) { "GalleryFragment onCreate" }
         pickImageLauncher =
             registerForActivityResult(MultiPickContract()) { uri: List<Uri?>? ->
                 handleActivityResult(uri)
@@ -128,12 +128,12 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                 handleTreeUriResult(treeUri)
             }
         shareViewModel.query(requireContext().contentResolver)
-        AppLog.d(LOG_TAG, "GalleryFragment querying media store...")
+        AppLog.d(LOG_TAG) { "GalleryFragment querying media store..." }
 
         val displayManager: DisplayManager =
             requireContext().applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         refreshRate = displayManager.displays?.getOrNull(0)?.refreshRate ?: 60F
-        AppLog.d(LOG_TAG, "GalleryFragment refreshRate=$refreshRate")
+        AppLog.d(LOG_TAG) { "GalleryFragment refreshRate=$refreshRate" }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -157,7 +157,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
     override fun onStart() {
         super.onStart()
-        AppLog.d(LOG_TAG, "GalleryFragment onStart — expanding to match_parent")
+        AppLog.d(LOG_TAG) { "GalleryFragment onStart — expanding to match_parent" }
         val sheetContainer = requireView().parent as? ViewGroup ?: return
         sheetContainer.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
     }
@@ -181,7 +181,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
         // ── Navigation ───────────────────────────────────────────────────────
         rootView.topAppBar.setNavigationOnClickListener {
-            AppLog.d(LOG_TAG, "GalleryFragment navigation icon clicked — dismissing")
+            AppLog.d(LOG_TAG) { "GalleryFragment navigation icon clicked — dismissing" }
             dismissAllowingStateLoss()
         }
 
@@ -191,7 +191,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         // ── FAB click: spring-out → confirm selection ────────────────────────
         rootView.fab.setOnClickListener {
             val selected = galleryAdapter.getSelectedList()
-            AppLog.d(LOG_TAG, "GalleryFragment FAB clicked — selectedCount=${selected.size}")
+            AppLog.d(LOG_TAG) { "GalleryFragment FAB clicked — selectedCount=${selected.size}" }
             // Pop-Out animation before dismiss
             rootView.fab.animate()
                 .scaleX(1.15f).scaleY(1.15f)
@@ -231,7 +231,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
                     val verticalScrollRange = recyclerView.computeVerticalScrollRange()
                     val offset = recyclerView.computeVerticalScrollOffset()
-                    AppLog.d(LOG_TAG, "GalleryFragment scroll — offset=$offset range=$verticalScrollRange")
+                    AppLog.d(LOG_TAG) { "GalleryFragment scroll — offset=$offset range=$verticalScrollRange" }
 
                     rootView.sliderCard.translationY = computeSliderTranslationY(
                         offset = offset,
@@ -288,7 +288,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                     if (v == null) return false
                     val totalHeight = visibleScrollHeight(rootView.rvContent)
                     val percent = computeSliderScrollPercent(binding.rvContent.computeVerticalScrollRange(), totalHeight)
-                    AppLog.d(TAG, "ivSlider totalHeight=$totalHeight percent=$percent")
+                    AppLog.d(TAG) { "ivSlider totalHeight=$totalHeight percent=$percent" }
                     when (event?.actionMasked) {
                         MotionEvent.ACTION_DOWN -> {
                             startX = event.x
@@ -317,14 +317,14 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
         // ── Observe image list ───────────────────────────────────────────────
         shareViewModel.galleryPickedImageList.observe(viewLifecycleOwner) {
-            AppLog.d(LOG_TAG, "GalleryFragment galleryPickedImageList updated — count=${it?.size ?: 0}")
+            AppLog.d(LOG_TAG) { "GalleryFragment galleryPickedImageList updated — count=${it?.size ?: 0}" }
             galleryAdapter.submitList(it)
             binding.llEmptyState.isVisible = it.isNullOrEmpty()
         }
 
         // ── Observe selection count → animate FAB + hint pill ────────────────
         galleryAdapter.selectedCount.observe(viewLifecycleOwner) { count ->
-            AppLog.d(LOG_TAG, "GalleryFragment selectedCount changed -> $count")
+            AppLog.d(LOG_TAG) { "GalleryFragment selectedCount changed -> $count" }
             val selectToggleItem = rootView.topAppBar.menu.findItem(R.id.actionSelectToggle)
             if (galleryAdapter.isAllSelected()) {
                 selectToggleItem?.setIcon(R.drawable.ic_deselect_all)
@@ -374,7 +374,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
      * This prevents Glide from holding references to destroyed ViewHolders.
      */
     override fun onDestroyView() {
-        AppLog.d(LOG_TAG, "GalleryFragment onDestroyView — clearing adapter to prevent leak")
+        AppLog.d(LOG_TAG) { "GalleryFragment onDestroyView — clearing adapter to prevent leak" }
         try {
             binding.rvContent.adapter = null
         } catch (e: Exception) {
@@ -385,7 +385,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        AppLog.d(LOG_TAG, "GalleryFragment onDismiss — resetting gallery data")
+        AppLog.d(LOG_TAG) { "GalleryFragment onDismiss — resetting gallery data" }
         doOnDismiss.invoke()
         shareViewModel.resetGalleryData()
     }
@@ -442,21 +442,21 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
     }
 
     private fun handleActivityResult(list: List<Uri?>?) {
-        AppLog.d(LOG_TAG, "GalleryFragment handleActivityResult — rawCount=${list?.size ?: 0}")
+        AppLog.d(LOG_TAG) { "GalleryFragment handleActivityResult — rawCount=${list?.size ?: 0}" }
         val finalList = list?.filterNotNull()?.filter {
             FileUtils.isImage(requireContext().contentResolver, it)
         } ?: emptyList()
-        AppLog.d(LOG_TAG, "GalleryFragment handleActivityResult — validImageCount=${finalList.size}")
+        AppLog.d(LOG_TAG) { "GalleryFragment handleActivityResult — validImageCount=${finalList.size}" }
         if (finalList.isEmpty()) {
             toast(R.string.tips_do_not_choose_image)
             return
         }
         if (FileUtils.isImage(requireContext().contentResolver, finalList.first())) {
-            AppLog.d(LOG_TAG, "GalleryFragment handleActivityResult — updating image list from file picker")
+            AppLog.d(LOG_TAG) { "GalleryFragment handleActivityResult — updating image list from file picker" }
             shareViewModel.updateImageList(finalList)
             dismissAllowingStateLoss()
         } else {
-            AppLog.d(LOG_TAG, "GalleryFragment handleActivityResult — unsupported file type chosen")
+            AppLog.d(LOG_TAG) { "GalleryFragment handleActivityResult — unsupported file type chosen" }
             toast(R.string.tips_choose_other_file_type)
         }
     }

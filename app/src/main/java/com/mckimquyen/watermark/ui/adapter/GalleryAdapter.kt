@@ -197,7 +197,7 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
     fun select(recyclerView: RecyclerView, endPos: Int) {
         val start = latestSelectedItem.coerceAtLeast(0)
         val end = endPos.coerceAtMost(itemCount - 1)
-        AppLog.i(TAG, "selectTo $start .. $end")
+        AppLog.i(TAG) { "selectTo $start .. $end" }
         val list = differ.currentList
         if (start < 0 || end >= list.size || start >= end) {
             return
@@ -220,7 +220,7 @@ class GalleryAdapter : RecyclerView.Adapter<GalleryAdapter.GalleryItemHolder>() 
     }
 
     fun unSelect(recyclerView: RecyclerView, position: Int) {
-        AppLog.i(TAG, "unSelect pos = $position")
+        AppLog.i(TAG) { "unSelect pos = $position" }
         val list = differ.currentList
         if (position < 0 || position >= list.size) {
             return

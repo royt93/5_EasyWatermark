@@ -136,14 +136,14 @@ object ExportZipHelper {
                             successCount++
                         }
                     } catch (e: Exception) {
-                        AppLog.d(TAG, "Failed to read uri $uri into zip: ${e.message}")
+                        AppLog.d(TAG) { "Failed to read uri $uri into zip: ${e.message}" }
                     } finally {
                         kotlin.runCatching { inputStream?.close() }
                     }
                 }
             }
         } catch (e: Exception) {
-            AppLog.d(TAG, "Failed to create zip archive: ${e.message}")
+            AppLog.d(TAG) { "Failed to create zip archive: ${e.message}" }
             kotlin.runCatching { destZipFile.delete() }
             return null
         }

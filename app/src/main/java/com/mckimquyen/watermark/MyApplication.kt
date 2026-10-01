@@ -107,7 +107,7 @@ class MyApplication : Application(), Configuration.Provider {
 
         AdManager.setConfig(adConfig)
         AdManager.earlyInit(this)
-        AppLog.d("MyApplication", "AdManager config ready; provider init waits for splash consent")
+        AppLog.d("MyApplication") { "AdManager config ready; provider init waits for splash consent" }
     }
 
     private fun checkRecoveryMode(): Boolean {

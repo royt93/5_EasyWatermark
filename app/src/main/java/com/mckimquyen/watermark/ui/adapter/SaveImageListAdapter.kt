@@ -249,7 +249,7 @@ class SaveImageListAdapter(
         if (index == -1) return
         pendingList[index] = it
         differ.submitList(pendingList.toList()) {
-            AppLog.i("onBindViewHolder", "payloads, in $index")
+            AppLog.i("onBindViewHolder") { "payloads, in $index" }
             notifyItemChanged(index, "state")
         }
     }

@@ -354,37 +354,37 @@ class MainActivity : BaseActivity() {
         }
 
         signatureLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            AppLog.d(LOG_TAG, "[MAIN] signatureLauncher callback: resultCode=${result.resultCode}")
+            AppLog.d(LOG_TAG) { "[MAIN] signatureLauncher callback: resultCode=${result.resultCode}" }
             if (result.resultCode == android.app.Activity.RESULT_OK) {
                 val uriStr = result.data?.getStringExtra("signature_uri")
-                AppLog.d(LOG_TAG, "[MAIN] signature_uri string from intent: $uriStr")
+                AppLog.d(LOG_TAG) { "[MAIN] signature_uri string from intent: $uriStr" }
                 if (uriStr != null) {
                     val signatureUri = android.net.Uri.parse(uriStr)
-                    AppLog.d(LOG_TAG, "[MAIN] parsed Uri: $signatureUri  scheme=${signatureUri.scheme}")
+                    AppLog.d(LOG_TAG) { "[MAIN] parsed Uri: $signatureUri  scheme=${signatureUri.scheme}" }
                     // Grant read permission so ContentResolver can open this FileProvider URI
                     try {
                         contentResolver.takePersistableUriPermission(
                             signatureUri,
                             android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
                         )
-                        AppLog.d(LOG_TAG, "[MAIN] takePersistableUriPermission OK")
+                        AppLog.d(LOG_TAG) { "[MAIN] takePersistableUriPermission OK" }
                     } catch (se: SecurityException) {
                         // FileProvider URIs don't support persistable grants – that's fine,
                         // the URI is already readable within this process lifetime.
-                        AppLog.d(LOG_TAG, "[MAIN] takePersistableUriPermission SKIPPED (expected for FileProvider): ${se.message}")
+                        AppLog.d(LOG_TAG) { "[MAIN] takePersistableUriPermission SKIPPED (expected for FileProvider): ${se.message}" }
                     }
-                    AppLog.d(LOG_TAG, "[MAIN] calling viewModel.updateIcon(uri)")
+                    AppLog.d(LOG_TAG) { "[MAIN] calling viewModel.updateIcon(uri)" }
                     viewModel.updateIcon(signatureUri)
                 } else {
-                    AppLog.d(LOG_TAG, "[MAIN] uriStr is NULL → nothing to update")
+                    AppLog.d(LOG_TAG) { "[MAIN] uriStr is NULL → nothing to update" }
                 }
             } else {
-                AppLog.d(LOG_TAG, "[MAIN] resultCode is NOT RESULT_OK → ignored")
+                AppLog.d(LOG_TAG) { "[MAIN] resultCode is NOT RESULT_OK → ignored" }
             }
         }
 
         takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-            AppLog.d(LOG_TAG, "[MAIN] takePictureLauncher callback: success=$success")
+            AppLog.d(LOG_TAG) { "[MAIN] takePictureLauncher callback: success=$success" }
             handleCameraResult(success)
         }
 
@@ -517,10 +517,10 @@ class MainActivity : BaseActivity() {
         }
         viewModel.waterMark.observe(this) {
             if (it == null) {
-                AppLog.d(LOG_TAG, "[MAIN] waterMark observer: value is NULL, skip")
+                AppLog.d(LOG_TAG) { "[MAIN] waterMark observer: value is NULL, skip" }
                 return@observe
             }
-            AppLog.d(LOG_TAG, "[MAIN] waterMark observer: markMode=${it.markMode}, iconUri=${it.iconUri}, text='${it.text}'")
+            AppLog.d(LOG_TAG) { "[MAIN] waterMark observer: markMode=${it.markMode}, iconUri=${it.iconUri}, text='${it.text}'" }
             // Preview cần render giá trị token thật ({filename}/{date}/{exif}...) thay vì hiển thị
             // nguyên văn "{filename}" — resolve theo ảnh đang chọn, KHÔNG ghi ngược vào repo nên
             // dialog sửa text (đọc từ viewModel.waterMark.value) vẫn thấy đúng token gốc để sửa tiếp.
@@ -535,12 +535,12 @@ class MainActivity : BaseActivity() {
                     it
                 }
                 launchView.post {
-                    AppLog.d(LOG_TAG, "[MAIN] launchView.post → setting ivPhoto.config")
+                    AppLog.d(LOG_TAG) { "[MAIN] launchView.post → setting ivPhoto.config" }
                     launchView.ivPhoto.config = previewConfig
                 }
             }
             if (it.markMode == WaterMarkRepository.MarkMode.Image && launchView.tabLayout.selectedTabPosition == 0) {
-                AppLog.d(LOG_TAG, "[MAIN] markMode=Image → hideDetailPanel()")
+                AppLog.d(LOG_TAG) { "[MAIN] markMode=Image → hideDetailPanel()" }
                 hideDetailPanel()
             }
             viewModel.resetJobStatus()
@@ -1241,7 +1241,7 @@ class MainActivity : BaseActivity() {
 
             if (result.isFailure) {
                 toast(R.string.tips_not_app_can_open_images, long = true)
-                AppLog.i("performFileSearch", result.exceptionOrNull()?.message ?: "No msg provided")
+                AppLog.i("performFileSearch") { result.exceptionOrNull()?.message ?: "No msg provided" }
             }
         } else {
             GalleryFragment().apply {
@@ -1260,21 +1260,21 @@ class MainActivity : BaseActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        AppLog.d(LOG_TAG, "onRequestPermissionsResult requestCode $requestCode")
-        AppLog.d(LOG_TAG, "onRequestPermissionsResult permissions $permissions")
-        AppLog.d(LOG_TAG, "onRequestPermissionsResult grantResults $grantResults")
+        AppLog.d(LOG_TAG) { "onRequestPermissionsResult requestCode $requestCode" }
+        AppLog.d(LOG_TAG) { "onRequestPermissionsResult permissions $permissions" }
+        AppLog.d(LOG_TAG) { "onRequestPermissionsResult grantResults $grantResults" }
         when (requestCode) {
             REQ_CODE_REQ_WRITE_PERMISSION -> {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     toast(R.string.request_permission_failed)
                 } else {
-                    AppLog.d(LOG_TAG, "onRequestPermissionsResult REQ_CODE_REQ_WRITE_PERMISSION")
+                    AppLog.d(LOG_TAG) { "onRequestPermissionsResult REQ_CODE_REQ_WRITE_PERMISSION" }
                     launchView.ivSelectedPhotoTips.performClick()
                 }
             }
 
             REQ_CODE_PICK_IMAGE -> {
-                AppLog.d(LOG_TAG, "onRequestPermissionsResult REQ_CODE_PICK_IMAGE")
+                AppLog.d(LOG_TAG) { "onRequestPermissionsResult REQ_CODE_PICK_IMAGE" }
             }
         }
     }
@@ -1363,13 +1363,13 @@ class MainActivity : BaseActivity() {
         }
         when (requestCode) {
             REQ_CODE_PICK_IMAGE -> {
-                AppLog.d(LOG_TAG, "requestCode REQ_CODE_PICK_IMAGE")
-                AppLog.d(LOG_TAG, finalList.toTypedArray().contentToString())
+                AppLog.d(LOG_TAG) { "requestCode REQ_CODE_PICK_IMAGE" }
+                AppLog.d(LOG_TAG) { finalList.toTypedArray().contentToString() }
                 dealWithImage(finalList)
             }
 
             REQ_PICK_ICON -> {
-                AppLog.d(LOG_TAG, "requestCode REQ_CODE_PICK_IMAGE")
+                AppLog.d(LOG_TAG) { "requestCode REQ_CODE_PICK_IMAGE" }
                 viewModel.updateIcon(finalList.first())
             }
         }
@@ -1434,7 +1434,7 @@ class MainActivity : BaseActivity() {
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
-        AppLog.d(LOG_TAG, "MainActivity onTrimMemory level=$level")
+        AppLog.d(LOG_TAG) { "MainActivity onTrimMemory level=$level" }
         if (level >= TRIM_MEMORY_BACKGROUND) {
             com.mckimquyen.watermark.utils.bitmap.BitmapCache.clearCache()
         }
@@ -1443,7 +1443,7 @@ class MainActivity : BaseActivity() {
 
     override fun onLowMemory() {
         super.onLowMemory()
-        AppLog.d(LOG_TAG, "MainActivity onLowMemory received — clearing caches")
+        AppLog.d(LOG_TAG) { "MainActivity onLowMemory received — clearing caches" }
         com.mckimquyen.watermark.utils.bitmap.BitmapCache.clearCache()
         com.bumptech.glide.Glide.get(this).onLowMemory()
     }

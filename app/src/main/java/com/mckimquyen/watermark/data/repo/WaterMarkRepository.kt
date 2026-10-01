@@ -438,7 +438,7 @@ class WaterMarkRepository @Inject constructor(
 
     suspend fun updateTileMode(imageInfo: ImageInfo, mode: Shader.TileMode): ImageInfo {
         if (imageInfo.tileMode == mode.ordinal) {
-            AppLog.i("WaterMarkRepository", "updateTileMode: same mode")
+            AppLog.i("WaterMarkRepository") { "updateTileMode: same mode" }
             return imageInfo
         }
         val index = imageInfoMap[imageInfo.uri] ?: kotlin.run {

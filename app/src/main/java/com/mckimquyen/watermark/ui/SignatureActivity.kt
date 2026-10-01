@@ -218,23 +218,23 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
 
         // Apply
         binding.btnApply.setOnClickListener {
-            AppLog.d(LOG_TAG, "[SIG] btnApply clicked")
+            AppLog.d(LOG_TAG) { "[SIG] btnApply clicked" }
             val bitmap = binding.signatureView.getSignatureBitmap()
             if (bitmap == null) {
-                AppLog.d(LOG_TAG, "[SIG] bitmap is NULL → draw empty, abort")
+                AppLog.d(LOG_TAG) { "[SIG] bitmap is NULL → draw empty, abort" }
                 toast(getString(R.string.draw_here))
                 return@setOnClickListener
             }
-            AppLog.d(LOG_TAG, "[SIG] bitmap OK: ${bitmap.width}x${bitmap.height}")
+            AppLog.d(LOG_TAG) { "[SIG] bitmap OK: ${bitmap.width}x${bitmap.height}" }
             lifecycleScope.launch {
                 val model = repo.saveSignature(bitmap)
                 if (model != null) {
-                    AppLog.d(LOG_TAG, "[SIG] saveSignature OK → uri=${model.uri}")
-                    AppLog.d(LOG_TAG, "[SIG] uri scheme=${model.uri.scheme} path=${model.uri.path}")
+                    AppLog.d(LOG_TAG) { "[SIG] saveSignature OK → uri=${model.uri}" }
+                    AppLog.d(LOG_TAG) { "[SIG] uri scheme=${model.uri.scheme} path=${model.uri.path}" }
                     toast("Signature Applied!")
                     returnResult(model.uri)
                 } else {
-                    AppLog.d(LOG_TAG, "[SIG] saveSignature FAILED → model is null")
+                    AppLog.d(LOG_TAG) { "[SIG] saveSignature FAILED → model is null" }
                     toast(getString(R.string.save_failed))
                 }
             }
@@ -259,13 +259,13 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
     }
 
     private fun returnResult(uri: Uri) {
-        AppLog.d(LOG_TAG, "[SIG] returnResult → uri=$uri")
+        AppLog.d(LOG_TAG) { "[SIG] returnResult → uri=$uri" }
         val intent = Intent()
         intent.putExtra("signature_uri", uri.toString())
         // Grant read access to the content:// URI for the calling activity
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         setResult(Activity.RESULT_OK, intent)
-        AppLog.d(LOG_TAG, "[SIG] setResult RESULT_OK done, calling finish()")
+        AppLog.d(LOG_TAG) { "[SIG] setResult RESULT_OK done, calling finish()" }
         finish()
     }
 

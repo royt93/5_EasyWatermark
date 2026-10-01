@@ -82,14 +82,14 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
         binding.btnUseQrCode.setOnClickListener {
             val content = binding.etContent.text?.toString().orEmpty().trim()
             val bitmap = previewBitmap
-            AppLog.d(LOG_TAG, "[QR] btnUse clicked: content='$content' previewBitmap=${bitmap != null}")
+            AppLog.d(LOG_TAG) { "[QR] btnUse clicked: content='$content' previewBitmap=${bitmap != null}" }
             if (content.isEmpty() || bitmap == null) {
                 AppLog.w(LOG_TAG, "[QR] abort: content empty or bitmap null")
                 toast(R.string.qr_code_empty)
                 return@setOnClickListener
             }
             val uri = saveBitmapToCache(bitmap)
-            AppLog.d(LOG_TAG, "[QR] saveBitmapToCache -> uri=$uri")
+            AppLog.d(LOG_TAG) { "[QR] saveBitmapToCache -> uri=$uri" }
             if (uri == null) {
                 toast(R.string.save_failed)
                 return@setOnClickListener
@@ -97,10 +97,10 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
             if (binding.swQrDynamic.isChecked) {
                 val portfolioLink = binding.etPortfolioLink.text?.toString().orEmpty().trim()
                 shareViewModel.updateQrDynamicConfig(uri, content, portfolioLink)
-                AppLog.d(LOG_TAG, "[QR] updateQrDynamicConfig called, dismissing")
+                AppLog.d(LOG_TAG) { "[QR] updateQrDynamicConfig called, dismissing" }
             } else {
                 shareViewModel.updateIcon(uri)
-                AppLog.d(LOG_TAG, "[QR] updateIcon called, dismissing")
+                AppLog.d(LOG_TAG) { "[QR] updateIcon called, dismissing" }
             }
             dismissAllowingStateLoss()
         }
@@ -152,7 +152,7 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
             if (old != null && !old.isRecycled && old !== bitmap) {
                 old.recycle()
             }
-            AppLog.d(LOG_TAG, "[QR] refreshPreview: dynamic=$isDynamic rawInput.len=${rawInput.length} bitmap=${bitmap != null}")
+            AppLog.d(LOG_TAG) { "[QR] refreshPreview: dynamic=$isDynamic rawInput.len=${rawInput.length} bitmap=${bitmap != null}" }
         }
     }
 

@@ -202,7 +202,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     ): DlgSaveFileBinding {
         val root = DlgSaveFileBinding.inflate(layoutInflater, container, false)
         val isSaving = shareViewModel.saveResult.value?.code == MainViewModel.TYPE_SAVING
-        AppLog.d(TAG, "bindView: isSaving $isSaving")
+        AppLog.d(TAG) { "bindView: isSaving $isSaving" }
         with(root) {
             btnSave.apply {
                 setOnClickListener {

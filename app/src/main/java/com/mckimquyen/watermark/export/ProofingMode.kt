@@ -109,7 +109,7 @@ object ProofingMode {
                 else -> writeLegacy(buildHtml(entries))
             }
         } catch (e: Exception) {
-            AppLog.d(LOG_TAG, "Không ghi được proof index: ${e.message}")
+            AppLog.d(LOG_TAG) { "Không ghi được proof index: ${e.message}" }
             null
         }
     }

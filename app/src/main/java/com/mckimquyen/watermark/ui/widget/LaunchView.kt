@@ -576,10 +576,7 @@ class LaunchView : CustomViewGroup {
             // IDEA-12: chỉ trừ vào canvas khi banner đang hiện — GONE không chiếm chỗ.
             .plus(if (cardStyleSuggestion.isVisible) cardStyleSuggestion.measuredHeightWithMargins else 0)
 
-        AppLog.d(
-            TAG,
-            "${toolbar.measuredHeight}, ${tabLayout.measuredHeightWithMargins}, ${rvPanel.measuredHeightWithMargins},  ${fcFunctionDetail.measuredHeightWithMargins},  ${rvPhotoList.measuredHeightWithMargins}"
-        )
+        AppLog.d(TAG) { "${toolbar.measuredHeight}, ${tabLayout.measuredHeightWithMargins}, ${rvPanel.measuredHeightWithMargins},  ${fcFunctionDetail.measuredHeightWithMargins},  ${rvPhotoList.measuredHeightWithMargins}" }
 
         measureChildWithMargins(ivPhoto, widthMeasureSpec, 0, heightMeasureSpec, heightUsed)
 

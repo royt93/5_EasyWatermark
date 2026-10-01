@@ -16,17 +16,23 @@ const val LOG_TAG = "roy93~"
  * production (privacy). Build debug giữ nguyên hành vi log như cũ.
  */
 object AppLog {
-    fun d(tag: String, msg: String) {
-        if (BuildConfig.DEBUG) Log.d(tag, msg)
+    /**
+     * ENH-42: `msg` nhận LAMBDA chứ không phải `String` sẵn — nếu nhận `String`, Kotlin dựng xong
+     * chuỗi interpolation ở CALL SITE trước khi gọi vào hàm, bất kể `if (BuildConfig.DEBUG)` bên
+     * trong có gate hay không (chỉ chặn được `Log.d` syscall thật). `inline` + lambda đảm bảo thân
+     * lambda (gồm cả string interpolation) chỉ evaluate khi `BuildConfig.DEBUG == true`.
+     */
+    inline fun d(tag: String, msg: () -> String) {
+        if (BuildConfig.DEBUG) Log.d(tag, msg())
     }
 
     /**
      * ENH-36: sót khỏi ENH-03 — 41 lời gọi `Log.i` trần rải rác (gồm cả đường nóng nhất:
      * `onTouch`/`onScale` mỗi sự kiện, decode ảnh mỗi lần) vẫn dựng string template + in log ở
-     * bản release. Gate giống [d].
+     * bản release. Gate giống [d]. ENH-42: cùng lý do nhận lambda thay vì `String` sẵn, xem [d].
      */
-    fun i(tag: String, msg: String) {
-        if (BuildConfig.DEBUG) Log.i(tag, msg)
+    inline fun i(tag: String, msg: () -> String) {
+        if (BuildConfig.DEBUG) Log.i(tag, msg())
     }
 
     /** ENH-36: trước đây KHÔNG gate gì — cùng lý do với [d]/[i], gate luôn cho nhất quán. */

@@ -19,7 +19,7 @@ class OpenSourceActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppLog.d(LOG_TAG, "OpenSourceActivity onCreate")
+        AppLog.d(LOG_TAG) { "OpenSourceActivity onCreate" }
         setContentView(binding.root)
         // Insets: push toolbar down below the status bar & camera cutout, and add bottom padding for nav bar
         val baseAppBarHeight = resources.getDimensionPixelSize(R.dimen.app_toolbar_compact_height)

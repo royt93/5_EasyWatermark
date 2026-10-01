@@ -471,10 +471,7 @@ fun decodeSampledBitmapFromResourceSync(
             options.run { outHeight to outWidth }
         }
         options.inSampleSize = calculateInSampleSize(oWidth, oHeight, reqWidth, reqHeight)
-        AppLog.i(
-            TAG,
-            "reqW x reqH = $reqWidth x $reqHeight, outWidth x outHeight = $oWidth x $oHeight, inSampleSize = ${options.inSampleSize}"
-        )
+        AppLog.i(TAG) { "reqW x reqH = $reqWidth x $reqHeight, outWidth x outHeight = $oWidth x $oHeight, inSampleSize = ${options.inSampleSize}" }
         // 3. Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false
         options.inMutable = true
@@ -487,7 +484,7 @@ fun decodeSampledBitmapFromResourceSync(
     } catch (fne: FileNotFoundException) {
         return Result.failure(null, "-1", fne.message)
     } catch (oom: OutOfMemoryError) {
-        AppLog.i("BitmapUtils", "Decoding sampled bitmap from resource throw oom")
+        AppLog.i("BitmapUtils") { "Decoding sampled bitmap from resource throw oom" }
         return Result.failure(
             null,
             "-1",
@@ -509,10 +506,7 @@ fun calculateInSampleSize(
     reqHeight: Int
 ): Int {
     // Raw height and width of image
-    AppLog.i(
-        "generateImage",
-        "w = $width, h = $height, reqW = $reqWidth, reqH = $reqHeight"
-    )
+    AppLog.i("generateImage") { "w = $width, h = $height, reqW = $reqWidth, reqH = $reqHeight" }
     // BUG-46: reqWidth/reqHeight <= 0 (canvas chưa layout xong) làm điều kiện `>= 0` trong while
     // dưới luôn đúng bất kể inSampleSize bao lớn → Int overflow quay về 0 → chia cho 0. Không có
     // ý nghĩa downsample khi req <= 0 nên trả 1 ngay, cùng quy ước calculateInSampleSizeForLongEdge.

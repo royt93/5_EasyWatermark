@@ -636,14 +636,14 @@ class MainViewModel @Inject constructor(
     }
 
     fun updateIcon(iconUri: Uri) {
-        AppLog.d(LOG_TAG, "[VM] updateIcon called: uri=$iconUri  empty=${iconUri.toString().isEmpty()}")
+        AppLog.d(LOG_TAG) { "[VM] updateIcon called: uri=$iconUri  empty=${iconUri.toString().isEmpty()}" }
         launch {
             if (iconUri.toString().isNotEmpty()) {
-                AppLog.d(LOG_TAG, "[VM] waterMarkRepo.updateIcon() \u2192 uri=$iconUri")
+                AppLog.d(LOG_TAG) { "[VM] waterMarkRepo.updateIcon() \u2192 uri=$iconUri" }
                 waterMarkRepo.updateIcon(iconUri)
-                AppLog.d(LOG_TAG, "[VM] waterMarkRepo.updateIcon() done")
+                AppLog.d(LOG_TAG) { "[VM] waterMarkRepo.updateIcon() done" }
             } else {
-                AppLog.d(LOG_TAG, "[VM] updateIcon: uri is EMPTY, skip")
+                AppLog.d(LOG_TAG) { "[VM] updateIcon: uri is EMPTY, skip" }
             }
         }
     }

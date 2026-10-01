@@ -40,7 +40,7 @@ class LocationNameResolver(private val lookup: (Double, Double) -> String?) {
         val name = try {
             lookup(latitude, longitude)
         } catch (e: Exception) {
-            AppLog.d(LOG_TAG, "[LOCATION] lookup lỗi: ${e.message}")
+            AppLog.d(LOG_TAG) { "[LOCATION] lookup lỗi: ${e.message}" }
             null
         }
         if (name.isNullOrBlank()) return ""
@@ -87,7 +87,7 @@ class LocationNameResolver(private val lookup: (Double, Double) -> String?) {
                         }
 
                         override fun onError(errorMessage: String?) {
-                            AppLog.d(LOG_TAG, "[LOCATION] geocode lỗi: $errorMessage")
+                            AppLog.d(LOG_TAG) { "[LOCATION] geocode lỗi: $errorMessage" }
                             latch.countDown()
                         }
                     }
