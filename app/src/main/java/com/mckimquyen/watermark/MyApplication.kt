@@ -21,21 +21,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
-// done
-// review in app bingo
-// font scale
-// 120hz
-// pkg name
-// proguard
-// ic launcher
-// ad id, internet permission in manifest
-// leak canary
-// rate app
-// more app
-// policy
-// keystore
-// ad applovin
-
 @HiltAndroidApp
 class MyApplication : Application(), Configuration.Provider {
 

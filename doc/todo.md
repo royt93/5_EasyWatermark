@@ -1,6 +1,74 @@
 # Danh sách việc cần làm & Cải tiến
 
-> Cập nhật: 2026-09-30. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
+> Cập nhật: 2026-10-01. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
+
+## Review pass 13 — nốt scope `ui/` + root còn lại chưa quét qua 12 pass trước, 2026-10-01
+
+Audit vòng 13 (loop tiếp theo sau pass 12). BACKLOG.md hết sạch BUG/ENH/FEAT todo (chỉ còn 2 ticket
+VIP/Ad bị user dời sang tháng sau + 4 IDEA effort XL cần thiết kế riêng) — scope lần này quét nốt
+phần `ui/` root chưa đụng tới (`BatchHistoryActivity`/`ViewModel`, `CropActivity`,
+`SmartRedactionActivity`, `SplashActivity`, `WatermarkProfileActivity`/`ViewModel`, `Image.kt`) +
+root-level (`MyApplication`, `BaseActivity`, `CustomGlideModule`, `AppConst`) + `ui/base/` (7 file
+Base*Fragment/Activity). Chạy `/code-review --level high` qua subagent nền (8 finding raw) + tự đọc
+verify tay từng finding bằng cách đọc trực tiếp source/decompile hành vi thư viện trước khi sửa —
+2/8 finding là **false positive** sau khi verify kỹ, không áp dụng mù theo báo cáo AI:
+
+- ❌ **False positive — Glide `CustomGlideModule` ép `PREFER_RGB_565` làm icon PNG trong suốt mất
+  alpha**: verify lại logic `Downsampler.getConfig()` của Glide — thư viện tự phát hiện
+  `ImageType.PNG_A` (PNG có alpha thật, đọc từ chunk màu trong header) và LUÔN dùng `ARGB_8888`
+  bất kể `DecodeFormat` preference, bỏ qua `PREFER_RGB_565` cho đúng trường hợp này. Fix ban đầu
+  (override `PREFER_ARGB_8888` tại `MainActivity.showIconQuickPickDialog`) đã bị revert vì dư thừa.
+- ❌ **False positive — `MyApplication.catchException()` không chain lại
+  `Thread.getDefaultUncaughtExceptionHandler()` cũ**: thử fix (tách `buildCrashHandler` ra top-level
+  function để unit-test, có cả 3 test chứng minh hành vi chain) rồi nhận ra rủi ro ngược — handler
+  mặc định của Android (nhiều khả năng CHÍNH LÀ "previous handler" bắt được ở thời điểm
+  `attachBaseContext` chạy, rất sớm) thường TỰ kill process khi gọi `uncaughtException()`. Gọi
+  handler đó trước bước `terminate()` tự viết (về home êm + `exitProcess(0)`, tránh dialog "App đã
+  dừng") có thể khiến process bị kill giữa chừng BỞI handler cũ, mất luôn cơ chế graceful-recovery
+  mà app cố tình xây — đổi lợi ích nhỏ (giữ lại 1 SDK hiếm khi thực sự đăng ký handler riêng) lấy
+  rủi ro lớn hơn (phá chính tính năng đang có). Revert toàn bộ, chỉ giữ lại phần dọn comment rác
+  (không ảnh hưởng hành vi).
+- [x] **`BaseActivity.attachBaseContext()` ép CỨNG `fontScale = 1.0f` cho MỌI activity** — vô hiệu
+  hoá hoàn toàn cài đặt Accessibility > Font size của hệ thống, vi phạm R5 "không được bỏ
+  accessibility". Fix: clamp `coerceAtMost(1.3f)` thay vì chặn tuyệt đối (tôn trọng user chỉnh cỡ
+  chữ lớn hơn tới 130%, vẫn chặn mức cực đoan 200% có thể vỡ layout các màn chưa test ở scale cực
+  lớn). Test mới: `BaseActivityFontScaleRoboTest` (2 test, verify cả 2 chiều: scale vượt trần bị
+  giới hạn đúng 1.3f — không phải `isAtMost` vì hardcode cũ 1.0f cũng vô tình thoả; scale trong
+  trần giữ nguyên). Smoke test thật trên device khoá (TECNO KJ7): set `font_scale=1.3`, mở app —
+  chữ to rõ rệt, card tự ellipsize gọn gàng, không vỡ layout/crash.
+- [x] **`BatchHistoryActivity`/`WatermarkProfileActivity`: `setOnApplyWindowInsetsListener` GHI ĐÈ
+  thẳng `setPadding(..., navBarBottom)`** thay vì cộng dồn — mất `paddingBottom` khai trong XML
+  (16dp/8dp, khoảng thở dưới item cuối list) mỗi lần áp insets, item cuối dính sát mép màn hình
+  trên thiết bị/orientation có `navBarBottom = 0` (gesture nav không chiếm inset...). Fix: lưu
+  `baseBottomPadding` một lần trước khi gắn listener, cộng `baseBottomPadding + navBarBottom` —
+  đúng pattern `CropActivity`/`SmartRedactionActivity` (`llBottomControls`). Test mới:
+  `BatchHistoryWatermarkProfileInsetsRoboTest` (4 test, cả 2 Activity × cả 2 case navBarBottom=0/
+  >0, dùng `ViewCompat.dispatchApplyWindowInsets` giả lập insets như
+  `MaterialYouInsetsAndThemeRoboTest` đã làm).
+- [x] **`BaseBindBSDFragment.binding` force-unwrap (`_binding!!`) không có comment giải thích** —
+  khác `BaseBindFragment` (sibling, expose nullable + `isDestroy()`). Vi phạm chữ R5 dù đúng pattern
+  ViewBinding chuẩn (chỉ truy cập hợp lệ giữa `onCreateView`/`onDestroyView`). Không đổi sang
+  nullable (sẽ phải sửa tay 13 file con, rủi ro cao hơn lợi ích — đa số đã dùng đúng
+  `viewLifecycleOwner.lifecycleScope`/`observe(viewLifecycleOwner)` tự huỷ đúng lúc) — chỉ thêm
+  KDoc nêu rõ invariant non-null + cảnh báo không dùng `lifecycleScope` (Fragment-level) để đọc
+  `binding`. Thuần doc comment, không cần test.
+- [x] **`CropActivity`/`SmartRedactionActivity` khai trùng `private const val
+  EDIT_DECODE_MAX_LONG_EDGE = 2048`** — gộp 1 nguồn (`BitmapUtils.kt`, cùng file với
+  `decodeBitmapFromUri` nhận tham số này) tránh lệch nhau khi chỉ sửa 1 trong 2 chỗ. Refactor
+  thuần (không đổi hành vi), không cần test mới — biên dịch là đủ bắt lỗi.
+- [x] Xoá block comment TODO/checklist mồ côi trong `MyApplication.kt` (`// done`, `// font scale`,
+  `// 120hz`, `// ad applovin`...) — rác không gắn gì với code xung quanh, phần lớn đã xong từ lâu
+  (`doc/todo.md` đã là nơi tracking chuẩn).
+- 💭 **`SplashActivity.runSplashFlow()`: `withTimeoutOrNull` bọc `AdManager.requestConsentInfoUpdate`/
+  `initialize` không có `invokeOnCancellation`** — không sửa được: `AdManager` (external SDK, thư
+  viện `AdmobWrapper`) không expose API cancel cho 2 lời gọi này, nên `invokeOnCancellation` sẽ là
+  no-op (không thực sự dừng được SDK call đang treo), chỉ thêm boilerplate không giải quyết gì.
+  Rủi ro thực tế đã ở mức thấp nhờ `cont.isActive` guard chặn double-resume.
+
+Kết quả: 1152/1152 unit test pass (1 lần fail `MainViewModelExifFrameSuggestionRoboTest` khi chạy
+full suite là flaky có sẵn từ trước — pass khi chạy riêng và khi rerun toàn bộ suite, không liên
+quan thay đổi lần này), `ktlintCheck` sạch, `assembleDebug` build OK, smoke test thật trên TECNO KJ7
+(115333744A005844, khoá theo R3) cho cả 2 fix UI thật (fontScale + inset padding).
 
 ## Review pass 12 — `export/stego/` (IDEA-02, watermark ẩn DCT), 2026-09-30
 

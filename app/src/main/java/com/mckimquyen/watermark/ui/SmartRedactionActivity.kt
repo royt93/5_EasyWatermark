@@ -16,6 +16,7 @@ import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.RedactionSuggestion
 import com.mckimquyen.watermark.databinding.ActivitySmartRedactionBinding
+import com.mckimquyen.watermark.utils.bitmap.EDIT_DECODE_MAX_LONG_EDGE
 import com.mckimquyen.watermark.utils.bitmap.applyCropAndRotate
 import com.mckimquyen.watermark.utils.bitmap.decodeBitmapFromUri
 import com.mckimquyen.watermark.utils.facedetection.FaceDetectionSource
@@ -177,7 +178,6 @@ class SmartRedactionActivity : BaseActivity() {
         const val EXTRA_ROTATION = "extra_rotation"
         const val EXTRA_RESULT_URI = "extra_result_uri"
         const val EXTRA_RESULT_REDACTION_RECTS = "extra_result_redaction_rects"
-        private const val EDIT_DECODE_MAX_LONG_EDGE = 2048
 
         fun createIntent(context: Context, uri: Uri, cropRect: RectF?, rotationDegrees: Float): Intent =
             Intent(context, SmartRedactionActivity::class.java)

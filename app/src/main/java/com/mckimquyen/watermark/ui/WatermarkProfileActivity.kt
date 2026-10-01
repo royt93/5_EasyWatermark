@@ -53,6 +53,9 @@ class WatermarkProfileActivity : BaseActivity() {
         // hệ thống che 1 phần, tap không tới được (phát hiện qua smoke test thật, không phải bug lý
         // thuyết). Cùng pattern `AboutActivity`.
         val bottomExtraPadding = (16 * resources.displayMetrics.density).toInt()
+        // REVIEW-13: lưu baseBottomPadding (8dp từ XML) MỘT LẦN trước khi gắn listener — trước đây
+        // `setPadding(..., navBarBottom)` ghi đè thẳng, làm mất padding gốc khi navBarBottom = 0.
+        val baseBottomPadding = binding.rvProfiles.paddingBottom
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val statusBarTop = insets.getInsets(
                 WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
@@ -62,7 +65,7 @@ class WatermarkProfileActivity : BaseActivity() {
             ).bottom
             binding.topAppBar.setPadding(0, statusBarTop, 0, 0)
             (binding.btnSaveCurrent.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = bottomExtraPadding + navBarBottom
-            binding.rvProfiles.setPadding(0, binding.rvProfiles.paddingTop, 0, navBarBottom)
+            binding.rvProfiles.setPadding(0, binding.rvProfiles.paddingTop, 0, baseBottomPadding + navBarBottom)
             insets
         }
         ViewCompat.requestApplyInsets(binding.root)

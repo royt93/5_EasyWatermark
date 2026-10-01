@@ -17,9 +17,19 @@ import kotlin.collections.maxByOrNull
 
 open class BaseActivity : AppCompatActivity() {
 
+    companion object {
+        /** REVIEW-13: trần cỡ chữ hệ thống cho phép phóng to — xem giải thích ở [attachBaseContext]. */
+        private const val MAX_FONT_SCALE = 1.3f
+    }
+
     override fun attachBaseContext(context: Context) {
+        // REVIEW-13: trước đây ép CỨNG fontScale=1.0f cho MỌI activity — vô hiệu hoá hoàn toàn
+        // cài đặt cỡ chữ hệ thống (Accessibility > Font size), vi phạm R5 "không được bỏ
+        // accessibility". Clamp thay vì chặn tuyệt đối: vẫn tôn trọng người dùng chỉnh cỡ chữ
+        // lớn hơn (tới 130%) nhưng chặn mức cực đoan (hệ thống cho tới 200%) có thể vỡ layout
+        // các màn hình dùng chiều cao cố định (nút, slider) chưa được test ở scale cực lớn.
         val override = Configuration(context.resources.configuration)
-        override.fontScale = 1.0f
+        override.fontScale = context.resources.configuration.fontScale.coerceAtMost(MAX_FONT_SCALE)
         applyOverrideConfiguration(override)
         super.attachBaseContext(context)
     }

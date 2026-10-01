@@ -22,6 +22,14 @@ import java.io.InputStream
 private const val TAG = "BitmapUtils"
 
 /**
+ * REVIEW-13: trước đây khai riêng `private const val EDIT_DECODE_MAX_LONG_EDGE = 2048` giống hệt
+ * nhau ở cả `CropActivity` và `SmartRedactionActivity` — gộp 1 nguồn duy nhất để tránh 2 màn lệch
+ * nhau khi có người chỉ sửa 1 trong 2 chỗ. Cạnh dài tối đa khi decode ảnh preview cho 2 màn edit
+ * (crop/redaction) — chỉ cần đủ nét để hiển thị + chạy detection, không cần full-res ảnh gốc.
+ */
+const val EDIT_DECODE_MAX_LONG_EDGE = 2048
+
+/**
  * ENH-06: [rotation]/[exifModel] phải được đọc TRƯỚC (qua [readExifOrientationAndModel], 1 lần
  * mở stream duy nhất) và truyền vào đây — hàm này KHÔNG tự mở thêm stream nào để đọc EXIF, tránh
  * lặp lại việc đọc EXIF nhiều lần cho cùng 1 Uri khi gọi từ [decodeSampledBitmapFromResourceSync].

@@ -14,6 +14,7 @@ import com.google.android.material.chip.Chip
 import com.mckimquyen.watermark.BaseActivity
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.ActivityCropBinding
+import com.mckimquyen.watermark.utils.bitmap.EDIT_DECODE_MAX_LONG_EDGE
 import com.mckimquyen.watermark.utils.bitmap.decodeBitmapFromUri
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -148,7 +149,6 @@ class CropActivity : BaseActivity() {
         const val EXTRA_RESULT_URI = "extra_result_uri"
         const val EXTRA_RESULT_CROP_RECT = "extra_result_crop_rect"
         const val EXTRA_RESULT_ROTATION = "extra_result_rotation"
-        private const val EDIT_DECODE_MAX_LONG_EDGE = 2048
 
         fun createIntent(context: Context, uri: Uri): Intent =
             Intent(context, CropActivity::class.java).putExtra(EXTRA_IMAGE_URI, uri.toString())

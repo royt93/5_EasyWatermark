@@ -50,6 +50,10 @@ class BatchHistoryActivity : BaseActivity() {
         // WatermarkProfileActivity — bug thật phát hiện lúc smoke test FEAT-06 (nút đáy màn hình bị
         // navigation bar/gesture hệ thống che tap), fix chung ở đây phòng ngừa cùng lớp bug cho
         // item cuối của rvHistory trên màn hình nhỏ.
+        // REVIEW-13: lưu baseBottomPadding (16dp từ XML) MỘT LẦN trước khi gắn listener — trước đây
+        // `setPadding(..., navBarBottom)` ghi đè thẳng, làm mất padding gốc khi navBarBottom = 0
+        // (gesture nav không chiếm inset, màn hình external...), item cuối dính sát mép màn hình.
+        val baseBottomPadding = binding.rvHistory.paddingBottom
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val statusBarTop = insets.getInsets(
                 WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
@@ -58,7 +62,7 @@ class BatchHistoryActivity : BaseActivity() {
                 WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.displayCutout()
             ).bottom
             binding.topAppBar.setPadding(0, statusBarTop, 0, 0)
-            binding.rvHistory.setPadding(0, binding.rvHistory.paddingTop, 0, navBarBottom)
+            binding.rvHistory.setPadding(0, binding.rvHistory.paddingTop, 0, baseBottomPadding + navBarBottom)
             insets
         }
         ViewCompat.requestApplyInsets(binding.root)
