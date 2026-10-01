@@ -1,7 +1,9 @@
 package com.mckimquyen.watermark.data.backup
 
+import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.data.model.entity.Template
 import java.io.File
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.Date
@@ -24,6 +26,7 @@ data class RestoredBackup(
  */
 object BackupRestoreEngine {
 
+    private val TAG = BackupRestoreEngine::class.java.simpleName
     private const val TEMPLATES_DIR = "templates/"
     private const val SIGNATURES_DIR = "signatures/"
 
@@ -44,9 +47,19 @@ object BackupRestoreEngine {
                 zip.closeEntry()
             }
             signatureFiles.forEach { file ->
-                zip.putNextEntry(ZipEntry("$SIGNATURES_DIR${file.name}"))
-                file.inputStream().use { it.copyTo(zip) }
-                zip.closeEntry()
+                // BUG-50: file có thể bị xoá/di chuyển giữa lúc liệt kê (SignatureRepository.getAllSignatures())
+                // và lúc mở inputStream() ở đây — 1 file lỗi không được phép huỷ cả backup, chỉ skip đúng file đó.
+                try {
+                    // Mở inputStream() TRƯỚC khi putNextEntry() — nếu file đã bị xoá giữa lúc liệt
+                    // kê và lúc đọc, lỗi ném ra ở đây, zip chưa có entry rỗng nào cần dọn.
+                    file.inputStream().use { input ->
+                        zip.putNextEntry(ZipEntry("$SIGNATURES_DIR${file.name}"))
+                        input.copyTo(zip)
+                        zip.closeEntry()
+                    }
+                } catch (e: IOException) {
+                    AppLog.w(TAG, "Bỏ qua signature '${file.name}' khi backup: không đọc được", e)
+                }
             }
         }
     }

@@ -7,6 +7,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.util.Date
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -95,6 +96,24 @@ class BackupRestoreEngineTest {
         assertThat(restored.signatureFiles).isEmpty()
         assertThat(restored.templates).hasSize(1)
         assertThat(restored.templates.single().content).isEqualTo("valid template")
+    }
+
+    /**
+     * BUG-50: file signature bị xoá/di chuyển giữa lúc liệt kê (`SignatureRepository.getAllSignatures()`)
+     * và lúc `writeBackup()` thật sự mở `inputStream()` để đọc — `File` trỏ tới đường dẫn không tồn tại
+     * mô phỏng đúng khoảng hở race condition đó (không mock, dùng `File` thật chưa từng tạo).
+     */
+    @Test
+    fun writeBackup_oneSignatureFileMissing_othersStillWritten() {
+        val okFile = tmp.newFile("signature_ok.webp").apply { writeBytes(byteArrayOf(9, 9)) }
+        val missingFile = File(tmp.root, "signature_missing.webp") // chưa từng được tạo → inputStream() throw FileNotFoundException
+
+        val output = ByteArrayOutputStream()
+        BackupRestoreEngine.writeBackup(output, emptyList(), listOf(okFile, missingFile))
+
+        val restored = BackupRestoreEngine.readBackup(ByteArrayInputStream(output.toByteArray()))
+
+        assertThat(restored.signatureFiles.map { it.first }).containsExactly("signature_ok.webp")
     }
 
     @Test
