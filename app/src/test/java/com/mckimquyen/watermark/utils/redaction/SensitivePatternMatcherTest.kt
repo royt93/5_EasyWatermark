@@ -54,6 +54,18 @@ class SensitivePatternMatcherTest {
         assertThat(SensitivePatternMatcher.isSensitive("Gọi ngay 0912345678 để đặt lịch")).isTrue()
     }
 
+    /**
+     * BUG-51: quantifier cũ `{7,10}` cho phép match tham lam tới 12 chữ số (2 chữ số neo + 10 lặp)
+     * — vượt trần `PHONE_DIGITS_MAX=11` — khi SĐT 10 số dính liền số khác (OCR không có khoảng
+     * cách). Candidate 12 số bị loại bỏ hoàn toàn, `findAll` không overlap nên SĐT thật bên trong
+     * không bao giờ được thử lại. Quantifier đúng phải neo tới đúng trần 11 số.
+     */
+    @Test
+    fun `sdt dinh lien voi chuoi so khac van duoc phat hien`() {
+        // Mô phỏng OCR dính: "0912345678" (SĐT thật) + "1234567" (mã đơn hàng) không khoảng cách.
+        assertThat(SensitivePatternMatcher.isSensitive("09123456781234567")).isTrue()
+    }
+
     // ── Không nhạy cảm — KHÔNG được báo dương tính giả ────────────────────
 
     @Test
@@ -86,8 +98,13 @@ class SensitivePatternMatcherTest {
 
     @Test
     fun `chuoi so qua dai vuot nguong khong tinh la sdt`() {
-        // 15 chữ số liền — không giống định dạng SĐT thật nào, nếu match được thì digit count vượt trần.
-        assertThat(SensitivePatternMatcher.isSensitive("012345678901234")).isFalse()
+        // BUG-51: đổi mẫu từ "012345678901234" — chuỗi đó TÌNH CỜ bắt đầu bằng "0" + digit hợp lệ,
+        // dưới quantifier đã sửa (neo đúng trần 11 số) nó tạo ra đúng 1 cửa sổ 11-số hợp lệ ở đầu —
+        // về bản chất giống hệt case SĐT dính liền số khác mà chính ticket này yêu cầu PHẢI phát
+        // hiện (xem test "sdt dinh lien..."), nên không còn là phản ví dụ hợp lệ. Mẫu mới không có
+        // "0"/"+" nào đứng đầu 1 dãy ≥7 chữ số tiếp theo → không tạo được candidate nào, giữ đúng ý
+        // định gốc của test (chuỗi số dài vô nghĩa không được báo nhầm).
+        assertThat(SensitivePatternMatcher.isSensitive("123456789012345")).isFalse()
     }
 
     @Test

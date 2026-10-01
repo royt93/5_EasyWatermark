@@ -16,8 +16,15 @@ object SensitivePatternMatcher {
      * nếu không neo vào 1 trong 2 dạng khởi đầu thật của số điện thoại, mọi chuỗi 9-11 chữ số bất kỳ
      * (mã đơn hàng, ngày giờ dán liền...) đều khớp giả, không dùng được để đối chiếu tin cậy.
      * Cho phép khoảng trắng/gạch ngang/chấm xen giữa các cụm số (cách hiển thị phổ biến).
+     *
+     * BUG-51: quantifier trên PHẢI neo đúng [PHONE_DIGITS_MAX] (11) — cũ là `{7,10}` (2 chữ số neo
+     * + tối đa 10 lặp = tối đa 12 chữ số), vượt trần. Khi SĐT 10 số dính liền số khác (OCR không có
+     * khoảng cách), quantifier tham lam nuốt luôn digit thừa thành 1 candidate 12 số, bị loại bỏ
+     * hoàn toàn — `findAll` không khớp lại vị trí con bên trong nên SĐT thật không bao giờ được thử
+     * lại. Giới hạn `{7,9}` (tối đa 11 chữ số) đảm bảo match luôn nằm trong trần hợp lệ ngay từ
+     * regex, không cần đợi bước strip-và-đếm digit phía sau loại bỏ.
      */
-    private val PHONE_CANDIDATE_REGEX = Regex("""(?:\+\d|0\d)(?:[\s.-]?\d){7,10}""")
+    private val PHONE_CANDIDATE_REGEX = Regex("""(?:\+\d|0\d)(?:[\s.-]?\d){7,9}""")
 
     private const val PHONE_DIGITS_MIN = 9
     private const val PHONE_DIGITS_MAX = 11
