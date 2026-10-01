@@ -1,6 +1,8 @@
 package com.mckimquyen.watermark.export.stego
 
 import android.graphics.Bitmap
+import android.graphics.ColorSpace
+import android.os.Build
 
 /**
  * IDEA-02: cầu nối giữa [StegoCodec] (thuần JVM, làm việc trên `IntArray`) và `Bitmap` của Android.
@@ -32,7 +34,26 @@ object InvisibleWatermark {
 
             if (!StegoCodec.encode(pixels, width, height, StegoPayload.encode(ownerId))) return null
 
-            Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
+            // ENH-41: overload nhận int[] pixel luôn gắn sRGB mặc định — ảnh Display P3 (camera/iPhone)
+            // bị đọc nhầm màu. API 26+ dựng bitmap trống giữ đúng ColorSpace gốc rồi setPixels() vào;
+            // API 24-25 không có overload này nên chấp nhận giới hạn nền tảng (giữ hành vi cũ).
+            // QUAN TRỌNG: `Bitmap.getColorSpace()` chỉ tồn tại từ API 26 — phải check SDK_INT TRƯỚC,
+            // không được gọi `source.colorSpace` vô điều kiện (NoSuchMethodError thật trên API 24-25).
+            // Chỉ đi nhánh dựng bitmap mới khi THẬT SỰ cần (khác sRGB, model RGB hợp lệ cho overload
+            // 5-tham-số) — ảnh sRGB (đa số ảnh thực tế) đi thẳng nhánh cũ, khỏi tốn thêm 1 lần alloc +
+            // setPixels() vô ích mỗi lần export.
+            val colorSpace = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) source.colorSpace else null
+            if (
+                colorSpace != null &&
+                colorSpace.model == ColorSpace.Model.RGB &&
+                colorSpace != ColorSpace.get(ColorSpace.Named.SRGB)
+            ) {
+                Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888, source.hasAlpha(), colorSpace).apply {
+                    setPixels(pixels, 0, width, 0, 0, width, height)
+                }
+            } else {
+                Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
+            }
         } catch (e: OutOfMemoryError) {
             // Ảnh 12MP tốn thêm ~48MB cho mảng pixel; máy yếu có thể không kham nổi.
             e.printStackTrace()

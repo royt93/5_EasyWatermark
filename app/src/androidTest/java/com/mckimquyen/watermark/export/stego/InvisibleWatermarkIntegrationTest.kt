@@ -4,9 +4,12 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.ColorSpace
 import android.graphics.Paint
+import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.ByteArrayOutputStream
@@ -236,6 +239,57 @@ class InvisibleWatermarkIntegrationTest {
                 stamped.recycle()
                 compressed.recycle()
             }
+        }
+    }
+
+    /**
+     * ENH-41: ảnh Display P3 (camera hiện đại, ảnh chia sẻ từ iPhone) không được "đọc nhầm" thành
+     * sRGB sau `embed()` — bitmap kết quả phải giữ đúng `ColorSpace` gốc trên API 26+.
+     *
+     * Review finding: chỉ assert `.colorSpace` không chứng minh payload còn sống — `extract()` phải
+     * vẫn đọc đúng chủ sở hữu qua đúng codec Skia thật (không phải Robolectric mô phỏng), vì đây là
+     * nơi duy nhất có thể lộ ra việc `getPixels()`/`setPixels()` làm lệch dữ liệu bit khi bitmap gắn
+     * ColorSpace khác sRGB.
+     */
+    @Test
+    fun anhDisplayP3_embedXongVanGiuDungColorSpaceVaExtractDungChuSoHuu() {
+        assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+
+        val p3 = ColorSpace.get(ColorSpace.Named.DISPLAY_P3)
+        val source = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888, true, p3)
+        Canvas(source).drawColor(Color.rgb(120, 60, 200))
+
+        val stamped = InvisibleWatermark.embed(source, StegoPayload.ownerIdOf(owner))
+        try {
+            assertThat(stamped).isNotNull()
+            assertThat(stamped!!.colorSpace).isEqualTo(p3)
+
+            val result = InvisibleWatermark.extract(stamped)
+            assertThat(result).isNotNull()
+            assertThat(result!!.ownerId).isEqualTo(StegoPayload.ownerIdOf(owner))
+        } finally {
+            source.recycle()
+            stamped?.recycle()
+        }
+    }
+
+    /**
+     * Review finding: ảnh sRGB (trường hợp phổ biến nhất) phải đi nhánh cũ — không được tự ý đổi
+     * hành vi/`.colorSpace` chỉ vì API 26+ có nhánh ColorSpace mới.
+     */
+    @Test
+    fun anhSrgbThuong_embedVanGiuNhanhCuKhongDoiColorSpace() {
+        assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+
+        val source = texturedBitmap()
+        val stamped = InvisibleWatermark.embed(source, StegoPayload.ownerIdOf(owner))
+        try {
+            assertThat(stamped).isNotNull()
+            assertThat(stamped!!.colorSpace).isEqualTo(ColorSpace.get(ColorSpace.Named.SRGB))
+            assertThat(InvisibleWatermark.extract(stamped)?.ownerId).isEqualTo(StegoPayload.ownerIdOf(owner))
+        } finally {
+            source.recycle()
+            stamped?.recycle()
         }
     }
 
