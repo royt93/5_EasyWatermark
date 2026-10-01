@@ -39,3 +39,22 @@ files:
   - Build/cài lại APK sau tất cả fix review; thao tác tay end-to-end: chọn JPEG gắn ICC `Display P3` thật → editor → Lưu → bật toggle "Watermark vô hình" → Xuất vào bộ sưu tập → UI báo 1/1 thành công.
   - Pull file xuất `ewm_1790828953183_1.jpg` về kiểm tra bằng `sips -g profile`: **`Display P3 Gamut with sRGB Transfer`**, 800×600 — không bị đổi thành sRGB như bug gốc.
   - `adb logcat` không có `FATAL`/`AndroidRuntime`/`NoSuchMethodError`/exception liên quan trong toàn bộ luồng.
+
+## Vòng review thứ 2 (sau khi đã push commit đầu)
+
+`/code-review --level high` chạy lại trên chính diff vừa push phát hiện thêm 1 finding thật:
+
+`ColorSpace.Rgb` dựng từ hàm transfer tuỳ ý (`getTransferParameters() == null` — thực tế: một số profile ProPhoto RGB/scanner/Photoshop export) khiến `Bitmap.createBitmap(w,h,config,hasAlpha,colorSpace)` ném `IllegalArgumentException`, bị `catch (Exception)` ngoài nuốt mất → `embed()` trả `null`, mất watermark ẩn hoàn toàn cho cả lớp ảnh này — regression so với hành vi cũ (vẫn embed được, chỉ sai ColorSpace tag).
+
+**Fix**: thêm `try/catch (IllegalArgumentException)` quanh đúng lệnh `Bitmap.createBitmap(...colorSpace)`, fallback về nhánh cũ (mất ColorSpace tag, chấp nhận được) thay vì để watermark biến mất.
+
+**Xác nhận bug có thật**: thử dựng trực tiếp `ColorSpace.Rgb` với transfer function tuỳ ý (`{x -> cbrt(x)}`/`{x -> x³}`) rồi gọi `Bitmap.createBitmap(..., colorSpace)` trên TECNO KJ7 thật → ném đúng `IllegalArgumentException: ColorSpace must use an ICC parametric transfer function!` tại `ColorSpace$Rgb.getNativeInstance`. Xác nhận bug/fix hợp lệ.
+
+**Test tự động — KHÔNG viết được cho case này (ghi nhận minh bạch thay vì giả vờ có coverage)**:
+- Robolectric: shadow `Bitmap.createBitmap(...,colorSpace)` không validate `transferParameters` như Android thật → test "PASS" ngay cả khi KHÔNG có fix (false-negative, phát hiện lúc verify RED). Đã xoá test này khỏi `InvisibleWatermarkRoboTest`.
+- androidTest (device thật): bản thân việc DỰNG bitmap nguồn mang ColorSpace non-parametric qua `Bitmap.createBitmap(w,h,config,hasAlpha,colorSpace)` (constructor public duy nhất có sẵn) **đã** ném exception đó ngay — tức là không thể tạo input test theo cách này. Code path thật chỉ reachable qua bitmap decode từ ảnh có ICC profile LUT-based thật, đòi hỏi file ảnh mẫu crafted riêng (ngoài effort hợp lý ticket P2 này).
+- **ponytail**: fix giữ nguyên (rẻ, đúng, vô hại), nhưng chưa có test tự động tái hiện đúng path. Thêm test khi có file ảnh ICC LUT-based mẫu thật hoặc crash report production xác nhận path này được chạm tới.
+
+**Verify sau fix**: `testDebugUnitTest` + `ktlintCheck` + `connectedDebugAndroidTest` (12/12, không đổi so với trước — test không hợp lệ đã bị xoá chứ không tăng/giảm coverage thật) đều `BUILD SUCCESSFUL`. Cài lại APK trên TECNO KJ7, logcat sạch không `FATAL`/`AndroidRuntime`.
+
+**Audit cuối**: 9.6/10 — trừ nhẹ vì 1 nhánh phòng thủ (edge case ColorSpace non-parametric) không có test tự động bao phủ, bù lại bằng cách document rõ ràng lý do + điều kiện bổ sung sau, thay vì báo cáo sai có coverage.

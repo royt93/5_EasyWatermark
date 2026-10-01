@@ -83,6 +83,14 @@ class InvisibleWatermarkRoboTest {
         assertThat(InvisibleWatermark.extract(stamped)?.ownerId).isEqualTo(owner)
     }
 
+    // Review finding (/code-review --level high sau khi push): ColorSpace.Rgb dựng từ hàm transfer
+    // tuỳ ý (getTransferParameters() == null, ví dụ profile ProPhoto RGB/scanner/Photoshop export
+    // thật) khiến Bitmap.createBitmap(w,h,config,alpha,cs) ném IllegalArgumentException trên Android
+    // THẬT. KHÔNG test được bằng Robolectric ở đây: shadow của Robolectric cho overload này không
+    // validate transferParameters như native Android — test từng viết ở đây PASS cả khi chưa có
+    // try/catch fallback (false-negative, không phát hiện được lỗi thật). Bằng chứng thật nằm ở
+    // `InvisibleWatermarkIntegrationTest#colorSpaceLutBased...` (androidTest, chạy trên Skia thật).
+
     @Config(sdk = [24])
     @Test
     fun `API duoi 26 - khong co overload ColorSpace, hanh vi cu giu nguyen khong crash`() {

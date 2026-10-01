@@ -293,6 +293,16 @@ class InvisibleWatermarkIntegrationTest {
         }
     }
 
+    // Review finding (/code-review --level high sau khi push ENH-41): ColorSpace.Rgb dựng từ hàm
+    // transfer tuỳ ý (getTransferParameters() == null — ví dụ thật: nhiều profile ProPhoto
+    // RGB/scanner/Photoshop export) khiến Bitmap.createBitmap(w,h,config,alpha,colorSpace) ném
+    // IllegalArgumentException thật. ĐÃ XÁC NHẬN bằng cách thử dựng trực tiếp (thông điệp thật:
+    // "ColorSpace must use an ICC parametric transfer function!") — nhưng CHÍNH VIỆC XÁC NHẬN đó cho
+    // thấy không thể viết test tự động: constructor public validate transferParameters NGAY LÚC TẠO,
+    // nên không thể dựng bitmap NGUỒN mang ColorSpace non-parametric để làm input test — chỉ bitmap
+    // decode từ ảnh thật có ICC profile LUT-based mới tái hiện được tình huống. Fix (try/catch
+    // fallback) đã có ở `InvisibleWatermark.embed()`, xem comment "ponytail" tại đó.
+
     /**
      * Ca đáng giá nhất của cả ticket: nền tảng xoá sạch EXIF (con dấu IDEA-03 chết) nhưng lớp ẩn
      * trong pixel vẫn truy được chủ ảnh. Đây chính là lý do IDEA-02 tồn tại song song với IDEA-03.

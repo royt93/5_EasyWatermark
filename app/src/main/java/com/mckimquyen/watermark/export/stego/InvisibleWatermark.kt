@@ -48,8 +48,24 @@ object InvisibleWatermark {
                 colorSpace.model == ColorSpace.Model.RGB &&
                 colorSpace != ColorSpace.get(ColorSpace.Named.SRGB)
             ) {
-                Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888, source.hasAlpha(), colorSpace).apply {
-                    setPixels(pixels, 0, width, 0, 0, width, height)
+                try {
+                    Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888, source.hasAlpha(), colorSpace).apply {
+                        setPixels(pixels, 0, width, 0, 0, width, height)
+                    }
+                } catch (e: IllegalArgumentException) {
+                    // Review finding: overload này chỉ nhận RGB ColorSpace có transfer function dạng
+                    // tham số ICC (getTransferParameters() != null) — ColorSpace từ LUT/hàm tuỳ ý (vài
+                    // profile ProPhoto RGB/scanner/Photoshop export qua decode thật) ném
+                    // IllegalArgumentException thật (xác nhận bằng cách thử tạo trực tiếp:
+                    // "ColorSpace must use an ICC parametric transfer function!"). Thà mất ColorSpace
+                    // tag (hành vi cũ trước ENH-41) còn hơn mất cả watermark ẩn.
+                    //
+                    // ponytail: không có test tự động tái hiện đúng path này — Bitmap.createBitmap()
+                    // validate transferParameters NGAY LÚC TẠO, nên không thể dựng bitmap nguồn mang
+                    // ColorSpace non-parametric qua API public để làm input test; chỉ decode từ ảnh
+                    // thật có ICC profile LUT-based mới tái hiện được. Thêm test khi có file ảnh mẫu
+                    // như vậy (hoặc crash report thật từ production).
+                    Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
                 }
             } else {
                 Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
