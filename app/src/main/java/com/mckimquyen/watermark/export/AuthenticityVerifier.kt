@@ -38,8 +38,18 @@ object AuthenticityVerifier {
 
     /** Đọc [uri] rồi trả kết quả kiểm tra. Mọi lỗi IO → [Result.Unreadable]. */
     fun verify(contentResolver: ContentResolver, uri: Uri): Result {
+        // Null-check stream TRƯỚC, tách riêng khỏi attribute null (= ảnh đọc được nhưng không có
+        // stamp, vẫn phải là NoStamp) — gộp chung 2 trường hợp null này từng khiến mất quyền đọc
+        // giữa chừng bị báo nhầm NoStamp thay vì Unreadable (BUG-53).
+        val stream = try {
+            contentResolver.openInputStream(uri)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return Result.Unreadable
+        } ?: return Result.Unreadable
+
         val rawStamp = try {
-            contentResolver.openInputStream(uri)?.use { ExifInterface(it).getAttribute(ExifInterface.TAG_USER_COMMENT) }
+            stream.use { ExifInterface(it).getAttribute(ExifInterface.TAG_USER_COMMENT) }
         } catch (e: Exception) {
             e.printStackTrace()
             return Result.Unreadable
