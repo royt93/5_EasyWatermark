@@ -226,6 +226,19 @@ class CropOverlayView : View {
                 lastTouchX = event.x
                 lastTouchY = event.y
             }
+            MotionEvent.ACTION_POINTER_UP -> {
+                // BUG-48: buông bớt 1 ngón giữa lúc đang pinch 2 ngón — resync lastTouchX/Y về
+                // ngón CÒN LẠI ngay tại đây, nếu không nhánh pointerCount==1 ở lần MOVE kế tiếp sẽ
+                // tính dx/dy từ toạ độ ACTION_DOWN cũ (đã lệch xa do cả 2 ngón di chuyển lúc pinch)
+                // → ảnh giật mạnh 1 frame. Chỉ áp dụng case 2 ngón thực tế của crop/zoom (>2 ngón
+                // là edge case cực hiếm, không cần xử lý — ponytail: nâng cấp nếu sau này cần).
+                val liftedIndex = event.actionIndex
+                val remainingIndex = if (liftedIndex == 0) 1 else 0
+                if (remainingIndex < event.pointerCount) {
+                    lastTouchX = event.getX(remainingIndex)
+                    lastTouchY = event.getY(remainingIndex)
+                }
+            }
             MotionEvent.ACTION_MOVE -> {
                 if (event.pointerCount == 1) {
                     val dx = event.x - lastTouchX

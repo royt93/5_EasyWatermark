@@ -131,8 +131,81 @@ class CropOverlayViewWidgetTest {
         assertThat(min(rect.left, 1f - rect.right)).isWithin(0.02f).of(0f)
     }
 
+    /**
+     * BUG-48: `lastTouchX/Y` chỉ cập nhật ở `ACTION_DOWN` và nhánh `pointerCount==1` — không resync
+     * khi buông bớt 1 ngón giữa lúc đang pinch 2 ngón (`ACTION_POINTER_UP`). Mô phỏng: 1 ngón đặt
+     * xuống tại x=100 (lastTouchX=100), ngón 2 thêm vào gần đó rồi CẢ CẶP di chuyển cùng nhau ra xa
+     * (x=300/320, span giữ nguyên 20px → không đổi tỉ lệ zoom, chỉ thuần dịch chuyển) — giống hệt
+     * pinch-zoom-và-pan ngoài đời. Buông ngón 2 (còn lại ngón ở x=300), rồi di chuyển NHẸ +5px.
+     * Trước fix: dx tính từ x=100 (ACTION_DOWN cũ) → dx=205, giật mạnh/đụng biên clamp ngay.
+     * Sau fix: dx tính từ x=300 (vị trí ngón còn lại vừa resync) → dx=5, pan mượt như bình thường.
+     */
+    @Test
+    fun pointerUp_afterPinchMovedFar_resyncsToRemainingPointer_noJump() {
+        val view = CropOverlayView(context)
+        layoutView(view)
+        // 200x100 — coverScale=2.52 phủ kín khung 252x252, dư slack ngang ~126px mỗi phía quanh vị
+        // trí center-crop mặc định, đủ để phân biệt rõ dx=5 (nhỏ) với dx=205 (đụng clamp).
+        view.setImageBitmap(Bitmap.createBitmap(200, 100, Bitmap.Config.ARGB_8888))
+        view.setAspectRatio(1f)
+
+        val downTime = 0L
+        dispatch(view, MotionEvent.ACTION_DOWN, 100f, 150f, downTime) // lastTouchX=100 (buggy nếu không resync)
+        dispatchMultiTouch(
+            view,
+            MotionEvent.ACTION_POINTER_DOWN or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+            floatArrayOf(100f, 120f),
+            floatArrayOf(150f, 150f),
+            downTime
+        )
+        // Cả 2 ngón cùng trượt ra xa — span giữ nguyên 20px (không zoom), chỉ dịch chuyển vị trí.
+        dispatchMultiTouch(
+            view,
+            MotionEvent.ACTION_MOVE,
+            floatArrayOf(300f, 320f),
+            floatArrayOf(150f, 150f),
+            downTime
+        )
+        val rectBeforeRelease = view.computeCropRect()!!
+
+        // Buông ngón thứ 2 (index 1) — ngón còn lại (index 0) đang ở x=300.
+        dispatchMultiTouch(
+            view,
+            MotionEvent.ACTION_POINTER_UP or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+            floatArrayOf(300f, 320f),
+            floatArrayOf(150f, 150f),
+            downTime
+        )
+        // Di chuyển NHẸ +5px — nếu resync đúng, dx chỉ 5px; nếu không, dx=205px (từ x=100 cũ).
+        dispatch(view, MotionEvent.ACTION_MOVE, 305f, 150f, downTime)
+
+        val rectAfter = view.computeCropRect()!!
+        assertThat(kotlin.math.abs(rectAfter.left - rectBeforeRelease.left)).isLessThan(0.05f)
+    }
+
     private fun dispatch(view: CropOverlayView, action: Int, x: Float, y: Float, downTime: Long) {
         val event = MotionEvent.obtain(downTime, downTime, action, x, y, 0)
+        view.onTouchEvent(event)
+        event.recycle()
+    }
+
+    private fun dispatchMultiTouch(view: CropOverlayView, action: Int, xs: FloatArray, ys: FloatArray, downTime: Long) {
+        val pointerCount = xs.size
+        val properties = Array(pointerCount) { i ->
+            MotionEvent.PointerProperties().apply { id = i }
+        }
+        val coords = Array(pointerCount) { i ->
+            MotionEvent.PointerCoords().apply {
+                x = xs[i]
+                y = ys[i]
+                pressure = 1f
+                size = 1f
+            }
+        }
+        val event = MotionEvent.obtain(
+            downTime, downTime, action, pointerCount, properties, coords,
+            0, 0, 1f, 1f, 0, 0, 0, 0
+        )
         view.onTouchEvent(event)
         event.recycle()
     }
