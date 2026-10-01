@@ -7,6 +7,22 @@ import androidx.dynamicanimation.animation.SpringForce
 import androidx.dynamicanimation.animation.SpringForce.DAMPING_RATIO_NO_BOUNCY
 import com.mckimquyen.watermark.ui.widget.utils.ViewAnimation
 
+/**
+ * REVIEW-13/14: cộng dồn [base] (padding gốc đọc TRƯỚC khi gắn `setOnApplyWindowInsetsListener`,
+ * vd khai trong XML) với [inset] hệ thống (status/navigation bar...) rồi set vào paddingBottom của
+ * view này, giữ nguyên left/top/right — thay cho gọi `setPadding(..., inset)` trực tiếp, vốn ghi
+ * đè mất [base] mỗi lần insets được áp lại. Đã lặp lại NGUYÊN VẸN lỗi này 3 lần độc lập
+ * (`BatchHistoryActivity`, `WatermarkProfileActivity`, `RecipientManagementActivity` — lần cuối dù
+ * code có comment nhắc "bài học FEAT-06" vẫn chép nhầm pattern cũ) trước khi gộp vào đây.
+ *
+ * LƯU Ý: [base] phải đọc 1 LẦN từ bên ngoài listener (trước khi gắn), KHÔNG đọc `paddingBottom`
+ * hiện tại bên trong listener — listener có thể bị gọi lại nhiều lần (xoay màn hình, bàn phím ẩn/
+ * hiện...), đọc lại `paddingBottom` lúc đó đã CHỨA inset lần trước, cộng dồn sai (tăng dần mỗi lần).
+ */
+fun View.setBottomPaddingWithInset(base: Int, inset: Int) {
+    setPadding(paddingLeft, paddingTop, paddingRight, base + inset)
+}
+
 fun View.appearAnimation(
     dampingRatio: Float = SpringForce.DAMPING_RATIO_MEDIUM_BOUNCY,
     stiffness: Float = SpringForce.STIFFNESS_LOW

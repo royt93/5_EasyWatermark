@@ -2,6 +2,39 @@
 
 > Cập nhật: 2026-10-01. Xem thêm `doc/feat.md` cho danh sách tính năng (FEAT-XX) — file này tập trung bugfix/cải tiến/hạ tầng. Từ ngày sinh backlog 2026-09-04, hàng đợi ticket kỹ thuật chi tiết (BUG-XX/ENH-XX/FEAT-XX/IDEA-XX) đã chuyển sang `doc/task/BACKLOG.md` + `doc/task/done/` — file này giữ vai trò tóm tắt/lịch sử, không lặp lại nội dung đầy đủ từng ticket.
 
+## Review pass 14 — quét toàn bộ `setOnApplyWindowInsetsListener` edge-to-edge + gộp helper chung, 2026-10-01
+
+Tiếp loop ngay sau pass 13 (user yêu cầu chú ý lỗi edge-to-edge). Quét toàn bộ 13 file dùng
+`setOnApplyWindowInsetsListener` trong app (không chỉ scope pass 13) — tìm thêm 1 bug edge-to-edge
+THẬT:
+
+- [x] **`RecipientManagementActivity.rvRecipients` ghi đè thẳng `setPadding(..., navBarBottom)`**,
+  mất `paddingBottom="8dp"` khai trong `activity_recipient_management.xml` — ĐÚNG bug class vừa fix
+  ở pass 13 (BatchHistory/WatermarkProfile). Trớ trêu: code tại chỗ có comment ghi rõ "bài học
+  FEAT-06/BatchHistoryActivity" nhưng lại chép nhầm đúng pattern CŨ (trước khi pass 13 fix) thay vì
+  pattern đúng. Chứng minh fix từng-chỗ-một (pass 13) không đủ — vẫn lặp lại được dù có cảnh báo
+  bằng lời trong comment. Test mới: `RecipientManagementActivityInsetsRoboTest` (2 case, cùng mẫu
+  `BatchHistoryWatermarkProfileInsetsRoboTest`).
+- [x] **Gộp helper dùng chung `View.setBottomPaddingWithInset(base, inset)`** (`ViewExtension.kt`)
+  để chặn tái diễn tận gốc — áp dụng lại cho CẢ 8 điểm gọi (kể cả những chỗ đang ĐÚNG, để nhất
+  quán + dễ grep/copy đúng pattern cho màn mới sau này): `RecipientManagementActivity`,
+  `BatchHistoryActivity`, `WatermarkProfileActivity`, `CropActivity`, `SmartRedactionActivity`
+  (`llBottomControls`), `AboutActivity` (`nestedScrollView`), `OpenSourceActivity` (`binding.root`),
+  `BaseBSDFragment` (`sheet`). KDoc helper nêu rõ invariant quan trọng: `base` phải đọc 1 LẦN từ
+  bên ngoài listener — đọc lại `paddingBottom` hiện tại bên trong listener sẽ cộng dồn SAI mỗi lần
+  listener bị gọi lại (xoay màn hình, bàn phím ẩn/hiện...).
+- Verify: 6 file còn lại dùng insets listener (`MainActivity`, `SplashActivity`, `SignatureActivity`,
+  `LaunchView`) đã ĐÚNG từ trước (không có padding gốc cần giữ, hoặc view tạo bằng code không khai
+  padding XML nên ghi đè = cộng dồn với 0) — không đụng. `VipManagementActivity` (VIP) nằm ngoài
+  phạm vi audit theo quyết định user trước đó (AD/IAP dời sang tháng sau).
+
+Kết quả: build/test pass (ktlintCheck + testDebugUnitTest xanh, assembleDebug OK). Smoke test thật
+trên TECNO KJ7 (khoá theo R3): app launch lại không crash sau khi cài bản mới (BaseActivity dùng
+chung bởi mọi activity). Không đi sâu được vào màn Recipient Management trên device do photo-picker
+hệ thống bị glitch render (tách đôi màn hình) — glitch hệ thống, không liên quan code sửa, không
+theo đuổi thêm; bằng chứng chính dựa vào Robolectric pixel-exact (RED→GREEN) cho đúng 1 giá trị
+padding, đủ mạnh hơn quan sát mắt thường.
+
 ## Review pass 13 — nốt scope `ui/` + root còn lại chưa quét qua 12 pass trước, 2026-10-01
 
 Audit vòng 13 (loop tiếp theo sau pass 12). BACKLOG.md hết sạch BUG/ENH/FEAT todo (chỉ còn 2 ticket

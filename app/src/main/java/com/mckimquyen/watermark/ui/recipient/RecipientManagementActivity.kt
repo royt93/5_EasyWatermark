@@ -18,6 +18,7 @@ import com.mckimquyen.watermark.databinding.ActivityRecipientManagementBinding
 import com.mckimquyen.watermark.databinding.DlgEditRecipientBinding
 import com.mckimquyen.watermark.ui.adapter.RecipientManageAdapter
 import com.mckimquyen.watermark.utils.ktx.inflate
+import com.mckimquyen.watermark.utils.ktx.setBottomPaddingWithInset
 import com.mckimquyen.watermark.utils.ktx.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -50,6 +51,9 @@ class RecipientManagementActivity : BaseActivity() {
         // Edge-to-edge: nút đáy màn hình dễ bị navigation bar che tap nếu thiếu inset padding
         // (bài học FEAT-06/BatchHistoryActivity).
         val bottomExtraPadding = (16 * resources.displayMetrics.density).toInt()
+        // REVIEW-14: rvRecipients TRƯỚC ĐÂY ghi đè thẳng navBarBottom, mất paddingBottom=8dp khai
+        // trong XML — đọc base NGAY TẠI ĐÂY (trước khi gắn listener), xem setBottomPaddingWithInset.
+        val baseRecipientsBottomPadding = binding.rvRecipients.paddingBottom
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val statusBarTop = insets.getInsets(
                 WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
@@ -60,12 +64,7 @@ class RecipientManagementActivity : BaseActivity() {
             binding.topAppBar.setPadding(0, statusBarTop, 0, 0)
             (binding.btnAddRecipient.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin =
                 bottomExtraPadding + navBarBottom
-            binding.rvRecipients.setPadding(
-                binding.rvRecipients.paddingLeft,
-                binding.rvRecipients.paddingTop,
-                binding.rvRecipients.paddingRight,
-                navBarBottom
-            )
+            binding.rvRecipients.setBottomPaddingWithInset(baseRecipientsBottomPadding, navBarBottom)
             insets
         }
         ViewCompat.requestApplyInsets(binding.root)

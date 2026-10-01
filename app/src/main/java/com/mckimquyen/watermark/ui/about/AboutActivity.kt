@@ -26,6 +26,7 @@ import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.formatDate
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.openLink
+import com.mckimquyen.watermark.utils.ktx.setBottomPaddingWithInset
 import com.mckimquyen.watermark.utils.ktx.toast
 import com.roy.sdkadbmob.AdManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -167,7 +168,7 @@ class AboutActivity : BaseActivity() {
                 WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.displayCutout()
             ).bottom
             binding.topAppBar.setPadding(0, statusBarTop, 0, 0)
-            binding.nestedScrollView.setPadding(0, 0, 0, baseScrollBottomPadding + navBarBottom)
+            binding.nestedScrollView.setBottomPaddingWithInset(baseScrollBottomPadding, navBarBottom)
             insets
         }
         ViewCompat.requestApplyInsets(binding.root)

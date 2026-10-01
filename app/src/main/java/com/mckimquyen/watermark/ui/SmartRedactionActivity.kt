@@ -20,6 +20,7 @@ import com.mckimquyen.watermark.utils.bitmap.EDIT_DECODE_MAX_LONG_EDGE
 import com.mckimquyen.watermark.utils.bitmap.applyCropAndRotate
 import com.mckimquyen.watermark.utils.bitmap.decodeBitmapFromUri
 import com.mckimquyen.watermark.utils.facedetection.FaceDetectionSource
+import com.mckimquyen.watermark.utils.ktx.setBottomPaddingWithInset
 import com.mckimquyen.watermark.utils.ktx.toast
 import com.mckimquyen.watermark.utils.textdetection.SensitiveTextSource
 import dagger.hilt.android.AndroidEntryPoint
@@ -79,12 +80,7 @@ class SmartRedactionActivity : BaseActivity() {
                 WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.displayCutout()
             )
             binding.toolbar.setPadding(0, statusBars.top, 0, 0)
-            binding.llBottomControls.setPadding(
-                binding.llBottomControls.paddingLeft,
-                binding.llBottomControls.paddingTop,
-                binding.llBottomControls.paddingRight,
-                baseBottomPadding + navBars.bottom
-            )
+            binding.llBottomControls.setBottomPaddingWithInset(baseBottomPadding, navBars.bottom)
             insets
         }
         ViewCompat.requestApplyInsets(binding.root)

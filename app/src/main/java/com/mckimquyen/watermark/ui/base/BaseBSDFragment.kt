@@ -12,6 +12,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.ui.MainViewModel
+import com.mckimquyen.watermark.utils.ktx.setBottomPaddingWithInset
 
 open class BaseBSDFragment : BottomSheetDialogFragment() {
 
@@ -107,7 +108,7 @@ open class BaseBSDFragment : BottomSheetDialogFragment() {
                             WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.displayCutout()
                         ).bottom
                         val bottomInset = maxOf(imeBottom, navBarBottom)
-                        view.setPadding(view.paddingLeft, view.paddingTop, view.paddingRight, baseBottom + bottomInset)
+                        view.setBottomPaddingWithInset(baseBottom, bottomInset)
                         insets
                     }
                     ViewCompat.requestApplyInsets(sheet)

@@ -12,6 +12,7 @@ import com.mckimquyen.watermark.databinding.AOpenSourceBinding
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.openLink
+import com.mckimquyen.watermark.utils.ktx.setBottomPaddingWithInset
 
 class OpenSourceActivity : BaseActivity() {
 
@@ -33,7 +34,7 @@ class OpenSourceActivity : BaseActivity() {
             ).bottom
             binding.myToolbar.setPadding(0, statusBarTop, 0, 0)
             binding.myToolbar.layoutParams.height = baseAppBarHeight + statusBarTop
-            binding.root.setPadding(0, 0, 0, baseScrollBottom + navBarBottom)
+            binding.root.setBottomPaddingWithInset(baseScrollBottom, navBarBottom)
             insets
         }
         ViewCompat.requestApplyInsets(binding.root)

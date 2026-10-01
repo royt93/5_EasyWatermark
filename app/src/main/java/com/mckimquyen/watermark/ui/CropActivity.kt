@@ -16,6 +16,7 @@ import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.databinding.ActivityCropBinding
 import com.mckimquyen.watermark.utils.bitmap.EDIT_DECODE_MAX_LONG_EDGE
 import com.mckimquyen.watermark.utils.bitmap.decodeBitmapFromUri
+import com.mckimquyen.watermark.utils.ktx.setBottomPaddingWithInset
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -77,12 +78,7 @@ class CropActivity : BaseActivity() {
                 WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.displayCutout()
             )
             binding.toolbar.setPadding(0, statusBars.top, 0, 0)
-            binding.llBottomControls.setPadding(
-                binding.llBottomControls.paddingLeft,
-                binding.llBottomControls.paddingTop,
-                binding.llBottomControls.paddingRight,
-                baseBottomPadding + navBars.bottom
-            )
+            binding.llBottomControls.setBottomPaddingWithInset(baseBottomPadding, navBars.bottom)
             insets
         }
         ViewCompat.requestApplyInsets(binding.root)

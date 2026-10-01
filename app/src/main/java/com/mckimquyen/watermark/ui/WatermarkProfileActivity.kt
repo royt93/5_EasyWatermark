@@ -19,6 +19,7 @@ import com.mckimquyen.watermark.data.model.entity.WatermarkProfileEntity
 import com.mckimquyen.watermark.databinding.ActivityWatermarkProfileBinding
 import com.mckimquyen.watermark.ui.adapter.WatermarkProfileAdapter
 import com.mckimquyen.watermark.utils.ktx.inflate
+import com.mckimquyen.watermark.utils.ktx.setBottomPaddingWithInset
 import com.mckimquyen.watermark.utils.ktx.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -65,7 +66,7 @@ class WatermarkProfileActivity : BaseActivity() {
             ).bottom
             binding.topAppBar.setPadding(0, statusBarTop, 0, 0)
             (binding.btnSaveCurrent.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = bottomExtraPadding + navBarBottom
-            binding.rvProfiles.setPadding(0, binding.rvProfiles.paddingTop, 0, baseBottomPadding + navBarBottom)
+            binding.rvProfiles.setBottomPaddingWithInset(baseBottomPadding, navBarBottom)
             insets
         }
         ViewCompat.requestApplyInsets(binding.root)
