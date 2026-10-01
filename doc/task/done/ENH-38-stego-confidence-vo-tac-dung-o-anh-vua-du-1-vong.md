@@ -28,3 +28,10 @@ Chọn 1 trong 2 hướng (cần quyết định, không tự ý chọn):
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `ENH-38`, file ticket = `todo/ENH-38-stego-confidence-vo-tac-dung-o-anh-vua-du-1-vong.md`.
+
+## Kết quả kiểm chứng (2026-10-01)
+Chọn **hướng 1** (user quyết định qua AskUserQuestion): giữ nguyên công thức `confidence`, sửa doc comment cho đúng thực tế — không đổi hành vi, không rủi ro phá robustness đã tune.
+
+- Sửa doc comment ở 3 chỗ: `StegoCodec.decode()` (giải thích rõ công thức chỉ có ý nghĩa khi `rounds >= 2`), `StegoPayload.MIN_CONFIDENCE` (ngưỡng không lọc được gì ở `rounds==1`), `InvisibleWatermark.extract()` ("tuyến phòng thủ thứ hai" chỉ đúng từ `rounds>=2`) — cả 3 đều trỏ rõ tuyến phòng thủ thật ở `rounds==1` là MAGIC+CRC.
+- Không đổi logic/test vì không đổi hành vi. `./gradlew :app:testDebugUnitTest --tests "*.stego.*"` → BUILD SUCCESSFUL (bao gồm `StegoRobustnessTest` nguyên trạng, robustness JPEG q>=70 không đổi).
+- Audit: 9.5/10 — đúng acceptance criteria hướng 1 (doc không còn mô tả sai), không đổi API/behavior nên không có case mới cần test, không đụng layout/UI nên M3 không áp dụng. Không cần smoke test thiết bị thật (pure comment, không đổi hành vi runtime).

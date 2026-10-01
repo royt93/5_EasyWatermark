@@ -107,6 +107,12 @@ object StegoCodec {
      *
      * Trả về `null` nếu ảnh không đủ một vòng. Kèm theo mỗi bit là độ tin cậy ([Decoded.confidence]):
      * tỉ lệ phiếu thuận trung bình — gần 0.5 nghĩa là đọc được toàn nhiễu, tin không còn ở đó.
+     *
+     * ENH-38: công thức này CHỈ có ý nghĩa phân biệt nhiễu/tín hiệu khi [Decoded.rounds] >= 2. Ở
+     * ảnh vừa đúng 1 vòng payload (vd 64x64px với `TOTAL_BITS=64`), mỗi bit chỉ có 1 phiếu nên phe
+     * "thắng" luôn thắng tuyệt đối — `confidence` LUÔN = 1.0 dù ảnh sạch hoàn toàn không có
+     * watermark. Tuyến phòng thủ thật ở `rounds=1` là MAGIC+CRC trong [StegoPayload], không phải
+     * ngưỡng [StegoPayload.MIN_CONFIDENCE].
      */
     fun decode(pixels: IntArray, width: Int, height: Int, bitCount: Int): Decoded? {
         if (bitCount <= 0) return null

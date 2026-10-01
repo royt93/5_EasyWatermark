@@ -49,6 +49,10 @@ object InvisibleWatermark {
      *
      * Ngưỡng tin cậy là tuyến phòng thủ thứ hai sau MAGIC+CRC: thà không đọc được còn hơn gán nhầm
      * chủ sở hữu cho ảnh của người khác.
+     *
+     * ENH-38: "tuyến thứ hai" đó chỉ có tác dụng ở `rounds >= 2`. Ảnh vừa đúng 1 vòng payload (nhỏ
+     * nhất được chấp nhận) luôn cho `confidence = 1.0` dù sạch hay có watermark — tuyến phòng thủ
+     * THẬT ở cỡ ảnh này là MAGIC+CRC bên trong [StegoPayload], không phải ngưỡng này.
      */
     fun extract(source: Bitmap): Result? {
         val width = source.width

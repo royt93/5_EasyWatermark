@@ -33,7 +33,14 @@ object StegoPayload {
     private const val CRC16_POLYNOMIAL = 0x1021
     private const val CRC16_INIT = 0xFFFF
 
-    /** Ngưỡng tin cậy tối thiểu để dám khẳng định đã đọc được watermark (xem [StegoCodec.Decoded]). */
+    /**
+     * Ngưỡng tin cậy tối thiểu để dám khẳng định đã đọc được watermark (xem [StegoCodec.Decoded]).
+     *
+     * ENH-38: ngưỡng này chỉ lọc được gì ở `rounds >= 2` — ở `rounds == 1` (ảnh vừa đúng 1 vòng
+     * payload) `confidence` luôn = 1.0 nên luôn qua ngưỡng bất kể đọc trúng hay nhiễu. Tuyến phòng
+     * thủ thật ở trường hợp đó là MAGIC(16 bit)+CRC(16 bit) ở [StegoCodec.Decoded] (~1/2^32 nhiễu
+     * lọt), không phải ngưỡng này.
+     */
     const val MIN_CONFIDENCE = 0.90
 
     data class Payload(val ownerId: Int)
