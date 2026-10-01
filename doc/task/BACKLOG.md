@@ -11,9 +11,9 @@
 - `sources`: agent nào tìm ra/đồng thuận — độ đồng thuận cao = độ tin cậy cao.
 - **Prompt loop:** mỗi ticket trong `todo/` có section "## Prompt loop" trỏ tới [PROMPT_TEMPLATE.md](PROMPT_TEMPLATE.md) — Definition of Done dùng chung (audit >9/10 + unit/widget/integration test đủ mọi case + smoke test thật trên device đã khoá → mới được move `done/` + push).
 
-## BUGS_TO_FIX (7 todo + 2 deferred + 44 done) — ưu tiên P0 trước
+## BUGS_TO_FIX (6 todo + 2 deferred + 45 done) — ưu tiên P0 trước
 
-> **Full codebase audit 2026-10-01** (general-purpose agent đọc toàn bộ `app/src/main` + `cmonet/src/main`, không phải diff — verify tay từng finding): 7 bug P1/P2 effort XS-S, xem bảng dưới (BUG-47..53).
+> **Full codebase audit 2026-10-01** (general-purpose agent đọc toàn bộ `app/src/main` + `cmonet/src/main`, không phải diff — verify tay từng finding): 8 finding (BUG-47..53 + ENH-42). **BUG-47 2026-10-01**: [BUG-47](done/BUG-47-recipientdao-insert-replace-am-tham-xoa-recipient-trung-code.md) `RecipientDao.insert()` dùng `OnConflictStrategy.REPLACE` xoá âm thầm recipient trùng `code` — verify caller thật xác nhận `insert()` chỉ dùng khi tạo mới (`id==0`), không có lý do hợp lệ để upsert theo code; bỏ `onConflict` param (mặc định `ABORT`). Sửa test tích hợp cũ từng enshrine sai hành vi, RED→GREEN trên Room thật. `RecipientDaoIntegrationTest` 7/7 PASS trên TECNO KJ7, `RecipientViewModelSaveRoboTest` không đổi vẫn PASS (code `catch SQLiteConstraintException` trong ViewModel giờ thật sự có tác dụng, trước đây là dead code).
 
 > **Code review 2026-09-28** (audit lại diff IDEA-12 trước khi push, `/code-review --level high`): [BUG-46](done/BUG-46-calculateinsamplesize-treo-chia-cho-0-khi-reqwidthreqheight-0.md) — P2, `calculateInSampleSize` treo rồi `ArithmeticException` khi `reqWidth`/`reqHeight`=0 (phát hiện tình cờ, có stack trace thật trên TECNO_KJ7) — **đã fix cùng ngày**, guard `reqWidth`/`reqHeight` <= 0.
 > **BUG-45 2026-09-28** — [BUG-45](done/BUG-45-style-history-ghi-nham-config-da-bi-proofing-mode-ghi-de.md) style history (IDEA-12) ghi nhầm `alpha`/`markMode` đã bị `ProofingMode.overrideConfig()` ghi đè khi Client Proofing Mode bật — fix: không ghi khi `proofingMode`, bọc `runCatching`; 2 androidTest thật (WorkManager+bitmap+Room thật) PASS trên TECNO_KJ7.
@@ -24,7 +24,6 @@
 |---|---|---|---|
 | [BUG-14](todo/BUG-14-vip-secret-hardcode-trong-apk.md) | P0 | M | VIP secret hardcode base64, lặp 3 chỗ + 1 secret thứ 2 chưa từng ticket hoá (mở rộng 2026-09-10) — **deferred, xem ghi chú cuối file** |
 | [BUG-15](todo/BUG-15-admob-rewarded-release-dung-test-id.md) | P0 | XS | `ADMOB_REWARDED_ID` build release vẫn dùng ID test — mất doanh thu, vi phạm chính sách AdMob — **deferred, xem ghi chú cuối file** |
-| [BUG-47](todo/BUG-47-recipientdao-insert-replace-am-tham-xoa-recipient-trung-code.md) | P1 | XS | `RecipientDao.insert()` dùng `OnConflictStrategy.REPLACE` — xoá âm thầm recipient trùng `code` thay vì báo lỗi như `ViewModel` kỳ vọng |
 | [BUG-48](todo/BUG-48-cropoverlayview-giat-anh-khi-buong-1-ngon-sau-pinch-zoom.md) | P2 | S | `CropOverlayView` giật ảnh khi buông 1 ngón sau pinch-zoom (`lastTouchX/Y` không resync ở `ACTION_POINTER_UP`) |
 | [BUG-49](todo/BUG-49-galleryfragment-slider-dung-bottom-thay-vi-chieu-cao-view.md) | P2 | XS | `GalleryFragment` slider cuộn dùng `.bottom` thay vì chiều cao view — tỉ lệ scroll lệch |
 | [BUG-50](todo/BUG-50-backuprestoreengine-1-file-signature-loi-huy-toan-bo-backup.md) | P2 | XS | `BackupRestoreEngine` — 1 file signature lỗi khi đọc huỷ toàn bộ backup |

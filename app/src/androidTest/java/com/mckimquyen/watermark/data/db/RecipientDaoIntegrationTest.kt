@@ -1,5 +1,6 @@
 package com.mckimquyen.watermark.data.db
 
+import android.database.sqlite.SQLiteConstraintException
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -83,17 +84,31 @@ class RecipientDaoIntegrationTest {
         assertThat(dao.getByCode("KHONG-CO")).isNull()
     }
 
+    /**
+     * BUG-47: `insert()` CHỈ được gọi khi tạo recipient MỚI (`id == 0`, xem
+     * `RecipientViewModel.save()` — nhánh `id != 0` đi qua `update()` riêng). Vì vậy không có lý do
+     * hợp lệ nào để `insert()` "upsert" theo `code` trùng — 2 lệnh insert cùng `code` nghĩa là 2
+     * NGƯỜI KHÁC NHAU lỡ trùng mã, phải bị CHẶN (ném `SQLiteConstraintException`) để
+     * `RecipientViewModel.save()` báo lỗi cho user, không phải âm thầm xoá recipient cũ.
+     *
+     * Trước fix: `OnConflictStrategy.REPLACE` khiến dòng dưới đây KHÔNG ném gì cả, recipient A gốc
+     * bị xoá mất, đây chính là BUG-47.
+     */
     @Test
-    fun maTrungNhau_bangUniqueIndexThayTheBanCu_khongTaoBanGhiMoi() = runBlocking {
-        // OnConflictStrategy.REPLACE + unique index trên `code`: đây chính là hàng rào chống trùng mã
-        // người nhận — nếu hàng rào này gãy, 2 khách hàng khác nhau có thể lỡ chung 1 mã.
-        dao.insert(recipient("Khách A gốc", "VIP-A", 1_000L))
-        dao.insert(recipient("Khách A đổi tên", "VIP-A", 2_000L))
+    fun maTrungNhau_nemConstraintException_khongXoaBanGhiCu() = runBlocking {
+        val keepId = dao.insert(recipient("Khách A gốc", "VIP-A", 1_000L))
+
+        try {
+            dao.insert(recipient("Người lạ trùng mã", "VIP-A", 2_000L))
+            throw AssertionError("Phải ném SQLiteConstraintException khi insert code trùng")
+        } catch (e: SQLiteConstraintException) {
+            // đúng hành vi mong muốn — unique index chặn đúng chỗ
+        }
 
         val all = dao.getAll().first()
-
         assertThat(all).hasSize(1)
-        assertThat(all.first().name).isEqualTo("Khách A đổi tên")
+        assertThat(all.first().id).isEqualTo(keepId)
+        assertThat(all.first().name).isEqualTo("Khách A gốc")
     }
 
     @Test

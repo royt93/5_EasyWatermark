@@ -3,7 +3,6 @@ package com.mckimquyen.watermark.data.db.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.mckimquyen.watermark.data.model.entity.Recipient
@@ -27,7 +26,12 @@ interface RecipientDao {
     @Query("SELECT * FROM recipient WHERE code = :code LIMIT 1")
     suspend fun getByCode(code: String): Recipient?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // BUG-47: `insert()` chỉ được gọi khi tạo recipient MỚI (id == 0, xem
+    // `RecipientViewModel.save()`) — không có lý do hợp lệ để "upsert" theo `code` trùng.
+    // `OnConflictStrategy.REPLACE` (mặc định cũ) khiến 2 người khác nhau lỡ trùng mã bị âm thầm
+    // ghi đè (xoá người cũ) thay vì ném `SQLiteConstraintException` để `save()` báo lỗi cho user —
+    // mặc định `ABORT` của `@Insert` đã đúng ý đồ, không cần `onConflict` tường minh.
+    @Insert
     suspend fun insert(recipient: Recipient): Long
 
     @Update
