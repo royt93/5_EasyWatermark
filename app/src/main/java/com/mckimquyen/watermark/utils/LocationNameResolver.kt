@@ -6,9 +6,12 @@ import android.location.Geocoder
 import android.os.Build
 import com.mckimquyen.watermark.AppLog
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -93,9 +96,32 @@ class LocationNameResolver(private val lookup: (Double, Double) -> String?) {
                 result.get()
             } else {
                 @Suppress("DEPRECATION")
-                geocoder.getFromLocation(latitude, longitude, 1)?.firstOrNull()
+                runWithTimeout(GEOCODE_TIMEOUT_MS) { geocoder.getFromLocation(latitude, longitude, 1)?.firstOrNull() }
             }
             return address?.let { formatPlace(it.locality, it.subAdminArea, it.adminArea, it.countryName) }
+        }
+
+        /**
+         * BUG-52: nhánh Geocoder legacy (API<33) gọi `getFromLocation()` blocking đồng bộ, không
+         * có cơ chế timeout như nhánh callback mới (`CountDownLatch.await(timeout)` ở trên) — có
+         * thể treo vô hạn thread export khi Geocoder hệ thống phản hồi chậm/treo. Chạy [block] trên
+         * 1 thread riêng (shutdown ngay sau khi xong, không giữ pool sống) rồi chờ tối đa
+         * [timeoutMs] — CALLER được trả quyền điều khiển đúng hạn dù [block] treo; thread chạy
+         * [block] có thể vẫn tiếp tục chạy ngầm tới khi tự xong (Java không ép dừng được code
+         * blocking không hợp tác), đúng tinh thần `CountDownLatch.await(timeout)` ở trên cũng chỉ
+         * ngừng CHỜ chứ không huỷ được lệnh gọi hệ thống đang treo.
+         */
+        internal fun <T> runWithTimeout(timeoutMs: Long, block: () -> T?): T? {
+            val executor = Executors.newSingleThreadExecutor()
+            return try {
+                executor.submit(Callable { block() }).get(timeoutMs, TimeUnit.MILLISECONDS)
+            } catch (e: TimeoutException) {
+                null
+            } catch (e: Exception) {
+                null
+            } finally {
+                executor.shutdownNow()
+            }
         }
     }
 }

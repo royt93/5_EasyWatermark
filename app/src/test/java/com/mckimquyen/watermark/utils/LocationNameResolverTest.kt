@@ -71,6 +71,40 @@ class LocationNameResolverTest {
             .isNotEqualTo(LocationNameResolver.roundedKey(21.028, 105.854))
     }
 
+    // ── BUG-52: nhánh Geocoder legacy (API<33) phải có timeout, nhất quán nhánh callback mới ──
+
+    @Test
+    fun runWithTimeout_blockHangsLongerThanTimeout_returnsNull_withoutBlockingCaller() {
+        val timeoutMs = 200L
+        val elapsed = System.currentTimeMillis()
+
+        val result = LocationNameResolver.runWithTimeout(timeoutMs) {
+            Thread.sleep(5_000L) // mô phỏng Geocoder hệ thống treo lâu hơn hẳn timeout
+            "không bao giờ tới đây kịp"
+        }
+
+        val durationMs = System.currentTimeMillis() - elapsed
+        assertThat(result).isNull()
+        // Caller phải được trả quyền điều khiển GẦN đúng timeoutMs, không phải đợi hết 5s.
+        assertThat(durationMs).isLessThan(2_000L)
+    }
+
+    @Test
+    fun runWithTimeout_blockFinishesInTime_returnsValue() {
+        val result = LocationNameResolver.runWithTimeout(1_000L) { "Hà Nội, Việt Nam" }
+
+        assertThat(result).isEqualTo("Hà Nội, Việt Nam")
+    }
+
+    @Test
+    fun runWithTimeout_blockThrows_returnsNull() {
+        val result = LocationNameResolver.runWithTimeout<String>(1_000L) {
+            throw java.io.IOException("offline")
+        }
+
+        assertThat(result).isNull()
+    }
+
     @Test
     fun formatPlace_prefersLocality_thenSubAdmin_thenAdmin_withCountry() {
         assertThat(LocationNameResolver.formatPlace("Hoàn Kiếm", "Quận X", "Hà Nội", "Việt Nam")).isEqualTo("Hoàn Kiếm, Việt Nam")
