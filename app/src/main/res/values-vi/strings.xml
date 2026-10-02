@@ -437,4 +437,18 @@
     <string name="version_name_copyright_format">v%1$s • %2$s</string>
     <string name="copyright_rights_reserved_format">%1$s • Bảo lưu mọi quyền</string>
     <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
+    <!-- FEAT-26: Dual Watermark Presets -->
+    <string name="title_dual_preset">Dấu kép</string>
+    <string name="dual_preset_picker_title">Mẫu dấu kép 2 góc</string>
+    <string name="dual_preset_brand_copyright_title">Thương hiệu &amp; Bản quyền</string>
+    <string name="dual_preset_brand_copyright_desc">Logo góc trên phải, chữ bản quyền góc dưới phải</string>
+    <string name="dual_preset_diagonal_title">Cân bằng chéo</string>
+    <string name="dual_preset_diagonal_desc">Logo góc trên trái, chữ bản quyền góc dưới phải</string>
+    <string name="dual_preset_stamp_footer_title">Nhãn &amp; Chân trang</string>
+    <string name="dual_preset_stamp_footer_desc">Logo góc trên phải, tác giả chính giữa chân trang</string>
+    <string name="dual_preset_bottom_dual_title">Thanh kép chân ảnh</string>
+    <string name="dual_preset_bottom_dual_desc">Logo góc dưới trái, chữ bản quyền góc dưới phải</string>
+    <string name="dual_preset_applied_toast">Đã áp dụng mẫu dấu kép</string>
+    <string name="dual_preset_pick_logo_prompt">Vui lòng chọn ảnh logo cho lớp thứ hai</string>
+    <string name="layer_manager_dual_presets">Mẫu kép</string>
 </resources>

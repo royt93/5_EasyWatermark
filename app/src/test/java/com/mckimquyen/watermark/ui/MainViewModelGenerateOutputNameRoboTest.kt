@@ -14,6 +14,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -27,6 +28,11 @@ import org.robolectric.Shadows.shadowOf
  */
 @RunWith(RobolectricTestRunner::class)
 class MainViewModelGenerateOutputNameRoboTest {
+
+    private companion object {
+        const val PREFS_SYNC_TIMEOUT_MS = 5_000L
+        const val PREFS_SYNC_STEP_MS = 10L
+    }
 
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val waterMarkDataStore = newTestWaterMarkDataStore(context)
@@ -50,7 +56,14 @@ class MainViewModelGenerateOutputNameRoboTest {
             templateRepo = TemplateRepository(null),
             styleHistoryRepo = noopWatermarkStyleHistoryRepository()
         )
-        shadowOf(Looper.getMainLooper()).idle()
+        // idle() chỉ chạy main looper; DataStore đọc ở thread IO nên stateIn(Eagerly) có thể chưa
+        // kịp phát giá trị đã lưu → chờ tới khi khớp thay vì đoán thời gian (nguồn flaky cũ).
+        val stored = runBlocking { UserConfigRepository(userDataStore).userPreferences.first().outputNamePattern }
+        val deadline = System.currentTimeMillis() + PREFS_SYNC_TIMEOUT_MS
+        while (viewModel.outputNamePattern != stored && System.currentTimeMillis() < deadline) {
+            shadowOf(Looper.getMainLooper()).idle()
+            Thread.sleep(PREFS_SYNC_STEP_MS)
+        }
         return viewModel
     }
 

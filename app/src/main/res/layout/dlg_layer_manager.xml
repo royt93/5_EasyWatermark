@@ -74,18 +74,38 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnAddLayer"
-        style="@style/Widget.Material3.Button.TonalButton"
+    <LinearLayout
+        android:id="@+id/llActionButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="@string/layer_manager_add"
-        android:textAllCaps="false"
-        app:icon="@drawable/ic_func_layers"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scrollList" />
+        app:layout_constraintTop_toBottomOf="@id/scrollList">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDualPresets"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:text="@string/layer_manager_dual_presets"
+            android:textAllCaps="false"
+            app:icon="@drawable/ic_func_layers" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddLayer"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/layer_manager_add"
+            android:textAllCaps="false"
+            app:icon="@drawable/ic_add" />
+
+    </LinearLayout>
 
     <!-- ═══ groupEdit (ẩn mặc định) ═══ -->
 
@@ -93,7 +113,7 @@
         android:id="@+id/groupList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="scrollList,btnAddLayer" />
+        app:constraint_referenced_ids="scrollList,llActionButtons" />
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollEdit"

@@ -430,4 +430,19 @@
     <string name="version_name_copyright_format">v%1$s • %2$s</string>
     <string name="copyright_rights_reserved_format">%1$s • 版权所有</string>
     <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
+
+    <!-- FEAT-26: Dual Watermark Presets -->
+    <string name="title_dual_preset">双重水印</string>
+    <string name="dual_preset_picker_title">双重水印预设</string>
+    <string name="dual_preset_brand_copyright_title">品牌与版权</string>
+    <string name="dual_preset_brand_copyright_desc">右上角徽标，右下角版权文字</string>
+    <string name="dual_preset_diagonal_title">对角平衡</string>
+    <string name="dual_preset_diagonal_desc">左上角徽标，右下角版权文字</string>
+    <string name="dual_preset_stamp_footer_title">印章与居中页脚</string>
+    <string name="dual_preset_stamp_footer_desc">右上角徽标，底部居中作者文字</string>
+    <string name="dual_preset_bottom_dual_title">底部双栏</string>
+    <string name="dual_preset_bottom_dual_desc">左下角徽标，右下角版权文字</string>
+    <string name="dual_preset_applied_toast">已应用双重水印预设</string>
+    <string name="dual_preset_pick_logo_prompt">请为第二图层选择徽标/图标</string>
+    <string name="layer_manager_dual_presets">双重预设</string>
 </resources>

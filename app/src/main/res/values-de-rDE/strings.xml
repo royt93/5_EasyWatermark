@@ -433,4 +433,19 @@
     <string name="version_name_copyright_format">v%1$s • %2$s</string>
     <string name="copyright_rights_reserved_format">%1$s • Alle Rechte vorbehalten</string>
     <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
+
+    <!-- FEAT-26: Dual Watermark Presets -->
+    <string name="title_dual_preset">Doppelmarke</string>
+    <string name="dual_preset_picker_title">Doppel-Wasserzeichen-Vorlagen</string>
+    <string name="dual_preset_brand_copyright_title">Marke &amp; Copyright</string>
+    <string name="dual_preset_brand_copyright_desc">Logo oben rechts, Copyright-Text unten rechts</string>
+    <string name="dual_preset_diagonal_title">Diagonale Balance</string>
+    <string name="dual_preset_diagonal_desc">Logo oben links, Copyright-Text unten rechts</string>
+    <string name="dual_preset_stamp_footer_title">Stempel &amp; Fußzeile mittig</string>
+    <string name="dual_preset_stamp_footer_desc">Logo oben rechts, Autorentext unten mittig</string>
+    <string name="dual_preset_bottom_dual_title">Untere Doppelleiste</string>
+    <string name="dual_preset_bottom_dual_desc">Logo unten links, Copyright-Text unten rechts</string>
+    <string name="dual_preset_applied_toast">Doppel-Wasserzeichen-Vorlage angewendet</string>
+    <string name="dual_preset_pick_logo_prompt">Bitte wähle ein Logo/Symbol für die zweite Ebene</string>
+    <string name="layer_manager_dual_presets">Doppelvorlagen</string>
 </resources>

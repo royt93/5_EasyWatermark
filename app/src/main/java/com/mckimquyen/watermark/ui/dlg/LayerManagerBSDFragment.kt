@@ -67,6 +67,10 @@ class LayerManagerBSDFragment : BaseBindBSDFragment<DlgLayerManagerBinding>() {
             ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, anchorNames)
         )
 
+        binding.btnDualPresets.setOnClickListener {
+            DualPresetPickerBSDFragment.safetyShow(parentFragmentManager)
+        }
+
         binding.btnAddLayer.setOnClickListener {
             val currentSize = shareViewModel.waterMark.value?.extraLayers?.size ?: 0
             if (currentSize >= WaterMarkRepository.MAX_EXTRA_LAYERS) {

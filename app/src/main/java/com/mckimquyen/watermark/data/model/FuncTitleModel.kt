@@ -34,5 +34,8 @@ data class FuncTitleModel(
 
         /** FEAT-03: mở LayerManagerBSDFragment — quản lý layer watermark PHỤ. */
         object Layers : FuncType()
+
+        /** FEAT-26: mở DualPresetPickerBSDFragment — chọn nhanh mẫu dấu kép 1-chạm. */
+        object DualWatermark : FuncType()
     }
 }

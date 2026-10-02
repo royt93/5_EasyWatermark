@@ -25,6 +25,7 @@ import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.Anchor
+import com.mckimquyen.watermark.data.model.DualWatermarkPreset
 import com.mckimquyen.watermark.data.model.ExifFrameStyle
 import com.mckimquyen.watermark.data.model.ExifModel
 import com.mckimquyen.watermark.data.model.ImageInfo
@@ -671,6 +672,19 @@ class MainViewModel @Inject constructor(
     /** FEAT-03. */
     fun reorderLayer(fromIndex: Int, toIndex: Int) {
         launch { waterMarkRepo.reorderLayer(fromIndex, toIndex) }
+    }
+
+    /** FEAT-26: áp dụng mẫu dấu kép (Dual Preset). */
+    fun applyDualPreset(preset: DualWatermarkPreset, defaultText: String? = null) {
+        launch {
+            // Neo 9-grid chỉ có hiệu lực ở CLAMP (REPEAT tile phủ kín, không thấy 2 góc) — ép CLAMP
+            // cho ảnh đang chọn rồi đẩy layer chính về đúng góc, giống luồng PositionAnchor.
+            // Phải ép CLAMP TRƯỚC khi áp preset: nếu phát cùng lúc, observer waterMark gọi
+            // applyNewConfig với curImageInfo cũ (REPEAT), huỷ job vừa nhận CLAMP → view vẫn vẽ REPEAT.
+            selectedImage.value?.let { waterMarkRepo.updateTileMode(it, Shader.TileMode.CLAMP) }
+            waterMarkRepo.applyDualPreset(preset, defaultText)
+            uiState.emit(UiState.ApplyAnchor(preset.primaryAnchor, preset.primaryMarginPercent))
+        }
     }
 
     /**

@@ -470,4 +470,18 @@
     <string name="version_name_copyright_format">v%1$s • %2$s</string>
     <string name="copyright_rights_reserved_format">%1$s • All Rights Reserved</string>
     <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
+    <!-- FEAT-26: Dual Watermark Presets -->
+    <string name="title_dual_preset">Dual Mark</string>
+    <string name="dual_preset_picker_title">Dual Watermark Presets</string>
+    <string name="dual_preset_brand_copyright_title">Brand &amp; Copyright</string>
+    <string name="dual_preset_brand_copyright_desc">Logo at top-right, copyright text at bottom-right</string>
+    <string name="dual_preset_diagonal_title">Diagonal Balance</string>
+    <string name="dual_preset_diagonal_desc">Logo at top-left, copyright text at bottom-right</string>
+    <string name="dual_preset_stamp_footer_title">Stamp &amp; Center Footer</string>
+    <string name="dual_preset_stamp_footer_desc">Logo at top-right, author text at bottom-center</string>
+    <string name="dual_preset_bottom_dual_title">Bottom Dual Bar</string>
+    <string name="dual_preset_bottom_dual_desc">Logo at bottom-left, copyright text at bottom-right</string>
+    <string name="dual_preset_applied_toast">Applied dual watermark preset</string>
+    <string name="dual_preset_pick_logo_prompt">Please choose a logo/icon for the second layer</string>
+    <string name="layer_manager_dual_presets">Dual Presets</string>
 </resources>

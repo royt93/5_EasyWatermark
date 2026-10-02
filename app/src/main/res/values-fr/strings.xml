@@ -433,4 +433,19 @@
     <string name="version_name_copyright_format">v%1$s • %2$s</string>
     <string name="copyright_rights_reserved_format">%1$s • Tous droits réservés</string>
     <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
+
+    <!-- FEAT-26: Dual Watermark Presets -->
+    <string name="title_dual_preset">Double marque</string>
+    <string name="dual_preset_picker_title">Modèles de filigrane double</string>
+    <string name="dual_preset_brand_copyright_title">Marque &amp; copyright</string>
+    <string name="dual_preset_brand_copyright_desc">Logo en haut à droite, texte de copyright en bas à droite</string>
+    <string name="dual_preset_diagonal_title">Équilibre diagonal</string>
+    <string name="dual_preset_diagonal_desc">Logo en haut à gauche, texte de copyright en bas à droite</string>
+    <string name="dual_preset_stamp_footer_title">Tampon &amp; pied de page centré</string>
+    <string name="dual_preset_stamp_footer_desc">Logo en haut à droite, texte d\'auteur en bas au centre</string>
+    <string name="dual_preset_bottom_dual_title">Barre double en bas</string>
+    <string name="dual_preset_bottom_dual_desc">Logo en bas à gauche, texte de copyright en bas à droite</string>
+    <string name="dual_preset_applied_toast">Modèle de filigrane double appliqué</string>
+    <string name="dual_preset_pick_logo_prompt">Choisissez un logo/icône pour le deuxième calque</string>
+    <string name="layer_manager_dual_presets">Modèles doubles</string>
 </resources>

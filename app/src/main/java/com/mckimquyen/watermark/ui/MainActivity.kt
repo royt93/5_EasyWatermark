@@ -155,6 +155,11 @@ class MainActivity : BaseActivity() {
                 type = FuncTitleModel.FuncType.Layers,
                 title = getString(R.string.func_title_layers),
                 iconRes = R.drawable.ic_func_layers
+            ),
+            FuncTitleModel(
+                type = FuncTitleModel.FuncType.DualWatermark,
+                title = getString(R.string.title_dual_preset),
+                iconRes = R.drawable.ic_func_layers
             )
         )
     }
@@ -1008,6 +1013,11 @@ class MainActivity : BaseActivity() {
             FuncTitleModel.FuncType.Layers -> {
                 hideDetailPanel()
                 com.mckimquyen.watermark.ui.dlg.LayerManagerBSDFragment.safetyShow(supportFragmentManager)
+            }
+
+            FuncTitleModel.FuncType.DualWatermark -> {
+                hideDetailPanel()
+                com.mckimquyen.watermark.ui.dlg.DualPresetPickerBSDFragment.safetyShow(supportFragmentManager)
             }
         }
     }

@@ -432,4 +432,19 @@
     <string name="version_name_copyright_format">v%1$s • %2$s</string>
     <string name="copyright_rights_reserved_format">%1$s • Todos los derechos reservados</string>
     <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
+
+    <!-- FEAT-26: Dual Watermark Presets -->
+    <string name="title_dual_preset">Marca doble</string>
+    <string name="dual_preset_picker_title">Plantillas de marca de agua doble</string>
+    <string name="dual_preset_brand_copyright_title">Marca y copyright</string>
+    <string name="dual_preset_brand_copyright_desc">Logo arriba a la derecha, texto de copyright abajo a la derecha</string>
+    <string name="dual_preset_diagonal_title">Equilibrio diagonal</string>
+    <string name="dual_preset_diagonal_desc">Logo arriba a la izquierda, texto de copyright abajo a la derecha</string>
+    <string name="dual_preset_stamp_footer_title">Sello y pie centrado</string>
+    <string name="dual_preset_stamp_footer_desc">Logo arriba a la derecha, texto de autor abajo al centro</string>
+    <string name="dual_preset_bottom_dual_title">Barra doble inferior</string>
+    <string name="dual_preset_bottom_dual_desc">Logo abajo a la izquierda, texto de copyright abajo a la derecha</string>
+    <string name="dual_preset_applied_toast">Plantilla de marca de agua doble aplicada</string>
+    <string name="dual_preset_pick_logo_prompt">Elige un logo/icono para la segunda capa</string>
+    <string name="layer_manager_dual_presets">Plantillas dobles</string>
 </resources>

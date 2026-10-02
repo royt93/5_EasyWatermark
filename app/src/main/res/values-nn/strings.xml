@@ -427,4 +427,19 @@
     <string name="version_name_copyright_format">v%1$s • %2$s</string>
     <string name="copyright_rights_reserved_format">%1$s • Med einerett</string>
     <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
+
+    <!-- FEAT-26: Dual Watermark Presets -->
+    <string name="title_dual_preset">Dobbel merking</string>
+    <string name="dual_preset_picker_title">Førehandsinnstillingar for dobbelt vassmerke</string>
+    <string name="dual_preset_brand_copyright_title">Merke &amp; opphavsrett</string>
+    <string name="dual_preset_brand_copyright_desc">Logo øvst til høgre, opphavsrettstekst nedst til høgre</string>
+    <string name="dual_preset_diagonal_title">Diagonal balanse</string>
+    <string name="dual_preset_diagonal_desc">Logo øvst til venstre, opphavsrettstekst nedst til høgre</string>
+    <string name="dual_preset_stamp_footer_title">Stempel &amp; sentrert botntekst</string>
+    <string name="dual_preset_stamp_footer_desc">Logo øvst til høgre, forfattartekst nedst i midten</string>
+    <string name="dual_preset_bottom_dual_title">Dobbel botnlinje</string>
+    <string name="dual_preset_bottom_dual_desc">Logo nedst til venstre, opphavsrettstekst nedst til høgre</string>
+    <string name="dual_preset_applied_toast">Dobbelt vassmerke er brukt</string>
+    <string name="dual_preset_pick_logo_prompt">Vel ein logo/eit ikon for det andre laget</string>
+    <string name="layer_manager_dual_presets">Doble førehandsval</string>
 </resources>

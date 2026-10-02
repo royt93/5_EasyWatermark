@@ -3,11 +3,13 @@
 > Quản lý danh sách tính năng theo quy tắc R2 toàn cục:
 > ✅ Implemented | 🟡 In progress | 📋 Picked | ⏸️ Deferred | ❌ Skipped | 💭 Ideas
 
-## 📋 Picked (Sprint 2026-09-29)
+## 🟡 In progress
 
-- 📋 **FEAT-26: Dual Watermark Preset (Text + Logo 2 góc)**
-  - Preset 1-chạm kết hợp Logo công ty ở góc trên + Text bản quyền ở góc dưới
-  - Tái dùng hạ tầng đa lớp FEAT-03 (`extraLayers`)
+_(trống)_
+
+---
+
+## 📋 Picked (Sprint 2026-09-29)
 
 - 📋 **FEAT-27: Quick Share Bar (Chia sẻ nhanh 1 chạm)**
   - Sau khi xuất batch, hiển thị icon các ứng dụng nhắn tin/lưu trữ cài sẵn (Zalo, Messenger, Telegram, Drive)
@@ -22,6 +24,13 @@
 ## ✅ Implemented (Đã hoàn thành trước đây)
 
 Xem chi tiết trong `doc/feat.md` và `doc/task/BACKLOG.md`:
+- ✅ FEAT-26: Dual Watermark Preset Text + Logo 2 góc (2026-10-02) — 4 preset 1-chạm
+  (`DualWatermarkPreset`), `DualPresetBuilder.applyPreset` tái dùng `extraLayers` FEAT-03; chip
+  "Dấu kép" + nút trong Layer Manager mở `DualPresetPickerBSDFragment`. `MainViewModel.applyDualPreset`
+  ép tile CLAMP TRƯỚC khi áp config (neo 9-grid chỉ có hiệu lực ở CLAMP; áp cùng lúc sẽ bị
+  `applyNewConfig` huỷ job → view vẫn vẽ REPEAT) rồi phát `UiState.ApplyAnchor`. Smoke test thật
+  TECNO KJ7: dialog hiển thị đúng, layer chính về góc dưới phải (`onDraw CLAMP`). Thiếu logo →
+  toast nhắc chọn logo. Đủ 12 locale. Test: unit + widget + Robolectric + instrumentation pixel.
 - ✅ FEAT-25: Watermark Timestamp tự động từ EXIF (2026-09-30) — token `{time}`/`{datetime}`
   trong `TextTokenResolver`; `ExportNaming.buildBaseTokens` ưu tiên `TAG_DATETIME_ORIGINAL` →
   `TAG_DATETIME` → `TAG_DATETIME_DIGITIZED` (parse qua `parseExifDateTime`, hỗ trợ nhiều định

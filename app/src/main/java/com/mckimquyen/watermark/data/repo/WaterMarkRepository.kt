@@ -17,6 +17,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.Anchor
+import com.mckimquyen.watermark.data.model.DualWatermarkPreset
 import com.mckimquyen.watermark.data.model.ExifFrameStyle
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.TextPaintStyle
@@ -37,6 +38,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_TEXT_STYLE
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_TEXT_TYPEFACE
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository.PreferenceKeys.KEY_VERTICAL_GAP
+import com.mckimquyen.watermark.utils.DualPresetBuilder
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -654,6 +656,17 @@ class WaterMarkRepository @Inject constructor(
             it[PreferenceKeys.KEY_QR_CONTENT_TEMPLATE] = mark.qrContentTemplate
             it[PreferenceKeys.KEY_QR_PORTFOLIO_LINK] = mark.qrPortfolioLink
         }
+    }
+
+    /**
+     * FEAT-26: Áp dụng mẫu dấu kép (Dual Preset) kết hợp Text ở layer chính và Logo ở layer phụ.
+     * Có snapshot để hỗ trợ Undo/Redo.
+     */
+    suspend fun applyDualPreset(preset: DualWatermarkPreset, defaultText: String? = null) {
+        snapshotForUndoIfDue()
+        val current = waterMark.first()
+        val updated = DualPresetBuilder.applyPreset(current, preset, defaultText)
+        applyWaterMark(updated)
     }
 
 //    suspend fun resetList() {

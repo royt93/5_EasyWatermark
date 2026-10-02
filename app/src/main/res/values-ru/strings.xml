@@ -433,4 +433,19 @@
     <string name="version_name_copyright_format">v%1$s • %2$s</string>
     <string name="copyright_rights_reserved_format">%1$s • Все права защищены</string>
     <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
+
+    <!-- FEAT-26: Dual Watermark Presets -->
+    <string name="title_dual_preset">Двойной знак</string>
+    <string name="dual_preset_picker_title">Шаблоны двойного водяного знака</string>
+    <string name="dual_preset_brand_copyright_title">Бренд &amp; авторские права</string>
+    <string name="dual_preset_brand_copyright_desc">Логотип вверху справа, текст авторских прав внизу справа</string>
+    <string name="dual_preset_diagonal_title">Диагональный баланс</string>
+    <string name="dual_preset_diagonal_desc">Логотип вверху слева, текст авторских прав внизу справа</string>
+    <string name="dual_preset_stamp_footer_title">Штамп &amp; нижний колонтитул по центру</string>
+    <string name="dual_preset_stamp_footer_desc">Логотип вверху справа, текст автора внизу по центру</string>
+    <string name="dual_preset_bottom_dual_title">Нижняя двойная панель</string>
+    <string name="dual_preset_bottom_dual_desc">Логотип внизу слева, текст авторских прав внизу справа</string>
+    <string name="dual_preset_applied_toast">Шаблон двойного водяного знака применён</string>
+    <string name="dual_preset_pick_logo_prompt">Выберите логотип/значок для второго слоя</string>
+    <string name="layer_manager_dual_presets">Двойные шаблоны</string>
 </resources>

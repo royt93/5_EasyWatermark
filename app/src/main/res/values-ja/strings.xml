@@ -426,4 +426,19 @@
     <string name="version_name_copyright_format">v%1$s • %2$s</string>
     <string name="copyright_rights_reserved_format">%1$s • 全著作権所有</string>
     <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
+
+    <!-- FEAT-26: Dual Watermark Presets -->
+    <string name="title_dual_preset">デュアルマーク</string>
+    <string name="dual_preset_picker_title">デュアル透かしプリセット</string>
+    <string name="dual_preset_brand_copyright_title">ブランド＆著作権</string>
+    <string name="dual_preset_brand_copyright_desc">右上にロゴ、右下に著作権テキスト</string>
+    <string name="dual_preset_diagonal_title">対角バランス</string>
+    <string name="dual_preset_diagonal_desc">左上にロゴ、右下に著作権テキスト</string>
+    <string name="dual_preset_stamp_footer_title">スタンプ＆中央フッター</string>
+    <string name="dual_preset_stamp_footer_desc">右上にロゴ、下中央に作者テキスト</string>
+    <string name="dual_preset_bottom_dual_title">下部デュアルバー</string>
+    <string name="dual_preset_bottom_dual_desc">左下にロゴ、右下に著作権テキスト</string>
+    <string name="dual_preset_applied_toast">デュアル透かしプリセットを適用しました</string>
+    <string name="dual_preset_pick_logo_prompt">2番目のレイヤー用のロゴ/アイコンを選択してください</string>
+    <string name="layer_manager_dual_presets">デュアルプリセット</string>
 </resources>

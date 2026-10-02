@@ -431,4 +431,19 @@
     <string name="version_name_copyright_format">v%1$s • %2$s</string>
     <string name="copyright_rights_reserved_format">%1$s • Todos os direitos reservados</string>
     <string name="output_directory_path_with_reset_hint">%1$s  ·  %2$s</string>
+
+    <!-- FEAT-26: Dual Watermark Presets -->
+    <string name="title_dual_preset">Marca dupla</string>
+    <string name="dual_preset_picker_title">Predefinições de marca d\'água dupla</string>
+    <string name="dual_preset_brand_copyright_title">Marca &amp; direitos autorais</string>
+    <string name="dual_preset_brand_copyright_desc">Logo no canto superior direito, texto de direitos autorais no inferior direito</string>
+    <string name="dual_preset_diagonal_title">Equilíbrio diagonal</string>
+    <string name="dual_preset_diagonal_desc">Logo no canto superior esquerdo, texto de direitos autorais no inferior direito</string>
+    <string name="dual_preset_stamp_footer_title">Carimbo &amp; rodapé centralizado</string>
+    <string name="dual_preset_stamp_footer_desc">Logo no canto superior direito, texto do autor no centro inferior</string>
+    <string name="dual_preset_bottom_dual_title">Barra dupla inferior</string>
+    <string name="dual_preset_bottom_dual_desc">Logo no canto inferior esquerdo, texto de direitos autorais no inferior direito</string>
+    <string name="dual_preset_applied_toast">Predefinição de marca d\'água dupla aplicada</string>
+    <string name="dual_preset_pick_logo_prompt">Escolha um logo/ícone para a segunda camada</string>
+    <string name="layer_manager_dual_presets">Predefinições duplas</string>
 </resources>
