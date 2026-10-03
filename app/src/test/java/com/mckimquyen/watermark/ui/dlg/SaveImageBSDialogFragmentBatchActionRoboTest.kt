@@ -121,6 +121,29 @@ class SaveImageBSDialogFragmentBatchActionRoboTest {
     }
 
     @Test
+    fun feat27_openShareWithTargetPackage_sendsToThatAppOnly() = runBlocking {
+        val (activity, dialog) = setupDialog()
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+        val ok = Result.success(Uri.parse("content://output/9.jpg"))
+        viewModel.waterMarkRepo.updateImageList(
+            listOf(ImageInfo(Uri.parse("content://media/9")).copy(result = ok, jobState = JobState.Success(ok)))
+        )
+        shadowOf(Looper.getMainLooper()).idle()
+
+        dialog.performOpenShare("com.zing.zalo")
+
+        val started = shadowOf(activity).nextStartedActivity
+        assertThat(started.`package`).isEqualTo("com.zing.zalo")
+        assertThat(started.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)).isEqualTo(Uri.parse("content://output/9.jpg"))
+    }
+
+    @Test
+    fun feat27_quickShareBar_hiddenWhenNoSupportedAppInstalled() {
+        val (_, dialog) = setupDialog()
+        assertThat(dialog.binding.layoutQuickShare.visibility).isEqualTo(android.view.View.GONE)
+    }
+
+    @Test
     fun bug33_batchAllFailed_disablesShareButtonAndHidesGalleryButton() = runBlocking {
         val (activity, dialog) = setupDialog()
         val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]

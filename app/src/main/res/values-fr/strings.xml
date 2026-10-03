@@ -456,4 +456,6 @@
     <string name="card_frame_corner">Rayon des coins</string>
     <string name="card_frame_shadow">Ombre</string>
     <string name="card_frame_background_color">Couleur de fond</string>
+    <string name="quick_share_title">Partage rapide</string>
+    <string name="quick_share_item_desc">Partager avec %1$s</string>
 </resources>

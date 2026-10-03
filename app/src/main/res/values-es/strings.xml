@@ -455,4 +455,6 @@
     <string name="card_frame_corner">Radio de esquina</string>
     <string name="card_frame_shadow">Sombra</string>
     <string name="card_frame_background_color">Color de fondo</string>
+    <string name="quick_share_title">Compartir rápido</string>
+    <string name="quick_share_item_desc">Compartir con %1$s</string>
 </resources>

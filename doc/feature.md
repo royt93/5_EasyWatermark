@@ -5,15 +5,17 @@
 
 ## 🟡 In progress
 
-_(trống)_
+- 🟡 **FEAT-27: Quick Share Bar (Chia sẻ nhanh 1 chạm)**
+  - Sau khi xuất batch, hiển thị icon các ứng dụng nhắn tin/lưu trữ cài sẵn (Zalo, Messenger, Telegram, Drive)
+  - Bấm mở thẳng app đích kèm file thay vì phải tìm trong Sharesheet
+- 📋 **FEAT-29: Hiện khung thẻ ngay trong preview editor** (chọn 2026-10-03, làm sau FEAT-27)
+  - Xoá hạn chế "khung thẻ chỉ áp lúc export" của FEAT-28
 
 ---
 
 ## 📋 Picked (Sprint 2026-09-29)
 
-- 📋 **FEAT-27: Quick Share Bar (Chia sẻ nhanh 1 chạm)**
-  - Sau khi xuất batch, hiển thị icon các ứng dụng nhắn tin/lưu trữ cài sẵn (Zalo, Messenger, Telegram, Drive)
-  - Bấm mở thẳng app đích kèm file thay vì phải tìm trong Sharesheet
+_(trống)_
 
 ---
 

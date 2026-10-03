@@ -38,6 +38,7 @@ import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
 import com.mckimquyen.watermark.ui.recipient.RecipientPickerBottomSheetFragment
 import com.mckimquyen.watermark.utils.ExportZipHelper
 import com.mckimquyen.watermark.utils.FileUtils
+import com.mckimquyen.watermark.utils.QuickShareHelper
 import com.mckimquyen.watermark.utils.VibrateHelper
 import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
 import com.mckimquyen.watermark.utils.ktx.preCheckStoragePermission
@@ -478,6 +479,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 }
                 binding.btnOpenGallery.isInvisible = true
                 binding.btnShareZip.isInvisible = true
+                binding.layoutQuickShare.isVisible = false
                 binding.atvFormat.isEnabled = false
                 binding.slideQuality.isEnabled = false
                 binding.menuFormat.isEnabled = false
@@ -499,6 +501,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 binding.btnOpenGallery.isInvisible = !hasSuccess
                 binding.btnShareZip.isInvisible = !hasSuccess
                 binding.btnShareZip.isEnabled = hasSuccess
+                bindQuickShareBar(hasSuccess)
                 binding.atvFormat.isEnabled = true
                 binding.slideQuality.isEnabled = true
                 binding.menuFormat.isEnabled = true
@@ -517,6 +520,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 }
                 binding.btnOpenGallery.isInvisible = true
                 binding.btnShareZip.isInvisible = true
+                binding.layoutQuickShare.isVisible = false
                 binding.atvFormat.isEnabled = true
                 binding.slideQuality.isEnabled = true
                 binding.menuFormat.isEnabled = true
@@ -590,43 +594,42 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
         }
     }
 
-    private fun openShare() {
+    private fun openShare(targetPackage: String? = null) {
         // BUG-33: Chỉ lấy các ảnh có shareUri hợp lệ; nếu toàn bộ batch fail thì không mở intent rỗng
         val list = shareViewModel.imageList.value?.first ?: emptyList()
-        val successfulUris = ArrayList(list.mapNotNull { it.shareUri })
+        val successfulUris = list.mapNotNull { it.shareUri }
         if (successfulUris.isEmpty()) {
             toast(R.string.save_failed)
             return
         }
-        val intent = Intent().apply {
-            type = "image/*"
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-
-        if (successfulUris.size == 1) {
-            val outputUri = successfulUris.first()
-            intent.apply {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_STREAM, outputUri)
-                clipData = android.content.ClipData.newUri(requireContext().contentResolver, "Image", outputUri)
-            }
-        } else {
-            intent.apply {
-                action = Intent.ACTION_SEND_MULTIPLE
-                putParcelableArrayListExtra(Intent.EXTRA_STREAM, successfulUris)
-                val clipData = android.content.ClipData("Images", arrayOf("image/*"), android.content.ClipData.Item(successfulUris[0]))
-                for (i in 1 until successfulUris.size) {
-                    clipData.addItem(android.content.ClipData.Item(successfulUris[i]))
-                }
-                this.clipData = clipData
-            }
-        }
+        // FEAT-27: targetPackage != null → mở thẳng app đích (Quick Share Bar), null → Sharesheet như cũ.
+        val intent = QuickShareHelper.buildShareIntent(requireContext().contentResolver, successfulUris, targetPackage)
         try {
             startActivity(intent)
         } catch (e: Exception) {
             e.printStackTrace()
             toast(getString(R.string.share_error, e.message))
+        }
+    }
+
+    /**
+     * FEAT-27: dựng hàng icon app cài sẵn (Zalo/Messenger/Telegram/Drive). Không có app nào hoặc
+     * batch không có ảnh thành công → ẩn cả khối. Dựng lại từ đầu mỗi lần (removeAllViews) nên gọi
+     * nhiều lần không nhân đôi icon.
+     */
+    private fun bindQuickShareBar(hasSuccess: Boolean) {
+        val container = binding.llQuickShareItems
+        container.removeAllViews()
+        val targets = if (hasSuccess) QuickShareHelper.resolveInstalled(requireContext().packageManager) else emptyList()
+        binding.layoutQuickShare.isVisible = targets.isNotEmpty()
+        val inflater = LayoutInflater.from(requireContext())
+        targets.forEach { target ->
+            val item = inflater.inflate(R.layout.item_quick_share, container, false)
+            item.findViewById<android.widget.ImageView>(R.id.ivQuickShareIcon).setImageDrawable(target.icon)
+            item.findViewById<android.widget.TextView>(R.id.tvQuickShareLabel).text = target.label
+            item.contentDescription = getString(R.string.quick_share_item_desc, target.label)
+            item.setOnClickListener { openShare(target.packageName) }
+            container.addView(item)
         }
     }
 
@@ -671,7 +674,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
     internal fun performOpenGallery() = openGallery()
 
     @androidx.annotation.VisibleForTesting
-    internal fun performOpenShare() = openShare()
+    internal fun performOpenShare(targetPackage: String? = null) = openShare(targetPackage)
 
     @androidx.annotation.VisibleForTesting
     internal fun performOpenShareZip(zipFileOverride: File? = null) {

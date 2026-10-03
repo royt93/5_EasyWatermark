@@ -492,4 +492,6 @@
     <string name="card_frame_corner">Corner radius</string>
     <string name="card_frame_shadow">Shadow</string>
     <string name="card_frame_background_color">Background color</string>
+    <string name="quick_share_title">Quick share</string>
+    <string name="quick_share_item_desc">Share to %1$s</string>
 </resources>

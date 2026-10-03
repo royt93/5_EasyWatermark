@@ -449,4 +449,6 @@
     <string name="card_frame_corner">角の半径</string>
     <string name="card_frame_shadow">影</string>
     <string name="card_frame_background_color">背景色</string>
+    <string name="quick_share_title">クイック共有</string>
+    <string name="quick_share_item_desc">%1$s で共有</string>
 </resources>

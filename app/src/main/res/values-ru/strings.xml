@@ -456,4 +456,6 @@
     <string name="card_frame_corner">Радиус углов</string>
     <string name="card_frame_shadow">Тень</string>
     <string name="card_frame_background_color">Цвет фона</string>
+    <string name="quick_share_title">Быстрая отправка</string>
+    <string name="quick_share_item_desc">Отправить через %1$s</string>
 </resources>

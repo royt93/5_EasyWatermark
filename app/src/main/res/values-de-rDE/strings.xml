@@ -456,4 +456,6 @@
     <string name="card_frame_corner">Eckenradius</string>
     <string name="card_frame_shadow">Schatten</string>
     <string name="card_frame_background_color">Hintergrundfarbe</string>
+    <string name="quick_share_title">Schnell teilen</string>
+    <string name="quick_share_item_desc">Mit %1$s teilen</string>
 </resources>

@@ -459,4 +459,6 @@
     <string name="card_frame_corner">Bán kính bo góc</string>
     <string name="card_frame_shadow">Đổ bóng</string>
     <string name="card_frame_background_color">Màu nền</string>
+    <string name="quick_share_title">Chia sẻ nhanh</string>
+    <string name="quick_share_item_desc">Chia sẻ tới %1$s</string>
 </resources>

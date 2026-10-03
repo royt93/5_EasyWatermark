@@ -454,4 +454,6 @@
     <string name="card_frame_corner">Raggio angoli</string>
     <string name="card_frame_shadow">Ombra</string>
     <string name="card_frame_background_color">Colore sfondo</string>
+    <string name="quick_share_title">Condivisione rapida</string>
+    <string name="quick_share_item_desc">Condividi con %1$s</string>
 </resources>

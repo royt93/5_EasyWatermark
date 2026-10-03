@@ -450,4 +450,6 @@
     <string name="card_frame_corner">Hjørneradius</string>
     <string name="card_frame_shadow">Skygge</string>
     <string name="card_frame_background_color">Bakgrunnsfarge</string>
+    <string name="quick_share_title">Hurtigdeling</string>
+    <string name="quick_share_item_desc">Del med %1$s</string>
 </resources>

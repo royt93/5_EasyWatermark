@@ -454,4 +454,6 @@
     <string name="card_frame_corner">Raio dos cantos</string>
     <string name="card_frame_shadow">Sombra</string>
     <string name="card_frame_background_color">Cor de fundo</string>
+    <string name="quick_share_title">Partilha rápida</string>
+    <string name="quick_share_item_desc">Partilhar com %1$s</string>
 </resources>

@@ -33,6 +33,11 @@ riêng cần thiết kế, không phải lint nông — xem IDEA-19. -->
         <intent>
             <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
         </intent>
+        <!-- FEAT-27 Quick Share Bar: danh sách này phải khớp QuickShareHelper.KNOWN_PACKAGES -->
+        <package android:name="com.zing.zalo" />
+        <package android:name="com.facebook.orca" />
+        <package android:name="org.telegram.messenger" />
+        <package android:name="com.google.android.apps.docs" />
     </queries>
 
     <application
