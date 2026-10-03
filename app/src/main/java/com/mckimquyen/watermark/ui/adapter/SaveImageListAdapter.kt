@@ -178,7 +178,11 @@ class SaveImageListAdapter(
                     holder.ivIcon.setImageBitmap(result.bitmap)
                     result.compliance?.let { complianceCache[info.uri] = it }
                     holder.showCompliance(result.compliance)
-                    val (dimensions, bytes) = estimateOutput(result.approxOriginalWidth, result.approxOriginalHeight)
+                    // FEAT-28: ưu tiên kích thước SAU khung EXIF/thẻ (engine tính); thiếu thì dùng ảnh gốc.
+                    val (dimensions, bytes) = estimateOutput(
+                        result.framedWidth ?: result.approxOriginalWidth,
+                        result.framedHeight ?: result.approxOriginalHeight
+                    )
                     holder.showPreviewInfo(
                         context.getString(
                             R.string.dialog_save_export_estimate,

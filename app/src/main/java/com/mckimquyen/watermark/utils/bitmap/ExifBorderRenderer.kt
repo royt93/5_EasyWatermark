@@ -48,6 +48,23 @@ object ExifBorderRenderer {
     }
 
     /**
+     * Kích thước canvas cuối của [buildExifBorderBitmap] — hàm thuần để grid preview export ước
+     * tính được kích thước thật mà không phải dựng cả khung. Công thức phải khớp 4 hàm
+     * `build*ExifBorder` bên dưới; `ExifBorderRendererRoboTest` so khớp với bitmap thật để chống lệch.
+     */
+    fun expandedSize(srcWidth: Int, srcHeight: Int, style: ExifFrameStyle, bandThicknessPercent: Float?): Pair<Int, Int> {
+        val band = (srcHeight * (bandThicknessPercent ?: style.defaultBandThicknessPercent)).toInt().coerceAtLeast(1)
+        return when (style) {
+            ExifFrameStyle.CLASSIC, ExifFrameStyle.MINIMAL -> srcWidth to srcHeight + band
+            ExifFrameStyle.POLAROID -> {
+                val side = (minOf(srcWidth, srcHeight) * 0.05f).toInt()
+                srcWidth + side * 2 to srcHeight + side + band
+            }
+            ExifFrameStyle.FILM_STRIP -> srcWidth to srcHeight + band * 2
+        }
+    }
+
+    /**
      * ENH-19: co [text] bằng dấu "…" nếu vượt quá [maxWidth] theo [paint] hiện tại — tránh vẽ
      * tràn khỏi canvas khi model máy/copyright dài bất thường. Text bình thường (không vượt
      * quá) trả về y nguyên, không đổi hành vi hiện có.

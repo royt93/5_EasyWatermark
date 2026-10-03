@@ -942,7 +942,10 @@ class BatchExportEngine @Inject constructor(
             /** IDEA-09: khung watermark chuẩn hoá (chỉ có ở CLAMP mode) — để chấm điểm sau biến đổi nền tảng. */
             val watermarkRect: BrandComplianceScorer.NormalizedBox? = null,
             /** IDEA-09: tương phản WCAG đo được ở vùng watermark (`null` nếu không đo được). */
-            val contrastRatio: Double? = null
+            val contrastRatio: Double? = null,
+            /** FEAT-28: kích thước SAU khung EXIF/thẻ (trước resize); `null` = không biết, dùng approxOriginal. */
+            val framedWidth: Int? = null,
+            val framedHeight: Int? = null
         ) : PreviewResult
 
         data class DecodeFailure(
@@ -1021,6 +1024,13 @@ class BatchExportEngine @Inject constructor(
             }
             val approxOriginalWidth = mutableBitmap.width * bitmapValue.inSampleSize
             val approxOriginalHeight = mutableBitmap.height * bitmapValue.inSampleSize
+            // FEAT-28: ước tính kích thước phải gồm cả khung EXIF + khung thẻ mà export thật sẽ thêm.
+            val (framedWidth, framedHeight) = resolveFramedSize(
+                approxOriginalWidth,
+                approxOriginalHeight,
+                config,
+                hasExif = bitmapValue.exifModel?.isEmpty() == false
+            )
 
             // Preview phải khớp đúng những gì export thật sẽ vẽ — dùng chung resolveBaseText()
             // với generateImage(), không tự suy diễn lại rule.
@@ -1028,7 +1038,13 @@ class BatchExportEngine @Inject constructor(
             if (shouldSkipTextWatermark(config.markMode, baseText)) {
                 // FEAT-03: layer chính bị skip (text rỗng) không có nghĩa layer PHỤ cũng phải ẩn.
                 drawExtraLayers(Canvas(mutableBitmap), mutableBitmap.width, mutableBitmap.height, imageInfo, config.extraLayers, contentResolver)
-                return@withContext PreviewResult.Success(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
+                return@withContext PreviewResult.Success(
+                    mutableBitmap,
+                    approxOriginalWidth,
+                    approxOriginalHeight,
+                    framedWidth = framedWidth,
+                    framedHeight = framedHeight
+                )
             }
 
             val previewInfo = imageInfo.copy(
@@ -1072,7 +1088,13 @@ class BatchExportEngine @Inject constructor(
                     if (iconValue == null || iconBitmap == null) {
                         // FEAT-03: icon layer chính lỗi decode không có nghĩa layer PHỤ cũng ẩn.
                         drawExtraLayers(Canvas(mutableBitmap), mutableBitmap.width, mutableBitmap.height, imageInfo, config.extraLayers, contentResolver)
-                        return@withContext PreviewResult.Success(mutableBitmap, approxOriginalWidth, approxOriginalHeight)
+                        return@withContext PreviewResult.Success(
+                            mutableBitmap,
+                            approxOriginalWidth,
+                            approxOriginalHeight,
+                            framedWidth = framedWidth,
+                            framedHeight = framedHeight
+                        )
                     }
                     iconValue.retain()
                     try {
@@ -1166,7 +1188,9 @@ class BatchExportEngine @Inject constructor(
                 approxOriginalHeight = approxOriginalHeight,
                 compliance = compliance,
                 watermarkRect = wmRectNormalized,
-                contrastRatio = contrastRatio
+                contrastRatio = contrastRatio,
+                framedWidth = framedWidth,
+                framedHeight = framedHeight
             )
         } catch (ce: CancellationException) {
             throw ce
@@ -1440,5 +1464,31 @@ class BatchExportEngine @Inject constructor(
          */
         fun resolveImageScale(matrixValues: FloatArray): Pair<Float, Float> =
             1 / matrixValues[Matrix.MSCALE_X] to 1 / matrixValues[Matrix.MSCALE_Y]
+
+        /**
+         * Kích thước ảnh SAU khung EXIF + khung thẻ FEAT-28 (trước resize) — cùng thứ tự và cùng điều
+         * kiện bật với [generateImage], dùng cho ước tính ở grid preview. Hàm thuần, test trên JVM.
+         */
+        fun resolveFramedSize(width: Int, height: Int, config: WaterMark, hasExif: Boolean): Pair<Int, Int> {
+            var size = width to height
+            if (config.enableExif && hasExif) {
+                size = ExifBorderRenderer.expandedSize(
+                    size.first,
+                    size.second,
+                    ExifFrameStyle.obtain(config.exifFrameStyle),
+                    config.exifBandThicknessPercent
+                )
+            }
+            if (config.cardFrameEnabled) {
+                val layout = CardFrameRenderer.computeLayout(
+                    size.first,
+                    size.second,
+                    config.cardCornerRadiusPercent,
+                    config.cardShadowPercent
+                )
+                size = layout.canvasWidth to layout.canvasHeight
+            }
+            return size
+        }
     }
 }

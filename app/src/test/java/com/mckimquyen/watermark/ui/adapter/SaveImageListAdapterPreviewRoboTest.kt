@@ -71,6 +71,31 @@ class SaveImageListAdapterPreviewRoboTest {
     }
 
     @Test
+    fun bind_previewHasFramedSize_estimateUsesFramedSizeNotOriginal() {
+        val adapter = SaveImageListAdapter(
+            context = context,
+            scope = CoroutineScope(Dispatchers.Unconfined),
+            generatePreview = { _, _ ->
+                BatchExportEngine.PreviewResult.Success(
+                    previewBitmap(),
+                    approxOriginalWidth = 4000,
+                    approxOriginalHeight = 3000,
+                    framedWidth = 4318,
+                    framedHeight = 3318
+                )
+            },
+            estimateOutput = { w, h -> (w to h) to 1L }
+        )
+        adapter.submitList(listOf(ImageInfo(Uri.parse("content://media/framed"))))
+
+        val text = tvPreviewInfo(createBoundHolder(adapter, 0)).text.toString()
+
+        assertThat(text).contains("4318")
+        assertThat(text).contains("3318")
+        assertThat(text).doesNotContain("4000")
+    }
+
+    @Test
     fun bind_previewGenerationFails_fallsBackToOriginalWithoutEstimateText() {
         val adapter = SaveImageListAdapter(
             context = context,

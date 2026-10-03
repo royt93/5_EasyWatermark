@@ -26,8 +26,9 @@ Xem chi tiết trong `doc/feat.md` và `doc/task/BACKLOG.md`:
   khung EXIF, TRƯỚC resize. Lưu trong `WaterMark` + profile (Room v3→v4, test migration).
   Smoke test thật Pixel 7 Pro: ảnh 1440×3120 → file 1758×3438 (padding 159px khớp `computeLayout`),
   góc bo + bóng + nền trắng đúng. Test: unit + Robolectric + widget + 3 instrumentation pass.
-  **Hạn chế đã biết:** ước tính kích thước ở grid preview export (`1440×3120 · ~0,91 MB`) chưa
-  cộng padding khung thẻ; preview editor không hiện khung (chỉ áp lúc export, đã ghi trong UI).
+  Ước tính ở grid preview export cộng cả khung EXIF + khung thẻ (`PreviewResult.framedWidth/Height`
+  từ `BatchExportEngine.resolveFramedSize`, smoke test: `1758×3438 · ~1,2 MB` khớp file thật). Preview
+  editor không hiện khung (chỉ áp lúc export, đã ghi trong UI).
 - ✅ FEAT-26: Dual Watermark Preset Text + Logo 2 góc (2026-10-02) — 4 preset 1-chạm
   (`DualWatermarkPreset`), `DualPresetBuilder.applyPreset` tái dùng `extraLayers` FEAT-03; chip
   "Dấu kép" + nút trong Layer Manager mở `DualPresetPickerBSDFragment`. `MainViewModel.applyDualPreset`

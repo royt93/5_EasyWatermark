@@ -15,7 +15,7 @@ import kotlin.math.min
 /**
  * FEAT-28 Frame & Shadow Builder — hàm thuần (không đụng state), hiện chỉ `BatchExportEngine` gọi.
  * Ảnh nguồn được bo góc, đặt vào giữa canvas MỞ RỘNG nền màu, kèm đổ bóng mềm phía dưới như thẻ
- * sản phẩm. Ước tính kích thước ở grid preview export chưa cộng phần padding này (xem feature.md).
+ * sản phẩm. [computeLayout] cũng dùng để ước tính kích thước ở grid preview export.
  */
 object CardFrameRenderer {
 
