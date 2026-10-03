@@ -5,9 +5,6 @@
 
 ## 🟡 In progress
 
-- 🟡 **FEAT-27: Quick Share Bar (Chia sẻ nhanh 1 chạm)**
-  - Sau khi xuất batch, hiển thị icon các ứng dụng nhắn tin/lưu trữ cài sẵn (Zalo, Messenger, Telegram, Drive)
-  - Bấm mở thẳng app đích kèm file thay vì phải tìm trong Sharesheet
 - 📋 **FEAT-29: Hiện khung thẻ ngay trong preview editor** (chọn 2026-10-03, làm sau FEAT-27)
   - Xoá hạn chế "khung thẻ chỉ áp lúc export" của FEAT-28
 
@@ -22,6 +19,14 @@ _(trống)_
 ## ✅ Implemented (Đã hoàn thành trước đây)
 
 Xem chi tiết trong `doc/feat.md` và `doc/task/BACKLOG.md`:
+- ✅ FEAT-27: Quick Share Bar — chia sẻ nhanh 1 chạm sau khi xuất (2026-10-03) — `QuickShareHelper`
+  lọc Zalo/Messenger/Telegram/Drive đã cài qua `PackageManager` + `<queries>` (danh sách phải khớp
+  manifest, có test chống lệch), dựng intent dùng chung với nút Chia sẻ (`openShare(targetPackage)`).
+  Hàng icon "Chia sẻ nhanh" hiện sau khi xuất xong, ẩn khi không có app nào hoặc batch lỗi hết.
+  Smoke test thật Pixel 7 Pro: Zalo, Messenger, Drive mở đúng kèm ảnh; Telegram nhận intent đúng
+  (`START ... pkg=org.telegram.messenger`) nhưng Activity của Telegram tự thoát ngay — tái hiện y hệt
+  bằng `adb shell am start` thuần, nên là hành vi phía Telegram 12.10.6, không phải lỗi app mình.
+  Đủ 12 locale. Test: 7 unit helper + 2 dialog.
 - ✅ FEAT-28: Frame & Shadow Builder — khung thẻ bo góc + đổ bóng + nền màu (2026-10-03) —
   `CardFrameRenderer` (hàm thuần, BitmapShader + BlurMaskFilter), `CardFramePbFragment` (chip
   "Thẻ ảnh": switch + slider bo góc/đổ bóng + màu nền), áp trong `BatchExportEngine` SAU watermark/
