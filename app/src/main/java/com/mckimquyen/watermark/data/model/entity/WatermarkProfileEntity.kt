@@ -46,5 +46,13 @@ data class WatermarkProfileEntity(
     val textEffectShadow: Boolean = false,
     val textEffectPillBackground: Boolean = false,
     /** FEAT-03 (thêm ở schema version 2, xem [Migration] 1→2 ở `WatermarkProfileDatabase`) — chuỗi encode qua `WatermarkLayer.serializeList`. `null` = profile lưu trước FEAT-03, không có layer phụ. */
-    val extraLayersRaw: String? = null
+    val extraLayersRaw: String? = null,
+    /**
+     * FEAT-28 (schema version 4, xem [Migration] 3→4 ở `WatermarkProfileDatabase`) — cả 4 cột NULLABLE:
+     * profile lưu trước FEAT-28 đọc ra `null` → dùng mặc định (khung thẻ tắt), không đổi look cũ.
+     */
+    val cardFrameEnabled: Boolean? = null,
+    val cardCornerRadiusPercent: Float? = null,
+    val cardShadowPercent: Float? = null,
+    val cardBackgroundColor: Int? = null
 )

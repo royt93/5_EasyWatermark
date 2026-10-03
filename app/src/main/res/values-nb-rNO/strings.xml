@@ -442,4 +442,12 @@
     <string name="dual_preset_applied_toast">Dobbelt vannmerke er brukt</string>
     <string name="dual_preset_pick_logo_prompt">Velg en logo/et ikon for det andre laget</string>
     <string name="layer_manager_dual_presets">Doble forhåndsvalg</string>
+
+    <!-- FEAT-28: Frame & Shadow Builder -->
+    <string name="func_title_card_frame">Kort</string>
+    <string name="card_frame_title">Kortramme</string>
+    <string name="card_frame_desc">Avrundede hjørner og myk kortskygge på farget bakgrunn. Brukes ved eksport; forhåndsvisningen i redigeringen endres ikke.</string>
+    <string name="card_frame_corner">Hjørneradius</string>
+    <string name="card_frame_shadow">Skygge</string>
+    <string name="card_frame_background_color">Bakgrunnsfarge</string>
 </resources>

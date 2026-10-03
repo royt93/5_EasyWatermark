@@ -64,6 +64,8 @@ object ProofingMode {
         vGap = PROOF_VERTICAL_GAP,
         markMode = WaterMarkRepository.MarkMode.Text,
         enableExif = false,
+        // FEAT-28: ảnh proof chỉ mang chữ proof — khung thẻ (bo góc/bóng/nền) làm sai lệch ảnh duyệt.
+        cardFrameEnabled = false,
         extraLayers = emptyList(),
         qrDynamicEnabled = false,
         qrContentTemplate = "",

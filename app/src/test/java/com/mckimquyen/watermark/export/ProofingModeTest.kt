@@ -29,6 +29,7 @@ class ProofingModeTest {
         markMode = WaterMarkRepository.MarkMode.Image,
         enableBounds = false,
         enableExif = true,
+        cardFrameEnabled = true,
         extraLayers = listOf(WatermarkLayer(WaterMarkRepository.MarkMode.Text, text = "extra")),
         qrDynamicEnabled = true,
         qrContentTemplate = "{hash}",
@@ -46,6 +47,8 @@ class ProofingModeTest {
         assertThat(result.alpha).isEqualTo(ProofingMode.PROOF_ALPHA)
         assertThat(result.degree).isEqualTo(ProofingMode.PROOF_DEGREE)
         assertThat(result.enableExif).isFalse()
+        // FEAT-28: ảnh proof không mang khung thẻ.
+        assertThat(result.cardFrameEnabled).isFalse()
         assertThat(result.extraLayers).isEmpty()
         assertThat(result.qrDynamicEnabled).isFalse()
     }

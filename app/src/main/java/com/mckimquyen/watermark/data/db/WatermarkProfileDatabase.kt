@@ -12,10 +12,11 @@ import com.mckimquyen.watermark.data.model.entity.WatermarkStyleHistoryEntity
 /**
  * FEAT-06: DB riêng, KHÔNG chung với [AppDatabase] — xem doc ở [WatermarkProfileEntity] lý do tách.
  * IDEA-12: thêm bảng `watermark_style_history` (version 3) vào chung DB này thay vì mở DB riêng.
+ * FEAT-28: thêm 4 cột khung thẻ vào `watermark_profile` (version 4).
  */
 @Database(
     entities = [WatermarkProfileEntity::class, WatermarkStyleHistoryEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class WatermarkProfileDatabase : RoomDatabase() {
@@ -31,6 +32,16 @@ abstract class WatermarkProfileDatabase : RoomDatabase() {
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE watermark_profile ADD COLUMN extraLayersRaw TEXT")
+            }
+        }
+
+        /** FEAT-28: 4 cột NULLABLE (không DEFAULT) — ALTER ADD COLUMN an toàn với dữ liệu cũ, hàng cũ đọc ra NULL. */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE watermark_profile ADD COLUMN cardFrameEnabled INTEGER")
+                db.execSQL("ALTER TABLE watermark_profile ADD COLUMN cardCornerRadiusPercent REAL")
+                db.execSQL("ALTER TABLE watermark_profile ADD COLUMN cardShadowPercent REAL")
+                db.execSQL("ALTER TABLE watermark_profile ADD COLUMN cardBackgroundColor INTEGER")
             }
         }
 

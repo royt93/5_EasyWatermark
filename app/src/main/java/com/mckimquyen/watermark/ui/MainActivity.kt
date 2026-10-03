@@ -160,6 +160,11 @@ class MainActivity : BaseActivity() {
                 type = FuncTitleModel.FuncType.DualWatermark,
                 title = getString(R.string.title_dual_preset),
                 iconRes = R.drawable.ic_func_layers
+            ),
+            FuncTitleModel(
+                type = FuncTitleModel.FuncType.CardFrame,
+                title = getString(R.string.func_title_card_frame),
+                iconRes = R.drawable.ic_func_frame
             )
         )
     }
@@ -1018,6 +1023,11 @@ class MainActivity : BaseActivity() {
             FuncTitleModel.FuncType.DualWatermark -> {
                 hideDetailPanel()
                 com.mckimquyen.watermark.ui.dlg.DualPresetPickerBSDFragment.safetyShow(supportFragmentManager)
+            }
+
+            FuncTitleModel.FuncType.CardFrame -> {
+                hideDetailPanel()
+                com.mckimquyen.watermark.ui.dlg.CardFramePbFragment.safetyShow(supportFragmentManager)
             }
         }
     }

@@ -161,4 +161,53 @@ class WatermarkProfileRepositoryRoboTest {
         assertThat(dao.deletedIds).containsExactly(7L)
         Unit
     }
+
+    @Test
+    fun toEntity_thenToWaterMark_roundTripsCardFrameFields() {
+        val original = sampleWaterMark().copy(
+            cardFrameEnabled = true,
+            cardCornerRadiusPercent = 0.25f,
+            cardShadowPercent = 0.07f,
+            cardBackgroundColor = 0xFF123456.toInt()
+        )
+
+        val restored = WatermarkProfileRepository.toWaterMark(WatermarkProfileRepository.toEntity("card", original))
+
+        assertThat(restored.cardFrameEnabled).isTrue()
+        assertThat(restored.cardCornerRadiusPercent).isEqualTo(0.25f)
+        assertThat(restored.cardShadowPercent).isEqualTo(0.07f)
+        assertThat(restored.cardBackgroundColor).isEqualTo(0xFF123456.toInt())
+    }
+
+    @Test
+    fun toWaterMark_legacyEntityWithNullCardColumns_usesDefaults_cardOff() {
+        // FEAT-28 thêm SAU khi profile đã tồn tại — hàng cũ có 4 cột card = NULL.
+        val legacy = WatermarkProfileRepository.toEntity("legacy", sampleWaterMark()).copy(
+            cardFrameEnabled = null,
+            cardCornerRadiusPercent = null,
+            cardShadowPercent = null,
+            cardBackgroundColor = null
+        )
+
+        val restored = WatermarkProfileRepository.toWaterMark(legacy)
+
+        assertThat(restored.cardFrameEnabled).isFalse()
+        assertThat(restored.cardCornerRadiusPercent).isEqualTo(WaterMarkRepository.DEFAULT_CARD_CORNER_PERCENT)
+        assertThat(restored.cardShadowPercent).isEqualTo(WaterMarkRepository.DEFAULT_CARD_SHADOW_PERCENT)
+        assertThat(restored.cardBackgroundColor).isEqualTo(WaterMarkRepository.DEFAULT_CARD_BACKGROUND_COLOR)
+    }
+
+    @Test
+    fun toWaterMark_outOfRangeStoredValues_areClamped() {
+        val dirty = WatermarkProfileRepository.toEntity("dirty", sampleWaterMark()).copy(
+            cardFrameEnabled = true,
+            cardCornerRadiusPercent = 99f,
+            cardShadowPercent = -5f
+        )
+
+        val restored = WatermarkProfileRepository.toWaterMark(dirty)
+
+        assertThat(restored.cardCornerRadiusPercent).isEqualTo(WaterMarkRepository.MAX_CARD_CORNER_PERCENT)
+        assertThat(restored.cardShadowPercent).isEqualTo(0f)
+    }
 }

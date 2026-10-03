@@ -56,5 +56,15 @@ data class WaterMark(
     /** IDEA-07 — template token cho nội dung QR động, vd "{hash}|{date}|{portfolio_link}". */
     val qrContentTemplate: String = "",
     /** IDEA-07 — link portfolio/MXH điền vào token {portfolio_link} của [qrContentTemplate]. */
-    val qrPortfolioLink: String = ""
+    val qrPortfolioLink: String = "",
+    /**
+     * FEAT-28 Frame & Shadow Builder — CHỈ áp lúc export (như khung EXIF, preview editor không vẽ):
+     * ảnh (đã kèm watermark) được bo góc, đặt lên nền [cardBackgroundColor] kèm đổ bóng nhẹ như card.
+     */
+    val cardFrameEnabled: Boolean = false,
+    /** FEAT-28 — bán kính bo góc, tỉ lệ theo cạnh NGẮN của ảnh (0..[WaterMarkRepository.MAX_CARD_CORNER_PERCENT]). */
+    val cardCornerRadiusPercent: Float = WaterMarkRepository.DEFAULT_CARD_CORNER_PERCENT,
+    /** FEAT-28 — độ nhoè bóng, tỉ lệ theo cạnh ngắn (0 = không bóng, tối đa [WaterMarkRepository.MAX_CARD_SHADOW_PERCENT]). */
+    val cardShadowPercent: Float = WaterMarkRepository.DEFAULT_CARD_SHADOW_PERCENT,
+    val cardBackgroundColor: Int = WaterMarkRepository.DEFAULT_CARD_BACKGROUND_COLOR
 )

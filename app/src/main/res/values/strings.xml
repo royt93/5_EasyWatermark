@@ -484,4 +484,12 @@
     <string name="dual_preset_applied_toast">Applied dual watermark preset</string>
     <string name="dual_preset_pick_logo_prompt">Please choose a logo/icon for the second layer</string>
     <string name="layer_manager_dual_presets">Dual Presets</string>
+
+    <!-- FEAT-28: Frame & Shadow Builder -->
+    <string name="func_title_card_frame">Card</string>
+    <string name="card_frame_title">Card frame</string>
+    <string name="card_frame_desc">Rounded corners and a soft card shadow on a colored background. Applied when exporting; the editor preview is unchanged.</string>
+    <string name="card_frame_corner">Corner radius</string>
+    <string name="card_frame_shadow">Shadow</string>
+    <string name="card_frame_background_color">Background color</string>
 </resources>

@@ -448,4 +448,12 @@
     <string name="dual_preset_applied_toast">Шаблон двойного водяного знака применён</string>
     <string name="dual_preset_pick_logo_prompt">Выберите логотип/значок для второго слоя</string>
     <string name="layer_manager_dual_presets">Двойные шаблоны</string>
+
+    <!-- FEAT-28: Frame & Shadow Builder -->
+    <string name="func_title_card_frame">Карточка</string>
+    <string name="card_frame_title">Рамка-карточка</string>
+    <string name="card_frame_desc">Скруглённые углы и мягкая тень карточки на цветном фоне. Применяется при экспорте; предпросмотр в редакторе не меняется.</string>
+    <string name="card_frame_corner">Радиус углов</string>
+    <string name="card_frame_shadow">Тень</string>
+    <string name="card_frame_background_color">Цвет фона</string>
 </resources>

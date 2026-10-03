@@ -772,6 +772,26 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /** FEAT-28 — khung thẻ bo góc + đổ bóng (áp lúc export). */
+    fun toggleCardFrame() {
+        launch {
+            val current = waterMark.value?.cardFrameEnabled ?: false
+            waterMarkRepo.updateCardFrameEnabled(!current)
+        }
+    }
+
+    fun updateCardCornerRadiusPercent(percent: Float) {
+        launch { waterMarkRepo.updateCardCornerRadiusPercent(percent) }
+    }
+
+    fun updateCardShadowPercent(percent: Float) {
+        launch { waterMarkRepo.updateCardShadowPercent(percent) }
+    }
+
+    fun updateCardBackgroundColor(color: Int) {
+        launch { waterMarkRepo.updateCardBackgroundColor(color) }
+    }
+
     /** IDEA-18 — màu khung EXIF theo màu chủ đạo của từng ảnh (áp lúc export). */
     fun updateExifAutoPalette(enable: Boolean) {
         launch { waterMarkRepo.updateExifAutoPalette(enable) }

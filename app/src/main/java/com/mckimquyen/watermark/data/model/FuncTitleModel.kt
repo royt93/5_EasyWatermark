@@ -37,5 +37,8 @@ data class FuncTitleModel(
 
         /** FEAT-26: mở DualPresetPickerBSDFragment — chọn nhanh mẫu dấu kép 1-chạm. */
         object DualWatermark : FuncType()
+
+        /** FEAT-28: mở CardFramePbFragment — khung thẻ bo góc + đổ bóng (áp lúc export). */
+        object CardFrame : FuncType()
     }
 }

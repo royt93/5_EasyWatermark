@@ -54,7 +54,11 @@ class WatermarkProfileRepository @Inject constructor(
             textEffectStroke = mark.textEffectStroke,
             textEffectShadow = mark.textEffectShadow,
             textEffectPillBackground = mark.textEffectPillBackground,
-            extraLayersRaw = WatermarkLayer.serializeList(mark.extraLayers)
+            extraLayersRaw = WatermarkLayer.serializeList(mark.extraLayers),
+            cardFrameEnabled = mark.cardFrameEnabled,
+            cardCornerRadiusPercent = mark.cardCornerRadiusPercent,
+            cardShadowPercent = mark.cardShadowPercent,
+            cardBackgroundColor = mark.cardBackgroundColor
         )
 
         /**
@@ -90,7 +94,14 @@ class WatermarkProfileRepository @Inject constructor(
             textEffectShadow = entity.textEffectShadow,
             textEffectPillBackground = entity.textEffectPillBackground,
             recentIconUris = emptyList(),
-            extraLayers = WatermarkLayer.parseList(entity.extraLayersRaw)
+            extraLayers = WatermarkLayer.parseList(entity.extraLayersRaw),
+            // FEAT-28: profile cũ (cột NULL) → mặc định, đúng look trước khi có khung thẻ.
+            cardFrameEnabled = entity.cardFrameEnabled ?: false,
+            cardCornerRadiusPercent = (entity.cardCornerRadiusPercent ?: WaterMarkRepository.DEFAULT_CARD_CORNER_PERCENT)
+                .coerceIn(0f, WaterMarkRepository.MAX_CARD_CORNER_PERCENT),
+            cardShadowPercent = (entity.cardShadowPercent ?: WaterMarkRepository.DEFAULT_CARD_SHADOW_PERCENT)
+                .coerceIn(0f, WaterMarkRepository.MAX_CARD_SHADOW_PERCENT),
+            cardBackgroundColor = entity.cardBackgroundColor ?: WaterMarkRepository.DEFAULT_CARD_BACKGROUND_COLOR
         )
     }
 }

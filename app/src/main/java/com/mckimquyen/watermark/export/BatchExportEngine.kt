@@ -45,6 +45,7 @@ import com.mckimquyen.watermark.ui.widget.WaterMarkImageView
 import com.mckimquyen.watermark.utils.FileUtils.Companion.outPutFolderName
 import com.mckimquyen.watermark.utils.QrCodeGenerator
 import com.mckimquyen.watermark.utils.bitmap.BitmapRecycleGuard
+import com.mckimquyen.watermark.utils.bitmap.CardFrameRenderer
 import com.mckimquyen.watermark.utils.bitmap.ExifBorderRenderer
 import com.mckimquyen.watermark.utils.bitmap.ExifFramePalette
 import com.mckimquyen.watermark.utils.bitmap.OutputImageUtils
@@ -559,13 +560,31 @@ class BatchExportEngine @Inject constructor(
                     mutableBitmap
                 }
 
+                // FEAT-28: khung thẻ (bo góc + đổ bóng + nền) bao ngoài CÙNG ảnh đã có watermark và
+                // khung EXIF (nếu có) — sau cùng trước resize để bóng/nền không bị cắt lúc thu nhỏ.
+                val cardBitmap = if (tmpConfig.cardFrameEnabled) {
+                    val card = CardFrameRenderer.buildCardBitmap(
+                        source = finalExportBitmap,
+                        cornerPercent = tmpConfig.cardCornerRadiusPercent,
+                        shadowPercent = tmpConfig.cardShadowPercent,
+                        backgroundColor = tmpConfig.cardBackgroundColor
+                    )
+                    // finalExportBitmap đã được vẽ sang card, không còn dùng — recycle tránh giữ 2
+                    // bitmap full-res cùng lúc (BUG-05).
+                    if (!finalExportBitmap.isRecycled) finalExportBitmap.recycle()
+                    bitmapGuard.replace(card)
+                    card
+                } else {
+                    finalExportBitmap
+                }
+
                 // Resize cạnh dài khi lưu (0 = giữ nguyên kích thước gốc).
-                var exportBitmap = OutputImageUtils.resizeIfNeeded(finalExportBitmap, settings.maxOutputLongEdge)
+                var exportBitmap = OutputImageUtils.resizeIfNeeded(cardBitmap, settings.maxOutputLongEdge)
                 // resizeIfNeeded trả về CÙNG instance khi maxOutputLongEdge=0 (không resize) — chỉ
-                // recycle finalExportBitmap khi thực sự đã tạo bitmap mới, tránh recycle nhầm bitmap
+                // recycle cardBitmap khi thực sự đã tạo bitmap mới, tránh recycle nhầm bitmap
                 // đang dùng (BUG-05).
-                if (exportBitmap !== finalExportBitmap && !finalExportBitmap.isRecycled) {
-                    finalExportBitmap.recycle()
+                if (exportBitmap !== cardBitmap && !cardBitmap.isRecycled) {
+                    cardBitmap.recycle()
                 }
                 bitmapGuard.replace(exportBitmap)
 

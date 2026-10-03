@@ -447,4 +447,12 @@
     <string name="dual_preset_applied_toast">Plantilla de marca de agua doble aplicada</string>
     <string name="dual_preset_pick_logo_prompt">Elige un logo/icono para la segunda capa</string>
     <string name="layer_manager_dual_presets">Plantillas dobles</string>
+
+    <!-- FEAT-28: Frame & Shadow Builder -->
+    <string name="func_title_card_frame">Tarjeta</string>
+    <string name="card_frame_title">Marco de tarjeta</string>
+    <string name="card_frame_desc">Esquinas redondeadas y sombra suave de tarjeta sobre fondo de color. Se aplica al exportar; la vista previa del editor no cambia.</string>
+    <string name="card_frame_corner">Radio de esquina</string>
+    <string name="card_frame_shadow">Sombra</string>
+    <string name="card_frame_background_color">Color de fondo</string>
 </resources>

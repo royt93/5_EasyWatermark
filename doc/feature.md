@@ -15,15 +15,19 @@ _(trống)_
   - Sau khi xuất batch, hiển thị icon các ứng dụng nhắn tin/lưu trữ cài sẵn (Zalo, Messenger, Telegram, Drive)
   - Bấm mở thẳng app đích kèm file thay vì phải tìm trong Sharesheet
 
-- 📋 **FEAT-28: Frame & Shadow Builder (Khung bo góc + đổ bóng card)**
-  - Bo góc ảnh theo bán kính tuỳ chỉnh
-  - Tạo đổ bóng nhẹ kiểu card sản phẩm, nền trắng/màu tuỳ chọn trước khi đóng dấu
-
 ---
 
 ## ✅ Implemented (Đã hoàn thành trước đây)
 
 Xem chi tiết trong `doc/feat.md` và `doc/task/BACKLOG.md`:
+- ✅ FEAT-28: Frame & Shadow Builder — khung thẻ bo góc + đổ bóng + nền màu (2026-10-03) —
+  `CardFrameRenderer` (hàm thuần, BitmapShader + BlurMaskFilter), `CardFramePbFragment` (chip
+  "Thẻ ảnh": switch + slider bo góc/đổ bóng + màu nền), áp trong `BatchExportEngine` SAU watermark/
+  khung EXIF, TRƯỚC resize. Lưu trong `WaterMark` + profile (Room v3→v4, test migration).
+  Smoke test thật Pixel 7 Pro: ảnh 1440×3120 → file 1758×3438 (padding 159px khớp `computeLayout`),
+  góc bo + bóng + nền trắng đúng. Test: unit + Robolectric + widget + 3 instrumentation pass.
+  **Hạn chế đã biết:** ước tính kích thước ở grid preview export (`1440×3120 · ~0,91 MB`) chưa
+  cộng padding khung thẻ; preview editor không hiện khung (chỉ áp lúc export, đã ghi trong UI).
 - ✅ FEAT-26: Dual Watermark Preset Text + Logo 2 góc (2026-10-02) — 4 preset 1-chạm
   (`DualWatermarkPreset`), `DualPresetBuilder.applyPreset` tái dùng `extraLayers` FEAT-03; chip
   "Dấu kép" + nút trong Layer Manager mở `DualPresetPickerBSDFragment`. `MainViewModel.applyDualPreset`

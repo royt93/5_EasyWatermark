@@ -72,7 +72,7 @@ object AppModule {
         context = app,
         klass = WatermarkProfileDatabase::class.java,
         name = "watermark-profile-db"
-    ).addMigrations(WatermarkProfileDatabase.MIGRATION_1_2, WatermarkProfileDatabase.MIGRATION_2_3).build()
+    ).addMigrations(WatermarkProfileDatabase.MIGRATION_1_2, WatermarkProfileDatabase.MIGRATION_2_3, WatermarkProfileDatabase.MIGRATION_3_4).build()
 
     @Singleton
     @Provides

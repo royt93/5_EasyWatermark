@@ -99,6 +99,12 @@ class WaterMarkRepository @Inject constructor(
 
         /** IDEA-06. */
         val KEY_AUTO_CONTRAST_ENABLED = booleanPreferencesKey(SP_KEY_AUTO_CONTRAST_ENABLED)
+
+        /** FEAT-28. */
+        val KEY_CARD_FRAME_ENABLED = booleanPreferencesKey(SP_KEY_CARD_FRAME_ENABLED)
+        val KEY_CARD_CORNER_PERCENT = floatPreferencesKey(SP_KEY_CARD_CORNER_PERCENT)
+        val KEY_CARD_SHADOW_PERCENT = floatPreferencesKey(SP_KEY_CARD_SHADOW_PERCENT)
+        val KEY_CARD_BACKGROUND_COLOR = intPreferencesKey(SP_KEY_CARD_BACKGROUND_COLOR)
         val KEY_RECENT_ICON_URIS = stringPreferencesKey(SP_KEY_RECENT_ICON_URIS)
 
         /** FEAT-03. */
@@ -155,7 +161,13 @@ class WaterMarkRepository @Inject constructor(
                 autoContrastEnabled = it[PreferenceKeys.KEY_AUTO_CONTRAST_ENABLED] ?: false,
                 qrDynamicEnabled = it[PreferenceKeys.KEY_QR_DYNAMIC_ENABLED] ?: false,
                 qrContentTemplate = it[PreferenceKeys.KEY_QR_CONTENT_TEMPLATE] ?: "",
-                qrPortfolioLink = it[PreferenceKeys.KEY_QR_PORTFOLIO_LINK] ?: ""
+                qrPortfolioLink = it[PreferenceKeys.KEY_QR_PORTFOLIO_LINK] ?: "",
+                cardFrameEnabled = it[PreferenceKeys.KEY_CARD_FRAME_ENABLED] ?: false,
+                cardCornerRadiusPercent = (it[PreferenceKeys.KEY_CARD_CORNER_PERCENT] ?: DEFAULT_CARD_CORNER_PERCENT)
+                    .coerceIn(0f, MAX_CARD_CORNER_PERCENT),
+                cardShadowPercent = (it[PreferenceKeys.KEY_CARD_SHADOW_PERCENT] ?: DEFAULT_CARD_SHADOW_PERCENT)
+                    .coerceIn(0f, MAX_CARD_SHADOW_PERCENT),
+                cardBackgroundColor = it[PreferenceKeys.KEY_CARD_BACKGROUND_COLOR] ?: DEFAULT_CARD_BACKGROUND_COLOR
             )
         }
 
@@ -598,6 +610,29 @@ class WaterMarkRepository @Inject constructor(
         dataStore.edit { it[PreferenceKeys.KEY_AUTO_CONTRAST_ENABLED] = enable }
     }
 
+    /** FEAT-28 — bật/tắt khung thẻ (bo góc + đổ bóng) lúc export. */
+    suspend fun updateCardFrameEnabled(enable: Boolean) {
+        snapshotForUndoIfDue()
+        dataStore.edit { it[PreferenceKeys.KEY_CARD_FRAME_ENABLED] = enable }
+    }
+
+    /** FEAT-28 — clamp [0, [MAX_CARD_CORNER_PERCENT]]: >0.5 làm bán kính vượt nửa cạnh ngắn, vẽ méo. */
+    suspend fun updateCardCornerRadiusPercent(percent: Float) {
+        snapshotForUndoIfDue()
+        dataStore.edit { it[PreferenceKeys.KEY_CARD_CORNER_PERCENT] = percent.coerceIn(0f, MAX_CARD_CORNER_PERCENT) }
+    }
+
+    /** FEAT-28 — clamp [0, [MAX_CARD_SHADOW_PERCENT]]: bóng quá lớn làm padding phình, tốn RAM ảnh full-res. */
+    suspend fun updateCardShadowPercent(percent: Float) {
+        snapshotForUndoIfDue()
+        dataStore.edit { it[PreferenceKeys.KEY_CARD_SHADOW_PERCENT] = percent.coerceIn(0f, MAX_CARD_SHADOW_PERCENT) }
+    }
+
+    suspend fun updateCardBackgroundColor(color: Int) {
+        snapshotForUndoIfDue()
+        dataStore.edit { it[PreferenceKeys.KEY_CARD_BACKGROUND_COLOR] = color }
+    }
+
     /** IDEA-18 — bật/tắt màu khung EXIF theo màu chủ đạo của từng ảnh. */
     suspend fun updateExifAutoPalette(enable: Boolean) {
         snapshotForUndoIfDue()
@@ -655,6 +690,10 @@ class WaterMarkRepository @Inject constructor(
             it[PreferenceKeys.KEY_QR_DYNAMIC_ENABLED] = mark.qrDynamicEnabled
             it[PreferenceKeys.KEY_QR_CONTENT_TEMPLATE] = mark.qrContentTemplate
             it[PreferenceKeys.KEY_QR_PORTFOLIO_LINK] = mark.qrPortfolioLink
+            it[PreferenceKeys.KEY_CARD_FRAME_ENABLED] = mark.cardFrameEnabled
+            it[PreferenceKeys.KEY_CARD_CORNER_PERCENT] = mark.cardCornerRadiusPercent.coerceIn(0f, MAX_CARD_CORNER_PERCENT)
+            it[PreferenceKeys.KEY_CARD_SHADOW_PERCENT] = mark.cardShadowPercent.coerceIn(0f, MAX_CARD_SHADOW_PERCENT)
+            it[PreferenceKeys.KEY_CARD_BACKGROUND_COLOR] = mark.cardBackgroundColor
         }
     }
 
@@ -727,6 +766,17 @@ class WaterMarkRepository @Inject constructor(
 
         /** IDEA-06. */
         const val SP_KEY_AUTO_CONTRAST_ENABLED = "${SP_NAME}_key_auto_contrast_enabled"
+
+        /** FEAT-28. */
+        const val SP_KEY_CARD_FRAME_ENABLED = "${SP_NAME}_key_card_frame_enabled"
+        const val SP_KEY_CARD_CORNER_PERCENT = "${SP_NAME}_key_card_corner_percent"
+        const val SP_KEY_CARD_SHADOW_PERCENT = "${SP_NAME}_key_card_shadow_percent"
+        const val SP_KEY_CARD_BACKGROUND_COLOR = "${SP_NAME}_key_card_background_color"
+        const val DEFAULT_CARD_CORNER_PERCENT = 0.06f
+        const val MAX_CARD_CORNER_PERCENT = 0.5f
+        const val DEFAULT_CARD_SHADOW_PERCENT = 0.03f
+        const val MAX_CARD_SHADOW_PERCENT = 0.10f
+        const val DEFAULT_CARD_BACKGROUND_COLOR = 0xFFFFFFFF.toInt()
         const val SP_KEY_RECENT_ICON_URIS = "${SP_NAME}_key_recent_icon_uris"
 
         /** FEAT-03. */

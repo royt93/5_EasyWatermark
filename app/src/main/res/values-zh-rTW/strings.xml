@@ -442,4 +442,12 @@
     <string name="dual_preset_applied_toast">已套用雙重浮水印預設</string>
     <string name="dual_preset_pick_logo_prompt">請為第二圖層選擇標誌/圖示</string>
     <string name="layer_manager_dual_presets">雙重預設</string>
+
+    <!-- FEAT-28: Frame & Shadow Builder -->
+    <string name="func_title_card_frame">卡片</string>
+    <string name="card_frame_title">卡片邊框</string>
+    <string name="card_frame_desc">在彩色背景上加入圓角與柔和的卡片陰影。僅在匯出時套用，編輯器預覽不變。</string>
+    <string name="card_frame_corner">圓角半徑</string>
+    <string name="card_frame_shadow">陰影</string>
+    <string name="card_frame_background_color">背景顏色</string>
 </resources>
