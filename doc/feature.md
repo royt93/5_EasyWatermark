@@ -23,9 +23,15 @@ Xem chi tiết trong `doc/feat.md` và `doc/task/BACKLOG.md`:
   lọc Zalo/Messenger/Telegram/Drive đã cài qua `PackageManager` + `<queries>` (danh sách phải khớp
   manifest, có test chống lệch), dựng intent dùng chung với nút Chia sẻ (`openShare(targetPackage)`).
   Hàng icon "Chia sẻ nhanh" hiện sau khi xuất xong, ẩn khi không có app nào hoặc batch lỗi hết.
-  Smoke test thật Pixel 7 Pro: Zalo, Messenger, Drive mở đúng kèm ảnh; Telegram nhận intent đúng
-  (`START ... pkg=org.telegram.messenger`) nhưng Activity của Telegram tự thoát ngay — tái hiện y hệt
-  bằng `adb shell am start` thuần, nên là hành vi phía Telegram 12.10.6, không phải lỗi app mình.
+  Smoke test thật Pixel 7 Pro: Zalo, Messenger, Drive mở đúng kèm ảnh. Telegram: intent gửi đúng
+  (`START ... pkg=org.telegram.messenger`) nhưng Telegram không lên foreground, kể cả khi gửi bằng
+  `adb shell am start` thuần. **Chưa kết luận được nguyên nhân** — lúc test có tiến trình
+  `am instrument ...lenslauncher.test` chen vào foreground nên kết quả bị nhiễu; cần thử lại khi máy sạch.
+  **Đã sửa 1 bug thật tìm ra lúc smoke test:** WorkManager replay WorkInfo SUCCEEDED của phiên trước cho
+  `MainViewModel` mới, làm ảnh MỚI chưa xuất bị coi là "xong" (nút "Chia sẻ" hiện nhưng bị vô hiệu ngay khi
+  mở dialog). `observeExportWork` giờ bỏ qua work xong nếu repo không có ảnh nào mang kết quả (test
+  `MainViewModelExportStateRestoreRoboTest`). **Chưa giải thích được:** dialog đôi lúc về lại "Xuất vào bộ
+  sưu tập" sau khi quay về từ app đích khi cùng 1 phiên — chưa tái hiện lại được, không khẳng định đã hết.
   Đủ 12 locale. Test: 7 unit helper + 2 dialog.
 - ✅ FEAT-28: Frame & Shadow Builder — khung thẻ bo góc + đổ bóng + nền màu (2026-10-03) —
   `CardFrameRenderer` (hàm thuần, BitmapShader + BlurMaskFilter), `CardFramePbFragment` (chip

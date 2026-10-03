@@ -446,6 +446,17 @@ class MainViewModel @Inject constructor(
                     return@Observer
                 }
                 lastHandledFinishedWorkId = info.id
+                // WorkManager giữ WorkInfo SUCCEEDED của phiên TRƯỚC (kể cả sau khi app bị kill rồi mở
+                // lại) và replay cho ViewModel MỚI. Worker luôn ghi kết quả từng ảnh vào repo trước khi
+                // kết thúc, nên danh sách hiện tại không có ảnh nào mang kết quả = work này không phải
+                // của danh sách này — bỏ qua, nếu không dialog hiện "Chia sẻ" (bị vô hiệu) cho ảnh chưa xuất.
+                // Đọc thẳng repo (đồng bộ) thay vì LiveData imageList — LiveData chưa có observer thì
+                // .value là null và sẽ loại nhầm work hợp lệ.
+                if (info.state == androidx.work.WorkInfo.State.SUCCEEDED &&
+                    waterMarkRepo.imageInfoList.none { it.result != null }
+                ) {
+                    return@Observer
+                }
                 // Progress Data của item cuối cùng có thể đã bị WorkManager xoá trước khi observer
                 // này kịp thấy (xem BatchExportWorker.doWork()) — đẩy lại toàn bộ trạng thái cuối
                 // (đã ghi vào repo, tự imageList cập nhật) qua saveProcess để adapter không bị kẹt
