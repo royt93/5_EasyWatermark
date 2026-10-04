@@ -47,4 +47,37 @@ class ProofingIndexIntegrationTest {
 
         testDir.deleteRecursively()
     }
+
+    /**
+     * BUG-61: decode Skia thật (Robolectric không mô phỏng đúng decode-failure cho bytes rác) — 1 ảnh
+     * hỏng giữ path tương đối, ảnh tốt vẫn nhúng thumbnail, không làm hỏng cả batch.
+     */
+    @Test
+    fun embedImages_undecodableImage_keepsRelativeName_whileGoodImageIsEmbedded() {
+        val dir = File(context.cacheDir, "proofing_embed_test").apply {
+            if (exists()) deleteRecursively()
+            mkdirs()
+        }
+        val bad = File(dir, "bad.jpg").apply { writeText("not an image at all") }
+        val good = File(dir, "good.jpg")
+        good.outputStream().use {
+            android.graphics.Bitmap.createBitmap(1200, 800, android.graphics.Bitmap.Config.ARGB_8888)
+                .compress(android.graphics.Bitmap.CompressFormat.JPEG, 95, it)
+        }
+
+        val result = ProofingMode.embedImages(
+            context.contentResolver,
+            listOf(
+                ProofingMode.Entry(1, "bad.jpg", uri = android.net.Uri.fromFile(bad)),
+                ProofingMode.Entry(2, "good.jpg", uri = android.net.Uri.fromFile(good))
+            )
+        )
+
+        assertThat(result[0].imageSrc).isEqualTo("bad.jpg")
+        assertThat(result[1].imageSrc).startsWith("data:image/jpeg;base64,")
+        // Thumbnail nhúng nhỏ hơn hẳn ảnh gốc (không nhúng full-res).
+        val embeddedBytes = android.util.Base64.decode(result[1].imageSrc.substringAfter("base64,"), android.util.Base64.NO_WRAP)
+        assertThat(embeddedBytes.size.toLong()).isLessThan(good.length())
+        dir.deleteRecursively()
+    }
 }

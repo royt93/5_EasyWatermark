@@ -50,16 +50,19 @@ class ProofingModeMediaStoreDirectoryRoboTest {
     fun embedImages_entryWithUri_replacesImageSrcWithBase64DataUri() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val imageUri = Uri.parse("content://media/external/images/media/999")
-        val fakeBytes = "FAKE_JPEG_BYTES".toByteArray()
-        shadowOf(context.contentResolver).registerInputStream(imageUri, java.io.ByteArrayInputStream(fakeBytes))
+        // BUG-61: giờ nhúng THUMBNAIL (decode + nén lại) nên cần ảnh thật, không còn nhúng nguyên bytes.
+        val bytes = java.io.ByteArrayOutputStream().also {
+            android.graphics.Bitmap.createBitmap(16, 16, android.graphics.Bitmap.Config.ARGB_8888)
+                .compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, it)
+        }.toByteArray()
+        shadowOf(context.contentResolver).registerInputStream(imageUri, java.io.ByteArrayInputStream(bytes))
 
         val result = ProofingMode.embedImages(
             context.contentResolver,
             listOf(ProofingMode.Entry(1, "ewm_1.jpg", uri = imageUri))
         )
 
-        val expectedBase64 = android.util.Base64.encodeToString(fakeBytes, android.util.Base64.NO_WRAP)
-        assertThat(result.single().imageSrc).isEqualTo("data:image/jpeg;base64,$expectedBase64")
+        assertThat(result.single().imageSrc).startsWith("data:image/jpeg;base64,")
         // fileName (dùng cho caption) không đổi — chỉ imageSrc (dùng cho src=) bị thay.
         assertThat(result.single().fileName).isEqualTo("ewm_1.jpg")
     }

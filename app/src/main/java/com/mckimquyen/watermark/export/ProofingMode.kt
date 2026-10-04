@@ -3,6 +3,8 @@ package com.mckimquyen.watermark.export
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -11,6 +13,8 @@ import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.utils.FileUtils
+import com.mckimquyen.watermark.utils.bitmap.calculateInSampleSizeForLongEdge
+import java.io.ByteArrayOutputStream
 import java.io.File
 
 /** IDEA-13: cấu hình watermark proof lớn + index HTML gửi khách duyệt ảnh. */
@@ -37,6 +41,13 @@ object ProofingMode {
     // Gap nhỏ: ô tile = khung chữ × (1 + gap%) — gap lớn làm ô vượt cả ảnh, chữ (vẽ giữa ô) rơi ra ngoài.
     const val PROOF_HORIZONTAL_GAP = 20
     const val PROOF_VERTICAL_GAP = 20
+
+    /**
+     * BUG-61: cạnh dài tối đa (px) của thumbnail nhúng base64 vào `proof_index.html`. Trước đây nhúng
+     * bytes ảnh FULL-RES cho mọi ảnh → batch lớn OOM; 480px đủ nét để khách duyệt trong lưới ô 220px.
+     */
+    const val PROOF_THUMBNAIL_LONG_EDGE = 480
+    private const val PROOF_THUMBNAIL_JPEG_QUALITY = 70
     private const val DEFAULT_PROOF_TEXT = "PROOF"
 
     // P1 review pass 8 (sửa lại sau khi smoke test thật phát hiện fix đầu tiên SAI): Android Q+
@@ -124,11 +135,40 @@ object ProofingMode {
         entry.copy(imageSrc = dataUri)
     }
 
+    /**
+     * BUG-61: decode ẢNH THU NHỎ (`inSampleSize`) thay vì đọc bytes full-res — peak heap mỗi ảnh chỉ
+     * cỡ thumbnail, không tăng theo kích thước ảnh gốc. Trả null nếu không mở/decode được (caller
+     * giữ path tương đối, 1 ảnh hỏng không làm hỏng cả batch).
+     */
     private fun encodeAsDataUri(resolver: ContentResolver, uri: Uri): String? {
-        val bytes = resolver.openInputStream(uri)?.use { it.readBytes() } ?: return null
-        val mime = resolver.getType(uri) ?: "image/jpeg"
-        val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
-        return "data:$mime;base64,$base64"
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) } ?: return null
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        val options = BitmapFactory.Options().apply {
+            inSampleSize = calculateInSampleSizeForLongEdge(maxOf(bounds.outWidth, bounds.outHeight), PROOF_THUMBNAIL_LONG_EDGE)
+        }
+        val decoded = resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) } ?: return null
+        // inSampleSize chỉ là luỹ thừa của 2 nên có thể còn lớn hơn trần (vd 3000px -> 750px) — scale
+        // nốt cho đúng trần cạnh dài (không phóng to ảnh nhỏ).
+        val scaled = scaleToLongEdge(decoded, PROOF_THUMBNAIL_LONG_EDGE)
+        try {
+            val out = ByteArrayOutputStream()
+            if (!scaled.compress(Bitmap.CompressFormat.JPEG, PROOF_THUMBNAIL_JPEG_QUALITY, out)) return null
+            val base64 = android.util.Base64.encodeToString(out.toByteArray(), android.util.Base64.NO_WRAP)
+            return "data:image/jpeg;base64,$base64"
+        } finally {
+            if (scaled !== decoded) scaled.recycle()
+            decoded.recycle()
+        }
+    }
+
+    private fun scaleToLongEdge(source: Bitmap, maxLongEdge: Int): Bitmap {
+        val longEdge = maxOf(source.width, source.height)
+        if (longEdge <= maxLongEdge) return source
+        val ratio = maxLongEdge.toFloat() / longEdge
+        val width = (source.width * ratio).toInt().coerceAtLeast(1)
+        val height = (source.height * ratio).toInt().coerceAtLeast(1)
+        return Bitmap.createScaledBitmap(source, width, height, true)
     }
 
     internal fun writeIntoDocumentTree(root: DocumentFile, resolver: ContentResolver, entries: List<Entry>): Uri? {
