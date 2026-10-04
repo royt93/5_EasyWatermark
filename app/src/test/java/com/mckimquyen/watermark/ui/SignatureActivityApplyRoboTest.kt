@@ -39,8 +39,10 @@ class SignatureActivityApplyRoboTest {
         drawStroke(activity.findViewById(R.id.signatureView))
         val btnApply = activity.findViewById<MaterialButton>(R.id.btnApply)
 
-        btnApply.performClick()
-        btnApply.performClick() // tap đúp ngay lập tức, trước khi coroutine lưu kịp chạy xong
+        // BUG-56: dùng chạm thật (DOWN+UP) — `View.performClick()` BỎ QUA `isEnabled` (đã verify: vẫn
+        // gọi listener trên nút disabled) nên không mô phỏng được tap đúp của người dùng thật.
+        tap(btnApply)
+        tap(btnApply) // tap đúp ngay lập tức, trước khi coroutine lưu kịp chạy xong
 
         awaitIdle(activity)
         assertThat(signatureFiles(activity).size - before).isEqualTo(1)
@@ -84,6 +86,12 @@ class SignatureActivityApplyRoboTest {
             for (i in 0 until view.childCount) findSnackbarText(view.getChildAt(i))?.let { return it }
         }
         return null
+    }
+
+    private fun tap(view: android.view.View) {
+        val t = SystemClock.uptimeMillis()
+        view.dispatchTouchEvent(MotionEvent.obtain(t, t, MotionEvent.ACTION_DOWN, 1f, 1f, 0))
+        view.dispatchTouchEvent(MotionEvent.obtain(t, t + 10, MotionEvent.ACTION_UP, 1f, 1f, 0))
     }
 
     private fun signatureFiles(activity: SignatureActivity): List<File> =

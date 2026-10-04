@@ -17,6 +17,7 @@ import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import com.mckimquyen.watermark.ui.MainViewModel
+import com.mckimquyen.watermark.utils.QrCodeGenerator
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -181,22 +182,31 @@ class QrCodeBottomSheetFragmentRoboTest {
         assertThat(previewDrawableIsSet(fragment)).isTrue()
     }
 
+    /**
+     * BUG-63: bản cũ assert "chưa có bitmap" ở mốc 200ms thời gian ẢO của Looper, nhưng `delay(250)`
+     * trong coroutine + `Dispatchers.Default` chạy theo đồng hồ THẬT nên khi tải CPU cao (full
+     * suite) job vẫn kịp generate trước assertion → flaky. Giờ khẳng định hành vi không phụ thuộc
+     * đồng hồ: gõ nhanh "a" rồi "ab" thì chỉ NỘI DUNG CUỐI được sinh — bitmap cuối cùng phải là QR
+     * của "ab" chứ không phải QR của "a" (job của "a" đã bị huỷ, không ghi đè kết quả).
+     */
     @Test
     fun rapidRetyping_cancelsStaleJob_onlyFinalContentGeneratesAfterItsOwnDelay() {
         val fragment = launchFragment()
 
         fragment.binding.etContent.setText("a")
-        shadowOf(Looper.getMainLooper()).idleFor(100, TimeUnit.MILLISECONDS) // < 250ms
-
+        shadowOf(Looper.getMainLooper()).idleFor(50, TimeUnit.MILLISECONDS) // << 250ms debounce
         fragment.binding.etContent.setText("ab") // huỷ job của "a", đặt lại debounce từ đầu
-        shadowOf(Looper.getMainLooper()).idleFor(200, TimeUnit.MILLISECONDS)
-        // Tổng thời gian từ lần gõ đầu tiên là 300ms (> 250ms) nhưng job của "a" đã bị huỷ khi gõ
-        // "ab" ở mốc 100ms, nên job mới ("ab") mới trôi qua 200ms (< 250ms) -> vẫn chưa generate.
-        assertThat(previewDrawableIsSet(fragment)).isFalse()
 
-        shadowOf(Looper.getMainLooper()).idleFor(100, TimeUnit.MILLISECONDS) // đủ 300ms cho "ab"
+        shadowOf(Looper.getMainLooper()).idleFor(400, TimeUnit.MILLISECONDS) // vượt debounce của "ab"
         awaitPreviewGenerated(fragment)
+
         assertThat(previewDrawableIsSet(fragment)).isTrue()
+        val finalBitmap = readPreviewBitmap(fragment)
+        assertThat(finalBitmap).isNotNull()
+        val expectedForAb = QrCodeGenerator.generate("ab", size = QrCodeGenerator.DEFAULT_SIZE)
+        val expectedForA = QrCodeGenerator.generate("a", size = QrCodeGenerator.DEFAULT_SIZE)
+        assertThat(finalBitmap!!.sameAs(expectedForAb)).isTrue()
+        assertThat(finalBitmap.sameAs(expectedForA)).isFalse()
     }
 
     @Test
