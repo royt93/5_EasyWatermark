@@ -92,6 +92,7 @@
     <string name="neon_glow">霓虹发光</string>
     <string name="apply_signature">应用签名</string>
     <string name="save_failed">保存失败！</string>
+    <string name="signature_applied">已应用签名！</string>
     <string name="leica_exif_border">Leica EXIF 边框</string>
     <string name="leica_exif_border_desc">自动在导出图片底部加入专业的 EXIF 元数据边框。注意：为提升性能，预览窗口中不显示该边框。</string>
     <string name="vip_title">VIP</string>

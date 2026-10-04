@@ -195,6 +195,7 @@
     <string name="neon_glow">Neon Glow</string>
     <string name="apply_signature">Apply Signature</string>
     <string name="save_failed">Save failed!</string>
+    <string name="signature_applied">Signature applied!</string>
     <string name="leica_exif_border">Leica EXIF Border</string>
     <string name="leica_exif_border_desc">Automatically appends a professional EXIF metadata border at the bottom of exported images. Note: The border is not shown in the preview window to optimize performance.</string>
     <string name="exif_frame_style_label">Frame Style</string>

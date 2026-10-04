@@ -88,6 +88,7 @@
     <string name="neon_glow">霓虹發光</string>
     <string name="apply_signature">套用簽名</string>
     <string name="save_failed">儲存失敗！</string>
+    <string name="signature_applied">已套用簽名！</string>
     <string name="leica_exif_border">Leica EXIF 邊框</string>
     <string name="leica_exif_border_desc">自動在匯出圖片底部加入專業的 EXIF 中繼資料邊框。注意：為提升效能，預覽視窗中不顯示該邊框。</string>
 

@@ -89,6 +89,7 @@
     <string name="neon_glow">ネオングロー</string>
     <string name="apply_signature">署名を適用</string>
     <string name="save_failed">保存に失敗しました！</string>
+    <string name="signature_applied">署名を適用しました！</string>
     <string name="leica_exif_border">Leica EXIF ボーダー</string>
     <string name="leica_exif_border_desc">エクスポートされた画像の下部にプロフェッショナルな EXIF メタデータボーダーを自動的に追加します。注：パフォーマンスを最適化するため、プレビューウィンドウにボーダーは表示されません。</string>
 

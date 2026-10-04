@@ -219,9 +219,12 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
         // Apply
         binding.btnApply.setOnClickListener {
             AppLog.d(LOG_TAG) { "[SIG] btnApply clicked" }
+            // BUG-56: khoá nút ngay lập tức để chống double-tap lưu 2 file signature trùng lặp.
+            binding.btnApply.isEnabled = false
             val bitmap = binding.signatureView.getSignatureBitmap()
             if (bitmap == null) {
                 AppLog.d(LOG_TAG) { "[SIG] bitmap is NULL → draw empty, abort" }
+                binding.btnApply.isEnabled = true
                 toast(getString(R.string.draw_here))
                 return@setOnClickListener
             }
@@ -231,10 +234,12 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
                 if (model != null) {
                     AppLog.d(LOG_TAG) { "[SIG] saveSignature OK → uri=${model.uri}" }
                     AppLog.d(LOG_TAG) { "[SIG] uri scheme=${model.uri.scheme} path=${model.uri.path}" }
-                    toast("Signature Applied!")
+                    toast(getString(R.string.signature_applied))
                     returnResult(model.uri)
                 } else {
                     AppLog.d(LOG_TAG) { "[SIG] saveSignature FAILED → model is null" }
+                    // Lưu thất bại: mở lại nút để user có thể thử lại
+                    binding.btnApply.isEnabled = true
                     toast(getString(R.string.save_failed))
                 }
             }
@@ -271,15 +276,26 @@ class SignatureActivity : com.mckimquyen.watermark.BaseActivity() {
 
     private fun buildColorList(savedColor: Int): ArrayList<ColorPreviewAdapter.PreViewModel> {
         val colors = listOf(
-            Color.WHITE, Color.BLACK, Color.parseColor("#FFB800"),
-            Color.parseColor("#FF5252"), Color.parseColor("#4CAF50"), Color.parseColor("#2196F3"),
-            Color.parseColor("#9C27B0"), Color.parseColor("#00BCD4"), Color.parseColor("#FF9800"),
-            Color.parseColor("#E91E63")
+            Color.WHITE, Color.BLACK,
+            COLOR_AMBER, COLOR_RED, COLOR_GREEN, COLOR_BLUE,
+            COLOR_PURPLE, COLOR_CYAN, COLOR_ORANGE, COLOR_PINK
         )
         val ls = ArrayList<ColorPreviewAdapter.PreViewModel>()
         colors.forEach { c ->
             ls.add(ColorPreviewAdapter.PreViewModel(color = c, selected = (c == savedColor)))
         }
         return ls
+    }
+
+    companion object {
+        // R5: hằng màu preset chữ ký dạng ARGB Int, không dùng chuỗi hex rải rác trong hàm
+        private const val COLOR_AMBER = 0xFFFFB800.toInt()
+        private const val COLOR_RED = 0xFFFF5252.toInt()
+        private const val COLOR_GREEN = 0xFF4CAF50.toInt()
+        private const val COLOR_BLUE = 0xFF2196F3.toInt()
+        private const val COLOR_PURPLE = 0xFF9C27B0.toInt()
+        private const val COLOR_CYAN = 0xFF00BCD4.toInt()
+        private const val COLOR_ORANGE = 0xFFFF9800.toInt()
+        private const val COLOR_PINK = 0xFFE91E63.toInt()
     }
 }

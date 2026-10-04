@@ -180,6 +180,7 @@
     <string name="neon_glow">Hiệu ứng Neon</string>
     <string name="apply_signature">Áp dụng chữ ký</string>
     <string name="save_failed">Lưu thất bại!</string>
+    <string name="signature_applied">Đã áp dụng chữ ký!</string>
     <string name="leica_exif_border">Khung Leica EXIF</string>
     <string name="leica_exif_border_desc">Tự động thêm khung viền thông tin chụp EXIF chuyên nghiệp ở dưới đáy ảnh khi xuất. Lưu ý: Khung viền không hiển thị ở màn hình xem trước nhằm tối ưu hiệu năng.</string>
     <string name="exif_frame_style_label">Kiểu khung</string>

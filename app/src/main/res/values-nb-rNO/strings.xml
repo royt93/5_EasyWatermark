@@ -88,6 +88,7 @@
     <string name="neon_glow">Neonglød</string>
     <string name="apply_signature">Bruk Signatur</string>
     <string name="save_failed">Lagring feilet!</string>
+    <string name="signature_applied">Signatur brukt!</string>
     <string name="leica_exif_border">Leica EXIF-kant</string>
     <string name="leica_exif_border_desc">Legger automatisk til en profesjonell EXIF-metadatakant nederst på eksporterte bilder. Merk: Kanten vises ikke i forhåndsvisningen for å optimalisere ytelsen.</string>
     <string name="vip_title">VIP</string>

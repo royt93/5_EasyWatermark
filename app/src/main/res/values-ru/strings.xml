@@ -13,6 +13,7 @@
     <string name="neon_glow">Неоновое свечение</string>
     <string name="apply_signature">Применить подпись</string>
     <string name="save_failed">Ошибка сохранения!</string>
+    <string name="signature_applied">Подпись применена!</string>
     <string name="leica_exif_border">Рамка Leica EXIF</string>
     <string name="leica_exif_border_desc">Автоматически добавляет профессиональную рамку с метаданными EXIF внизу экспортируемых изображений. Примечание: Рамка не отображается в окне предварительного просмотра.</string>
 

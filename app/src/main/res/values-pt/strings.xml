@@ -88,6 +88,7 @@
     <string name="neon_glow">Brilho Neon</string>
     <string name="apply_signature">Aplicar Assinatura</string>
     <string name="save_failed">Falha ao guardar!</string>
+    <string name="signature_applied">Assinatura aplicada!</string>
     <string name="leica_exif_border">Bordo Leica EXIF</string>
     <string name="leica_exif_border_desc">Adiciona automaticamente um bordo profissional com metadados EXIF no fundo das imagens exportadas. Nota: O bordo não é exibido na janela de visualização para otimizar o desempenho.</string>
 

@@ -88,6 +88,7 @@
     <string name="neon_glow">Lueur Néon</string>
     <string name="apply_signature">Appliquer la Signature</string>
     <string name="save_failed">Échec de la sauvegarde !</string>
+    <string name="signature_applied">Signature appliquée !</string>
     <string name="leica_exif_border">Bordure Leica EXIF</string>
     <string name="leica_exif_border_desc">Ajoute automatiquement une bordure de métadonnées EXIF professionnelle au bas des images exportées. Remarque : La bordure n\'est pas affichée dans la fenêtre d\'aperçu pour optimiser les performances.</string>
 
