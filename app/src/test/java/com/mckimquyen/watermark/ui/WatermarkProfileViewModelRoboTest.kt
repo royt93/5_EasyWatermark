@@ -88,4 +88,57 @@ class WatermarkProfileViewModelRoboTest {
         assertThat(readBack.iconUri).isEqualTo(Uri.parse("content://media/insta-icon.png"))
         assertThat(readBack.markMode).isEqualTo(WaterMarkRepository.MarkMode.Image)
     }
+
+    /**
+     * BUG-58: profile trước đây không lưu 5 field này → `toWaterMark` trả mặc định false/"" rồi
+     * `applyWaterMark` ghi đè TOÀN BỘ vào DataStore, âm thầm tắt Auto-contrast/EXIF palette/QR động
+     * của user. Giờ profile phải lưu + khôi phục đúng.
+     */
+    @Test
+    fun applyNow_restoresAutoContrastExifPaletteAndDynamicQr() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val waterMarkRepo = WaterMarkRepository(context, newTestWaterMarkDataStore(context))
+        val viewModel = WatermarkProfileViewModel(WatermarkProfileRepository(FakeWatermarkProfileDao()), waterMarkRepo)
+        val savedMark = waterMarkRepo.waterMark.first().copy(
+            exifAutoPalette = true,
+            autoContrastEnabled = true,
+            qrDynamicEnabled = true,
+            qrContentTemplate = "{hash}|{date}|{portfolio_link}",
+            qrPortfolioLink = "https://example.com/me"
+        )
+        val entity = WatermarkProfileRepository.toEntity("Full", savedMark)
+
+        viewModel.applyNow(entity)
+
+        val readBack = waterMarkRepo.waterMark.first()
+        assertThat(readBack.exifAutoPalette).isTrue()
+        assertThat(readBack.autoContrastEnabled).isTrue()
+        assertThat(readBack.qrDynamicEnabled).isTrue()
+        assertThat(readBack.qrContentTemplate).isEqualTo("{hash}|{date}|{portfolio_link}")
+        assertThat(readBack.qrPortfolioLink).isEqualTo("https://example.com/me")
+    }
+
+    /** BUG-58: profile cũ (5 cột mới = NULL sau migration) → mặc định tắt/rỗng, không crash. */
+    @Test
+    fun applyNow_legacyEntityWithNullColumns_usesDefaults() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val waterMarkRepo = WaterMarkRepository(context, newTestWaterMarkDataStore(context))
+        val viewModel = WatermarkProfileViewModel(WatermarkProfileRepository(FakeWatermarkProfileDao()), waterMarkRepo)
+        val legacy = WatermarkProfileRepository.toEntity("Legacy", waterMarkRepo.waterMark.first()).copy(
+            exifAutoPalette = null,
+            autoContrastEnabled = null,
+            qrDynamicEnabled = null,
+            qrContentTemplate = null,
+            qrPortfolioLink = null
+        )
+
+        viewModel.applyNow(legacy)
+
+        val readBack = waterMarkRepo.waterMark.first()
+        assertThat(readBack.exifAutoPalette).isFalse()
+        assertThat(readBack.autoContrastEnabled).isFalse()
+        assertThat(readBack.qrDynamicEnabled).isFalse()
+        assertThat(readBack.qrContentTemplate).isEmpty()
+        assertThat(readBack.qrPortfolioLink).isEmpty()
+    }
 }

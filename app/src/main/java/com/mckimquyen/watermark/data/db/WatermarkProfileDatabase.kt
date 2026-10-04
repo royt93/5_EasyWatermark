@@ -13,10 +13,11 @@ import com.mckimquyen.watermark.data.model.entity.WatermarkStyleHistoryEntity
  * FEAT-06: DB riêng, KHÔNG chung với [AppDatabase] — xem doc ở [WatermarkProfileEntity] lý do tách.
  * IDEA-12: thêm bảng `watermark_style_history` (version 3) vào chung DB này thay vì mở DB riêng.
  * FEAT-28: thêm 4 cột khung thẻ vào `watermark_profile` (version 4).
+ * BUG-58: thêm 5 cột auto-contrast / EXIF palette / QR động vào `watermark_profile` (version 5).
  */
 @Database(
     entities = [WatermarkProfileEntity::class, WatermarkStyleHistoryEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class WatermarkProfileDatabase : RoomDatabase() {
@@ -42,6 +43,17 @@ abstract class WatermarkProfileDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE watermark_profile ADD COLUMN cardCornerRadiusPercent REAL")
                 db.execSQL("ALTER TABLE watermark_profile ADD COLUMN cardShadowPercent REAL")
                 db.execSQL("ALTER TABLE watermark_profile ADD COLUMN cardBackgroundColor INTEGER")
+            }
+        }
+
+        /** BUG-58: 5 cột NULLABLE (không DEFAULT) — ALTER ADD COLUMN an toàn với dữ liệu cũ, hàng cũ đọc ra NULL. */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE watermark_profile ADD COLUMN exifAutoPalette INTEGER")
+                db.execSQL("ALTER TABLE watermark_profile ADD COLUMN autoContrastEnabled INTEGER")
+                db.execSQL("ALTER TABLE watermark_profile ADD COLUMN qrDynamicEnabled INTEGER")
+                db.execSQL("ALTER TABLE watermark_profile ADD COLUMN qrContentTemplate TEXT")
+                db.execSQL("ALTER TABLE watermark_profile ADD COLUMN qrPortfolioLink TEXT")
             }
         }
 

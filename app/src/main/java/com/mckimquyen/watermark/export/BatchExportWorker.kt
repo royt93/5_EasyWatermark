@@ -16,6 +16,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.mckimquyen.watermark.AppLog
+import com.mckimquyen.watermark.LOG_TAG
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
@@ -26,6 +28,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.data.repo.WatermarkStyleHistoryRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import androidx.work.ListenableWorker.Result as WorkResult
 
@@ -177,12 +180,20 @@ class BatchExportWorker @AssistedInject constructor(
     ) {
         val outputUris = finalList.mapNotNull { it.shareUri }
         val failedInputUris = finalList.filter { it.jobState is JobState.Failure }.map { it.uri }
-        batchHistoryRepo.record(
-            inputUris = infoList.map { it.uri },
-            outputUris = outputUris,
-            failedInputUris = failedInputUris,
-            settings = settings
-        )
+        // BUG-59: bọc runCatching như styleHistoryRepo bên dưới — Room insert lỗi (DB lock, hết dung
+        // lượng...) không được làm cả batch FAILED khi mọi ảnh đã export/lưu xong thật. Ném lại
+        // CancellationException để huỷ work vẫn hoạt động đúng.
+        runCatching {
+            batchHistoryRepo.record(
+                inputUris = infoList.map { it.uri },
+                outputUris = outputUris,
+                failedInputUris = failedInputUris,
+                settings = settings
+            )
+        }.onFailure {
+            if (it is CancellationException) throw it
+            AppLog.w(LOG_TAG, "recordHistory: ghi lịch sử batch lỗi, bỏ qua", it)
+        }
         // IDEA-12: ít nhất 1 ảnh export thành công mới tính là 1 lần dùng "gu" style này.
         // BUG-45 (code review 2026-09-28): KHÔNG ghi khi proofingMode — settings.config lúc này đã
         // bị ProofingMode.overrideConfig() ghi đè alpha/markMode (watermark tạm cho khách xem

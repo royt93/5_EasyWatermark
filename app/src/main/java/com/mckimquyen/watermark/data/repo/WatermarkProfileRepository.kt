@@ -58,7 +58,12 @@ class WatermarkProfileRepository @Inject constructor(
             cardFrameEnabled = mark.cardFrameEnabled,
             cardCornerRadiusPercent = mark.cardCornerRadiusPercent,
             cardShadowPercent = mark.cardShadowPercent,
-            cardBackgroundColor = mark.cardBackgroundColor
+            cardBackgroundColor = mark.cardBackgroundColor,
+            exifAutoPalette = mark.exifAutoPalette,
+            autoContrastEnabled = mark.autoContrastEnabled,
+            qrDynamicEnabled = mark.qrDynamicEnabled,
+            qrContentTemplate = mark.qrContentTemplate,
+            qrPortfolioLink = mark.qrPortfolioLink
         )
 
         /**
@@ -101,7 +106,13 @@ class WatermarkProfileRepository @Inject constructor(
                 .coerceIn(0f, WaterMarkRepository.MAX_CARD_CORNER_PERCENT),
             cardShadowPercent = (entity.cardShadowPercent ?: WaterMarkRepository.DEFAULT_CARD_SHADOW_PERCENT)
                 .coerceIn(0f, WaterMarkRepository.MAX_CARD_SHADOW_PERCENT),
-            cardBackgroundColor = entity.cardBackgroundColor ?: WaterMarkRepository.DEFAULT_CARD_BACKGROUND_COLOR
+            cardBackgroundColor = entity.cardBackgroundColor ?: WaterMarkRepository.DEFAULT_CARD_BACKGROUND_COLOR,
+            // BUG-58: profile cũ (cột NULL) → mặc định tắt/rỗng, đúng look trước khi có các cột này.
+            exifAutoPalette = entity.exifAutoPalette ?: false,
+            autoContrastEnabled = entity.autoContrastEnabled ?: false,
+            qrDynamicEnabled = entity.qrDynamicEnabled ?: false,
+            qrContentTemplate = entity.qrContentTemplate ?: "",
+            qrPortfolioLink = entity.qrPortfolioLink ?: ""
         )
     }
 }

@@ -54,5 +54,15 @@ data class WatermarkProfileEntity(
     val cardFrameEnabled: Boolean? = null,
     val cardCornerRadiusPercent: Float? = null,
     val cardShadowPercent: Float? = null,
-    val cardBackgroundColor: Int? = null
+    val cardBackgroundColor: Int? = null,
+    /**
+     * BUG-58 (schema version 5, xem [Migration] 4→5 ở `WatermarkProfileDatabase`) — 5 cột NULLABLE:
+     * profile lưu trước BUG-58 đọc ra `null` → mặc định tắt/rỗng. Trước đây thiếu các cột này nên áp
+     * profile âm thầm tắt Auto-contrast / EXIF palette / QR động của user.
+     */
+    val exifAutoPalette: Boolean? = null,
+    val autoContrastEnabled: Boolean? = null,
+    val qrDynamicEnabled: Boolean? = null,
+    val qrContentTemplate: String? = null,
+    val qrPortfolioLink: String? = null
 )
