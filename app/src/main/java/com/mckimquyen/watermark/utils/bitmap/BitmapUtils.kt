@@ -17,6 +17,7 @@ import com.mckimquyen.watermark.data.model.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.io.InputStream
 
 private const val TAG = "BitmapUtils"
@@ -398,6 +399,26 @@ suspend fun decodeBitmapFromUri(
     uri: Uri,
     reqLongEdge: Int = 0,
     maxHeapBytes: Long = Runtime.getRuntime().maxMemory()
+): Result<BitmapCache.BitmapValue> =
+    // BUG-54: `openInputStream()` ném SecurityException (quyền URI tạm của ACTION_SEND không chuyển
+    // sang Activity mới) / FileNotFoundException (ảnh bị xoá giữa chừng) — trả Result.failure thay vì
+    // để ngoại lệ lọt vào lifecycleScope của caller (crash). CancellationException KHÔNG bị bắt.
+    try {
+        decodeBitmapFromUriUnguarded(context, resolver, uri, reqLongEdge, maxHeapBytes)
+    } catch (e: SecurityException) {
+        AppLog.w(TAG, "decodeBitmapFromUri: không có quyền đọc uri", e)
+        Result.failure(null, "-1", "Open input stream failed: no permission.")
+    } catch (e: IOException) {
+        AppLog.w(TAG, "decodeBitmapFromUri: không mở được uri", e)
+        Result.failure(null, "-1", "Open input stream failed: ${e.message}")
+    }
+
+private suspend fun decodeBitmapFromUriUnguarded(
+    context: Context,
+    resolver: ContentResolver,
+    uri: Uri,
+    reqLongEdge: Int,
+    maxHeapBytes: Long
 ): Result<BitmapCache.BitmapValue> =
     withContext(Dispatchers.IO) {
         // BUG-AUDIT-2026-09-29: nhánh early-return riêng cho reqLongEdge<=0 (decode full-res,

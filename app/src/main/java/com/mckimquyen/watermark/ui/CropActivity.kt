@@ -17,6 +17,7 @@ import com.mckimquyen.watermark.databinding.ActivityCropBinding
 import com.mckimquyen.watermark.utils.bitmap.EDIT_DECODE_MAX_LONG_EDGE
 import com.mckimquyen.watermark.utils.bitmap.decodeBitmapFromUri
 import com.mckimquyen.watermark.utils.ktx.setBottomPaddingWithInset
+import com.mckimquyen.watermark.utils.ktx.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -132,6 +133,7 @@ class CropActivity : BaseActivity() {
             val result = decodeBitmapFromUri(this@CropActivity, contentResolver, imageUri, EDIT_DECODE_MAX_LONG_EDGE)
             val bitmap = result.data?.bitmap
             if (result.isFailure() || bitmap == null) {
+                toast(getString(R.string.error_file_not_found))
                 finish()
                 return@launch
             }
