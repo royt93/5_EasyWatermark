@@ -11,7 +11,7 @@
         path="signatures/" />
     <external-path
         name="my_external_dir"
-        path="Pictures/EasyWaterMark/" />
+        path="Pictures/WaterMarkCreator/" />
     <cache-path
         name="export_zip"
         path="zip_cache/" />
