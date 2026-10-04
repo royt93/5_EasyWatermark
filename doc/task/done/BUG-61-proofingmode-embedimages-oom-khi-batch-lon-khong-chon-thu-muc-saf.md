@@ -34,4 +34,13 @@ Nhúng thumbnail nhỏ (decode ~480px, JPEG q70) thay vì bytes gốc, hoặc st
 - **Unit test:** file mới `ProofingModeEmbedThumbnailRoboTest.kt` (2 test: ảnh lớn 3000x2000 → thumbnail <= 480px và nhỏ hơn bytes gốc; ảnh nhỏ 200x100 không bị phóng to). RED thật với bản cũ, GREEN sau fix. Sửa test cũ `embedImages_entryWithUri_replacesImageSrcWithBase64DataUri` dùng ảnh JPEG thật thay bytes giả (hành vi mới decode + nén lại).
 - **Integration test (androidTest):** thêm `embedImages_undecodableImage_keepsRelativeName_whileGoodImageIsEmbedded` trong `ProofingIndexIntegrationTest` — decode Skia thật (Robolectric không mô phỏng đúng decode-failure cho bytes rác, cùng lý do `SignatureRepositoryImportIntegrationTest`). Chờ device để chạy.
 - **Full suite:** `./gradlew testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest ktlintCheck lint` → BUILD SUCCESSFUL (exit 0).
-- **Smoke test:** CHƯA — Pixel đã khoá không kết nối. Cần: bật Proofing Mode, export nhiều ảnh (không chọn thư mục SAF), mở `proof_index.html` kiểm tra thumbnail hiển thị đúng. Ticket giữ ở `inprogress/` cho tới khi smoke xong.
+
+## Smoke test thật (Pixel 7 Pro, serial `2B051FDH3006MU`, ngày 2026-10-04) — phát hiện và sửa lỗi của chính fix
+Bật "Chế độ ảnh duyệt cho khách" → xuất ảnh → `proof_index.html` sinh ra nhưng **không nhúng thumbnail** (`data-uri=0`, vẫn `src="ewm_...jpg"` tương đối, 744 bytes). Log thăm dò chỉ ra `encodeAsDataUri` thoát sớm ở bước đọc bounds.
+
+**Nguyên nhân gốc:** `BitmapFactory.decodeStream(stream, null, opts)` với `inJustDecodeBounds=true` LUÔN trả `null` trên Android thật (chỉ điền `outWidth/outHeight`), nhưng code dùng `?: return null` trên chính giá trị trả về → mọi ảnh bị coi là "không mở được stream". Robolectric mô phỏng decode-bounds trả bitmap giả nên unit test (`ProofingModeEmbedThumbnailRoboTest`) KHÔNG bắt được — cùng lớp lỗi với `SignatureRepositoryImportIntegrationTest`.
+
+**Sửa:** tách `openInputStream(uri) ?: return null` khỏi kết quả decode, chỉ kiểm tra `outWidth/outHeight > 0`. Đã gỡ log thăm dò tạm.
+
+**Sau sửa, kiểm chứng lại trên máy thật:** `proof_index (7).html` = 15.232 bytes, `data-uri=1`, `relative-src=0`, thumbnail pull về = JPEG **480×360**, 10.866 bytes (ảnh nguồn 800×600 / ~97 kB). `connectedDebugAndroidTest` 4 lớp (13 test) PASS, gồm `ProofingIndexIntegrationTest` (decode Skia thật).
+Bài học: decode-bounds phải kiểm tra ở androidTest, không tin Robolectric. Full suite sau sửa: `testDebugUnitTest assembleDebug assembleDebugAndroidTest ktlintCheck lint` → BUILD SUCCESSFUL.

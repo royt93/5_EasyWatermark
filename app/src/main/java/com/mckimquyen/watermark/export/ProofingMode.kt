@@ -142,7 +142,10 @@ object ProofingMode {
      */
     private fun encodeAsDataUri(resolver: ContentResolver, uri: Uri): String? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) } ?: return null
+        // inJustDecodeBounds=true: decodeStream() LUÔN trả null (chỉ điền outWidth/outHeight) — KHÔNG
+        // dùng giá trị trả về để suy ra "không mở được stream", chỉ kiểm tra bounds hợp lệ bên dưới.
+        val boundsStream = resolver.openInputStream(uri) ?: return null
+        boundsStream.use { BitmapFactory.decodeStream(it, null, bounds) }
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
         val options = BitmapFactory.Options().apply {
             inSampleSize = calculateInSampleSizeForLongEdge(maxOf(bounds.outWidth, bounds.outHeight), PROOF_THUMBNAIL_LONG_EDGE)

@@ -257,6 +257,27 @@ class MainActivity : BaseActivity() {
     private var funcTextColorAnimator: ObjectAnimator? = null
     private var showInterstitialRunnable: Runnable? = null
 
+    /**
+     * BUG-55: 1 updater duy nhất cho preview config — observer `waterMark` và `selectedImage` cùng đi
+     * qua đây nên job cũ luôn bị huỷ, không còn coroutine cũ ghi đè preview bằng config lỗi thời.
+     */
+    private var previewBaseConfig: com.mckimquyen.watermark.data.model.WaterMark? = null
+    private val previewConfigUpdater by lazy {
+        PreviewConfigUpdater<ImageInfo>(
+            scope = lifecycleScope,
+            resolveText = { text, image -> viewModel.resolvePreviewText(text, image) },
+            apply = { resolvedText ->
+                val base = previewBaseConfig
+                if (base != null) {
+                    launchView.post {
+                        AppLog.d(LOG_TAG) { "[MAIN] launchView.post → setting ivPhoto.config" }
+                        launchView.ivPhoto.config = if (resolvedText != base.text) base.copy(text = resolvedText) else base
+                    }
+                }
+            }
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // applyEdgeToEdge() is invoked by BaseActivity.onCreate() — no duplicate window setup needed
@@ -468,6 +489,8 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
+        // lazy: recovery mode không dựng launchView/observer nên tránh khởi tạo updater chỉ để huỷ nó.
+        if (::launchView.isInitialized) previewConfigUpdater.cancel()
         bgTransformAnimator?.cancel()
         bgTransformAnimator = null
         funcTextColorAnimator?.cancel()
@@ -543,19 +566,8 @@ class MainActivity : BaseActivity() {
             // dialog sửa text (đọc từ viewModel.waterMark.value) vẫn thấy đúng token gốc để sửa tiếp.
             // ENH-20: resolvePreviewText giờ suspend (query filename lần đầu chạy trên
             // Dispatchers.IO) — resolve trong coroutine thay vì đồng bộ trên Main thread.
-            val selectedImageInfo = viewModel.selectedImage.value
-            lifecycleScope.launch {
-                val previewConfig = if (selectedImageInfo != null) {
-                    val resolvedText = viewModel.resolvePreviewText(it.text, selectedImageInfo)
-                    if (resolvedText != it.text) it.copy(text = resolvedText) else it
-                } else {
-                    it
-                }
-                launchView.post {
-                    AppLog.d(LOG_TAG) { "[MAIN] launchView.post → setting ivPhoto.config" }
-                    launchView.ivPhoto.config = previewConfig
-                }
-            }
+            previewBaseConfig = it
+            previewConfigUpdater.update(it.text, viewModel.selectedImage.value)
             if (it.markMode == WaterMarkRepository.MarkMode.Image && launchView.tabLayout.selectedTabPosition == 0) {
                 AppLog.d(LOG_TAG) { "[MAIN] markMode=Image → hideDetailPanel()" }
                 hideDetailPanel()
@@ -581,10 +593,8 @@ class MainActivity : BaseActivity() {
                 // toEditorMode()/updateUri() bên dưới vì chúng chỉ phụ thuộc ImageInfo, không
                 // phụ thuộc text đã resolve.
                 viewModel.waterMark.value?.let { config ->
-                    lifecycleScope.launch {
-                        val resolvedText = viewModel.resolvePreviewText(config.text, it)
-                        launchView.ivPhoto.config = config.copy(text = resolvedText)
-                    }
+                    previewBaseConfig = config
+                    previewConfigUpdater.update(config.text, it)
                 }
                 val isAnimating = launchView.toEditorMode()
                 if (isAnimating) {

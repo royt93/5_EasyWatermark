@@ -19,9 +19,12 @@ DB lock/hết dung lượng đúng lúc ghi lịch sử → exception làm `doWo
 `runCatching { batchHistoryRepo.record(...) }.onFailure { AppLog.w(...) }`, cùng pattern với style history.
 
 ## Acceptance Criteria
-- [ ] `batchHistoryRepo.record` ném exception → worker vẫn trả `success` khi ảnh đã lưu.
-- [ ] Unit test với repo giả ném exception (RED trước fix).
-- [ ] Không nuốt `CancellationException`.
+- [x] `batchHistoryRepo.record` ném exception → worker vẫn trả `success` khi ảnh đã lưu.
+- [x] Unit test với repo giả ném exception (RED trước fix).
+- [x] Không nuốt `CancellationException`.
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-59`, file ticket = `todo/BUG-59-batchexportworker-batchhistory-record-khong-guard-lam-batch-thanh-cong-bao-failed.md`.
+
+## Smoke test thật (Pixel 7 Pro, serial `2B051FDH3006MU`, ngày 2026-10-04)
+Xuất ảnh (Lưu → Xuất vào bộ sưu tập) → ảnh hiện dấu tick thành công, không báo lỗi → mở "Lịch sử xuất ảnh" thấy mục mới `2026-10-04 22:27 · 1 thành công · 0 lỗi`, logcat không có `FATAL EXCEPTION`. Case DB ném exception khi ghi lịch sử không mô phỏng được trên máy thật — đã phủ bằng `BatchExportWorkerHistoryFailureRoboTest` (RED khi bỏ `runCatching`).
