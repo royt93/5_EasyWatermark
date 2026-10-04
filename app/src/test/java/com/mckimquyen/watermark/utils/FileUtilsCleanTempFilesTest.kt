@@ -99,4 +99,24 @@ class FileUtilsCleanTempFilesTest {
         assertThat(oldFile.exists()).isFalse()
         assertThat(freshFile.exists()).isTrue()
     }
+
+    /** ENH-44: `namePart` tuỳ biến — dọn được file `camera_photo_*` mà không đụng file `_temp_` khác. */
+    @Test
+    fun cleanOldTempFiles_customNamePart_onlyDeletesMatchingFiles() {
+        val now = 10_000_000L
+        val oldCamera = File(tempFolder.root, "camera_photo_1.jpg").apply { writeText("x"); setLastModified(now - 100_000L) }
+        val oldTemp = File(tempFolder.root, "qr_temp_1.png").apply { writeText("x"); setLastModified(now - 100_000L) }
+
+        val deleted = FileUtils.cleanOldTempFiles(
+            tempFolder.root,
+            maxRetainedFiles = 0,
+            maxAgeMs = 1_000L,
+            nowMs = now,
+            namePart = "camera_photo_"
+        )
+
+        assertThat(deleted).isEqualTo(1)
+        assertThat(oldCamera.exists()).isFalse()
+        assertThat(oldTemp.exists()).isTrue()
+    }
 }

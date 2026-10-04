@@ -16,6 +16,10 @@ object CameraCaptureHelper {
     private const val FILE_PREFIX = "camera_photo_"
     private const val FILE_SUFFIX = ".jpg"
 
+    /** ENH-44: giữ lại tối đa số ảnh chụp tạm mới nhất, ảnh quá [STALE_PHOTO_MAX_AGE_MS] bị dọn. */
+    private const val MAX_RETAINED_PHOTOS = 3
+    private const val STALE_PHOTO_MAX_AGE_MS = 24L * 60 * 60 * 1000
+
     /**
      * Tạo file tạm trong bộ nhớ đệm nội bộ để lưu ảnh chụp từ Camera.
      */
@@ -26,6 +30,13 @@ object CameraCaptureHelper {
                 mkdirs()
             }
         }
+        // ENH-44: ảnh gốc chưa watermark không được nằm lại cache vô hạn — dọn ảnh cũ mỗi lần chụp mới.
+        FileUtils.cleanOldTempFiles(
+            cameraDir,
+            maxRetainedFiles = MAX_RETAINED_PHOTOS,
+            maxAgeMs = STALE_PHOTO_MAX_AGE_MS,
+            namePart = FILE_PREFIX
+        )
         return File(cameraDir, "$FILE_PREFIX${System.currentTimeMillis()}$FILE_SUFFIX")
     }
 

@@ -108,6 +108,8 @@ class FileUtils {
         /**
          * ENH-29: Dọn dẹp các file cache tạm (*_temp_*) để tránh tích luỹ rác không giới hạn.
          * Giữ lại tối đa [maxRetainedFiles] file mới nhất và xoá các file cũ hơn [maxAgeMs].
+         * ENH-44: [namePart] chọn nhóm file cần dọn (mặc định `_temp_`, tương thích ngược), vd
+         * `camera_photo_` cho ảnh chụp tạm — file không chứa [namePart] không bị đụng tới.
          *
          * @return Số lượng file đã được xoá thành công.
          */
@@ -116,11 +118,12 @@ class FileUtils {
             directory: java.io.File,
             maxRetainedFiles: Int = 3,
             maxAgeMs: Long = 24 * 60 * 60 * 1000L,
-            nowMs: Long = System.currentTimeMillis()
+            nowMs: Long = System.currentTimeMillis(),
+            namePart: String = "_temp_"
         ): Int {
             if (!directory.exists() || !directory.isDirectory) return 0
             val files = directory.listFiles() ?: return 0
-            val tempFiles = files.filter { it.isFile && it.name.contains("_temp_") }
+            val tempFiles = files.filter { it.isFile && it.name.contains(namePart) }
                 .sortedByDescending { it.lastModified() }
 
             var deletedCount = 0

@@ -104,4 +104,41 @@ class CameraCaptureHelperTest {
         // Trong môi trường Robolectric mặc định, queryIntentActivities trả về danh sách dựa theo manifest
         assertThat(available).isNotNull()
     }
+
+    /**
+     * ENH-44: ảnh chụp camera cũ (quá hạn) không được tích luỹ vô hạn trong `cacheDir/camera/` —
+     * mỗi lần tạo file mới phải dọn file `camera_photo_*` quá 24h, giữ file mới.
+     */
+    @Test
+    fun createPhotoFile_prunesStaleCameraPhotos_keepsRecentOnes() {
+        val cameraDir = File(context.cacheDir, "camera").apply { mkdirs() }
+        val now = System.currentTimeMillis()
+        val stale = File(cameraDir, "camera_photo_1.jpg").apply {
+            writeText("old")
+            setLastModified(now - 48L * 60 * 60 * 1000)
+        }
+        val recent = File(cameraDir, "camera_photo_2.jpg").apply {
+            writeText("new")
+            setLastModified(now - 60_000L)
+        }
+
+        createdFile = CameraCaptureHelper.createPhotoFile(context)
+
+        assertThat(stale.exists()).isFalse()
+        assertThat(recent.exists()).isTrue()
+    }
+
+    /** ENH-44: file lạ không thuộc prefix camera_photo_ trong cùng thư mục không bị đụng tới. */
+    @Test
+    fun createPhotoFile_doesNotTouchUnrelatedFiles() {
+        val cameraDir = File(context.cacheDir, "camera").apply { mkdirs() }
+        val other = File(cameraDir, "other.dat").apply {
+            writeText("keep")
+            setLastModified(System.currentTimeMillis() - 72L * 60 * 60 * 1000)
+        }
+
+        createdFile = CameraCaptureHelper.createPhotoFile(context)
+
+        assertThat(other.exists()).isTrue()
+    }
 }
