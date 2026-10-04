@@ -133,6 +133,26 @@ class BatchExportEngineCustomDirectoryIntegrationTest {
         dir.deleteRecursively()
     }
 
+    /**
+     * BUG-60: file cũ LỚN hơn ảnh mới — OVERWRITE phải truncate, không để lại đuôi ảnh cũ. Kích thước
+     * file sau khi ghi phải đúng bằng kích thước ảnh mới encode độc lập (không dư byte nào).
+     */
+    @Test
+    fun writeIntoDocumentTree_overwrite_largerExistingFile_isTruncatedToNewImageSize() {
+        val dir = tempDir("overwrite_truncate")
+        File(dir, "photo.png").writeBytes(ByteArray(200_000) { 7 }) // file cũ 200KB, lớn hơn nhiều ảnh 8x8 mới
+        val root = DocumentFile.fromFile(dir)
+        val expectedSize = java.io.ByteArrayOutputStream().also {
+            testBitmap().compress(Bitmap.CompressFormat.PNG, 100, it)
+        }.size()
+
+        val result = writeWithFreshBitmap(root, "photo.png", settings(ConflictPolicy.OVERWRITE))
+
+        assertThat(result.isFailure()).isFalse()
+        assertThat(File(dir, "photo.png").length()).isEqualTo(expectedSize.toLong())
+        dir.deleteRecursively()
+    }
+
     @Test
     fun writeIntoDocumentTree_renameVersion_existingFile_createsVersionedName() {
         val dir = tempDir("rename")

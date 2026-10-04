@@ -44,7 +44,7 @@ class BatchExportEngineOverwritePendingCleanupRoboTest {
 
         val resolverSpy = spyk(context.contentResolver)
         every {
-            resolverSpy.openFileDescriptor(existingUri, "w", null)
+            resolverSpy.openFileDescriptor(existingUri, BatchExportEngine.WRITE_TRUNCATE_MODE, null)
         } throws OutOfMemoryError("forced test failure - not caught by local catch(Exception)")
 
         val imageInfo = ImageInfo(Uri.parse("content://media/overwrite_pending_test.jpg"))

@@ -675,7 +675,9 @@ class BatchExportEngine @Inject constructor(
                         // BUG-19: openFileDescriptor() có thể trả null, và compress() có thể trả false
                         // (trước đây cả 2 bị bỏ qua → báo "thành công" giả + để lại row IS_PENDING rác).
                         val writeResult = try {
-                            val pfd = contentResolver.openFileDescriptor(imageContentUri, "w", null)
+                            // BUG-60: "wt" (write + truncate) — từ Android 10 mode "w" KHÔNG đảm bảo truncate, OVERWRITE
+                            // tái dùng file cũ nên ảnh cũ lớn hơn sẽ để lại đuôi rác sau dữ liệu mới.
+                            val pfd = contentResolver.openFileDescriptor(imageContentUri, WRITE_TRUNCATE_MODE, null)
                             val compressOk = pfd?.use { p ->
                                 exportBitmap.compress(
                                     /* format = */ settings.outputFormat,
@@ -896,7 +898,8 @@ class BatchExportEngine @Inject constructor(
         }
 
         val writeOk = try {
-            contentResolver.openOutputStream(targetDoc.uri)?.use { out ->
+            // BUG-60: xem WRITE_TRUNCATE_MODE — SAF OVERWRITE ghi lên file có sẵn nên phải truncate.
+            contentResolver.openOutputStream(targetDoc.uri, WRITE_TRUNCATE_MODE)?.use { out ->
                 exportBitmap.compress(settings.outputFormat, settings.compressLevel, out)
             } ?: false
         } catch (e: Exception) {
@@ -1454,6 +1457,12 @@ class BatchExportEngine @Inject constructor(
     }
 
     companion object {
+        /**
+         * BUG-60: mode mở file ghi + cắt bỏ nội dung cũ. Android 10+ không còn đảm bảo `"w"` truncate
+         * file có sẵn, nên mọi đường ghi có thể tái dùng file (OVERWRITE) phải dùng mode này.
+         */
+        internal const val WRITE_TRUNCATE_MODE = "wt"
+
         /** FEAT-07: cạnh dài tối đa (px) khi decode cho grid preview — đủ nét cho thumbnail, rẻ hơn nhiều so với full-res. */
         const val PREVIEW_MAX_SIZE = 480
 
