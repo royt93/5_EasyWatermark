@@ -1,16 +1,21 @@
 package com.mckimquyen.watermark.ui.dlg
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.pm.ApplicationInfo
+import android.content.pm.ResolveInfo
 import android.net.Uri
 import android.os.Looper
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DefaultItemAnimator
 import com.google.common.truth.Truth.assertThat
+import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
 import com.mckimquyen.watermark.data.model.Result
 import com.mckimquyen.watermark.ui.MainActivity
 import com.mckimquyen.watermark.ui.MainViewModel
+import com.mckimquyen.watermark.utils.QuickShareHelper
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,6 +48,18 @@ class SaveImageBSDialogFragmentBatchActionRoboTest {
             field.isAccessible = true
             (field.get(null) as? java.util.Map<*, *>)?.clear()
         } catch (_: Exception) {}
+    }
+
+    private fun installShareTarget(activity: MainActivity, packageName: String, label: String) {
+        val resolveInfo = ResolveInfo().apply {
+            nonLocalizedLabel = label
+            activityInfo = ActivityInfo().apply {
+                this.packageName = packageName
+                name = "$packageName.ShareActivity"
+                applicationInfo = ApplicationInfo().apply { this.packageName = packageName }
+            }
+        }
+        shadowOf(activity.packageManager).addResolveInfoForIntent(QuickShareHelper.probeIntent(packageName), resolveInfo)
     }
 
     @Test
@@ -135,6 +152,59 @@ class SaveImageBSDialogFragmentBatchActionRoboTest {
         val started = shadowOf(activity).nextStartedActivity
         assertThat(started.`package`).isEqualTo("com.zing.zalo")
         assertThat(started.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)).isEqualTo(Uri.parse("content://output/9.jpg"))
+    }
+
+    @Test
+    fun feat27_finishedWithInstalledTargets_showsLabelsAndAccessibleDescriptions() = runBlocking {
+        val (activity, dialog) = setupDialog()
+        installShareTarget(activity, "com.zing.zalo", "Zalo Test")
+        installShareTarget(activity, "org.telegram.messenger", "Telegram Test")
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+        val ok = Result.success(Uri.parse("content://output/quick.jpg"))
+        viewModel.waterMarkRepo.updateImageList(listOf(ImageInfo(Uri.parse("content://media/quick.jpg")).copy(result = ok, jobState = JobState.Success(ok))))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        dialog.performSetUpLoadingView(Result.success(null, code = MainViewModel.TYPE_JOB_FINISH))
+
+        assertThat(dialog.binding.layoutQuickShare.visibility).isEqualTo(android.view.View.VISIBLE)
+        assertThat(dialog.binding.llQuickShareItems.childCount).isEqualTo(2)
+        val labels = (0 until 2).map { index ->
+            dialog.binding.llQuickShareItems.getChildAt(index).findViewById<android.widget.TextView>(R.id.tvQuickShareLabel).text.toString()
+        }
+        assertThat(labels).containsExactly("Zalo Test", "Telegram Test").inOrder()
+        assertThat(dialog.binding.llQuickShareItems.getChildAt(0).contentDescription.toString()).contains("Zalo Test")
+    }
+
+    @Test
+    fun feat27_clickInstalledTarget_opensOnlyThatPackageWithExportedImage() = runBlocking {
+        val (activity, dialog) = setupDialog()
+        installShareTarget(activity, "com.zing.zalo", "Zalo Test")
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+        val output = Uri.parse("content://output/click.jpg")
+        val ok = Result.success(output)
+        viewModel.waterMarkRepo.updateImageList(listOf(ImageInfo(Uri.parse("content://media/click.jpg")).copy(result = ok, jobState = JobState.Success(ok))))
+        shadowOf(Looper.getMainLooper()).idle()
+        dialog.performSetUpLoadingView(Result.success(null, code = MainViewModel.TYPE_JOB_FINISH))
+
+        dialog.binding.llQuickShareItems.getChildAt(0).performClick()
+
+        val started = shadowOf(activity).nextStartedActivity
+        assertThat(started.`package`).isEqualTo("com.zing.zalo")
+        assertThat(started.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)).isEqualTo(output)
+    }
+
+    @Test
+    fun feat27_rebindingFinishedState_doesNotDuplicateTargets() = runBlocking {
+        val (activity, dialog) = setupDialog()
+        installShareTarget(activity, "com.zing.zalo", "Zalo Test")
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+        val ok = Result.success(Uri.parse("content://output/rebind.jpg"))
+        viewModel.waterMarkRepo.updateImageList(listOf(ImageInfo(Uri.parse("content://media/rebind.jpg")).copy(result = ok, jobState = JobState.Success(ok))))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        repeat(3) { dialog.performSetUpLoadingView(Result.success(null, code = MainViewModel.TYPE_JOB_FINISH)) }
+
+        assertThat(dialog.binding.llQuickShareItems.childCount).isEqualTo(1)
     }
 
     @Test
