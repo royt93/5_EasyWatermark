@@ -27,11 +27,17 @@ Xem chi tiết trong `doc/feat.md` và `doc/task/BACKLOG.md`:
   (`START ... pkg=org.telegram.messenger`) nhưng Telegram không lên foreground, kể cả khi gửi bằng
   `adb shell am start` thuần. **Chưa kết luận được nguyên nhân** — lúc test có tiến trình
   `am instrument ...lenslauncher.test` chen vào foreground nên kết quả bị nhiễu; cần thử lại khi máy sạch.
-  **Đã sửa 1 bug thật tìm ra lúc smoke test:** WorkManager replay WorkInfo SUCCEEDED của phiên trước cho
-  `MainViewModel` mới, làm ảnh MỚI chưa xuất bị coi là "xong" (nút "Chia sẻ" hiện nhưng bị vô hiệu ngay khi
-  mở dialog). `observeExportWork` giờ bỏ qua work xong nếu repo không có ảnh nào mang kết quả (test
-  `MainViewModelExportStateRestoreRoboTest`). **Chưa giải thích được:** dialog đôi lúc về lại "Xuất vào bộ
-  sưu tập" sau khi quay về từ app đích khi cùng 1 phiên — chưa tái hiện lại được, không khẳng định đã hết.
+  **Đã sửa 2 bug thật tìm ra lúc smoke test:**
+  1. WorkManager replay WorkInfo SUCCEEDED của phiên trước cho `MainViewModel` mới, làm ảnh MỚI chưa xuất bị
+     coi là "xong" (nút "Chia sẻ" hiện nhưng bị vô hiệu). `observeExportWork` bỏ qua work xong nếu repo không
+     có ảnh nào mang kết quả.
+  2. Process death (Android kill process lúc ở app khác): repo chỉ giữ ảnh trong RAM nên mất trạng thái "xong".
+     `MainViewModel` giờ lưu snapshot (uri nguồn + uri xuất) vào `SavedStateHandle`, khôi phục + chọn ảnh đầu
+     để editor mở lại; bỏ qua đúng 1 lần `resetJobStatus()` ngay sau khôi phục (observer `waterMark` của Activity
+     luôn gọi nó) và không nạp đè intent SEND dựng lại của task. Verify thật Pixel 7 Pro: xuất, `am kill`,
+     mở lại từ recents → process mới (PID đổi), editor + dialog hiện "Chia sẻ" và 4 icon Chia sẻ nhanh.
+  **Giới hạn:** chỉ sống khi Android tự thu hồi process và task còn trong recents; vuốt app khỏi recents thì mất
+  (SavedStateHandle bị xoá theo task). Snapshot không lưu tên file xuất/thông số, chỉ uri.
   Đủ 12 locale. Test: 7 unit helper + 2 dialog.
 - ✅ FEAT-28: Frame & Shadow Builder — khung thẻ bo góc + đổ bóng + nền màu (2026-10-03) —
   `CardFrameRenderer` (hàm thuần, BitmapShader + BlurMaskFilter), `CardFramePbFragment` (chip

@@ -427,7 +427,8 @@ class MainActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         this.intent = intent
-        handleShareIntent(intent)
+        // Intent mới do người dùng chủ động chia sẻ — luôn nạp, kể cả khi vừa xuất xong ảnh trước đó.
+        handleShareIntent(intent, isFreshIntent = true)
     }
 
     override fun onStart() {
@@ -437,8 +438,14 @@ class MainActivity : BaseActivity() {
         handleShareIntent(intent)
     }
 
-    private fun handleShareIntent(intent: Intent?) {
+    private fun handleShareIntent(intent: Intent?, isFreshIntent: Boolean = false) {
         val uri = ShareIntentResolver.resolveSharedImageUri(intent) ?: return
+        // Process death: Android dựng lại task với chính intent SEND ban đầu. Nếu ViewModel vừa khôi phục
+        // ảnh đã xuất (SavedStateHandle) thì đừng nạp đè — nếu không kết quả Chia sẻ/Chia sẻ nhanh mất ngay.
+        if (!isFreshIntent && viewModel.hasRestoredExport()) {
+            intent?.action = null
+            return
+        }
         dealWithImage(listOf(uri))
         // Tiêu thụ intent để onStart lần sau (background rồi mở lại app bình thường)
         // không re-import lại ảnh share cũ.

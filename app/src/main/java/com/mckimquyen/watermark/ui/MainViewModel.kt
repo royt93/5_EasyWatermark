@@ -15,6 +15,7 @@ import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
@@ -86,7 +87,9 @@ class MainViewModel @Inject constructor(
         ),
     // BUG-FLAKY-2026-09-30 (compressImg): injectable để test dùng StandardTestDispatcher thay vì
     // hardcode Dispatchers.IO thật (không kiểm soát được bằng Robolectric scheduler -> flaky).
-    private val ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = Dispatchers.IO
+    private val ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = Dispatchers.IO,
+    // Process death: Hilt cấp SavedStateHandle thật cho @HiltViewModel; test tự truyền để mô phỏng.
+    private val savedStateHandle: SavedStateHandle = SavedStateHandle()
 ) : ViewModel() {
 
     var nextSelectedPos: Int = 0
@@ -124,6 +127,10 @@ class MainViewModel @Inject constructor(
         waterMarkRepo.imageInfoMapFlow.asLiveData().map { Pair(it, autoScroll) }
 
     val galleryPickedImageList: MutableLiveData<List<Image>> = MutableLiveData()
+
+    init {
+        restoreFinishedExport()
+    }
 
     /**
      * IDEA-12: gợi ý style watermark "quen dùng" khi mở batch mới — `null` nếu chưa đủ lịch sử
@@ -463,6 +470,7 @@ class MainViewModel @Inject constructor(
                 // icon "đang xử lý" cho item bị lỡ progress update.
                 imageList.value?.first?.forEach { saveProcess.value = it }
                 saveProcess.value = null
+                if (info.state == androidx.work.WorkInfo.State.SUCCEEDED) persistFinishedExport()
                 saveResult.value = when (info.state) {
                     androidx.work.WorkInfo.State.SUCCEEDED -> Result.success(code = TYPE_JOB_FINISH, data = null)
                     androidx.work.WorkInfo.State.CANCELLED -> Result.failure(data = null, code = TYPE_ERROR_CANCELLED)
@@ -970,7 +978,56 @@ class MainViewModel @Inject constructor(
         memorySettingRepo.updatePalette(palette)
     }
 
+    /**
+     * Process death: repo chỉ giữ danh sách ảnh trong RAM nên mất khi Android thu hồi process, dù
+     * WorkManager vẫn giữ work đã xong. Lưu snapshot gọn (uri nguồn + uri xuất + cờ thành công) vào
+     * [SavedStateHandle] ngay khi batch xong để [restoreFinishedExport] dựng lại nút Chia sẻ.
+     */
+    internal fun persistFinishedExport() {
+        val list = waterMarkRepo.imageInfoList
+        if (list.none { it.result != null }) return
+        savedStateHandle[KEY_EXPORT_INPUTS] = ArrayList(list.map { it.uri.toString() })
+        savedStateHandle[KEY_EXPORT_OUTPUTS] = ArrayList(list.map { it.shareUri?.toString().orEmpty() })
+    }
+
+    /** Khôi phục snapshot từ [persistFinishedExport]; chỉ chạy khi repo đang trống để không đè phiên hiện tại. */
+    private fun restoreFinishedExport() {
+        if (waterMarkRepo.imageInfoList.isNotEmpty()) return
+        val inputs = savedStateHandle.get<ArrayList<String>>(KEY_EXPORT_INPUTS) ?: return
+        val outputs = savedStateHandle.get<ArrayList<String>>(KEY_EXPORT_OUTPUTS) ?: return
+        if (inputs.isEmpty() || inputs.size != outputs.size) return
+        val restored = inputs.zip(outputs).map { (input, output) ->
+            val result = if (output.isEmpty()) {
+                Result.failure<Uri>(null, message = null)
+            } else {
+                Result.success(Uri.parse(output))
+            }
+            val state = if (output.isEmpty()) JobState.Failure(result) else JobState.Success(result)
+            ImageInfo(Uri.parse(input)).copy(result = result, jobState = state)
+        }
+        // Chọn ảnh đầu: Activity chỉ chuyển sang editor khi selectedImage != null (xem MainActivity).
+        launch {
+            waterMarkRepo.updateImageList(restored)
+            waterMarkRepo.select(restored.first().uri)
+        }
+        saveResult.value = Result.success(code = TYPE_JOB_FINISH, data = null)
+        skipNextResetAfterRestore = true
+    }
+
+    /**
+     * Sau khi khôi phục từ process death, observer `waterMark` của Activity gọi [resetJobStatus] ngay
+     * lần nạp cấu hình đầu tiên — không phải do người dùng đổi cấu hình, nên bỏ qua đúng 1 lần đó.
+     */
+    private var skipNextResetAfterRestore = false
+
+    /** `true` nếu repo đang giữ ảnh đã xuất do khôi phục từ process death (chưa bị reset/thay thế). */
+    fun hasRestoredExport(): Boolean = waterMarkRepo.imageInfoList.any { it.result != null }
+
     fun resetJobStatus() {
+        if (skipNextResetAfterRestore) {
+            skipNextResetAfterRestore = false
+            return
+        }
         saveResult.postValue(Result.success(null))
         // ENH-08: imageInfo bất biến — copy() thay vì mutate item đang sống trong repository list,
         // đồng thời đẩy list mới về repository (trước đây mutate im lặng không qua updateImageList,
@@ -1221,6 +1278,8 @@ ${System.currentTimeMillis().formatDate("yyy-MM-dd")}
         const val TYPE_COMPRESSING = "type_Compressing"
         const val TYPE_SAVING = "type_saving"
         const val TYPE_JOB_FINISH = "type_job_finish"
+        private const val KEY_EXPORT_INPUTS = "export_inputs"
+        private const val KEY_EXPORT_OUTPUTS = "export_outputs"
 
         /** ENH-01: user bấm huỷ giữa batch export (WorkManager cancel). */
         const val TYPE_ERROR_CANCELLED = "type_error_cancelled"
