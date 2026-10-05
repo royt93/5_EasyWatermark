@@ -181,6 +181,10 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // BUG-67: Activity recreate (dark mode/font scale/locale/process death) — childFragmentManager
+        // ĐÃ restore EditTextContentFragment cũ; add thêm lần nữa tạo 2 EditText chồng nhau và back
+        // stack 2 entry (phải bấm back 2 lần). Chỉ add khi mở mới (savedInstanceState == null).
+        if (savedInstanceState != null) return
         childFragmentManager.beginTransaction()
             .setCustomAnimations(
                 R.anim.f_enter_in_fade,
