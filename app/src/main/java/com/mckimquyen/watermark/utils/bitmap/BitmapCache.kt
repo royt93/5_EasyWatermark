@@ -11,6 +11,9 @@ import java.util.concurrent.atomic.AtomicInteger
  * @author roy.mobile.dev@gmail.com
  */
 object BitmapCache {
+    /** BUG-73: bảo vệ cặp get+retain / put+retain khỏi xen kẽ với clearCache()/evict. */
+    private val cacheLock = Any()
+
     private val memoryCache: LruCache<BitmapInfo, BitmapValue> by lazy {
         object : LruCache<BitmapInfo, BitmapValue>(cacheSize) {
             override fun sizeOf(key: BitmapInfo?, value: BitmapValue?): Int {
@@ -47,6 +50,23 @@ object BitmapCache {
         return memoryCache.get(info)
     }
 
+    /**
+     * BUG-73: lấy value VÀ `retain()` trong cùng một đoạn đồng bộ với [clearCache] — trước đây caller `get()`
+     * rồi mới `retain()` ở bước sau, khoảng hở đó cho phép `clearCache()`/evict thấy `refCount == 0` và recycle
+     * bitmap ngay dưới chân caller. Trả `null` nếu không có trong cache; value trả về LUÔN đã được retain nên
+     * caller PHẢI `release()` đúng 1 lần khi dùng xong.
+     */
+    fun acquireFromCache(info: BitmapInfo): BitmapValue? = synchronized(cacheLock) {
+        memoryCache.get(info)?.also { it.retain() }
+    }
+
+    /** BUG-73: cho phép [acquireFromCache] retain value vừa decode TRƯỚC khi nó có thể bị evict. */
+    fun addToCacheAndAcquire(info: BitmapInfo, bitmapValue: BitmapValue): BitmapValue = synchronized(cacheLock) {
+        bitmapValue.retain()
+        memoryCache.put(info, bitmapValue)
+        bitmapValue
+    }
+
     fun addToCache(info: BitmapInfo, bitmapValue: BitmapValue?) {
         // LruCache.put() ném NullPointerException nếu value null (decode ảnh lỗi trả về null).
         if (bitmapValue != null) {
@@ -56,7 +76,7 @@ object BitmapCache {
 
     /** Xoá toàn bộ bitmap trong cache khi hệ thống cảnh báo bộ nhớ thấp hoặc kết thúc batch export. */
     fun clearCache() {
-        memoryCache.evictAll()
+        synchronized(cacheLock) { memoryCache.evictAll() }
     }
 
     /** Dung lượng cache hiện tại tính theo KB. */

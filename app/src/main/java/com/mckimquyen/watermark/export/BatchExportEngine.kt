@@ -139,7 +139,6 @@ class BatchExportEngine @Inject constructor(
                         reqHeight = bitmapHeight
                     )
                     val iconValue = iconResult.data ?: return@forEach
-                    iconValue.retain()
                     try {
                         val srcBitmap = iconValue.bitmap ?: return@forEach
                         WaterMarkImageView.buildIconBitmapShader(
@@ -463,12 +462,9 @@ class BatchExportEngine @Inject constructor(
                                         message = "decodeSampledBitmapFromResource == null"
                                     )
                                 }
-                                // ENH-15: giữ (retain) bitmap này trong lúc dùng để BitmapCache không
-                                // recycle nó nếu bị evict giữa chừng (batch nhiều ảnh có thể evict entry
-                                // đang xử lý) — release ngay sau khi build shader xong (đã copy pixel vào
-                                // shader riêng, không cần iconBitmap gốc nữa).
+                                // BUG-73: decode trả value ĐÃ retain nguyên tử; release sau khi build shader xong
+                                // (đã copy pixel vào shader riêng, không cần icon bitmap gốc nữa).
                                 val iconBitmapValue = iconBitmapRect.data!!
-                                iconBitmapValue.retain()
                                 try {
                                     // P1 review pass 8: site DUY NHẤT trong file còn `!!` không guard
                                     // (5 site khác đều `?: return`) — đồng nhất cách xử lý, tránh NPE
@@ -996,7 +992,6 @@ class BatchExportEngine @Inject constructor(
             // ENH-35: Báo rõ DecodeFailure thay vì null im lặng để UI hiển thị badge/icon lỗi
             return@withContext PreviewResult.DecodeFailure(message = decodeResult.message)
         }
-        bitmapValue.retain()
         // P1 review pass 8: theo dõi bitmap tạm ĐANG SỐNG để recycle trong catch nếu render lỗi
         // giữa chừng — trước đây chỉ `bitmapValue.release()` (bitmap GỐC trong cache), bitmap tạm
         // (bản `copy()` riêng, không qua BitmapCache) bị mồ côi, chỉ chờ GC.
@@ -1089,6 +1084,7 @@ class BatchExportEngine @Inject constructor(
                     val iconValue = iconResult.data
                     val iconBitmap = iconValue?.bitmap
                     if (iconValue == null || iconBitmap == null) {
+                        iconValue?.release() // BUG-73: decode trả value đã retain, null bitmap vẫn phải trả ref
                         // FEAT-03: icon layer chính lỗi decode không có nghĩa layer PHỤ cũng ẩn.
                         drawExtraLayers(Canvas(mutableBitmap), mutableBitmap.width, mutableBitmap.height, imageInfo, config.extraLayers, contentResolver)
                         return@withContext PreviewResult.Success(
@@ -1099,7 +1095,6 @@ class BatchExportEngine @Inject constructor(
                             framedHeight = framedHeight
                         )
                     }
-                    iconValue.retain()
                     try {
                         WaterMarkImageView.buildIconBitmapShader(
                             imageInfo = previewInfo,
@@ -1233,7 +1228,6 @@ class BatchExportEngine @Inject constructor(
         if (decodeResult.isFailure() || bitmapValue == null) {
             return@withContext null
         }
-        bitmapValue.retain()
         // P1 review pass 8: theo dõi 2 bitmap tạm ĐANG SỐNG để recycle trong catch nếu render lỗi
         // giữa chừng — xem giải thích ở generatePreviewBitmap (cùng pattern leak).
         var leakGuardOriginal: Bitmap? = null
@@ -1329,11 +1323,11 @@ class BatchExportEngine @Inject constructor(
                     val iconValue = iconResult.data
                     val iconBitmap = iconValue?.bitmap
                     if (iconValue == null || iconBitmap == null) {
+                        iconValue?.release() // BUG-73: decode trả value đã retain, null bitmap vẫn phải trả ref
                         // FEAT-03: icon layer chính lỗi decode không có nghĩa layer PHỤ cũng ẩn.
                         drawExtraLayers(Canvas(watermarkedCopy), watermarkedCopy.width, watermarkedCopy.height, imageInfo, config.extraLayers, contentResolver)
                         return@withContext CompareBitmaps(originalCopy, watermarkedCopy)
                     }
-                    iconValue.retain()
                     try {
                         WaterMarkImageView.buildIconBitmapShader(
                             imageInfo = previewInfo,

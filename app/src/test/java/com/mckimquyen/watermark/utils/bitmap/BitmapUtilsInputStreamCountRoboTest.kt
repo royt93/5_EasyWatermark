@@ -104,6 +104,34 @@ class BitmapUtilsInputStreamCountRoboTest {
         Unit
     }
 
+    /**
+     * BUG-73: hợp đồng — value trả về từ decodeSampledBitmapFromResource LUÔN đã retain (refCount tăng đúng 1 mỗi
+     * lần, kể cả cache hit), caller phải release. Nhờ vậy clearCache()/evict xen vào sau khi hàm trả về không
+     * recycle bitmap dưới chân caller.
+     */
+    @Test
+    fun decodeSampledBitmapFromResource_returnsRetainedValue_onMissAndOnHit() = runBlocking {
+        BitmapCache.clearCache()
+        val file = createRotatedJpeg()
+        setupProvider("wm.stream.count.retained", file)
+        val uri = Uri.parse("content://wm.stream.count.retained/test.jpg")
+
+        val first = decodeSampledBitmapFromResource(context, context.contentResolver, uri, 1000, 1000).data!!
+        assertThat(first.getRefCount()).isEqualTo(1)
+
+        val second = decodeSampledBitmapFromResource(context, context.contentResolver, uri, 1000, 1000).data!!
+        assertThat(second).isSameInstanceAs(first) // cache hit cùng instance
+        assertThat(second.getRefCount()).isEqualTo(2)
+
+        BitmapCache.clearCache() // xen vào SAU khi hàm đã trả về: không được recycle dưới chân caller
+        assertThat(first.bitmap!!.isRecycled).isFalse()
+
+        first.release()
+        second.release()
+        assertThat(first.bitmap!!.isRecycled).isTrue()
+        Unit
+    }
+
     @Test
     fun decodeBitmapFromUri_opensAtMostThreeStreams_perUri() = runBlocking {
         val file = createRotatedJpeg()

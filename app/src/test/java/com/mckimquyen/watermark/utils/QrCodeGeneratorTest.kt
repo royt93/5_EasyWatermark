@@ -66,8 +66,24 @@ class QrCodeGeneratorTest {
         file.delete()
     }
 
+    /**
+     * FileProvider cache PathStrategy TĨNH theo authority (`sCache`) và chỉ tự invalidate khi ContentProvider thật
+     * được attachInfo() — mỗi sandbox Robolectric có cacheDir MỚI nên nếu test chạy sau 1 test khác trong cùng JVM
+     * sẽ ném "Failed to find configured root". Cùng pattern reset đã dùng ở `QrCodeBottomSheetFragmentRoboTest`.
+     */
+    private fun resetFileProviderStaticCache() {
+        try {
+            val cacheField = androidx.core.content.FileProvider::class.java.getDeclaredField("sCache")
+            cacheField.isAccessible = true
+            (cacheField.get(null) as? MutableMap<*, *>)?.clear()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     @Test
     fun saveToCache_realBitmap_returnsUriAndWritesNonEmptyFile() {
+        resetFileProviderStaticCache()
         val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
         val bitmap = QrCodeGenerator.generate("bug66", size = 128)!!
 

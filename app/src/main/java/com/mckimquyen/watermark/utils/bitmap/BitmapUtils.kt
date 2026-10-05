@@ -462,18 +462,23 @@ suspend fun decodeSampledBitmapFromResource(
     reqHeight: Int
 ): Result<BitmapCache.BitmapValue> = withContext(Dispatchers.IO) {
     val info = BitmapCache.BitmapInfo(uri, reqWidth, reqHeight)
-    var cacheValue = BitmapCache.getFromCache(info)
-    if (cacheValue?.bitmap == null) {
-        cacheValue = decodeSampledBitmapFromResourceSync(
-            context,
-            resolver,
-            uri,
-            reqWidth,
-            reqHeight
-        ).data
-        BitmapCache.addToCache(info, cacheValue)
+    // BUG-73: HỢP ĐỒNG — value trả về LUÔN đã `retain()` (acquire nguyên tử trong cache), caller PHẢI `release()`
+    // đúng 1 lần khi dùng xong và KHÔNG tự `retain()` thêm. Trước đây caller retain SAU khi hàm trả về nên
+    // `clearCache()`/evict xen vào giữa có thể recycle bitmap dưới chân caller.
+    val cached = BitmapCache.acquireFromCache(info)
+    if (cached?.bitmap != null) {
+        return@withContext Result.success(data = cached)
     }
-    return@withContext Result.success(data = cacheValue)
+    cached?.release() // entry cache không có bitmap: trả lại tham chiếu vừa retain rồi decode mới
+    val decoded = decodeSampledBitmapFromResourceSync(
+        context,
+        resolver,
+        uri,
+        reqWidth,
+        reqHeight
+    ).data
+    val acquired = if (decoded != null) BitmapCache.addToCacheAndAcquire(info, decoded) else null
+    return@withContext Result.success(data = acquired)
 }
 
 fun decodeSampledBitmapFromResourceSync(

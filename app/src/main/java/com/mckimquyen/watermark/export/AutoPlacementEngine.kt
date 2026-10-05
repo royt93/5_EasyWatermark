@@ -79,7 +79,6 @@ class AutoPlacementEngine @Inject constructor(
             BatchExportEngine.PREVIEW_MAX_SIZE
         )
         val bitmapValue = decodeResult.data ?: return original
-        bitmapValue.retain()
         try {
             val srcBitmap = bitmapValue.bitmap ?: return original
             val faceRects = original.detectedFaceRectsNormalized ?: faceDetectionSource.detectFaces(srcBitmap)
@@ -119,7 +118,6 @@ class AutoPlacementEngine @Inject constructor(
                         srcBitmap.height
                     )
                     val iconValue = iconResult.data ?: return infoWithCache
-                    iconValue.retain()
                     try {
                         val iconBitmap = iconValue.bitmap ?: return infoWithCache
                         WaterMarkImageView.buildIconBitmapShader(

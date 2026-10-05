@@ -280,11 +280,12 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                     return@launch
                 }
                 // setting the bitmap of image
-                val imageBitmap = bitmapValue.bitmap ?: return@launch
-                // ENH-15: retain bitmap MỚI trước, release bitmap CŨ sau (không đảo thứ tự) —
-                // nếu 2 BitmapInfo trùng nhau (refCount>0 do đang được giữ ở nơi khác), release
-                // trước rồi retain sau có thể để lọt qua đúng lúc refCount chạm 0 và bị recycle.
-                bitmapValue.retain()
+                val imageBitmap = bitmapValue.bitmap ?: run {
+                    bitmapValue.release() // BUG-73: decode trả value đã retain, null bitmap vẫn phải trả ref
+                    return@launch
+                }
+                // BUG-73: decodeSampledBitmapFromResource trả value ĐÃ retain nguyên tử; nhận quyền sở hữu rồi
+                // mới release bitmap cũ (nếu cùng key thì refCount không chạm 0 giữa chừng).
                 mainImageBitmapValue?.release()
                 mainImageBitmapValue = bitmapValue
                 // FEAT-16: crop/rotate áp lên bitmap TRƯỚC khi hiển thị — imageBitmap gốc vẫn
@@ -386,9 +387,8 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                                 AppLog.d(LOG_TAG) { "[WMIV] Image mode: icon decode FAILED → return (watermark will NOT render)" }
                                 return@launch
                             }
-                            // ENH-15: retain mới trước, release cũ sau (xem lý do ở nhánh main image).
+                            // BUG-73: value mới đã retain trong decode; nhận quyền sở hữu rồi release cũ.
                             val newIconBitmapValue = iconBitmapRect.data!!
-                            newIconBitmapValue.retain()
                             iconBitmapValue?.release()
                             iconBitmapValue = newIconBitmapValue
                             iconBitmap = newIconBitmapValue.bitmap
@@ -519,7 +519,6 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                     reqHeight = measuredHeight
                 )
                 val iconValue = iconResult.data ?: return null
-                iconValue.retain()
                 try {
                     val srcBitmap = iconValue.bitmap ?: return null
                     buildIconBitmapShader(
