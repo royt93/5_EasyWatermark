@@ -430,4 +430,37 @@ class SaveImageBSDialogFragmentBatchActionRoboTest {
         assertThat(itemAnimator).isInstanceOf(DefaultItemAnimator::class.java)
         assertThat((itemAnimator as DefaultItemAnimator).supportsChangeAnimations).isFalse()
     }
+
+    /**
+     * BUG-70: toast lỗi mở ảnh trước đây dùng `share_error` ("Share error with %1$s") qua `getString(res)`
+     * KHÔNG truyền args nên hiện nguyên `%1$s`, đồng thời sai ngữ cảnh. Phải dùng chuỗi riêng không có
+     * placeholder ở MỌI locale.
+     */
+    @Test
+    fun bug70_openImageError_hasNoUnresolvedPlaceholder_inEveryLocale() {
+        val resDir = java.io.File("src/main/res").takeIf { it.exists() } ?: java.io.File("app/src/main/res")
+        val files = resDir.listFiles { f -> f.isDirectory && f.name.startsWith("values") }
+            .orEmpty().map { java.io.File(it, "strings.xml") }.filter { it.exists() }
+        var found = 0
+        files.forEach { f ->
+            val m = Regex("<string name=\"open_image_error\">(.*?)</string>").find(f.readText()) ?: return@forEach
+            found++
+            assertThat(m.groupValues[1]).doesNotContain("%")
+            assertThat(m.groupValues[1]).isNotEmpty()
+        }
+        assertThat(found).isEqualTo(files.size)
+    }
+
+    @Test
+    fun bug70_openGalleryFailureToast_usesDedicatedStringNotShareError() {
+        val src = java.io.File("src/main/java/com/mckimquyen/watermark/ui/dlg/SaveImageBSDialogFragment.kt")
+            .takeIf { it.exists() }
+            ?: java.io.File("app/src/main/java/com/mckimquyen/watermark/ui/dlg/SaveImageBSDialogFragment.kt")
+        val text = src.readText()
+        assertThat(text).contains("toast(R.string.open_image_error)")
+        // Không còn toast(R.string.share_error) trần (thiếu args) ở bất kỳ đâu.
+        assertThat(text).doesNotContain("toast(R.string.share_error)")
+        // Mọi chỗ format share_error phải có phương án khi e.message null.
+        assertThat(Regex("share_error, e\\.message\\)").containsMatchIn(text)).isFalse()
+    }
 }

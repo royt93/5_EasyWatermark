@@ -362,6 +362,7 @@
     <string name="share_app_message">Sjekk ut %1$s: https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="share_app_subtitle">Del EasyWatermark med venar</string>
     <string name="share_error">Feil ved deling med %1$s</string>
+    <string name="open_image_error">Kunne ikkje opne biletet</string>
     <plurals name="gallery_select_photo_count">
         <item quantity="one">Vel %1$d bilete</item>
         <item quantity="other">Vel %1$d bilete</item>

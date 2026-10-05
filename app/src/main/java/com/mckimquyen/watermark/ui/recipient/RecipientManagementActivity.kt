@@ -19,7 +19,6 @@ import com.mckimquyen.watermark.databinding.DlgEditRecipientBinding
 import com.mckimquyen.watermark.ui.adapter.RecipientManageAdapter
 import com.mckimquyen.watermark.utils.ktx.inflate
 import com.mckimquyen.watermark.utils.ktx.setBottomPaddingWithInset
-import com.mckimquyen.watermark.utils.ktx.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -85,21 +84,29 @@ class RecipientManagementActivity : BaseActivity() {
         dialogBinding.etCode.setText(existing?.code ?: generateCode())
         dialogBinding.etNotes.setText(existing?.notes.orEmpty())
 
-        MaterialAlertDialogBuilder(this)
+        // BUG-71: KHÔNG dùng setPositiveButton (luôn tự dismiss) — validate lỗi/mã trùng phải GIỮ dialog và input.
+        // Gắn click thủ công sau khi dialog show để chỉ dismiss khi lưu thành công.
+        val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(if (existing == null) R.string.recipient_add else R.string.recipient_edit)
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.tips_confirm_dialog) { _, _ ->
+            .setPositiveButton(R.string.tips_confirm_dialog, null)
+            .setNegativeButton(R.string.tips_cancel_dialog, null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                dialogBinding.tilName.error = null
+                dialogBinding.tilCode.error = null
                 val name = dialogBinding.etName.text?.toString()?.trim().orEmpty()
                 val code = dialogBinding.etCode.text?.toString()?.trim().orEmpty()
                 val notes = dialogBinding.etNotes.text?.toString()?.trim()
 
                 if (name.isEmpty()) {
-                    toast(getString(R.string.recipient_name_error_empty))
-                    return@setPositiveButton
+                    dialogBinding.tilName.error = getString(R.string.recipient_name_error_empty)
+                    return@setOnClickListener
                 }
                 if (code.isEmpty()) {
-                    toast(getString(R.string.recipient_code_error_empty))
-                    return@setPositiveButton
+                    dialogBinding.tilCode.error = getString(R.string.recipient_code_error_empty)
+                    return@setOnClickListener
                 }
 
                 val recipient = Recipient(
@@ -110,11 +117,15 @@ class RecipientManagementActivity : BaseActivity() {
                     timestamp = existing?.timestamp ?: System.currentTimeMillis()
                 )
                 viewModel.save(recipient) { success ->
-                    if (!success) toast(getString(R.string.recipient_code_error_duplicate))
+                    if (success) {
+                        dialog.dismiss()
+                    } else {
+                        dialogBinding.tilCode.error = getString(R.string.recipient_code_error_duplicate)
+                    }
                 }
             }
-            .setNegativeButton(R.string.tips_cancel_dialog, null)
-            .show()
+        }
+        dialog.show()
     }
 
     private fun confirmDelete(recipient: Recipient) {

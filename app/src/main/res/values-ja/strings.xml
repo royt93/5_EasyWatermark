@@ -368,6 +368,7 @@
     <string name="share_app_message">%1$s をチェック：https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="share_app_subtitle">EasyWatermarkを友達に共有</string>
     <string name="share_error">%1$s との共有エラー</string>
+    <string name="open_image_error">画像を開けませんでした</string>
     <plurals name="gallery_select_photo_count">
         <item quantity="other">%1$d 枚の写真を選択</item>
     </plurals>

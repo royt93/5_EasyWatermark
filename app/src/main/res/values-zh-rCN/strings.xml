@@ -372,6 +372,7 @@
     <string name="share_app_message">快来看看 %1$s：https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="share_app_subtitle">与好友分享 EasyWatermark</string>
     <string name="share_error">分享到 %1$s 时出错</string>
+    <string name="open_image_error">无法打开图片</string>
     <plurals name="gallery_select_photo_count">
         <item quantity="other">选择 %1$d 张照片</item>
     </plurals>

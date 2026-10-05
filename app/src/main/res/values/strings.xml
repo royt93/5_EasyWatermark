@@ -288,6 +288,7 @@
     <string name="layer_edit_text_hint">Layer text</string>
     <string name="about_version_display">v%1$s</string>
     <string name="share_error">Share error with %1$s</string>
+    <string name="open_image_error">Could not open the image</string>
     <plurals name="gallery_select_photo_count">
         <item quantity="one">Select %1$d photo</item>
         <item quantity="other">Select %1$d photos</item>

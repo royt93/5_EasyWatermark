@@ -323,6 +323,7 @@
     <string name="share_app_message">Посмотрите %1$s: https://play.google.com/store/apps/details?id=%2$s</string>
     <string name="share_app_subtitle">Поделитесь EasyWatermark с друзьями</string>
     <string name="share_error">Ошибка при отправке в %1$s</string>
+    <string name="open_image_error">Не удалось открыть изображение</string>
     <plurals name="gallery_select_photo_count">
         <item quantity="one">Выбрать %1$d фото</item>
         <item quantity="few">Выбрать %1$d фото</item>

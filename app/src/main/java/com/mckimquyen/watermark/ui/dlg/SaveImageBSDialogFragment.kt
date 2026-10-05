@@ -590,7 +590,8 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             startActivity(intent)
         } catch (e: Exception) {
             e.printStackTrace()
-            toast(R.string.share_error)
+            // BUG-70: lỗi MỞ ảnh (không phải chia sẻ) — dùng chuỗi riêng, không có placeholder %1$s.
+            toast(R.string.open_image_error)
         }
     }
 
@@ -608,7 +609,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             startActivity(intent)
         } catch (e: Exception) {
             e.printStackTrace()
-            toast(getString(R.string.share_error, e.message))
+            toast(getString(R.string.share_error, e.message ?: getString(R.string.tips_error)))
         }
     }
 
@@ -661,7 +662,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                         startActivity(shareIntent)
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        toast(getString(R.string.share_error, e.message))
+                        toast(getString(R.string.share_error, e.message ?: getString(R.string.tips_error)))
                     }
                 } else {
                     toast(R.string.share_zip_failed)
@@ -699,7 +700,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
                 startActivity(shareIntent)
             } catch (e: Exception) {
                 e.printStackTrace()
-                toast(getString(R.string.share_error, e.message))
+                toast(getString(R.string.share_error, e.message ?: getString(R.string.tips_error)))
             }
         } else {
             toast(R.string.share_zip_failed)
