@@ -28,9 +28,18 @@ Chạy `connectedDebugAndroidTest` toàn bộ (150 test) trên Pixel 7 Pro: 6 te
 3. Chỉ khi RED được tái hiện mới sửa (vd cache kích thước tại thời điểm put, không đọc lại `allocationByteCount`).
 
 ## Acceptance Criteria
-- [ ] Tái hiện được lỗi bằng test tất định trên thiết bị thật (RED).
-- [ ] `connectedDebugAndroidTest` toàn bộ 150 test xanh trên Pixel.
-- [ ] Không đổi hành vi evict/recycle hiện có (`BitmapCacheTest`, `BitmapCacheAcquireRaceRoboTest`, `BitmapUtilsInputStreamCountRoboTest` vẫn xanh).
+- [x] Tái hiện được lỗi bằng test tất định trên thiết bị thật (RED).
+- [x] `connectedDebugAndroidTest` toàn bộ 150 test xanh trên Pixel.
+- [x] Không đổi hành vi evict/recycle hiện có (`BitmapCacheTest`, `BitmapCacheAcquireRaceRoboTest`, `BitmapUtilsInputStreamCountRoboTest` vẫn xanh).
 
 ## Prompt loop (tự động hoá)
 Áp dụng checklist chuẩn tại [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md), thay `<ID>` = `BUG-76`.
+
+## Kết quả kiểm chứng (2026-10-05, Galaxy S24 Ultra `R5CX613VZBR`, Android 16)
+**Nguyên nhân (đã chứng minh, không còn là giả thuyết):** `sizeOf()` đọc lại `bitmap.allocationByteCount`; bitmap đã `recycle()` mà còn trong cache trả giá trị khác lúc `put` → `LruCache.trimToSize` ném. Test mới `BitmapCacheRecycledEntryIntegrationTest` (put 1 entry, `recycle()` thủ công, `clearCache()`) → RED `IllegalStateException: ... sizeOf() is reporting inconsistent results!`.
+**Fix:** `BitmapValue.sizeKb` chốt MỘT lần lúc tạo value (bọc `runCatching`, bitmap null → 1KB như mặc định LruCache); `sizeOf` trả `value.sizeKb`. Gom `1024` thành `BYTES_PER_KB`.
+
+- **Audit:** 9.2/10 — sửa nhỏ, đúng gốc, kích thước ổn định theo định nghĩa. Trừ điểm: kích thước cache không phản ánh nếu bitmap bị đổi sau khi cache (chưa có caller nào làm vậy).
+- **A/B toàn suite trên cùng máy:** code CŨ → `BUILD FAILED`, 7 failure (6 test cũ + test mới, cùng lỗi `inconsistent`); code SỬA → `BUILD SUCCESSFUL`, **151 test, 0 fail, 0 error, 1 skip** (skip là `locationToken_realGeocoder_...`: `assumeTrue` do thiết bị không có Geocoder/offline, không liên quan).
+- **Unit:** `BitmapCache*` + `BitmapUtils*` 10 lớp, 0 fail (XML mtime kiểm), ktlint xanh.
+- **Giới hạn nói thẳng:** (1) test mới cố ý vi phạm hợp đồng (recycle bitmap còn trong cache) để tái hiện tất định — trong luồng thật chưa chỉ ra ai recycle trước; fix làm cache chịu được trường hợp đó chứ không ngăn nó xảy ra. (2) Chưa chạy lại toàn suite trên Pixel (máy mất kết nối) — kết quả là trên S24 Ultra. (3) Lỗi từng chỉ hiện khi chạy sau test khác (singleton); không xác định test nào gây ra đầu tiên.

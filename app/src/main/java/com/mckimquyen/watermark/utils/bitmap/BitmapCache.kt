@@ -17,11 +17,9 @@ object BitmapCache {
     private val memoryCache: LruCache<BitmapInfo, BitmapValue> by lazy {
         object : LruCache<BitmapInfo, BitmapValue>(cacheSize) {
             override fun sizeOf(key: BitmapInfo?, value: BitmapValue?): Int {
-                return if (value?.bitmap == null) {
-                    super.sizeOf(key, value)
-                } else {
-                    value.bitmap.allocationByteCount / 1024
-                }
+                // BUG-76: dùng kích thước đã chốt lúc tạo value; đọc lại allocationByteCount của bitmap đã
+                // recycle() cho giá trị khác lúc put → LruCache ném "reporting inconsistent results".
+                return value?.sizeKb ?: super.sizeOf(key, value)
             }
 
             // ENH-15: khi LRU đầy (batch nhiều ảnh) evict 1 entry, đánh dấu evicted trên chính
@@ -42,7 +40,9 @@ object BitmapCache {
         }
     }
 
-    private val maxMemory by lazy { (Runtime.getRuntime().maxMemory() / 1024).toInt() }
+    private const val BYTES_PER_KB = 1024
+
+    private val maxMemory by lazy { (Runtime.getRuntime().maxMemory() / BYTES_PER_KB).toInt() }
 
     val cacheSize = maxMemory / 8
 
@@ -97,6 +97,9 @@ object BitmapCache {
         // VÀ không còn consumer nào đang giữ tham chiếu (refCount về 0). 2 điều kiện đều cần vì
         // thứ tự xảy ra trước/sau không cố định (có thể evict trước rồi release sau, hoặc release
         // hết trước rồi mới bị evict).
+        /** BUG-76: KB chốt một lần lúc tạo; bitmap null hoặc đã recycle sẵn tính 1KB như mặc định của LruCache. */
+        internal val sizeKb: Int = runCatching { bitmap?.allocationByteCount?.div(BYTES_PER_KB) }.getOrNull() ?: 1
+
         private val refCount = AtomicInteger(0)
         private val evictedFromCache = AtomicBoolean(false)
 
