@@ -155,12 +155,14 @@ class TextWatermarkBSDFragment : BaseBindBSDFragment<DlgEditTextContainerBinding
         // (deprecated). Khi dang o GoEdit, cho phep back mac dinh xu ly (dong dialog) bang cach
         // tam tat callback nay roi goi lai dispatcher.
         d.onBackPressedDispatcher.addCallback(d) {
-            if (shareViewModel.uiStateFlow.value is UiState.GoEdit) {
+            // BUG-68: quyết định theo fragment THẬT đang hiển thị (không còn đọc StateFlow.value). Đang ở
+            // danh sách template → quay về màn sửa; còn lại (màn sửa) → đóng dialog.
+            if (childFragmentManager.fragments.lastOrNull() is TextContentTemplateListFragment) {
+                shareViewModel.goTemplateEdit()
+            } else {
                 isEnabled = false
                 d.onBackPressedDispatcher.onBackPressed()
                 isEnabled = true
-            } else {
-                shareViewModel.goTemplateEdit()
             }
         }
         return d.apply {

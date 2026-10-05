@@ -18,7 +18,7 @@ import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import com.mckimquyen.watermark.ui.MainViewModel
 import com.mckimquyen.watermark.ui.UiState
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -33,8 +33,8 @@ import org.robolectric.Shadows.shadowOf
  * của Fragment) — nếu không, collector sống theo vòng đời Fragment instance (không bị huỷ khi
  * View bị huỷ qua back stack), tích luỹ qua mỗi lần `onViewCreated` chạy lại. Cùng họ lỗi với
  * BUG-10 (`GalleryFragmentLifecycleRoboTest`), test theo đúng pattern đó: `detach()` huỷ View
- * nhưng giữ Fragment instance sống, rồi kiểm tra `uiState` (`MutableStateFlow` nội bộ, truy cập
- * qua reflection vì `uiStateFlow` public chỉ là `StateFlow` bọc `asStateFlow()`) không còn
+ * nhưng giữ Fragment instance sống, rồi kiểm tra `uiState` (`MutableSharedFlow` nội bộ, truy cập
+ * qua reflection vì `uiStateFlow` public chỉ là `SharedFlow` bọc `asSharedFlow()`) không còn
  * subscriber nào.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -57,11 +57,11 @@ class EditTextContentFragmentLifecycleRoboTest {
     private val userDataStore = newTestUserDataStore(context)
     private lateinit var viewModel: MainViewModel
 
-    private fun uiStateMutableFlow(): MutableStateFlow<UiState> {
+    private fun uiStateMutableFlow(): MutableSharedFlow<UiState> {
         val field = MainViewModel::class.java.getDeclaredField("uiState")
         field.isAccessible = true
         @Suppress("UNCHECKED_CAST")
-        return field.get(viewModel) as MutableStateFlow<UiState>
+        return field.get(viewModel) as MutableSharedFlow<UiState>
     }
 
     @Before

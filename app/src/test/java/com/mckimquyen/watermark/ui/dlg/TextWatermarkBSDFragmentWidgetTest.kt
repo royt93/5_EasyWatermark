@@ -150,7 +150,7 @@ class TextWatermarkBSDFragmentWidgetTest {
      * -> `onDismiss()` reset state ve `None`. Dung 1 lan back tu Edit view dong ca bottom sheet.
      */
     @Test
-    fun backPress_fromEditView_cascadesToFullDismissAndResetState() {
+    fun backPress_fromEditView_cascadesToFullDismiss() {
         val activity = Robolectric.buildActivity(TestHostActivity::class.java).setup().get()
         TextWatermarkBSDFragment.safetyShow(activity.supportFragmentManager)
         shadowOf(Looper.getMainLooper()).idle()
@@ -164,7 +164,6 @@ class TextWatermarkBSDFragmentWidgetTest {
         dialog.onBackPressedDispatcher.onBackPressed()
         shadowOf(Looper.getMainLooper()).idle()
 
-        assertThat(testViewModel.uiStateFlow.value).isEqualTo(com.mckimquyen.watermark.ui.UiState.None)
         assertThat(fragment.dialog?.isShowing ?: false).isFalse()
     }
 }

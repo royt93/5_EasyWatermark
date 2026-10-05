@@ -16,6 +16,7 @@ import com.mckimquyen.watermark.testutil.newTestUserDataStore
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
 import com.mckimquyen.watermark.testutil.noopWatermarkStyleHistoryRepository
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -61,7 +62,23 @@ class MainViewModelApplyDualPresetRoboTest {
         )
         // LiveData chỉ có .value khi đang có observer.
         viewModel.selectedImage.observeForever { }
+        // BUG-68: uiStateFlow giờ là SharedFlow one-shot (không còn .value) — thu event bằng collector
+        // chạy sẵn TRƯỚC khi gọi applyDualPreset, giống Fragment thật đang STARTED.
+        collectJob = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Unconfined).launch {
+            viewModel.uiStateFlow.collect { emittedStates.add(it) }
+        }
     }
+
+    private val emittedStates = java.util.Collections.synchronizedList(mutableListOf<UiState>())
+    private var collectJob: kotlinx.coroutines.Job? = null
+
+    @org.junit.After
+    fun tearDown() {
+        collectJob?.cancel()
+    }
+
+    private fun anchorEvent(): UiState.ApplyAnchor? =
+        synchronized(emittedStates) { emittedStates.filterIsInstance<UiState.ApplyAnchor>().lastOrNull() }
 
     private fun selectImage(tileMode: Shader.TileMode) = runBlocking {
         repo.updateImageList(listOf(ImageInfo(uri = imageUri, tileMode = tileMode.ordinal)))
@@ -95,9 +112,9 @@ class MainViewModelApplyDualPresetRoboTest {
         val preset = DualWatermarkPreset.DIAGONAL_BALANCE
 
         viewModel.applyDualPreset(preset)
-        awaitUntil { viewModel.uiStateFlow.value is UiState.ApplyAnchor }
+        awaitUntil { anchorEvent() != null }
 
-        val state = viewModel.uiStateFlow.value as UiState.ApplyAnchor
+        val state = anchorEvent()!!
         assertThat(state.anchor).isEqualTo(preset.primaryAnchor)
         assertThat(state.marginPercent).isEqualTo(preset.primaryMarginPercent)
     }
@@ -107,7 +124,7 @@ class MainViewModelApplyDualPresetRoboTest {
         selectImage(Shader.TileMode.CLAMP)
 
         viewModel.applyDualPreset(DualWatermarkPreset.BRAND_COPYRIGHT)
-        awaitUntil { viewModel.uiStateFlow.value is UiState.ApplyAnchor }
+        awaitUntil { anchorEvent() != null }
 
         assertThat(repo.selectedImage.value.tileMode).isEqualTo(Shader.TileMode.CLAMP.ordinal)
         assertThat(runBlocking { repo.waterMark.first() }.extraLayers).hasSize(1)
@@ -116,8 +133,8 @@ class MainViewModelApplyDualPresetRoboTest {
     @Test
     fun applyDualPreset_withoutSelectedImage_doesNotCrash_andStillEmitsAnchor() {
         viewModel.applyDualPreset(DualWatermarkPreset.BRAND_COPYRIGHT)
-        awaitUntil { viewModel.uiStateFlow.value is UiState.ApplyAnchor }
+        awaitUntil { anchorEvent() != null }
 
-        assertThat(viewModel.uiStateFlow.value).isInstanceOf(UiState.ApplyAnchor::class.java)
+        assertThat(anchorEvent()).isInstanceOf(UiState.ApplyAnchor::class.java)
     }
 }

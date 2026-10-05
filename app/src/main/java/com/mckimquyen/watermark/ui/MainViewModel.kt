@@ -55,9 +55,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import id.zelory.compressor.Compressor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
@@ -117,9 +120,13 @@ class MainViewModel @Inject constructor(
         _compareReveal.value = fraction.coerceIn(0f, 1f)
     }
 
-    private val uiState: MutableStateFlow<UiState> = MutableStateFlow(UiState.None)
+    // BUG-68: điều hướng/sự kiện UI là EVENT một lần, KHÔNG phải state. StateFlow giữ giá trị cuối nên
+    // `flowWithLifecycle(STARTED)` replay lại GoEdit/UseTemplate khi STOP→START (Home rồi quay lại) và
+    // dialog sửa text tự đóng/ghi đè text. SharedFlow replay=0 + extraBufferCapacity=1 chỉ giao cho
+    // subscriber đang active, `emit` không bao giờ treo.
+    private val uiState: MutableSharedFlow<UiState> = MutableSharedFlow(extraBufferCapacity = UI_EVENT_BUFFER)
 
-    val uiStateFlow: StateFlow<UiState> = uiState.asStateFlow()
+    val uiStateFlow: SharedFlow<UiState> = uiState.asSharedFlow()
 
     private var autoScroll = true
 
@@ -1267,6 +1274,7 @@ ${System.currentTimeMillis().formatDate("yyy-MM-dd")}
     }
 
     companion object {
+        private const val UI_EVENT_BUFFER = 1
         const val TYPE_ERROR_NOT_IMG = "type_error_not_img"
         const val TYPE_ERROR_FILE_NOT_FOUND = "type_error_file_not_found"
         const val TYPE_ERROR_SAVE_OOM = "type_error_save_oom"
