@@ -28,6 +28,17 @@ class WatermarkProfileRepository @Inject constructor(
 
     suspend fun delete(entity: WatermarkProfileEntity) = dao.deleteById(entity.id)
 
+    /**
+     * BUG-64: migrate `iconUri` của mọi profile. [transform] trả URI mới (giữ/copy) hoặc `null` (URI đã chết
+     * → ghi chuỗi rỗng, profile vẫn mở được, chỉ mất icon hỏng). Chỉ ghi dòng thực sự đổi.
+     */
+    suspend fun rewriteIconUris(transform: (Uri) -> Uri?) {
+        dao.getAllIconUris().forEach { row ->
+            val migrated = transform(Uri.parse(row.iconUri))?.toString().orEmpty()
+            if (migrated != row.iconUri) dao.updateIconUri(row.id, migrated)
+        }
+    }
+
     companion object {
         internal fun toEntity(name: String, mark: WaterMark) = WatermarkProfileEntity(
             name = name,

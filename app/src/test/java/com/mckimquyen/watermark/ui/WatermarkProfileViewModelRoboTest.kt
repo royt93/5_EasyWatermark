@@ -3,6 +3,7 @@ package com.mckimquyen.watermark.ui
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
+import com.mckimquyen.watermark.data.db.dao.ProfileIconUri
 import com.mckimquyen.watermark.data.db.dao.WatermarkProfileDao
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.data.model.entity.WatermarkProfileEntity
@@ -33,6 +34,8 @@ class WatermarkProfileViewModelRoboTest {
             return inserted.size.toLong()
         }
         override suspend fun deleteById(id: Long) = Unit
+        override suspend fun getAllIconUris(): List<ProfileIconUri> = emptyList()
+        override suspend fun updateIconUri(id: Long, iconUri: String) = Unit
     }
 
     @Test

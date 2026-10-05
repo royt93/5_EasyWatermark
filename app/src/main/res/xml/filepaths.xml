@@ -21,4 +21,8 @@
     <files-path
         name="signature_images"
         path="signatures/" />
+    <!-- BUG-64: QR user đã xác nhận (kho bền). GIỮ cache-path qr_codes ở trên để URI cũ còn đọc được khi migrate. -->
+    <files-path
+        name="qr_codes_persistent"
+        path="qrcodes/" />
 </paths>

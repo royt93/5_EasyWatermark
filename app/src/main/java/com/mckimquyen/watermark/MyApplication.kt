@@ -10,6 +10,8 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
+import com.mckimquyen.watermark.data.repo.WatermarkProfileRepository
+import com.mckimquyen.watermark.utils.QrCodeGenerator
 import com.roy.sdkadbmob.AdManager
 import com.roy.sdkadbmob.AdSafetyLimits
 import com.roy.sdkadbmob.AdSdkConfig
@@ -26,6 +28,12 @@ class MyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var waterMarkRepo: WaterMarkRepository
+
+    @Inject
+    lateinit var profileRepo: WatermarkProfileRepository
+
+    /** BUG-64: IO thật cho copy file + Room; SupervisorJob để lỗi migrate không kéo sập scope. */
+    private val migrationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     // ENH-01: BatchExportWorker là @HiltWorker (@AssistedInject) — cần HiltWorkerFactory để
     // WorkManager tạo Worker qua Hilt (inject WaterMarkRepository/UserConfigRepository/engine)
@@ -67,6 +75,28 @@ class MyApplication : Application(), Configuration.Provider {
             applicationScope.launch {
                 waterMarkRepo.resetModeToText()
             }
+            migrateLegacyQrUris()
+        }
+    }
+
+    /**
+     * BUG-64: QR cũ nằm trong cacheDir nhưng URI đã lưu bền (DataStore/MRU/profile). Mỗi lần khởi động: còn
+     * file thì copy sang filesDir, mất file thì bỏ URI chết. Idempotent — sau lần đầu không còn URI khớp
+     * tiền tố cũ nên chỉ là đọc rồi ghi lại giá trị y nguyên.
+     * ponytail: chạy mỗi lần mở app, đổi thành cờ một-lần khi số profile lớn đến mức tốn thời gian.
+     */
+    private fun migrateLegacyQrUris() {
+        // Một URI thường xuất hiện đồng thời ở icon hiện tại + MRU + nhiều profile. Cache kết quả trong
+        // lần migrate này để chỉ copy file đúng một lần và mọi record cùng trỏ tới MỘT URI mới.
+        val promoted = mutableMapOf<android.net.Uri, android.net.Uri?>()
+        val promote: (android.net.Uri) -> android.net.Uri? = {
+            promoted.getOrPut(it) { QrCodeGenerator.promoteLegacyCacheUri(this, it) }
+        }
+        migrationScope.launch {
+            runCatching { waterMarkRepo.rewriteIconUris(promote) }
+                .onFailure { AppLog.w("MyApplication", "BUG-64 migrate DataStore failed: $it") }
+            runCatching { profileRepo.rewriteIconUris(promote) }
+                .onFailure { AppLog.w("MyApplication", "BUG-64 migrate profile failed: $it") }
         }
     }
 

@@ -2,6 +2,7 @@ package com.mckimquyen.watermark.data.repo
 
 import android.net.Uri
 import com.google.common.truth.Truth.assertThat
+import com.mckimquyen.watermark.data.db.dao.ProfileIconUri
 import com.mckimquyen.watermark.data.db.dao.WatermarkProfileDao
 import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ExifFrameStyle
@@ -36,6 +37,15 @@ class WatermarkProfileRepositoryRoboTest {
         }
         override suspend fun deleteById(id: Long) {
             deletedIds.add(id)
+        }
+
+        /** BUG-64: id → iconUri hiện có; `updates` ghi lại mọi lần ghi để assert "chỉ ghi dòng thực sự đổi". */
+        val iconUris = linkedMapOf<Long, String>()
+        val updates = mutableListOf<Pair<Long, String>>()
+        override suspend fun getAllIconUris(): List<ProfileIconUri> = iconUris.map { ProfileIconUri(it.key, it.value) }
+        override suspend fun updateIconUri(id: Long, iconUri: String) {
+            updates.add(id to iconUri)
+            iconUris[id] = iconUri
         }
     }
 
@@ -209,5 +219,40 @@ class WatermarkProfileRepositoryRoboTest {
 
         assertThat(restored.cardCornerRadiusPercent).isEqualTo(WaterMarkRepository.MAX_CARD_CORNER_PERCENT)
         assertThat(restored.cardShadowPercent).isEqualTo(0f)
+    }
+
+    // --- BUG-64: migrate URI icon của profile ---
+
+    @Test
+    fun rewriteIconUris_replacesLiveUri_clearsDeadUri_andSkipsUnchangedRows() = kotlinx.coroutines.runBlocking {
+        val dao = FakeWatermarkProfileDao().apply {
+            iconUris[1] = "content://legacy/live.png"
+            iconUris[2] = "content://legacy/dead.png"
+            iconUris[3] = "content://media/keep.png"
+        }
+        val repo = WatermarkProfileRepository(dao)
+
+        repo.rewriteIconUris { uri ->
+            when (uri.lastPathSegment) {
+                "live.png" -> Uri.parse("content://persistent/live.png")
+                "dead.png" -> null
+                else -> uri
+            }
+        }
+
+        assertThat(dao.iconUris[1]).isEqualTo("content://persistent/live.png")
+        assertThat(dao.iconUris[2]).isEmpty()
+        assertThat(dao.iconUris[3]).isEqualTo("content://media/keep.png")
+        assertThat(dao.updates.map { it.first }).containsExactly(1L, 2L) // hàng 3 không đổi → không ghi
+        Unit
+    }
+
+    @Test
+    fun rewriteIconUris_noProfiles_isNoOp() = kotlinx.coroutines.runBlocking {
+        val dao = FakeWatermarkProfileDao()
+
+        WatermarkProfileRepository(dao).rewriteIconUris { null }
+
+        assertThat(dao.updates).isEmpty()
     }
 }

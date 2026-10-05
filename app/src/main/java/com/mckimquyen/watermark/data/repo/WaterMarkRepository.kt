@@ -397,6 +397,24 @@ class WaterMarkRepository @Inject constructor(
         }
     }
 
+    /**
+     * BUG-64: migrate URI icon đã persist trong DataStore. Chạy icon hiện tại và MRU trong MỘT
+     * `edit` nguyên tử: [transform] trả URI mới để giữ/copy, hoặc `null` để loại URI đã chết.
+     * Không đổi cờ QR động/template/link — QR động tự sinh bitmap từ template khi export.
+     */
+    suspend fun rewriteIconUris(transform: (Uri) -> Uri?) {
+        dataStore.edit { preferences ->
+            val currentIcon = Uri.parse(preferences[KEY_ICON_URI].orEmpty())
+            preferences[KEY_ICON_URI] = transform(currentIcon)?.toString().orEmpty()
+            val rewrittenRecents = parseRecentIconUris(preferences[KEY_RECENT_ICON_URIS])
+                .mapNotNull(transform)
+                .map(Uri::toString)
+                .distinct()
+                .take(MAX_RECENT_ICONS)
+            preferences[KEY_RECENT_ICON_URIS] = serializeRecentIconUris(rewrittenRecents)
+        }
+    }
+
     /** FEAT-03: thêm 1 layer phụ mới — no-op (không ghi, không đẩy Undo) nếu đã đủ [MAX_EXTRA_LAYERS]. */
     suspend fun addLayer(layer: WatermarkLayer) {
         val current = waterMark.first().extraLayers

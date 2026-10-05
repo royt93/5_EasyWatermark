@@ -17,7 +17,6 @@ import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.databinding.FQrCodeBottomSheetBinding
 import com.mckimquyen.watermark.export.ExportNaming
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
-import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.QrCodeGenerator
 import com.mckimquyen.watermark.utils.ktx.toast
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +24,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 
 /**
  * Bottom sheet nhập nội dung → sinh QR → đẩy vào luồng Image watermark (reuse [MainViewModel.updateIcon]).
@@ -88,8 +86,8 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
                 toast(R.string.qr_code_empty)
                 return@setOnClickListener
             }
-            val uri = saveBitmapToCache(bitmap)
-            AppLog.d(LOG_TAG) { "[QR] saveBitmapToCache -> uri=$uri" }
+            val uri = saveBitmapPersistently(bitmap)
+            AppLog.d(LOG_TAG) { "[QR] saveBitmapPersistently -> uri=$uri" }
             if (uri == null) {
                 toast(R.string.save_failed)
                 return@setOnClickListener
@@ -174,10 +172,10 @@ class QrCodeBottomSheetFragment : BaseBindBSDFragment<FQrCodeBottomSheetBinding>
         super.onDestroyView()
     }
 
-    internal fun saveBitmapToCache(bitmap: Bitmap): Uri? {
-        // ENH-29: Dọn dẹp các file QR tạm cũ (giữ tối đa 3 file gần nhất, xoá file > 24h)
-        FileUtils.cleanOldTempFiles(File(requireContext().cacheDir, "qrcodes"), maxRetainedFiles = 3)
-        return QrCodeGenerator.saveToCache(requireContext(), bitmap, prefix = "qr_temp_")
+    internal fun saveBitmapPersistently(bitmap: Bitmap): Uri? {
+        // BUG-64: QR đã xác nhận được lưu vào DataStore/MRU/profile như tài nguyên bền nên ghi vào filesDir.
+        // Preview chưa xác nhận không ghi file nào, và file bền không khớp `_temp_` nên không cần dọn cache nữa.
+        return QrCodeGenerator.saveToFiles(requireContext(), bitmap, prefix = QrCodeGenerator.PERSISTENT_FILE_PREFIX)
     }
 
     companion object {

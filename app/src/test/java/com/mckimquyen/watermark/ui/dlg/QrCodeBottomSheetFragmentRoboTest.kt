@@ -91,7 +91,7 @@ class QrCodeBottomSheetFragmentRoboTest {
      * Robolectric bug thực nghiệm: `androidx.core.content.FileProvider` cache `PathStrategy` tĩnh
      * theo authority (`sCache`), chỉ tự invalidate khi ContentProvider thật được `attachInfo()`
      * (không xảy ra nếu code chỉ gọi `getUriForFile()` mà không query ngược qua ContentResolver).
-     * 2 test trong class này (`saveBitmapToCache_prunesOldQrTempFiles` và
+     * 2 test trong class này (`saveBitmapPersistently_prunesOldQrTempFiles` và
      * `btnUseQrCode_dynamicModeOn...`) đều gọi `getUriForFile()` — mỗi Robolectric sandbox có
      * `cacheDir` MỚI nên PathStrategy cache từ sandbox trước trỏ nhầm thư mục, ném
      * `IllegalArgumentException: Failed to find configured root`. Reset thủ công qua reflection
@@ -209,27 +209,47 @@ class QrCodeBottomSheetFragmentRoboTest {
         assertThat(finalBitmap.sameAs(expectedForA)).isFalse()
     }
 
+    /**
+     * BUG-64 (thay `saveBitmapPersistently_prunesOldQrTempFiles` của ENH-29): xác nhận QR KHÔNG còn dọn cache
+     * (file QR đã xác nhận nằm ở `filesDir`, không khớp `_temp_`), nên file tạm sẵn có trong cache giữ nguyên.
+     */
     @Test
-    fun saveBitmapToCache_prunesOldQrTempFiles() {
+    fun saveBitmapPersistently_writesToPersistentStore_andLeavesCacheUntouched() {
         val fragment = launchFragment()
-        val cacheDir = java.io.File(fragment.requireContext().cacheDir, "qrcodes")
-        cacheDir.mkdirs()
-
-        // Tạo sẵn 5 file QR cũ
-        for (i in 1..5) {
-            val oldFile = java.io.File(cacheDir, "qr_temp_$i.png")
-            oldFile.writeText("fake qr $i")
-            oldFile.setLastModified(1000L * i)
+        val context = fragment.requireContext()
+        val cacheQrDir = java.io.File(context.cacheDir, "qrcodes").apply { mkdirs() }
+        val oldTemp = java.io.File(cacheQrDir, "qr_temp_1.png").apply {
+            writeText("fake")
+            setLastModified(1000L)
         }
-        assertThat(cacheDir.listFiles()?.filter { it.name.contains("_temp_") }?.size).isEqualTo(5)
 
         val bmp = android.graphics.Bitmap.createBitmap(20, 20, android.graphics.Bitmap.Config.ARGB_8888)
-        val uri = fragment.saveBitmapToCache(bmp)
+        val uri = fragment.saveBitmapPersistently(bmp)
 
         assertThat(uri).isNotNull()
-        val remaining = cacheDir.listFiles()?.filter { it.name.contains("_temp_") } ?: emptyList()
-        // ENH-29: Giữ tối đa 3 file cũ mới nhất + 1 file mới tạo = tối đa 4
-        assertThat(remaining.size).isAtMost(4)
+        assertThat(oldTemp.exists()).isTrue()
+        val persisted = java.io.File(context.filesDir, "qrcodes").listFiles().orEmpty()
+        assertThat(persisted).isNotEmpty()
+        assertThat(persisted.none { it.name.contains("_temp_") }).isTrue()
+    }
+
+    /**
+     * BUG-64: QR user xác nhận được lưu vào DataStore/MRU/profile như tài nguyên bền, nên sau khi
+     * cache bị dọn (hệ thống hoặc `cleanOldTempFiles`) URI vẫn phải mở được.
+     */
+    @Test
+    fun saveBitmapPersistently_confirmedQr_survivesCacheWipe() {
+        val fragment = launchFragment()
+        val bmp = QrCodeGenerator.generate("bug64", size = 128)!!
+
+        val uri = fragment.saveBitmapPersistently(bmp)!!
+        java.io.File(fragment.requireContext().cacheDir, "qrcodes").deleteRecursively()
+
+        val bytes = runCatching {
+            fragment.requireContext().contentResolver.openInputStream(uri)?.use { it.readBytes() }
+        }.getOrNull()
+        assertThat(bytes).isNotNull()
+        assertThat(bytes!!.size).isGreaterThan(0)
     }
 
     // --- BUG-AUDIT-2026-09-29: recycle previewBitmap (đúng pattern BUG-38) ---
