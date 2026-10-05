@@ -130,6 +130,52 @@ class ExportZipHelperTest {
         assertThat(entries).containsExactly("valid.jpg")
     }
 
+    /**
+     * BUG-65: URI đọc được 1 phần rồi ném IOException giữa chừng — entry đã `putNextEntry` + ghi dở
+     * vẫn nằm trong ZIP (cắt cụt, mở ra ảnh hỏng) trong khi hàm báo thành công vì có ảnh khác tốt.
+     */
+    @Test
+    fun createZipArchive_whenReadFailsMidStream_doesNotLeaveTruncatedEntry() {
+        val goodFile = File(testTempDir, "good.jpg").apply { writeBytes(ByteArray(2048) { 7 }) }
+        val goodUri = Uri.fromFile(goodFile)
+        val brokenUri = Uri.parse("content://wm.zip.broken/partial.jpg")
+        val destZip = File(testTempDir, "mid_failure.zip")
+        val result = ExportZipHelper.createZipArchiveWithOpener(
+            context.contentResolver,
+            listOf(brokenUri, goodUri),
+            destZip,
+            openInput = { uri ->
+                if (uri == brokenUri) ThrowAfterBytesInputStream(PARTIAL_BYTES) else context.contentResolver.openInputStream(uri)
+            }
+        )
+
+        assertThat(result).isNotNull()
+        val entries = mutableMapOf<String, Int>()
+        ZipInputStream(FileInputStream(destZip)).use { zipIn ->
+            var entry = zipIn.nextEntry
+            while (entry != null) {
+                entries[entry.name] = zipIn.readBytes().size
+                entry = zipIn.nextEntry
+            }
+        }
+        // Chỉ ảnh tốt, nguyên vẹn; entry của URI hỏng KHÔNG được tồn tại (kể cả bản cắt cụt).
+        assertThat(entries.keys).containsExactly("good.jpg")
+        assertThat(entries["good.jpg"]).isEqualTo(2048)
+    }
+
+    /** InputStream đọc được [remaining] byte rồi ném IOException thật (không phụ thuộc Robolectric pipe). */
+    private class ThrowAfterBytesInputStream(private var remaining: Int) : java.io.InputStream() {
+        override fun read(): Int {
+            if (remaining <= 0) throw java.io.IOException("simulated network loss")
+            remaining--
+            return 1
+        }
+    }
+
+    companion object {
+        private const val PARTIAL_BYTES = 100
+    }
+
     @Test
     fun createShareZipIntent_hasProperActionTypeAndFlags() {
         val sampleZipUri = Uri.parse("content://com.mckimquyen.watermark.fileprovider/export_zip/test.zip")

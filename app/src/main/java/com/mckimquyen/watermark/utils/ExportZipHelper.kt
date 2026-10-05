@@ -11,7 +11,6 @@ import com.mckimquyen.watermark.AppLog
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -110,6 +109,15 @@ object ExportZipHelper {
         uris: List<Uri>,
         destZipFile: File,
         resolveName: ((Uri, Int) -> String?)? = null
+    ): File? = createZipArchiveWithOpener(resolver, uris, destZipFile, resolveName, resolver::openInputStream)
+
+    /** BUG-65: tách [openInput] để test chính xác stream ném giữa chừng (Robolectric pipe coi lỗi là EOF sạch). */
+    internal fun createZipArchiveWithOpener(
+        resolver: ContentResolver,
+        uris: List<Uri>,
+        destZipFile: File,
+        resolveName: ((Uri, Int) -> String?)? = null,
+        openInput: (Uri) -> java.io.InputStream?
     ): File? {
         if (uris.isEmpty()) return null
         val usedNames = mutableSetOf<String>()
@@ -125,20 +133,25 @@ object ExportZipHelper {
                     val rawName = resolveName?.invoke(uri, index + 1) ?: queryDisplayName(resolver, uri)
                     val entryName = sanitizeAndDeduplicateEntryName(rawName, index + 1, usedNames)
 
-                    var inputStream: InputStream? = null
+                    // BUG-65: đọc TRỌN VẸN vào file tạm TRƯỚC khi mở entry. Ghi thẳng vào `zipOut` rồi lỗi
+                    // giữa chừng (cloud provider mất mạng) để lại entry cắt cụt không rollback được; staging
+                    // đảm bảo entry chỉ được tạo khi toàn bộ dữ liệu đã đọc thành công.
+                    val staged = File.createTempFile("zip_stage_", ".tmp", destZipFile.parentFile)
                     try {
-                        inputStream = resolver.openInputStream(uri)
-                        if (inputStream != null) {
-                            val zipEntry = ZipEntry(entryName)
-                            zipOut.putNextEntry(zipEntry)
-                            inputStream.copyTo(zipOut, BUFFER_SIZE)
+                        val read = openInput(uri)?.use { input ->
+                            staged.outputStream().use { out -> input.copyTo(out, BUFFER_SIZE) }
+                            true
+                        } ?: false
+                        if (read) {
+                            zipOut.putNextEntry(ZipEntry(entryName))
+                            staged.inputStream().use { it.copyTo(zipOut, BUFFER_SIZE) }
                             zipOut.closeEntry()
                             successCount++
                         }
                     } catch (e: Exception) {
                         AppLog.d(TAG) { "Failed to read uri $uri into zip: ${e.message}" }
                     } finally {
-                        kotlin.runCatching { inputStream?.close() }
+                        kotlin.runCatching { staged.delete() }
                     }
                 }
             }

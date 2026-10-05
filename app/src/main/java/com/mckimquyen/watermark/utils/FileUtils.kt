@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.documentfile.provider.DocumentFile
+import com.mckimquyen.watermark.AppLog
 
 class FileUtils {
     companion object {
@@ -29,11 +30,19 @@ class FileUtils {
             maxDepth: Int = RECURSIVE_SCAN_MAX_DEPTH,
             maxFiles: Int = RECURSIVE_SCAN_MAX_FILES
         ): List<Uri> {
-            val root = DocumentFile.fromTreeUri(context, treeUri) ?: return emptyList()
-            if (!includeSubfolders) {
-                return filterImageUris(root.listFiles().toList())
+            // BUG-74: quyền SAF bị thu hồi giữa chừng → fromTreeUri/listFiles ném SecurityException; caller
+            // (GalleryFragment) chạy trong lifecycleScope không try/catch nên sẽ crash app. Trả rỗng + log.
+            return try {
+                val root = DocumentFile.fromTreeUri(context, treeUri) ?: return emptyList()
+                if (!includeSubfolders) {
+                    filterImageUris(root.listFiles().toList())
+                } else {
+                    collectImagesRecursively(root, maxDepth, maxFiles)
+                }
+            } catch (e: SecurityException) {
+                AppLog.w("FileUtils", "listImagesInTree: quyền thư mục bị từ chối: $treeUri", e)
+                emptyList()
             }
-            return collectImagesRecursively(root, maxDepth, maxFiles)
         }
 
         /** Tách riêng khỏi [listImagesInTree] để test được logic lọc mà không cần SAF/DocumentsProvider thật. */
@@ -56,7 +65,14 @@ class FileUtils {
             queue.add(root to 0)
             while (queue.isNotEmpty() && result.size < maxFiles) {
                 val (dir, depth) = queue.removeFirst()
-                for (child in dir.listFiles()) {
+                // BUG-74: 1 thư mục bị từ chối quyền chỉ bỏ riêng thư mục đó, giữ ảnh đã thu thập được.
+                val children = try {
+                    dir.listFiles()
+                } catch (e: SecurityException) {
+                    AppLog.w("FileUtils", "collectImagesRecursively: bỏ thư mục bị từ chối quyền", e)
+                    continue
+                }
+                for (child in children) {
                     if (result.size >= maxFiles) break
                     if (child.isFile && isImage(child.type)) {
                         result.add(child.uri)
@@ -72,15 +88,25 @@ class FileUtils {
          * 获取文件类型
          */
         @JvmStatic
-        @Throws(SecurityException::class)
         fun getFileTypeFromUri(resolver: ContentResolver, uri: Uri?): String? {
             if (uri == null) {
                 return null
             }
-            return when {
-                uri.scheme == "content" && resolver.getType(uri) != null -> {
+            // BUG-74: provider từ chối quyền (clipboard `content://` không cấp quyền đọc, quyền SAF bị
+            // thu hồi) ném SecurityException từ getType() — chặn tại trust boundary, coi như không biết
+            // MIME để caller rơi về nhánh đuôi file thay vì crash main coroutine/click handler.
+            val providerType = if (uri.scheme == "content") {
+                try {
                     resolver.getType(uri)
+                } catch (e: SecurityException) {
+                    AppLog.w("FileUtils", "getType bị từ chối quyền: $uri", e)
+                    null
                 }
+            } else {
+                null
+            }
+            return when {
+                providerType != null -> providerType
 
                 else -> {
                     // content provider 无法通过下面的方式获取到信息

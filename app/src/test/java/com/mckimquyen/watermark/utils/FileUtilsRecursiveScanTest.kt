@@ -96,4 +96,38 @@ class FileUtilsRecursiveScanTest {
 
         assertThat(result).isEmpty()
     }
+
+    /**
+     * BUG-74: quyền SAF bị thu hồi giữa lúc quét → `listFiles()` ném SecurityException. Trước đây ngoại lệ
+     * thoát lên `lifecycleScope.launch` của GalleryFragment (không try/catch) và crash app, mất luôn
+     * cả ảnh đã đọc ở thư mục khác. Giờ lỗi 1 thư mục chỉ bỏ thư mục đó, giữ phần đã quét được.
+     */
+    @Test
+    fun collectImagesRecursively_oneFolderDeniesPermission_keepsImagesFromOtherFolders() {
+        val denied = mockk<DocumentFile>()
+        every { denied.isFile } returns false
+        every { denied.isDirectory } returns true
+        every { denied.listFiles() } throws SecurityException("Permission Denial: tree uri revoked")
+        val good = fakeDir(listOf(fakeFile("content://tree/good/pic_ok.jpg")))
+        val root = fakeDir(listOf(fakeFile("content://tree/pic1.jpg"), denied, good))
+
+        val result = FileUtils.collectImagesRecursively(root, maxDepth = 5, maxFiles = 500)
+
+        assertThat(result).containsExactly(
+            Uri.parse("content://tree/pic1.jpg"),
+            Uri.parse("content://tree/good/pic_ok.jpg")
+        )
+    }
+
+    @Test
+    fun collectImagesRecursively_rootDeniesPermission_returnsEmptyInsteadOfThrowing() {
+        val root = mockk<DocumentFile>()
+        every { root.isFile } returns false
+        every { root.isDirectory } returns true
+        every { root.listFiles() } throws SecurityException("Permission Denial")
+
+        val result = FileUtils.collectImagesRecursively(root, maxDepth = 5, maxFiles = 500)
+
+        assertThat(result).isEmpty()
+    }
 }
