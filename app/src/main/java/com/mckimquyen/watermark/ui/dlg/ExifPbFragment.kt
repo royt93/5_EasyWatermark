@@ -24,6 +24,10 @@ import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
  */
 class ExifPbFragment : BaseBindBSDFragment<DlgExifBorderBinding>() {
 
+    /** BUG-69: phân biệt observer bind UI với click người dùng/TalkBack; không dùng `isPressed` vì
+     * accessibility `performClick()` không đặt pressed. Listener chạy đồng bộ nên cờ này an toàn. */
+    private var isBindingSwitches = false
+
     // BUG-18: KHÔNG dùng `by lazy` — nó cache vĩnh viễn theo instance Fragment, trong khi
     // BottomSheetDialogFragment có thể tái tạo View (onCreateView gọi lại) nhiều lần trong cùng
     // 1 Fragment instance (xoay màn hình, dialog bị hệ thống tái tạo). Property getter thuần
@@ -59,21 +63,24 @@ class ExifPbFragment : BaseBindBSDFragment<DlgExifBorderBinding>() {
 
         shareViewModel.waterMark.observe(viewLifecycleOwner) { config ->
             if (config == null) return@observe
-            if (binding.swExif.isChecked != config.enableExif) {
-                binding.swExif.isChecked = config.enableExif
+            isBindingSwitches = true
+            try {
+                if (binding.swExif.isChecked != config.enableExif) {
+                    binding.swExif.isChecked = config.enableExif
+                }
+                binding.groupFrameStyle.isVisible = config.enableExif
+                binding.groupCustomize.isVisible = config.enableExif
+                highlightStyle(ExifFrameStyle.obtain(config.exifFrameStyle))
+                bindCustomizeValues(config, ExifFrameStyle.obtain(config.exifFrameStyle))
+            } finally {
+                isBindingSwitches = false
             }
-            binding.groupFrameStyle.isVisible = config.enableExif
-            binding.groupCustomize.isVisible = config.enableExif
-            highlightStyle(ExifFrameStyle.obtain(config.exifFrameStyle))
-            bindCustomizeValues(config, ExifFrameStyle.obtain(config.exifFrameStyle))
         }
 
-        binding.swExif.setOnCheckedChangeListener { buttonView, isChecked ->
+        binding.swExif.setOnCheckedChangeListener { _, isChecked ->
             binding.groupFrameStyle.isVisible = isChecked
             binding.groupCustomize.isVisible = isChecked
-            if (buttonView.isPressed) {
-                shareViewModel.toggleExifBorder()
-            }
+            if (!isBindingSwitches) shareViewModel.toggleExifBorder()
         }
 
         val activeColor = com.google.android.material.color.MaterialColors.getColor(
@@ -107,16 +114,12 @@ class ExifPbFragment : BaseBindBSDFragment<DlgExifBorderBinding>() {
             showBandColorPicker()
         }
 
-        binding.swExifSerifCaption.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (buttonView.isPressed) {
-                shareViewModel.updateExifUseSerifCaption(isChecked)
-            }
+        binding.swExifSerifCaption.setOnCheckedChangeListener { _, isChecked ->
+            if (!isBindingSwitches) shareViewModel.updateExifUseSerifCaption(isChecked)
         }
 
-        binding.swExifAutoPalette.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (buttonView.isPressed) {
-                shareViewModel.updateExifAutoPalette(isChecked)
-            }
+        binding.swExifAutoPalette.setOnCheckedChangeListener { _, isChecked ->
+            if (!isBindingSwitches) shareViewModel.updateExifAutoPalette(isChecked)
         }
 
         binding.tvExifCustomizeReset.setOnClickListener {

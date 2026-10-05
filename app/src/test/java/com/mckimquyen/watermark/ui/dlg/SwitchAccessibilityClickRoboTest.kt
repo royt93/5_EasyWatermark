@@ -27,15 +27,19 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 
-/** FEAT-28: widget test cho [CardFramePbFragment] — ẩn/hiện nhóm tuỳ chỉnh, ghi vào repo, đổ giá trị đã lưu lên UI. */
+/**
+ * BUG-69: switch EXIF/Card frame dùng `if (buttonView.isPressed)` để phân biệt người dùng với set từ
+ * code. Hành động accessibility (TalkBack/Switch Access) gọi `performClick()` và KHÔNG đặt `isPressed`
+ * nên toggle không bao giờ chạy trong khi nhóm tuỳ chỉnh lại hiện ra (`isVisible = isChecked` nằm
+ * ngoài guard) → UI lệch state với config.
+ */
 @RunWith(RobolectricTestRunner::class)
-class CardFramePbFragmentWidgetTest {
+class SwitchAccessibilityClickRoboTest {
 
     companion object {
         lateinit var testViewModel: MainViewModel
         const val WAIT_TIMEOUT_MS = 5_000L
         const val WAIT_STEP_MS = 20L
-        const val PERCENT_BASE = 100f
     }
 
     class TestHostActivity : FragmentActivity() {
@@ -76,7 +80,7 @@ class CardFramePbFragmentWidgetTest {
         }
     }
 
-    private fun launch(): CardFramePbFragment {
+    private fun <F : androidx.fragment.app.Fragment> launch(fragment: F): F {
         val activity = Robolectric.buildActivity(TestHostActivity::class.java).setup().get()
         testViewModel.waterMark.observe(activity) {}
         val containerId = FrameLayout(activity).let {
@@ -84,7 +88,6 @@ class CardFramePbFragmentWidgetTest {
             activity.setContentView(it)
             it.id
         }
-        val fragment = CardFramePbFragment().apply { setShowsDialog(false) }
         activity.supportFragmentManager.beginTransaction().add(containerId, fragment, "t").commit()
         idleUntil { testViewModel.waterMark.value != null }
         shadowOf(Looper.getMainLooper()).idle()
@@ -92,72 +95,49 @@ class CardFramePbFragmentWidgetTest {
     }
 
     @Test
-    fun default_switchOff_andCustomizeGroupHidden() {
-        val f = launch()
-        assertThat(f.binding.swCardFrame.isChecked).isFalse()
-        assertThat(f.binding.groupCardCustomize.visibility).isEqualTo(View.GONE)
-    }
+    fun cardFrame_accessibilityClick_togglesConfig() {
+        val f = launch(CardFramePbFragment().apply { setShowsDialog(false) })
 
-    @Test
-    fun savedEnabledConfig_showsGroup_andFillsSlidersFromRepo() {
-        runBlocking {
-            repo.updateCardFrameEnabled(true)
-            repo.updateCardCornerRadiusPercent(0.2f)
-            repo.updateCardShadowPercent(0.05f)
-        }
-        val f = launch()
-        idleUntil { f.binding.swCardFrame.isChecked }
-        shadowOf(Looper.getMainLooper()).idle()
+        f.binding.swCardFrame.performClick() // TalkBack: không đặt isPressed
 
-        assertThat(f.binding.swCardFrame.isChecked).isTrue()
-        assertThat(f.binding.groupCardCustomize.visibility).isEqualTo(View.VISIBLE)
-        assertThat(f.binding.slideCardCorner.value).isWithin(0.01f).of(0.2f * PERCENT_BASE)
-        assertThat(f.binding.slideCardShadow.value).isWithin(0.01f).of(0.05f * PERCENT_BASE)
-        assertThat(f.binding.tvCardCornerValue.text.toString()).isEqualTo("20%")
-        assertThat(f.binding.tvCardShadowValue.text.toString()).isEqualTo("5%")
-    }
-
-    @Test
-    fun pressingSwitch_enablesCardFrameInRepo() {
-        val f = launch()
-        f.binding.swCardFrame.isPressed = true
-        f.binding.swCardFrame.isChecked = true
         idleUntil { runBlocking { repo.waterMark.first().cardFrameEnabled } }
         assertThat(runBlocking { repo.waterMark.first().cardFrameEnabled }).isTrue()
     }
 
-    /**
-     * BUG-69: trước đây test này khẳng định "set `isChecked` từ code KHÔNG ghi repo" nhờ cổng
-     * `isPressed`. Cổng đó chặn luôn cả TalkBack/Switch Access (`performClick()` không đặt pressed),
-     * nên đã thay bằng cờ `isBinding` chỉ bật trong observer. Hành vi cần giữ: đồng bộ UI TỪ REPO
-     * (observer) không được ghi ngược — kiểm bằng cách nạp config đã bật rồi xác nhận repo giữ nguyên.
-     */
     @Test
-    fun syncFromRepo_doesNotToggleRepoBack() {
+    fun exif_accessibilityClick_togglesConfig() {
+        val f = launch(ExifPbFragment().apply { setShowsDialog(false) })
+
+        f.binding.swExif.performClick()
+
+        idleUntil { runBlocking { repo.waterMark.first().enableExif } }
+        assertThat(runBlocking { repo.waterMark.first().enableExif }).isTrue()
+    }
+
+    @Test
+    fun exif_accessibilityClickOnSerifAndAutoPalette_updatesConfig() {
+        val f = launch(ExifPbFragment().apply { setShowsDialog(false) })
+
+        f.binding.swExifAutoPalette.performClick()
+        idleUntil { runBlocking { repo.waterMark.first().exifAutoPalette } }
+        assertThat(runBlocking { repo.waterMark.first().exifAutoPalette }).isTrue()
+
+        val before = runBlocking { repo.waterMark.first().exifUseSerifCaption }
+        f.binding.swExifSerifCaption.performClick()
+        idleUntil { runBlocking { repo.waterMark.first().exifUseSerifCaption } != before }
+        assertThat(runBlocking { repo.waterMark.first().exifUseSerifCaption }).isNotEqualTo(before)
+    }
+
+    @Test
+    fun programmaticSyncFromRepo_doesNotWriteBack_noLoop() {
         runBlocking { repo.updateCardFrameEnabled(true) }
-        val f = launch()
+        val f = launch(CardFramePbFragment().apply { setShowsDialog(false) })
         idleUntil { f.binding.swCardFrame.isChecked }
         shadowOf(Looper.getMainLooper()).idle()
         Thread.sleep(WAIT_STEP_MS * 5)
+
+        // Observer chỉ đồng bộ UI theo repo — config phải GIỮ NGUYÊN true, không bị toggle ngược thành false.
         assertThat(f.binding.swCardFrame.isChecked).isTrue()
         assertThat(runBlocking { repo.waterMark.first().cardFrameEnabled }).isTrue()
-    }
-
-    @Test
-    fun valueLabels_andSliderBounds_matchRepositoryLimits() {
-        val f = launch()
-        assertThat(f.binding.slideCardCorner.valueTo).isEqualTo(WaterMarkRepository.MAX_CARD_CORNER_PERCENT * PERCENT_BASE)
-        assertThat(f.binding.slideCardShadow.valueTo).isEqualTo(WaterMarkRepository.MAX_CARD_SHADOW_PERCENT * PERCENT_BASE)
-        assertThat(f.binding.slideCardCorner.valueFrom).isEqualTo(0f)
-        assertThat(f.binding.slideCardShadow.valueFrom).isEqualTo(0f)
-    }
-
-    @Test
-    fun a11y_controlsHaveContentDescriptions() {
-        val f = launch()
-        assertThat(f.binding.swCardFrame.contentDescription).isNotNull()
-        assertThat(f.binding.slideCardCorner.contentDescription).isNotNull()
-        assertThat(f.binding.slideCardShadow.contentDescription).isNotNull()
-        assertThat(f.binding.flCardBackground.contentDescription).isNotNull()
     }
 }

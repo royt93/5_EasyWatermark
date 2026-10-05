@@ -21,6 +21,9 @@ import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
  */
 class CardFramePbFragment : BaseBindBSDFragment<DlgCardFrameBinding>() {
 
+    /** BUG-69: observer bind UI không ghi ngược repo; accessibility click vẫn phải toggle config. */
+    private var isBindingSwitch = false
+
     override fun bindView(layoutInflater: LayoutInflater, container: ViewGroup?): DlgCardFrameBinding =
         DlgCardFrameBinding.inflate(layoutInflater, container, false)
 
@@ -32,9 +35,9 @@ class CardFramePbFragment : BaseBindBSDFragment<DlgCardFrameBinding>() {
             bind(config)
         }
 
-        binding.swCardFrame.setOnCheckedChangeListener { buttonView, isChecked ->
+        binding.swCardFrame.setOnCheckedChangeListener { _, isChecked ->
             binding.groupCardCustomize.isVisible = isChecked
-            if (buttonView.isPressed) shareViewModel.toggleCardFrame()
+            if (!isBindingSwitch) shareViewModel.toggleCardFrame()
         }
 
         binding.slideCardCorner.addOnChangeListener { _, value, fromUser ->
@@ -50,10 +53,15 @@ class CardFramePbFragment : BaseBindBSDFragment<DlgCardFrameBinding>() {
     }
 
     private fun bind(config: WaterMark) {
-        if (binding.swCardFrame.isChecked != config.cardFrameEnabled) {
-            binding.swCardFrame.isChecked = config.cardFrameEnabled
+        isBindingSwitch = true
+        try {
+            if (binding.swCardFrame.isChecked != config.cardFrameEnabled) {
+                binding.swCardFrame.isChecked = config.cardFrameEnabled
+            }
+            binding.groupCardCustomize.isVisible = config.cardFrameEnabled
+        } finally {
+            isBindingSwitch = false
         }
-        binding.groupCardCustomize.isVisible = config.cardFrameEnabled
 
         val corner = config.cardCornerRadiusPercent * PERCENT_BASE
         if (binding.slideCardCorner.value != corner) binding.slideCardCorner.value = corner
