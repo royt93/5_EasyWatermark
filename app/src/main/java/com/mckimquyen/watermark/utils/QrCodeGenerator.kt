@@ -75,13 +75,28 @@ object QrCodeGenerator {
             val cachePath = File(context.cacheDir, "qrcodes")
             cachePath.mkdirs()
             val file = File(cachePath, "$prefix${System.currentTimeMillis()}_${(0..9999).random()}.png")
-            FileOutputStream(file).use { fos ->
+            val compressed = FileOutputStream(file).use { fos ->
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
             }
+            // BUG-66: `compress()` trả false (encoder/ghi thất bại) mà không ném — trước đây vẫn cấp URI
+            // cho file rỗng/hỏng và báo thành công. Cùng pattern BUG-34 (SignatureRepository).
+            if (!keepFileIfWritten(file, compressed)) return null
             FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
+    }
+
+    /**
+     * BUG-66: hàm thuần (không đụng Bitmap/Android thật) để test nhánh `compress()==false` — xoá [file] rác
+     * khi ghi thất bại hoặc file rỗng. @return true nếu [file] hợp lệ, được phép cấp URI.
+     */
+    internal fun keepFileIfWritten(file: File, compressSucceeded: Boolean): Boolean {
+        if (!compressSucceeded || !file.exists() || file.length() == 0L) {
+            file.delete()
+            return false
+        }
+        return true
     }
 }
