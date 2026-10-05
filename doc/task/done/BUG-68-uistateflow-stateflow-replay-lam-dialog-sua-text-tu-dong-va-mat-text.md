@@ -42,3 +42,8 @@ Biến điều hướng thành one-shot (`SharedFlow(replay=0)`/`Channel`) hoặ
 - **Rủi ro DatabaseError đã phủ:** `MainViewModelDatabaseErrorEventRoboTest` 2/2: collector active nhận `DatabaseError`; collector đến sau không replay lỗi cũ (one-shot). Trong luồng thật `addTemplate()` được gọi từ màn danh sách đang STARTED.
 - **Test:** lô chính SharedFlow: 24 lớp, **106 test, 0 fail**, ktlint xanh. Test DatabaseError riêng: 2/2.
 - **Chưa làm:** smoke test thật Home→quay lại khi dialog template mở (Pixel mất kết nối).
+
+## Smoke test thật (2026-10-05)
+- **Máy:** Galaxy S24 Ultra `R5CX613VZBR` (Pixel mất kết nối ở bước này). Mở dialog sửa text → Danh sách mẫu → Home → `am start` MainActivity.
+- **Kết quả:** quay lại vẫn đúng 1 màn "Danh sách mẫu", không điều hướng lặp, không crash.
+- **Giới hạn nói thẳng:** quay lại bằng `am start` (không phải chạm app trong Recents); không so A/B với code StateFlow cũ trên máy. Lần thử đầu trên Pixel bị App Open ad chặn nên không tính. Bằng chứng chính vẫn là test StateFlow đỏ / SharedFlow xanh.

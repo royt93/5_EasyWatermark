@@ -33,3 +33,8 @@ Bọc việc `add` bằng `if (savedInstanceState == null)`.
 - **Audit:** 9.4/10 — sửa 1 dòng đúng gốc, có comment giải thích; test dựng đủ chuỗi recreate với id container cố định để FragmentManager restore thật.
 - **Test:** `TextWatermarkBSDFragment*` + `EditTextContentFragment*` → 7 lớp, **17 test, 0 fail**; `ktlintCheck` xanh (BUILD SUCCESSFUL).
 - **Chưa làm:** smoke test thật trên máy (Pixel `2B051FDH3006MU` đang mất kết nối) — đổi dark mode khi dialog sửa text mở, kỳ vọng chỉ 1 ô nhập và back 1 lần. Rủi ro thấp vì đã tái hiện + sửa ở mức FragmentManager; ghi lại để làm khi có máy. Ticket đóng với điều kiện này.
+
+## Smoke test thật (2026-10-05)
+- **Máy:** Pixel 7 Pro `2B051FDH3006MU`. Mở dialog sửa text, đổi dark mode bằng `cmd uimode night yes` để Activity recreate.
+- **Kết quả:** dialog khôi phục đúng, chỉ 1 ô nhập, không crash; đã trả night mode về `no`.
+- **Giới hạn nói thẳng:** chưa kiểm "back 1 lần đóng dialog" sau recreate.

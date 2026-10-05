@@ -35,3 +35,8 @@ files:
 - **Audit:** 9.0/10 — chuẩn hoá theo đặc tả MIME, thay đổi nhỏ, không đổi đuôi file.
 - **Test:** 18 lớp, **88 test, 0 fail** (gồm `BatchExportEngine*`, `ExportNaming*`, `OutputImage*`), ktlint xanh.
 - **Giới hạn nói thẳng:** (1) test thứ hai là kiểm tra TĨNH trên mã nguồn (không chạy export thật); (2) ticket ghi từ đầu "chưa tái hiện trên máy, tác động thực tế có thể nhỏ vì MediaStore thường tự suy từ đuôi file" — đây là chuẩn hoá theo đặc tả, KHÔNG chứng minh sửa được lỗi người dùng nhìn thấy; (3) chưa smoke test export JPEG trên máy thật (MediaStore + SAF), Pixel mất kết nối.
+
+## Smoke test thật (2026-10-05)
+- **Máy:** Pixel 7 Pro `2B051FDH3006MU`. Xuất batch 3 ảnh JPEG.
+- **Kết quả:** 3 file có magic bytes `ff d8 ff`; MediaStore `mime_type=image/jpeg` cho cả 3 (`relative_path=Pictures/WaterMarkCreator/`).
+- **Giới hạn nói thẳng:** đường MediaStore đã kiểm chứng; đường SAF (thư mục tuỳ chọn) chưa smoke. Không so A/B với code cũ nên không chứng minh được MediaStore từng ghi `image/jpg` trên máy này.

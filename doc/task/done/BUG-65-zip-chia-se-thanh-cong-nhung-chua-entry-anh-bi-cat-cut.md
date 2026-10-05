@@ -35,3 +35,8 @@ Stage từng URI vào file tạm rồi mới `putNextEntry` (lỗi thì bỏ qua
 - **Audit:** 9.2/10 — chi phí thêm 1 lần ghi file tạm/ảnh (đổi lấy tính đúng đắn); chưa đo ảnh rất lớn.
 - **Test:** `ExportZipHelperTest` 6/6, toàn lô `FileUtils*`/`ClipboardImageHelperTest`/`ExportZipHelperTest` **33 test, 0 fail**, ktlint xanh.
 - **Chưa làm:** smoke test thật chia sẻ ZIP trên máy (Pixel mất kết nối).
+
+## Smoke test thật (2026-10-05)
+- **Máy:** Pixel 7 Pro `2B051FDH3006MU`. Xuất 3 ảnh rồi bấm "Chia sẻ dạng ZIP".
+- **Kết quả:** sheet chia sẻ mở với intent `typ=application/zip`; file `cache/zip_cache/watermark_export_temp_*.zip` giải nén được, `unzip -t` không lỗi, đủ 3 entry, kích thước từng entry khớp từng byte với file đã xuất (95612/58237/64363).
+- **Giới hạn nói thẳng:** chỉ đường thành công; nhánh lỗi đọc giữa chừng (entry không bị cắt cụt) chỉ có unit test, chưa mô phỏng trên máy.

@@ -34,3 +34,8 @@ Lấy `dialog.getButton(BUTTON_POSITIVE)` sau `show()` và `setOnClickListener` 
 - **Audit:** 9.3/10 — lỗi mã trùng giờ hiện tại đúng ô `tilCode` thay vì toast sau khi dialog đã đóng.
 - **Test:** `RecipientEditDialogValidationRoboTest` 3/3, `RecipientViewModelSaveRoboTest` 2/2 không hồi quy, ktlint xanh (lô gộp 48 test, 0 fail).
 - **Chưa làm:** test riêng cho nhánh mã trùng (cần repo thật hoặc fake) và smoke test trên máy (Pixel mất kết nối).
+
+## Smoke test thật (2026-10-05)
+- **Máy:** Pixel 7 Pro `2B051FDH3006MU`.
+- **Kết quả:** dialog Thêm VÀ dialog Sửa: để trống tên, bấm Xác nhận → dialog còn mở, hiện lỗi "Tên không được để trống" tại ô tên, mã định danh + ghi chú giữ nguyên. Nhập tên hợp lệ → dialog đóng, người nhận xuất hiện; xoá người nhận cũng chạy. Dữ liệu test đã dọn.
+- **Giới hạn nói thẳng:** nhánh mã trùng chưa kiểm trên máy.
