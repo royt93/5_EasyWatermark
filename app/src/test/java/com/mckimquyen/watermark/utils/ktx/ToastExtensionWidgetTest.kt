@@ -11,11 +11,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import java.util.concurrent.TimeUnit
 
 /**
  * ContextExtension.toast() da chuyen tu Toast sang Snackbar M3 (khong theme, khong dung chuan
@@ -24,6 +26,12 @@ import org.robolectric.Shadows.shadowOf
  */
 @RunWith(RobolectricTestRunner::class)
 class ToastExtensionWidgetTest {
+
+    private companion object {
+        const val WAIT_TIMEOUT_MS = 5_000L
+        const val WAIT_STEP_MS = 20L
+        const val SNACKBAR_DRAIN_MS = 10_000L
+    }
 
     class TestActivity : FragmentActivity()
 
@@ -46,12 +54,31 @@ class ToastExtensionWidgetTest {
             setTheme(R.style.Theme_MyApp)
         }
 
+    /** BUG-75: Snackbar attach/animate qua Main Looper — full suite tải cao có thể chưa attach khi assert tức thời. */
+    private fun idleUntilSnackbar(activity: FragmentActivity, expected: String, timeoutMs: Long = WAIT_TIMEOUT_MS) {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        while (snackbarTextIn(activity) != expected && System.currentTimeMillis() < deadline) {
+            // BUG-75: `idle()` trần chạy cả task TƯƠNG LAI (bao gồm auto-dismiss Snackbar) → có thể show
+            // rồi dismiss trước khi assertion nhìn thấy. Chỉ tiến clock 20ms mỗi lượt.
+            shadowOf(Looper.getMainLooper()).idleFor(WAIT_STEP_MS, TimeUnit.MILLISECONDS)
+        }
+    }
+
+    /**
+     * SnackbarManager là singleton toàn process: Snackbar LENGTH_SHORT của test trước còn hiện làm Snackbar
+     * test sau bị xếp hàng. Dọn hàng đợi giữa mỗi test; nếu không, chạy cả suite chập chờn còn chạy riêng pass.
+     */
+    @After
+    fun drainSnackbarQueue() {
+        shadowOf(Looper.getMainLooper()).idleFor(SNACKBAR_DRAIN_MS, TimeUnit.MILLISECONDS)
+    }
+
     @Test
     fun activityToast_showsSnackbarWithMessage() {
         val activity = newThemedActivity()
 
         activity.toast("hello")
-        shadowOf(Looper.getMainLooper()).idle()
+        idleUntilSnackbar(activity, "hello")
 
         assertThat(snackbarTextIn(activity)).isEqualTo("hello")
     }
@@ -79,7 +106,7 @@ class ToastExtensionWidgetTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         fragment.toast("fragment msg")
-        shadowOf(Looper.getMainLooper()).idle()
+        idleUntilSnackbar(activity, "fragment msg")
 
         assertThat(snackbarTextIn(activity)).isEqualTo("fragment msg")
     }
