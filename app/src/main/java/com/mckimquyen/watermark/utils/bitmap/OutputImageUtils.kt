@@ -37,8 +37,16 @@ object OutputImageUtils {
         else -> "webp" // WEBP / WEBP_LOSSY / WEBP_LOSSLESS
     }
 
-    /** MIME type ảnh theo định dạng nén. */
-    fun mimeTypeFor(format: Bitmap.CompressFormat): String = "image/${extensionFor(format)}"
+    /**
+     * MIME type ảnh CHUẨN theo định dạng nén. BUG-72: KHÔNG suy từ đuôi file — đuôi JPEG là "jpg" nhưng MIME
+     * chuẩn là `image/jpeg` (`image/jpg` không hợp lệ, DocumentsProvider/MediaStore nghiêm ngặt có thể từ chối
+     * hoặc phân loại sai).
+     */
+    fun mimeTypeFor(format: Bitmap.CompressFormat): String = when (format) {
+        Bitmap.CompressFormat.PNG -> "image/png"
+        Bitmap.CompressFormat.JPEG -> "image/jpeg"
+        else -> "image/webp" // WEBP / WEBP_LOSSY / WEBP_LOSSLESS — khớp extensionFor()
+    }
 
     /**
      * Tính kích thước đích sao cho cạnh dài không vượt [maxLongEdge], giữ nguyên tỉ lệ.

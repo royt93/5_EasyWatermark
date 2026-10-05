@@ -651,7 +651,7 @@ class BatchExportEngine @Inject constructor(
                     } else {
                         val imageDetail = ContentValues().apply {
                             put(MediaStore.Images.Media.DISPLAY_NAME, finalOutputName)
-                            put(MediaStore.Images.Media.MIME_TYPE, "image/${exportNaming.trapOutputExtension(settings.outputFormat)}")
+                            put(MediaStore.Images.Media.MIME_TYPE, OutputImageUtils.mimeTypeFor(settings.outputFormat))
                             put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/$outPutFolderName/")
                             put(MediaStore.Images.Media.IS_PENDING, 1)
                         }
@@ -889,7 +889,7 @@ class BatchExportEngine @Inject constructor(
         val targetDoc = if (existing != null && conflictPolicy == ConflictPolicy.OVERWRITE) {
             existing
         } else {
-            val mimeType = "image/${exportNaming.trapOutputExtension(settings.outputFormat)}"
+            val mimeType = OutputImageUtils.mimeTypeFor(settings.outputFormat)
             root.createFile(mimeType, finalOutputName) ?: return Result.failure(
                 data = null,
                 code = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_INSERT,
