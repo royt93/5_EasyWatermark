@@ -7,6 +7,8 @@
     <!-- FEAT-12: undo/redo watermark editor -->
     <string name="action_redo">Redo</string>
     <string name="action_toggle_skip_export">Include/skip this image in export</string>
+    <string name="export_state_included">Included in export</string>
+    <string name="export_state_skipped">Skipped from export</string>
     <string name="action_settings">About</string>
     <string name="launch_card_pick_desc">Protect photos with text, icons or Leica EXIF</string>
     <string name="launch_card_about_desc">Settings, backup &amp; Material You theme</string>

@@ -164,6 +164,8 @@
     <string name="action_redo">Gjer om</string>
     <string name="action_select_all">Merk alle</string>
     <string name="action_toggle_skip_export">Ta med/hopp over dette biletet ved utføring</string>
+    <string name="export_state_included">Teke med i utføring</string>
+    <string name="export_state_skipped">Hoppa over i utføring</string>
     <string name="action_undo">Gjer ugjort</string>
     <string name="anchor_bottom_center">Nede i midten</string>
     <string name="anchor_bottom_left">Nede til venstre</string>

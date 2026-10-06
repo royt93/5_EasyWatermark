@@ -46,12 +46,11 @@
     <!-- FEAT-17: toggle skip/active — góc trên-phải, không đè lên ivDone (giữa) hay tvPreviewInfo (dưới). -->
     <ImageView
         android:id="@+id/ivSkipToggle"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:layout_margin="4dp"
-        android:background="@drawable/bg_preview_badge"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/bg_preview_badge_touch48"
         android:contentDescription="@string/action_toggle_skip_export"
-        android:padding="4dp"
+        android:padding="14dp"
         android:src="@drawable/baseline_check_circle_outline_24"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

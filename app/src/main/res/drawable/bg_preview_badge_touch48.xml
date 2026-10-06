@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- BUG-77: badge 28dp nhìn như cũ nhưng view chứa nó 48dp (touch target tối thiểu a11y): inset 10dp mỗi cạnh. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/bg_preview_badge"
+    android:inset="10dp" />

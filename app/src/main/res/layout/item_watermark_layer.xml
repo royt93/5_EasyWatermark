@@ -47,8 +47,8 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnMoveUp"
             style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:contentDescription="@string/layer_manager_move_up_cd"
             app:icon="@drawable/ic_arrow_upward"
             app:iconSize="18dp"
@@ -59,8 +59,8 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnMoveDown"
             style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:contentDescription="@string/layer_manager_move_down_cd"
             app:icon="@drawable/ic_arrow_downward"
             app:iconSize="18dp"
@@ -71,8 +71,8 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDelete"
             style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:contentDescription="@string/layer_manager_delete_cd"
             app:icon="@drawable/ic_template_list_item_remove"
             app:iconSize="18dp"

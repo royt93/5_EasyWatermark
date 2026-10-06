@@ -98,6 +98,8 @@
     <string name="action_select_all">Выбрать всё</string>
     <string name="action_settings">О приложении</string>
     <string name="action_toggle_skip_export">Включить/исключить это изображение из экспорта</string>
+    <string name="export_state_included">Включено в экспорт</string>
+    <string name="export_state_skipped">Исключено из экспорта</string>
     <string name="action_undo">Отменить</string>
     <string name="anchor_bottom_center">По центру снизу</string>
     <string name="anchor_bottom_left">Снизу слева</string>

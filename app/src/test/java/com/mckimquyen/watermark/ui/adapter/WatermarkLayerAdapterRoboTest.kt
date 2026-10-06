@@ -157,6 +157,17 @@ class WatermarkLayerAdapterRoboTest {
         assertThat(tapCount).isEqualTo(0)
     }
 
+    // BUG-77: 3 nút icon (lên/xuống/xoá) phải đạt touch target 48dp.
+    @Test
+    fun actionButtons_touchTargetAtLeast48dp() {
+        val holder = bindHolder(WatermarkLayerAdapter({}, {}, {}, {}), listOf(textLayer("A")), 0)
+        val minPx = 48 * context.resources.displayMetrics.density
+        listOf(holder.binding.btnMoveUp, holder.binding.btnMoveDown, holder.binding.btnDelete).forEach {
+            assertThat(it.layoutParams.width.toFloat()).isAtLeast(minPx)
+            assertThat(it.layoutParams.height.toFloat()).isAtLeast(minPx)
+        }
+    }
+
     private companion object {
         const val RV_SIZE_PX = 2000
     }

@@ -171,6 +171,8 @@
     <string name="action_redo">Rétablir</string>
     <string name="action_select_all">Tout sélectionner</string>
     <string name="action_toggle_skip_export">Inclure/exclure cette image de l\'export</string>
+    <string name="export_state_included">Incluse dans l\'export</string>
+    <string name="export_state_skipped">Exclue de l\'export</string>
     <string name="action_undo">Annuler</string>
     <string name="anchor_bottom_center">Bas centre</string>
     <string name="anchor_bottom_left">Bas gauche</string>

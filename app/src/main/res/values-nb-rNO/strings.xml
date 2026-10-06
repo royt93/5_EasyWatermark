@@ -168,6 +168,8 @@
     <string name="action_redo">Gjør om</string>
     <string name="action_select_all">Merk alle</string>
     <string name="action_toggle_skip_export">Inkluder/hopp over dette bildet ved eksport</string>
+    <string name="export_state_included">Inkludert i eksport</string>
+    <string name="export_state_skipped">Hoppet over i eksport</string>
     <string name="action_undo">Angre</string>
     <string name="anchor_bottom_center">Nede i midten</string>
     <string name="anchor_bottom_left">Nede til venstre</string>

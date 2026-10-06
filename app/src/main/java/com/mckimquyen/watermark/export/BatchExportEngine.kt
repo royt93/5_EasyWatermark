@@ -25,6 +25,7 @@ import com.mckimquyen.watermark.AppLog
 import com.mckimquyen.watermark.BuildConfig
 import com.mckimquyen.watermark.data.model.Anchor
 import com.mckimquyen.watermark.data.model.ConflictPolicy
+import com.mckimquyen.watermark.data.model.ERROR_CODE_GENERIC
 import com.mckimquyen.watermark.data.model.ExifFrameStyle
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.JobState
@@ -33,7 +34,6 @@ import com.mckimquyen.watermark.data.model.MediaStoreCleanupAction
 import com.mckimquyen.watermark.data.model.MediaStoreInsertResolver
 import com.mckimquyen.watermark.data.model.MediaStoreWriteFailureCleanup
 import com.mckimquyen.watermark.data.model.MediaStoreWriteResolver
-import com.mckimquyen.watermark.data.model.ERROR_CODE_GENERIC
 import com.mckimquyen.watermark.data.model.Result
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.model.WaterMark

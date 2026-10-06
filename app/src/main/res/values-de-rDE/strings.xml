@@ -171,6 +171,8 @@
     <string name="action_redo">Wiederholen</string>
     <string name="action_select_all">Alle auswählen</string>
     <string name="action_toggle_skip_export">Dieses Bild beim Export ein-/ausschließen</string>
+    <string name="export_state_included">Im Export enthalten</string>
+    <string name="export_state_skipped">Vom Export ausgeschlossen</string>
     <string name="action_undo">Rückgängig</string>
     <string name="anchor_bottom_center">Unten Mitte</string>
     <string name="anchor_bottom_left">Unten Links</string>

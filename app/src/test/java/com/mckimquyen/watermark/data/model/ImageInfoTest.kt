@@ -1,6 +1,5 @@
 package com.mckimquyen.watermark.data.model
 
-import android.graphics.RectF
 import android.graphics.Shader
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider

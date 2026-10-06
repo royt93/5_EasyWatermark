@@ -113,4 +113,32 @@ class SaveImageListAdapterSkipToggleRoboTest {
 
         assertThat(holder.itemView.alpha).isLessThan(1f)
     }
+
+    private fun boundSkipToggle(isSkipped: Boolean): android.view.View {
+        val adapter = SaveImageListAdapter(
+            context = context,
+            scope = CoroutineScope(Dispatchers.Unconfined),
+            generatePreview = { _, _ -> null },
+            estimateOutput = { w, h -> (w to h) to 0L },
+            onToggleSkip = {}
+        )
+        adapter.submitList(listOf(ImageInfo(Uri.parse("content://media/a"), isSkippedInExport = isSkipped)))
+        return createBoundHolder(adapter, 0).ivSkipToggle
+    }
+
+    // BUG-77: TalkBack phải đọc được trạng thái hiện tại, không chỉ đoán từ icon.
+    @Test
+    fun bind_stateDescription_reflectsSkipState() {
+        assertThat(boundSkipToggle(false).stateDescription).isEqualTo(context.getString(R.string.export_state_included))
+        assertThat(boundSkipToggle(true).stateDescription).isEqualTo(context.getString(R.string.export_state_skipped))
+    }
+
+    // BUG-77: touch target tối thiểu 48dp (WCAG/Material), badge nhìn vẫn nhỏ nhờ inset drawable.
+    @Test
+    fun skipToggle_touchTargetAtLeast48dp() {
+        val view = boundSkipToggle(false)
+        val minPx = 48 * context.resources.displayMetrics.density
+        assertThat(view.layoutParams.width.toFloat()).isAtLeast(minPx)
+        assertThat(view.layoutParams.height.toFloat()).isAtLeast(minPx)
+    }
 }

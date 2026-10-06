@@ -1,11 +1,9 @@
 package com.mckimquyen.watermark.ui.about
 
-import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.data.model.entity.Recipient
 import com.mckimquyen.watermark.export.AuthenticityVerifier
-import com.mckimquyen.watermark.export.stego.InvisibleWatermark
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Before
@@ -14,7 +12,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.io.File
 
 /**
  * IDEA-03/IDEA-02/IDEA-10: [AboutViewModel.VerifyReport] data class — xác thực con dấu ảnh

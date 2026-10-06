@@ -169,6 +169,8 @@
     <string name="action_redo">Ripeti</string>
     <string name="action_select_all">Seleziona tutto</string>
     <string name="action_toggle_skip_export">Includi/escludi questa immagine dall\'esportazione</string>
+    <string name="export_state_included">Inclusa nell\'esportazione</string>
+    <string name="export_state_skipped">Esclusa dall\'esportazione</string>
     <string name="action_undo">Annulla</string>
     <string name="anchor_bottom_center">In basso al centro</string>
     <string name="anchor_bottom_left">In basso a sinistra</string>

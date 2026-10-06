@@ -171,6 +171,8 @@
     <string name="action_redo">重做</string>
     <string name="action_select_all">全選</string>
     <string name="action_toggle_skip_export">匯出時包含/跳過此圖片</string>
+    <string name="export_state_included">已包含在匯出中</string>
+    <string name="export_state_skipped">已從匯出中跳過</string>
     <string name="action_undo">復原</string>
     <string name="anchor_bottom_center">下方置中</string>
     <string name="anchor_bottom_left">左下</string>

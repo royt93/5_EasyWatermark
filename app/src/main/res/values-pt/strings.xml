@@ -169,6 +169,8 @@
     <string name="action_redo">Refazer</string>
     <string name="action_select_all">Selecionar tudo</string>
     <string name="action_toggle_skip_export">Incluir/ignorar esta imagem na exportação</string>
+    <string name="export_state_included">Incluída na exportação</string>
+    <string name="export_state_skipped">Ignorada na exportação</string>
     <string name="action_undo">Desfazer</string>
     <string name="anchor_bottom_center">Centro Inferior</string>
     <string name="anchor_bottom_left">Inferior Esquerdo</string>
