@@ -6,8 +6,8 @@ import android.util.Log
  * Các hằng số dùng chung toàn app.
  */
 
-/** Log tag chung cho toàn bộ app (trước đây hardcoded rải rác là "roy93~"). */
-const val LOG_TAG = "roy93~"
+/** Log tag chung cho toàn bộ app. */
+const val LOG_TAG = "WatermarkCreator"
 
 /**
  * ENH-03: wrapper no-op ở release build cho `Log.d` — hàng trăm lời gọi debug log chạy vô điều
