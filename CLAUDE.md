@@ -83,6 +83,6 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
 - `doc/feat.md` — đề xuất tính năng.
 - `doc/AD.MD` — kế hoạch migrate Ad sang AdmobWrapper.
 - `doc/AD_PROMPT_AOS.MD` — prompt/ghi chú liên quan cấu hình Ad Android.
-- `doc/memory_leak.md` & `doc/todo.md` — các vấn đề kỹ thuật cần xử lý (memory leak ở `WaterMarkImageView`, dọn code comment, hardcoded strings như log tag `roy93~`).
+- `doc/memory_leak.md` & `doc/todo.md` — các vấn đề kỹ thuật cần xử lý (memory leak ở `WaterMarkImageView`, dọn code comment).
 - `doc/task/` — hàng đợi ticket kỹ thuật (`BACKLOG.md` là bảng tổng, mỗi ticket 1 file `.md` prefix `BUG-`/`ENH-`/`FEAT-`/`IDEA-`, di chuyển giữa `todo/` → `inprogress/` → `done/` khi đổi trạng thái). `PROMPT_TEMPLATE.md` định nghĩa Definition of Done chung: audit >9/10 theo quy tắc R5 ở trên, test đủ mọi case sửa, smoke test thật trên device đã khoá (R3) mới được move `done/`.
 - Các file rời ở gốc repo (`old_launch.kt`, `sim.kt`, `test_anim.kt`, `translate.py`, `build_log.txt`...) là file nháp/tham khảo, **không** thuộc source build.
