@@ -343,14 +343,13 @@ private fun resolveRotation(
                     null,
                     null
                 )
-                if (cursor?.count != 1) {
-                    cursor?.close()
-                    return 0f
+                cursor.use { c ->
+                    if (c?.count != 1) {
+                        return 0f
+                    }
+                    c.moveToFirst()
+                    c.getInt(0).toFloat()
                 }
-                cursor.moveToFirst()
-                val orientation: Int = cursor.getInt(0)
-                cursor.close()
-                orientation.toFloat()
             } catch (e: Exception) {
                 0f
             }

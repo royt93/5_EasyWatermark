@@ -192,13 +192,16 @@ class ExportNaming @Inject constructor(
     fun resolveVersionedName(baseName: String, isNameTaken: (String) -> Boolean): String {
         if (!isNameTaken(baseName)) return baseName
         var version = 2
-        while (true) {
+        val maxVersion = 999 // Prevent infinite loop if isNameTaken always returns true
+        while (version <= maxVersion) {
             val candidate = buildVersionedName(baseName, version)
             if (!isNameTaken(candidate)) {
                 return candidate
             }
             version++
         }
+        // Fallback: return with timestamp if all versioned names taken (edge case)
+        return buildVersionedName(baseName, (System.currentTimeMillis() % 10000).toInt())
     }
 
     /**
