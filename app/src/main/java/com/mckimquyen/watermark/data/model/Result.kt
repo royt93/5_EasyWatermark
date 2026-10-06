@@ -1,5 +1,8 @@
 package com.mckimquyen.watermark.data.model
 
+// Generic error code for unspecified failures (used when no specific error type applies)
+const val ERROR_CODE_GENERIC = "-1"
+
 // P1 review pass 8: data class để equals()/hashCode() so nội dung (không phải reference) -
 // DiffUtil.areContentsTheSame qua JobState.Success/Failure phụ thuộc việc này.
 data class Result<T>(

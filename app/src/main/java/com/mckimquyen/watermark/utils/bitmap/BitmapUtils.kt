@@ -13,6 +13,7 @@ import android.provider.MediaStore
 import android.widget.ImageView
 import androidx.exifinterface.media.ExifInterface
 import com.mckimquyen.watermark.AppLog
+import com.mckimquyen.watermark.data.model.ERROR_CODE_GENERIC
 import com.mckimquyen.watermark.data.model.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -42,7 +43,7 @@ fun decodeBitmapWithExifSync(
     exifModel: com.mckimquyen.watermark.data.model.ExifModel
 ): Result<BitmapCache.BitmapValue> {
     val bitmap = BitmapFactory.decodeStream(inputStream, null, options)
-        ?: return Result.failure(null, "-1", "Generate Bitmap failed.")
+        ?: return Result.failure(null, ERROR_CODE_GENERIC, "Generate Bitmap failed.")
     val inSampleSize = options?.inSampleSize ?: 1
     val bitmapValue = BitmapCache.BitmapValue(bitmap, inSampleSize, exifModel)
     if (rotation == 0f) {
@@ -406,10 +407,10 @@ suspend fun decodeBitmapFromUri(
         decodeBitmapFromUriUnguarded(context, resolver, uri, reqLongEdge, maxHeapBytes)
     } catch (e: SecurityException) {
         AppLog.w(TAG, "decodeBitmapFromUri: không có quyền đọc uri", e)
-        Result.failure(null, "-1", "Open input stream failed: no permission.")
+        Result.failure(null, ERROR_CODE_GENERIC, "Open input stream failed: no permission.")
     } catch (e: IOException) {
         AppLog.w(TAG, "decodeBitmapFromUri: không mở được uri", e)
-        Result.failure(null, "-1", "Open input stream failed: ${e.message}")
+        Result.failure(null, ERROR_CODE_GENERIC, "Open input stream failed: ${e.message}")
     }
 
 private suspend fun decodeBitmapFromUriUnguarded(
@@ -431,7 +432,7 @@ private suspend fun decodeBitmapFromUriUnguarded(
         // đi qua dòng này nên rủi ro thấp/chưa gặp; giờ "Original" cũng dùng chung đường này.
         resolver.openInputStream(uri).use { boundsStream ->
             if (boundsStream == null) {
-                return@withContext Result.failure(null, "-1", "Open input stream failed.")
+                return@withContext Result.failure(null, ERROR_CODE_GENERIC, "Open input stream failed.")
             }
             BitmapFactory.decodeStream(boundsStream, null, options)
         }
@@ -447,7 +448,7 @@ private suspend fun decodeBitmapFromUriUnguarded(
         options.inMutable = true
         resolver.openInputStream(uri).use { inputStream ->
             if (inputStream == null) {
-                return@withContext Result.failure(null, "-1", "Open input stream failed.")
+                return@withContext Result.failure(null, ERROR_CODE_GENERIC, "Open input stream failed.")
             }
             return@withContext decodeBitmapWithExifSync(inputStream, options, rotation, exifModel)
         }
@@ -510,17 +511,17 @@ fun decodeSampledBitmapFromResourceSync(
         options.inMutable = true
         resolver.openInputStream(uri).use { inputStream ->
             if (inputStream == null) {
-                return Result.failure(null, "-1", "Open input stream failed.")
+                return Result.failure(null, ERROR_CODE_GENERIC, "Open input stream failed.")
             }
             return decodeBitmapWithExifSync(inputStream, options, rotation, exifModel)
         }
     } catch (fne: FileNotFoundException) {
-        return Result.failure(null, "-1", fne.message)
+        return Result.failure(null, ERROR_CODE_GENERIC, fne.message)
     } catch (oom: OutOfMemoryError) {
         AppLog.i("BitmapUtils") { "Decoding sampled bitmap from resource throw oom" }
         return Result.failure(
             null,
-            "-1",
+            ERROR_CODE_GENERIC,
             "Decoding sampled bitmap from resource throw oom"
         )
     }

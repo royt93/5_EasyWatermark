@@ -33,6 +33,7 @@ import com.mckimquyen.watermark.data.model.MediaStoreCleanupAction
 import com.mckimquyen.watermark.data.model.MediaStoreInsertResolver
 import com.mckimquyen.watermark.data.model.MediaStoreWriteFailureCleanup
 import com.mckimquyen.watermark.data.model.MediaStoreWriteResolver
+import com.mckimquyen.watermark.data.model.ERROR_CODE_GENERIC
 import com.mckimquyen.watermark.data.model.Result
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.model.WaterMark
@@ -287,7 +288,7 @@ class BatchExportEngine @Inject constructor(
             val decodedBitmap = rect.data?.bitmap
                 ?: return@withContext Result.failure(
                     data = null,
-                    code = "-1",
+                    code = ERROR_CODE_GENERIC,
                     message = "Decoded bitmap from uri is null."
                 )
             // OOM-OPT: nếu decodedBitmap đã mutable (nhờ inMutable = true), tái dùng trực tiếp
@@ -298,7 +299,7 @@ class BatchExportEngine @Inject constructor(
                 val copied = decodedBitmap.copy(Bitmap.Config.ARGB_8888, true)
                     ?: return@withContext Result.failure(
                         data = null,
-                        code = "-1",
+                        code = ERROR_CODE_GENERIC,
                         message = "Copy bitmap from uri failed."
                     )
                 if (decodedBitmap !== copied && !decodedBitmap.isRecycled) {
@@ -426,7 +427,7 @@ class BatchExportEngine @Inject constructor(
                                     size = QrCodeGenerator.DEFAULT_SIZE
                                 ) ?: return@withContext Result.failure(
                                     data = null,
-                                    code = "-1",
+                                    code = ERROR_CODE_GENERIC,
                                     message = "QR dynamic content generate failed"
                                 )
                                 // BUG-05/ENH-15: cùng nguyên tắc nhánh tĩnh bên dưới — pixel đã được
@@ -458,7 +459,7 @@ class BatchExportEngine @Inject constructor(
                                 if (iconBitmapRect.isFailure() || iconBitmapRect.data == null) {
                                     return@withContext Result.failure(
                                         data = null,
-                                        code = "-1",
+                                        code = ERROR_CODE_GENERIC,
                                         message = "decodeSampledBitmapFromResource == null"
                                     )
                                 }
@@ -471,7 +472,7 @@ class BatchExportEngine @Inject constructor(
                                     // nếu tương lai BitmapValue.bitmap null theo đường khác.
                                     val srcBitmap = iconBitmapValue.bitmap ?: return@withContext Result.failure(
                                         data = null,
-                                        code = "-1",
+                                        code = ERROR_CODE_GENERIC,
                                         message = "iconBitmapValue.bitmap == null"
                                     )
                                     WaterMarkImageView.buildIconBitmapShader(
@@ -742,7 +743,7 @@ class BatchExportEngine @Inject constructor(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
                             ?: return@withContext Result.failure(
                                 data = null,
-                                code = "-1",
+                                code = ERROR_CODE_GENERIC,
                                 message = "Can't get pictures directory."
                             )
                     if (!picturesFile.exists()) {
