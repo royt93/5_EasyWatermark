@@ -55,6 +55,9 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
 
     private val vibrateHelper: VibrateHelper by lazy { VibrateHelper.get() }
 
+    // BUG-76: prevent double-tap Export thứ 2 trước khi check `isActive` (coroutine bất đồng bộ) xong.
+    private var isCheckingConflict = false
+
     /** FEAT-15: chọn thư mục ĐÍCH lưu ảnh xuất (khác GalleryFragment.pickFolderLauncher — thư mục NGUỒN). */
     private lateinit var pickOutputDirectoryLauncher: ActivityResultLauncher<Uri?>
 
@@ -543,8 +546,15 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
      * WorkManager) — review pass 2026-09-29: KHÔNG gọi trực tiếp trên main thread (click handler),
      * chuyển qua [Dispatchers.IO] trong `lifecycleScope` để tránh treo UI/rủi ro ANR nếu WorkManager
      * chậm (DB nguội, thiết bị yếu).
+     *
+     * BUG-76: double-tap Export trước khi check `isActive` (coroutine bất đồng bộ) xong → chạy lại
+     * nhánh `else` → 2 coroutine → 2 dialog xung đột hoặc 2 `saveImage()` enqueue REPLACE.
+     * Fix: check flag `isCheckingConflict` ngay, set true để block click 2, reset false khi xong.
      */
     private fun startExportOrConfirmReplace() {
+        if (isCheckingConflict) return // BUG-76: block double-tap
+        isCheckingConflict = true
+
         val activity = requireActivity() as MainActivity
         val proceed = {
             shareViewModel.saveImage(
@@ -556,20 +566,24 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             )
         }
         viewLifecycleOwner.lifecycleScope.launch {
-            val isActive = withContext(Dispatchers.IO) { BatchExportWorker.isActive(activity) }
-            if (!isActive) {
-                proceed()
-                return@launch
-            }
-            MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.export_conflict_dialog_title)
-                .setMessage(R.string.export_conflict_dialog_message)
-                .setNegativeButton(R.string.tips_cancel_dialog) { dialog, _ -> dialog.dismiss() }
-                .setPositiveButton(R.string.tips_confirm_dialog) { dialog, _ ->
+            try {
+                val isActive = withContext(Dispatchers.IO) { BatchExportWorker.isActive(activity) }
+                if (!isActive) {
                     proceed()
-                    dialog.dismiss()
+                    return@launch
                 }
-                .show()
+                MaterialAlertDialogBuilder(activity)
+                    .setTitle(R.string.export_conflict_dialog_title)
+                    .setMessage(R.string.export_conflict_dialog_message)
+                    .setNegativeButton(R.string.tips_cancel_dialog) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.tips_confirm_dialog) { dialog, _ ->
+                        proceed()
+                        dialog.dismiss()
+                    }
+                    .show()
+            } finally {
+                isCheckingConflict = false // BUG-76: reset flag
+            }
         }
     }
 

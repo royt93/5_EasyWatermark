@@ -223,6 +223,32 @@ class SaveImageBSDialogFragmentExportConflictRoboTest {
         shadowOf(Looper.getMainLooper()).idle()
     }
 
+    /**
+     * BUG-76: bấm Export 2 lần liên tiếp trước khi check `isActive` (IO, bất đồng bộ) xong — mỗi
+     * click từng chạy lại nhánh `else` → 2 coroutine → 2 dialog xung đột chồng nhau (hoặc 2
+     * `saveImage()` enqueue REPLACE khi không xung đột). Phải chỉ có đúng 1 dialog.
+     */
+    @Test
+    fun btnSaveDoubleClick_otherBatchRunning_showsOnlyOneConflictDialog() {
+        val (_, dialog) = setupDialogWithOneImage()
+        enqueueBlockingWorkWithoutDrainingMainLooper()
+
+        dialog.binding.btnSave.performClick()
+        dialog.binding.btnSave.performClick()
+
+        assertThat(awaitLatestAlertDialog()).isNotNull()
+        // Chờ thêm để coroutine thứ 2 (nếu có) kịp show dialog của nó.
+        repeat(10) {
+            shadowOf(Looper.getMainLooper()).idle()
+            Thread.sleep(20)
+        }
+        val shownAlerts = ShadowDialog.getShownDialogs().count { it is AlertDialog && it.isShowing }
+        assertThat(shownAlerts).isEqualTo(1)
+
+        blockLatch.countDown()
+        shadowOf(Looper.getMainLooper()).idle()
+    }
+
     @Test
     fun btnSaveClick_otherBatchRunning_confirmingDialog_proceedsWithSave() {
         val (activity, dialog) = setupDialogWithOneImage()
