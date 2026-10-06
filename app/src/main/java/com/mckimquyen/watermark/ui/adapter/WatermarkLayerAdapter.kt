@@ -36,15 +36,19 @@ class WatermarkLayerAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val layer = items.getOrNull(position) ?: return
         holder.binding.tvLayerSummary.text = summaryOf(holder.binding.root.context, layer)
-        holder.binding.root.setOnClickListener { onTap(position) }
+        holder.binding.root.setOnClickListener { holder.currentIndex()?.let(onTap) }
         holder.binding.btnMoveUp.isEnabled = position > 0
         holder.binding.btnMoveUp.alpha = if (position > 0) 1f else 0.4f
-        holder.binding.btnMoveUp.setOnClickListener { onMoveUp(position) }
+        holder.binding.btnMoveUp.setOnClickListener { holder.currentIndex()?.let(onMoveUp) }
         holder.binding.btnMoveDown.isEnabled = position < items.size - 1
         holder.binding.btnMoveDown.alpha = if (position < items.size - 1) 1f else 0.4f
-        holder.binding.btnMoveDown.setOnClickListener { onMoveDown(position) }
-        holder.binding.btnDelete.setOnClickListener { onDelete(position) }
+        holder.binding.btnMoveDown.setOnClickListener { holder.currentIndex()?.let(onMoveDown) }
+        holder.binding.btnDelete.setOnClickListener { holder.currentIndex()?.let(onDelete) }
     }
+
+    // Vị trí thật lúc click; null khi holder đang chờ rebind sau submitList (NO_POSITION) → bỏ qua click stale.
+    private fun ViewHolder.currentIndex(): Int? =
+        bindingAdapterPosition.takeIf { it != RecyclerView.NO_POSITION }
 
     private fun summaryOf(context: android.content.Context, layer: WatermarkLayer): String = when (layer.markMode) {
         WaterMarkRepository.MarkMode.Text ->

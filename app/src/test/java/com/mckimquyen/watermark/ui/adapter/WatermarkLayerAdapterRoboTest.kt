@@ -2,7 +2,9 @@ package com.mckimquyen.watermark.ui.adapter
 
 import android.content.Context
 import android.view.ContextThemeWrapper
-import android.widget.FrameLayout
+import android.view.View
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R
@@ -24,11 +26,27 @@ class WatermarkLayerAdapterRoboTest {
 
     private fun textLayer(text: String) = WatermarkLayer(markMode = WaterMarkRepository.MarkMode.Text, text = text)
 
-    private fun bindHolder(adapter: WatermarkLayerAdapter, layers: List<WatermarkLayer>, position: Int): WatermarkLayerAdapter.ViewHolder {
+    // Gắn RecyclerView thật + layout để `bindingAdapterPosition` hợp lệ (gọi onBind trực tiếp trả NO_POSITION).
+    private fun attach(adapter: WatermarkLayerAdapter, layers: List<WatermarkLayer>): RecyclerView {
+        val rv = RecyclerView(context)
+        rv.layoutManager = LinearLayoutManager(context)
+        rv.adapter = adapter
         adapter.submitList(layers)
-        val holder = adapter.onCreateViewHolder(FrameLayout(context), 0)
-        adapter.onBindViewHolder(holder, position)
-        return holder
+        layoutNow(rv)
+        return rv
+    }
+
+    private fun layoutNow(rv: RecyclerView) {
+        rv.measure(
+            View.MeasureSpec.makeMeasureSpec(RV_SIZE_PX, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(RV_SIZE_PX, View.MeasureSpec.EXACTLY)
+        )
+        rv.layout(0, 0, RV_SIZE_PX, RV_SIZE_PX)
+    }
+
+    private fun bindHolder(adapter: WatermarkLayerAdapter, layers: List<WatermarkLayer>, position: Int): WatermarkLayerAdapter.ViewHolder {
+        val rv = attach(adapter, layers)
+        return rv.findViewHolderForAdapterPosition(position) as WatermarkLayerAdapter.ViewHolder
     }
 
     @Test
@@ -112,5 +130,34 @@ class WatermarkLayerAdapterRoboTest {
         holder.binding.btnMoveDown.performClick()
 
         assertThat(movedIndex).isEqualTo(0)
+    }
+
+    @Test
+    fun clickOnStaleHolderAfterSubmitList_beforeRelayout_isIgnored() {
+        // BUG-75: sau submitList (notifyDataSetChanged) holder cũ chưa rebind; click lúc đó
+        // từng gọi callback với position đã capture (có thể out-of-bounds / sai layer).
+        // Fix: dùng `currentIndex()` return null khi `bindingAdapterPosition==NO_POSITION` → ignore click.
+        var tapCount = 0
+        val adapter = WatermarkLayerAdapter(
+            onTap = { tapCount++ },
+            onMoveUp = { tapCount++ },
+            onMoveDown = { tapCount++ },
+            onDelete = { tapCount++ }
+        )
+        val rv = attach(adapter, listOf(textLayer("A"), textLayer("B")))
+        val holder = rv.findViewHolderForAdapterPosition(1) as WatermarkLayerAdapter.ViewHolder
+
+        adapter.submitList(listOf(textLayer("A"))) // chưa layout lại → holder cũ có bindingAdapterPosition = NO_POSITION
+
+        holder.binding.btnDelete.performClick()
+        holder.binding.btnMoveUp.performClick()
+        holder.binding.btnMoveDown.performClick()
+        holder.binding.root.performClick()
+
+        assertThat(tapCount).isEqualTo(0)
+    }
+
+    private companion object {
+        const val RV_SIZE_PX = 2000
     }
 }
