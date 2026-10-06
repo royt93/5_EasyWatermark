@@ -161,7 +161,7 @@ class MyApplication : Application(), Configuration.Provider {
             val maxStringLength = MAX_CRASH_STACK_TRACE_LENGTH
             var fullStackTrace = Log.getStackTraceString(e)
             if (fullStackTrace.length > maxStringLength) {
-                fullStackTrace = fullStackTrace.substring(IntRange(0, maxStringLength))
+                fullStackTrace = fullStackTrace.substring(0, maxStringLength)
             }
 //            Log.e("MyApp", "uncaughtException: $fullStackTrace")
             sp.edit(true) {

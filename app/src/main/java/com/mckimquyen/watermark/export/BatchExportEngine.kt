@@ -529,11 +529,11 @@ class BatchExportEngine @Inject constructor(
                     contentResolver = contentResolver
                 )
 
-                val finalExportBitmap = if (tmpConfig.enableExif && imageInfo.exifModel != null && !imageInfo.exifModel!!.isEmpty()) {
+                val finalExportBitmap = if (tmpConfig.enableExif && imageInfo.exifModel != null && !imageInfo.exifModel.isEmpty()) {
                     val frameStyle = ExifFrameStyle.obtain(tmpConfig.exifFrameStyle)
                     val expandedBitmap = ExifBorderRenderer.buildExifBorderBitmap(
                         source = mutableBitmap,
-                        eModel = imageInfo.exifModel!!,
+                        eModel = imageInfo.exifModel,
                         style = frameStyle,
                         // FEAT-14 Custom Frame Builder — null nếu user chưa tuỳ chỉnh, giữ hành vi gốc.
                         bandColor = tmpConfig.exifBandColor,
@@ -656,7 +656,7 @@ class BatchExportEngine @Inject constructor(
                             MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_INSERT
                         )
                         if (insertResult.isFailure()) return@withContext insertResult
-                        insertResult.data!! to true
+                        (insertResult.data ?: return@withContext insertResult) to true
                     }
 
                     val imageContentUri = targetUri
