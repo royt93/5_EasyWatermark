@@ -68,18 +68,17 @@ object ClipboardImageHelper {
             return true
         }
 
-        // 2. Kiểm tra qua clipData description mime type
-        if (clipData.description.hasMimeType("image/*")) {
-            return true
-        }
+        // BUG-78: Bỏ dòng 72 check clipData.description.hasMimeType("image/*") vì nó kiểm tra
+        // cấp toàn bộ ClipData, không per-item. Khi clipboard mix image+text, text item
+        // cũng sẽ return true nhầm.
 
-        // 3. Fallback: kiểm tra scheme và ContentResolver trực tiếp
+        // 2. Fallback: kiểm tra scheme và ContentResolver trực tiếp
         val type = kotlin.runCatching { resolver.getType(uri) }.getOrNull()
         if (type?.startsWith("image", ignoreCase = true) == true) {
             return true
         }
 
-        // 4. Fallback: file extension
+        // 3. Fallback: file extension
         val path = uri.path?.lowercase().orEmpty()
         return path.endsWith(".jpg") || path.endsWith(".jpeg") || path.endsWith(".png") ||
             path.endsWith(".webp") || path.endsWith(".bmp") || path.endsWith(".gif")
