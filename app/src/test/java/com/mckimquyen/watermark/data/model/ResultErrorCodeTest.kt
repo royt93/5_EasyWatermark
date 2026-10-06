@@ -1,31 +1,35 @@
 package com.mckimquyen.watermark.data.model
 
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import kotlin.test.assertEquals
 
+/**
+ * P2: [ERROR_CODE_GENERIC] = "-1" constant refactor — thay thế 14 hardcode "-1" chuỗi
+ * qua codebase với named constant duy nhất. Verify giá trị và Result.failure() sử dụng đúng.
+ */
 class ResultErrorCodeTest {
     @Test
-    fun `ERROR_CODE_GENERIC equals minus one`() {
-        assertEquals("-1", ERROR_CODE_GENERIC)
+    fun errorCodeGeneric_equalsMinusOne() {
+        assertThat(ERROR_CODE_GENERIC).isEqualTo("-1")
     }
 
     @Test
-    fun `Result failure with ERROR_CODE_GENERIC stores code`() {
+    fun resultFailure_withErrorCodeGeneric_storesCodeCorrectly() {
         val result: Result<String> = Result.failure(
             data = null,
             code = ERROR_CODE_GENERIC,
             message = "Test error"
         )
-        assertEquals(ERROR_CODE_GENERIC, result.code)
-        assertEquals("-1", result.code)
-        assertEquals(true, result.isFailure())
+        assertThat(result.code).isEqualTo(ERROR_CODE_GENERIC)
+        assertThat(result.code).isEqualTo("-1")
+        assertThat(result.isFailure()).isTrue()
     }
 
     @Test
-    fun `Multiple failure results use same ERROR_CODE_GENERIC`() {
+    fun multipleFailureResults_useSameErrorCodeGeneric() {
         val result1 = Result.failure<String>(code = ERROR_CODE_GENERIC)
         val result2 = Result.failure<String>(code = ERROR_CODE_GENERIC)
-        assertEquals(result1.code, result2.code)
-        assertEquals("-1", result1.code)
+        assertThat(result1.code).isEqualTo(result2.code)
+        assertThat(result1.code).isEqualTo("-1")
     }
 }
