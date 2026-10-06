@@ -157,4 +157,26 @@ class ExportNamingConflictTest {
         assertThat(name0).endsWith("_1.jpg")
         assertThat(name1).endsWith("_2.jpg")
     }
+
+    @Test
+    fun resolveVersionedName_allVersionsTaken_fallbackToUUID() {
+        // Edge case: all 999 versions taken (ultra-rare: ~1 per 1 billion batches)
+        // fallback should use UUID to guarantee no collision
+        val baseName = "output.jpg"
+        val allVersionsTaken = mutableSetOf<String>()
+        allVersionsTaken.add("output.jpg")
+        for (v in 2..999) {
+            allVersionsTaken.add("output_v$v.jpg")
+        }
+
+        val resolved = exportNaming.resolveVersionedName(baseName) { allVersionsTaken.contains(it) }
+
+        // Must not be any of the 999 versions
+        assertThat(resolved).isNotEqualTo("output.jpg")
+        for (v in 2..999) {
+            assertThat(resolved).isNotEqualTo("output_v$v.jpg")
+        }
+        // Fallback should use UUID pattern (_u{8chars})
+        assertThat(resolved).matches(Regex("^output_u[a-f0-9]{8}\\.jpg$"))
+    }
 }
