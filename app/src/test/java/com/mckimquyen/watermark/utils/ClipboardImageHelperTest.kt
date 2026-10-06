@@ -107,4 +107,36 @@ class ClipboardImageHelperTest {
         assertThat(result).isEmpty()
         assertThat(ClipboardImageHelper.hasImage(context, clip)).isFalse()
     }
+
+    @Test
+    fun extractImageUris_mixedImageAndText_returnOnlyImages() {
+        // BUG-78: clipboard chứa ảnh + text, nhưng ClipData.description="image/*" cho cả 2 item
+        val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
+        val imageUri = android.net.Uri.parse("content://media/images/123")
+        val textUri = android.net.Uri.parse("content://media/text")
+        
+        val clip = android.content.ClipData(
+            android.content.ClipDescription("mixed", arrayOf("image/jpeg", "text/plain")),
+            android.content.ClipData.Item(imageUri)
+        )
+        clip.addItem(android.content.ClipData.Item("just text"))
+        
+        // Chỉ mong nhận ảnh, không có text
+        val result = ClipboardImageHelper.extractImageUris(context, clip)
+        assertThat(result).doesNotContain(textUri)
+    }
+
+    @Test
+    fun extractImageUris_clipDataDescriptionImageButItemIsText_ignoredItem() {
+        // Edge case: ClipData.description="image/*" nhưng item chứa text URI (fake image)
+        val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
+        
+        val clip = android.content.ClipData(
+            android.content.ClipDescription("images", arrayOf("image/*")),
+            android.content.ClipData.Item("https://example.com/document.txt")
+        )
+        
+        val result = ClipboardImageHelper.extractImageUris(context, clip)
+        assertThat(result).isEmpty()
+    }
 }
