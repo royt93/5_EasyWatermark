@@ -6,6 +6,7 @@ import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.documentfile.provider.DocumentFile
 import com.mckimquyen.watermark.AppLog
+import com.mckimquyen.watermark.LOG_TAG
 
 class FileUtils {
     companion object {
@@ -30,8 +31,9 @@ class FileUtils {
             maxDepth: Int = RECURSIVE_SCAN_MAX_DEPTH,
             maxFiles: Int = RECURSIVE_SCAN_MAX_FILES
         ): List<Uri> {
-            // BUG-74: quyền SAF bị thu hồi giữa chừng → fromTreeUri/listFiles ném SecurityException; caller
-            // (GalleryFragment) chạy trong lifecycleScope không try/catch nên sẽ crash app. Trả rỗng + log.
+            // BUG-74: quyền SAF bị thu hồi giữa chừng → fromTreeUri/listFiles ném SecurityException;
+            // non-tree/invalid URI → IllegalArgumentException; other provider failures cũng có thể escape.
+            // Trả rỗng + log, caller (GalleryFragment) an toàn trong lifecycleScope.
             return try {
                 val root = DocumentFile.fromTreeUri(context, treeUri) ?: return emptyList()
                 if (!includeSubfolders) {
@@ -40,7 +42,13 @@ class FileUtils {
                     collectImagesRecursively(root, maxDepth, maxFiles)
                 }
             } catch (e: SecurityException) {
-                AppLog.w("FileUtils", "listImagesInTree: quyền thư mục bị từ chối: $treeUri", e)
+                AppLog.w(LOG_TAG, "listImagesInTree: quyền thư mục bị từ chối: $treeUri", e)
+                emptyList()
+            } catch (e: IllegalArgumentException) {
+                AppLog.w(LOG_TAG, "listImagesInTree: URI không hợp lệ không phải tree: $treeUri", e)
+                emptyList()
+            } catch (e: Exception) {
+                AppLog.w(LOG_TAG, "listImagesInTree: provider lỗi không mong đợi: $treeUri", e)
                 emptyList()
             }
         }
@@ -69,15 +77,25 @@ class FileUtils {
                 val children = try {
                     dir.listFiles()
                 } catch (e: SecurityException) {
-                    AppLog.w("FileUtils", "collectImagesRecursively: bỏ thư mục bị từ chối quyền", e)
+                    AppLog.w(LOG_TAG, "collectImagesRecursively: bỏ thư mục bị từ chối quyền", e)
+                    continue
+                } catch (e: Exception) {
+                    AppLog.w(LOG_TAG, "collectImagesRecursively: provider lỗi listFiles", e)
                     continue
                 }
                 for (child in children) {
                     if (result.size >= maxFiles) break
-                    if (child.isFile && isImage(child.type)) {
-                        result.add(child.uri)
-                    } else if (child.isDirectory && depth < maxDepth) {
-                        queue.add(child to depth + 1)
+                    // BUG-74: .isFile/.type/.isDirectory cũng query provider, có thể ném exception
+                    // giữ ảnh đã thu thập nếu 1 child fail.
+                    try {
+                        if (child.isFile && isImage(child.type)) {
+                            result.add(child.uri)
+                        } else if (child.isDirectory && depth < maxDepth) {
+                            queue.add(child to depth + 1)
+                        }
+                    } catch (e: Exception) {
+                        AppLog.w(LOG_TAG, "collectImagesRecursively: lỗi query child properties", e)
+                        continue
                     }
                 }
             }
@@ -99,7 +117,7 @@ class FileUtils {
                 try {
                     resolver.getType(uri)
                 } catch (e: SecurityException) {
-                    AppLog.w("FileUtils", "getType bị từ chối quyền: $uri", e)
+                    AppLog.w(LOG_TAG, "getType bị từ chối quyền: $uri", e)
                     null
                 }
             } else {

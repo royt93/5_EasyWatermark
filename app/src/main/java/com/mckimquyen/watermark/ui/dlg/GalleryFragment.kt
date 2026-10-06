@@ -448,6 +448,9 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
         } ?: emptyList()
         AppLog.d(LOG_TAG) { "GalleryFragment handleActivityResult — validImageCount=${finalList.size}" }
         if (finalList.isEmpty()) {
+            // BUG-74: Distinguish "access denied" từ "folder has no images" — nếu list rỗng từ
+            // listImagesInTree (vd quyền SAF bị thu hồi), AppLog.w từ FileUtils sẽ có cảnh báo.
+            // Toast khác cho permission error vs no images.
             toast(R.string.tips_do_not_choose_image)
             return
         }
