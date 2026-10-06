@@ -456,16 +456,20 @@ class BatchExportEngine @Inject constructor(
                                     reqWidth = viewInfo.width,
                                     reqHeight = viewInfo.height
                                 )
-                                if (iconBitmapRect.isFailure() || iconBitmapRect.data == null) {
+                                if (iconBitmapRect.isFailure()) {
                                     return@withContext Result.failure(
                                         data = null,
                                         code = ERROR_CODE_GENERIC,
-                                        message = "decodeSampledBitmapFromResource == null"
+                                        message = "decodeSampledBitmapFromResource failed"
                                     )
                                 }
                                 // BUG-73: decode trả value ĐÃ retain nguyên tử; release sau khi build shader xong
                                 // (đã copy pixel vào shader riêng, không cần icon bitmap gốc nữa).
-                                val iconBitmapValue = iconBitmapRect.data!!
+                                val iconBitmapValue = iconBitmapRect.data ?: return@withContext Result.failure(
+                                    data = null,
+                                    code = ERROR_CODE_GENERIC,
+                                    message = "decodeSampledBitmapFromResource returned null bitmap"
+                                )
                                 try {
                                     // P1 review pass 8: site DUY NHẤT trong file còn `!!` không guard
                                     // (5 site khác đều `?: return`) — đồng nhất cách xử lý, tránh NPE

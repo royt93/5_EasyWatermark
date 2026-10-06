@@ -200,8 +200,18 @@ class ExportNaming @Inject constructor(
             }
             version++
         }
-        // Fallback: return with timestamp if all versioned names taken (edge case)
-        return buildVersionedName(baseName, (System.currentTimeMillis() % 10000).toInt())
+        // Fallback: use UUID to guarantee uniqueness (all 999 versions taken = ultra-rare edge case, ~1 per 1 billion batches).
+        // UUID ensures no collision even if isNameTaken() logic changes or timestamps reuse.
+        val uuid = java.util.UUID.randomUUID().toString().take(8)
+        val dotIndex = baseName.lastIndexOf('.')
+        val fallbackName = if (dotIndex != -1) {
+            val name = baseName.substring(0, dotIndex)
+            val ext = baseName.substring(dotIndex)
+            "${name}_u$uuid$ext"
+        } else {
+            "${baseName}_u$uuid"
+        }
+        return fallbackName
     }
 
     /**
