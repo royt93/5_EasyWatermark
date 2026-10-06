@@ -119,6 +119,54 @@ class FileUtilsRecursiveScanTest {
         )
     }
 
+    /**
+     * BUG-74 (re-audit): `child.type`/`isFile`/`isDirectory` cũng query provider. Trước đây chỉ `listFiles()`
+     * được guard → 1 child ném lỗi giữa chừng làm hỏng cả lượt quét, mất ảnh đã thu.
+     */
+    @Test
+    fun collectImagesRecursively_childTypeThrowsMidScan_keepsImagesCollectedSoFar() {
+        val broken = mockk<DocumentFile>()
+        every { broken.isFile } returns true
+        every { broken.type } throws SecurityException("Permission Denial: revoked mid-scan")
+        val root = fakeDir(
+            listOf(
+                fakeFile("content://tree/pic1.jpg"),
+                broken,
+                fakeFile("content://tree/pic3.jpg")
+            )
+        )
+
+        val result = FileUtils.collectImagesRecursively(root, maxDepth = 5, maxFiles = 500)
+
+        assertThat(result).containsExactly(
+            Uri.parse("content://tree/pic1.jpg"),
+            Uri.parse("content://tree/pic3.jpg")
+        )
+    }
+
+    @Test
+    fun collectImagesRecursively_listFilesThrowsGenericException_skipsFolderKeepsOthers() {
+        val broken = mockk<DocumentFile>()
+        every { broken.isFile } returns false
+        every { broken.isDirectory } returns true
+        every { broken.listFiles() } throws IllegalStateException("provider died")
+        val root = fakeDir(listOf(fakeFile("content://tree/pic1.jpg"), broken))
+
+        val result = FileUtils.collectImagesRecursively(root, maxDepth = 5, maxFiles = 500)
+
+        assertThat(result).containsExactly(Uri.parse("content://tree/pic1.jpg"))
+    }
+
+    /** `DocumentFile.fromTreeUri` ném IllegalArgumentException với URI không phải tree (vd URI file thường). */
+    @Test
+    fun listImagesInTree_nonTreeUri_returnsEmptyInsteadOfThrowing() {
+        val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
+
+        val result = FileUtils.listImagesInTree(context, Uri.parse("content://media/external/images/media/1"))
+
+        assertThat(result).isEmpty()
+    }
+
     @Test
     fun collectImagesRecursively_rootDeniesPermission_returnsEmptyInsteadOfThrowing() {
         val root = mockk<DocumentFile>()
