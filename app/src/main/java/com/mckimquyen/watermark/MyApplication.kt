@@ -114,6 +114,8 @@ class MyApplication : Application(), Configuration.Provider {
             applovinRewardedId = BuildConfig.APPLOVIN_REWARDED_ID,
             applovinSdkKey = BuildConfig.APPLOVIN_SDK_KEY,
             vipKeySecret = AdKeys.VIP_SECRET_30_DAYS,
+            // Public key ECDSA verify VIP token (private key giữ offline trong myKeyStore, KHÔNG vào app).
+            vipTokenPublicKey = BuildConfig.VIP_TOKEN_PUBLIC_KEY,
             // DEBUG: limits gần như tắt để test thoải mái. RELEASE: preset CONTENT (balanced)
             // — 60s gap, 6/session, 3/hour, 10/day — an toàn policy mà vẫn giữ doanh thu.
             // (CONTENT == AdSafetyLimits() default; ghi rõ tên cho khỏi nhầm.)

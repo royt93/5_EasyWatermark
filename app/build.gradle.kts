@@ -53,6 +53,9 @@ android {
         buildConfigField("String", "APPLOVIN_APP_OPEN_ID", "\"${priv("APPLOVIN_APP_OPEN_ID")}\"")
         buildConfigField("String", "APPLOVIN_REWARDED_ID", "\"${priv("APPLOVIN_REWARDED_ID")}\"")
         buildConfigField("String", "VIP_KEY_SECRET", "\"${priv("VIP_KEY_SECRET", "debug-only-vip-secret-placeholder")}\"")
+        buildConfigField("String", "VIP_TOKEN_PUBLIC_KEY", "\"${priv("VIP_TOKEN_PUBLIC_KEY")}\"")
+        buildConfigField("String", "VIP_LEGACY_30D_CODE", "\"${priv("VIP_LEGACY_30D_CODE", "debug-only-30d")}\"")
+        buildConfigField("String", "VIP_LEGACY_3D_CODE", "\"${priv("VIP_LEGACY_3D_CODE", "debug-only-3d")}\"")
         // Hash máy test (CHỈ THÊM, không xoá) — áp cho CẢ debug lẫn release, xem SplashActivity.
         buildConfigField("String", "ADMOB_TEST_DEVICE_IDS", "\"${priv("ADMOB_TEST_DEVICE_IDS")}\"")
         buildConfigField("String", "PRIVACY_POLICY_URL", "\"${priv("PRIVACY_POLICY_URL")}\"")
