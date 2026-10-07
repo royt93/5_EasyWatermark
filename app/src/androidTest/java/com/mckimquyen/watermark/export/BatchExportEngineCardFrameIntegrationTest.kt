@@ -49,6 +49,7 @@ class BatchExportEngineCardFrameIntegrationTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val createdTestFiles = mutableListOf<File>()
+    private val exportedUris = mutableListOf<Uri>()
 
     @Before
     fun setUp() {
@@ -58,6 +59,10 @@ class BatchExportEngineCardFrameIntegrationTest {
 
     @After
     fun tearDown() {
+        // Tên output cố định + KEEP_BOTH: không dọn thì MediaStore tích luỹ "name (n).jpg" và từ ~32 lần
+        // trùng sẽ ném "Failed to build unique file" — test tự fail dù app đúng.
+        exportedUris.forEach { runCatching { context.contentResolver.delete(it, null, null) } }
+        exportedUris.clear()
         createdTestFiles.forEach { it.delete() }
         createdTestFiles.clear()
         BitmapCache.clearCache()
@@ -98,7 +103,7 @@ class BatchExportEngineCardFrameIntegrationTest {
         compressLevel = 95,
         maxOutputLongEdge = maxLongEdge,
         copyright = "",
-        outputNamePattern = "feat28_{index}"
+        outputNamePattern = "feat28_{seq}"
     )
 
     private fun viewInfo() = ViewInfo(
@@ -126,6 +131,7 @@ class BatchExportEngineCardFrameIntegrationTest {
         val state = result.data.orEmpty().single().jobState
         assertThat(state).isInstanceOf(JobState.Success::class.java)
         val uri = (state as JobState.Success).result.data as Uri
+        exportedUris.add(uri)
         val bitmap = context.contentResolver.openInputStream(uri).use { BitmapFactory.decodeStream(it) }
         assertThat(bitmap).isNotNull()
         return bitmap
