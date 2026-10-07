@@ -2,11 +2,11 @@ package name: com.mckimquyen.watermark
 policy: https://loitp.notion.site/Term-Privacy-Policy-Disclaimer-319b1cd8783942fa8923d2a3c9bce60f
 
 admob app id: ca-app-pub-3004713799155145~8001651581
-banner:  
-inter: 
-open app: 
-native: 
-rewarded: 
+banner:  ca-app-pub-3004713799155145/8973706491
+inter: ca-app-pub-3004713799155145/7660624829
+open app: ca-app-pub-3004713799155145/8091124806
+native: ca-app-pub-3004713799155145/5232018015
+rewarded: ca-app-pub-3004713799155145/7858181350
 
 chú ý:
 
