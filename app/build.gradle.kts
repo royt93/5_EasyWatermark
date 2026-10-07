@@ -216,7 +216,7 @@ dependencies {
     // IDEA-14: Text Recognition on-device (bundled model) — phát hiện email/SĐT nhạy cảm.
     implementation(libs.mlkit.text.recognition)
 
-    implementation("com.github.royt93:AdmobApplovinWrapper:1.1.5")
+    implementation("com.github.royt93:AdmobApplovinWrapper:1.8.5")
     implementation(libs.konfetti.xml)
     implementation(libs.shimmer)
     api("com.jakewharton:process-phoenix:3.0.0")

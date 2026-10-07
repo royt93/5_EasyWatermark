@@ -7,8 +7,6 @@ import android.util.Log
 import androidx.core.content.edit
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.RequestConfiguration
 import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.common.const.AdKeys
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
@@ -122,15 +120,12 @@ class MyApplication : Application(), Configuration.Provider {
             safety = if (BuildConfig.DEBUG) AdSafetyLimits.TEST else AdSafetyLimits.CONTENT
         )
 
-        // Đăng ký máy test TRƯỚC mọi request ad, cho cả debug lẫn release (traffic invalid = rủi ro khoá
-        // tài khoản). Gọi thẳng MobileAds vì AdManager.setTestDeviceIds no-op khi provider chưa init.
-        // Chính sách: hash chỉ THÊM, không xoá — nguồn: myKeyStore/.../app.properties ADMOB_TEST_DEVICE_IDS.
-        val testDeviceIds = BuildConfig.ADMOB_TEST_DEVICE_IDS.split(',').map { it.trim() }.filter { it.isNotEmpty() }
-        MobileAds.setRequestConfiguration(
-            RequestConfiguration.Builder().setTestDeviceIds(testDeviceIds).build()
-        )
-
         AdManager.setConfig(adConfig)
+        // Hash máy test: cả debug lẫn release (invalid traffic = rủi ro khoá tài khoản). Gọi SAU setConfig
+        // (provider đã tạo) và TRƯỚC initialize ở Splash. SDK >=1.6.x lưu lại callerTestDeviceIds, gộp với
+        // QC_TEST_DEVICE_HASHES nên init bất đồng bộ không ghi đè. Hash CHỈ THÊM, không xoá (myKeyStore).
+        val testDeviceIds = BuildConfig.ADMOB_TEST_DEVICE_IDS.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+        AdManager.setTestDeviceIds(*testDeviceIds.toTypedArray())
         AdManager.earlyInit(this)
         AppLog.d("MyApplication") { "AdManager config ready; provider init waits for splash consent" }
     }
