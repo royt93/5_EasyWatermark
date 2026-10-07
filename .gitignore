@@ -115,3 +115,10 @@ hs_err_pid*
 
 # Claude Code local settings (YOLO/bypassPermissions — không commit)
 .claude/settings.local.json
+
+# Secret: keystore + credentials nằm ở myKeyStore (private repo), không bao giờ vào repo này
+*.jks
+*.keystore
+keystore.properties
+app.properties
+ads.properties

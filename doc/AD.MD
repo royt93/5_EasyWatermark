@@ -68,7 +68,7 @@ Selected implementation options:
 
 | Field | Value |
 |---|---|
-| AppLovin SDK key | `e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt` |
+| AppLovin SDK key | `<APPLOVIN_SDK_KEY: xem myKeyStore>` |
 | AppLovin banner ID | `d3455cc529985b25` |
 | AppLovin interstitial ID | `a48241ebcb20ad5c` |
 | AppLovin app open ID | `8239a7fd6896cf1f` |
@@ -78,8 +78,8 @@ Selected implementation options:
 | AdMob app open ID | existing debug/release values in `app/build.gradle.kts` |
 | AdMob rewarded ID | AdMob test rewarded ID `ca-app-pub-3940256099942544/5224354917` |
 | Privacy Policy URL | `https://loitp.notion.site/Term-Privacy-Policy-Disclaimer-319b1cd8783942fa8923d2a3c9bce60f` |
-| VIP key 30 days | `9fA0q7eN!27cLx04@21993Y2u0I7#Q0` |
-| VIP key 3 days | `eQ7@93L0f!2Y2707xN04021993u0I#2aK` |
+| VIP key 30 days | `<VIP_30D: xem myKeyStore> |
+| VIP key 3 days | `<VIP_3D: xem myKeyStore> |
 
 VIP keys must be compiled as Base64-obfuscated constants, not plain strings.
 

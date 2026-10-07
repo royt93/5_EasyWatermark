@@ -1,4 +1,5 @@
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -7,6 +8,30 @@ plugins {
     id("org.jetbrains.kotlin.kapt")
     id("dagger.hilt.android.plugin")
 }
+
+// Toàn bộ secret (keystore, ad ID, SDK key, VIP secret, test-device hash) nằm ở 1 file duy nhất
+// ngoài repo: myKeyStore/com.mckimquyen.watermark/app.properties (repo GitHub private royt93/myKeyStore).
+// Ưu tiên env WATERMARK_PRIVATE_CONFIG_DIR, fallback đường dẫn local trên máy dev.
+val privateConfigDir: File = File(
+    System.getenv("WATERMARK_PRIVATE_CONFIG_DIR")
+        ?: "${System.getProperty("user.home")}/AndroidStudioProjects/@mckimquyen/myKeyStore/com.mckimquyen.watermark"
+)
+val privateProps = Properties().apply {
+    val f = File(privateConfigDir, "app.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+val releaseRequested = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true) || it.contains("bundle", ignoreCase = true)
+}
+
+// Release thiếu key → fail ngay, không bao giờ rơi về ID rỗng/test. Debug thiếu key → placeholder vô hại.
+fun priv(key: String, debugFallback: String = ""): String =
+    privateProps.getProperty(key)?.takeIf { it.isNotBlank() }
+        ?: if (releaseRequested) {
+            throw GradleException("Thiếu '$key' trong ${privateConfigDir}/app.properties (build release bắt buộc)")
+        } else {
+            debugFallback
+        }
 
 android {
     compileSdk = 37
@@ -22,12 +47,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "$applicationId-v$versionName($versionCode)")
 
-        buildConfigField("String", "APPLOVIN_SDK_KEY", "\"e75FnQfS9XTTqM1Kne69U7PW_MBgAnGQTFvtwVVui6kRPKs5L7ws9twr5IQWwVfzPKZ5pF2IfDa7lguMgGlCyt\"")
-        buildConfigField("String", "APPLOVIN_BANNER_ID", "\"d3455cc529985b25\"")
-        buildConfigField("String", "APPLOVIN_INTERSTITIAL_ID", "\"a48241ebcb20ad5c\"")
-        buildConfigField("String", "APPLOVIN_APP_OPEN_ID", "\"8239a7fd6896cf1f\"")
-        buildConfigField("String", "APPLOVIN_REWARDED_ID", "\"87a4f5696dfd4212\"")
-        buildConfigField("String", "PRIVACY_POLICY_URL", "\"https://loitp.notion.site/Term-Privacy-Policy-Disclaimer-319b1cd8783942fa8923d2a3c9bce60f\"")
+        buildConfigField("String", "APPLOVIN_SDK_KEY", "\"${priv("APPLOVIN_SDK_KEY")}\"")
+        buildConfigField("String", "APPLOVIN_BANNER_ID", "\"${priv("APPLOVIN_BANNER_ID")}\"")
+        buildConfigField("String", "APPLOVIN_INTERSTITIAL_ID", "\"${priv("APPLOVIN_INTERSTITIAL_ID")}\"")
+        buildConfigField("String", "APPLOVIN_APP_OPEN_ID", "\"${priv("APPLOVIN_APP_OPEN_ID")}\"")
+        buildConfigField("String", "APPLOVIN_REWARDED_ID", "\"${priv("APPLOVIN_REWARDED_ID")}\"")
+        buildConfigField("String", "VIP_KEY_SECRET", "\"${priv("VIP_KEY_SECRET", "debug-only-vip-secret-placeholder")}\"")
+        // Hash máy test (CHỈ THÊM, không xoá) — áp cho CẢ debug lẫn release, xem SplashActivity.
+        buildConfigField("String", "ADMOB_TEST_DEVICE_IDS", "\"${priv("ADMOB_TEST_DEVICE_IDS")}\"")
+        buildConfigField("String", "PRIVACY_POLICY_URL", "\"${priv("PRIVACY_POLICY_URL")}\"")
     }
 
     configurations.all {
@@ -42,18 +70,16 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = findProperty("KEY_ALIAS") as String?
-            keyPassword = findProperty("KEY_PASSWORD") as String?
-            val storeFileName = findProperty("STORE_FILE") as String?
-            if (storeFileName != null) {
-                storeFile = file(storeFileName)
-            }
-            storePassword = findProperty("STORE_PASSWORD") as String?
+            privateProps.getProperty("KS_ALIAS")?.let { keyAlias = it }
+            privateProps.getProperty("KS_KEY_PASSWORD")?.let { keyPassword = it }
+            privateProps.getProperty("KEYSTORE_FILE")?.let { storeFile = File(privateConfigDir, it) }
+            privateProps.getProperty("KS_STORE_PASSWORD")?.let { storePassword = it }
         }
     }
     buildTypes {
         val debug by getting {
 //            applicationIdSuffix = ".debug"
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713" // Google sample app id
             buildConfigField("Boolean", "IS_ENABLE_ADMOB", "true")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
@@ -62,12 +88,12 @@ android {
         }
 
         val release by getting {
-            // nho check APPLICATION_ID trong manifest
+            manifestPlaceholders["admobAppId"] = priv("ADMOB_APP_ID")
             buildConfigField("Boolean", "IS_ENABLE_ADMOB", "true")
-            buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3612191981543807/3976595378\"")
-            buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3612191981543807/2663513707\"")
-            buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"ca-app-pub-3612191981543807/6718308789\"")
-            buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"${priv("ADMOB_BANNER_ID")}\"")
+            buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"${priv("ADMOB_INTERSTITIAL_ID")}\"")
+            buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"${priv("ADMOB_APP_OPEN_ID")}\"")
+            buildConfigField("String", "ADMOB_REWARDED_ID", "\"${priv("ADMOB_REWARDED_ID")}\"")
 
             isMinifyEnabled = true
             isShrinkResources = true

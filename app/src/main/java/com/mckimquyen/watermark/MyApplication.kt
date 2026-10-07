@@ -3,12 +3,14 @@ package com.mckimquyen.watermark
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.util.Base64
 import android.util.Log
 import androidx.core.content.edit
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.mckimquyen.cmonet.CMonet
+import com.mckimquyen.watermark.common.const.AdKeys
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.data.repo.WatermarkProfileRepository
 import com.mckimquyen.watermark.utils.QrCodeGenerator
@@ -113,11 +115,19 @@ class MyApplication : Application(), Configuration.Provider {
             applovinAppOpenId = BuildConfig.APPLOVIN_APP_OPEN_ID,
             applovinRewardedId = BuildConfig.APPLOVIN_REWARDED_ID,
             applovinSdkKey = BuildConfig.APPLOVIN_SDK_KEY,
-            vipKeySecret = String(Base64.decode(VIP_SECRET_30_DAYS_B64, Base64.NO_WRAP)),
+            vipKeySecret = AdKeys.VIP_SECRET_30_DAYS,
             // DEBUG: limits gần như tắt để test thoải mái. RELEASE: preset CONTENT (balanced)
             // — 60s gap, 6/session, 3/hour, 10/day — an toàn policy mà vẫn giữ doanh thu.
             // (CONTENT == AdSafetyLimits() default; ghi rõ tên cho khỏi nhầm.)
             safety = if (BuildConfig.DEBUG) AdSafetyLimits.TEST else AdSafetyLimits.CONTENT
+        )
+
+        // Đăng ký máy test TRƯỚC mọi request ad, cho cả debug lẫn release (traffic invalid = rủi ro khoá
+        // tài khoản). Gọi thẳng MobileAds vì AdManager.setTestDeviceIds no-op khi provider chưa init.
+        // Chính sách: hash chỉ THÊM, không xoá — nguồn: myKeyStore/.../app.properties ADMOB_TEST_DEVICE_IDS.
+        val testDeviceIds = BuildConfig.ADMOB_TEST_DEVICE_IDS.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+        MobileAds.setRequestConfiguration(
+            RequestConfiguration.Builder().setTestDeviceIds(testDeviceIds).build()
         )
 
         AdManager.setConfig(adConfig)
@@ -207,7 +217,5 @@ class MyApplication : Application(), Configuration.Provider {
         const val KEY_STACK_TRACE = SP_NAME + "_key_stack_trace"
         const val SP_KEY_CRASH_COUNT = SP_NAME + "_key_crash_count"
         const val SP_KEY_RECOVERY_VERSION = SP_NAME + "_key_recovery_version"
-
-        private const val VIP_SECRET_30_DAYS_B64 = "OWZBMHE3ZU4hMjdjTHgwNEAyMTk5M1kydTBJNyNRMA=="
     }
 }

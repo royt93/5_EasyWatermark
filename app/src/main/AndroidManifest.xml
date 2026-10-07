@@ -56,7 +56,7 @@ riêng cần thiết kế, không phải lint nông — xem IDEA-19. -->
         <!-- Khai báo AdMob App ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3612191981543807~4938564505" /> <!-- Sample AdMob App ID -->
+            android:value="${admobAppId}" /> <!-- debug: Google sample ID; release: app.properties -->
 
         <!-- AppLovin SDK key KHÔNG khai báo qua meta-data: SDK 13.x yêu cầu set bằng AppLovinSdkInitializationConfiguration.
              Wrapper AdManager.initialize đã set key programmatically từ BuildConfig.APPLOVIN_SDK_KEY (AdSdkConfig). -->
