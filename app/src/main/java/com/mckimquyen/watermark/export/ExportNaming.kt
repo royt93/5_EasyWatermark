@@ -202,7 +202,8 @@ class ExportNaming @Inject constructor(
         }
         // Fallback: use UUID to guarantee uniqueness (all 999 versions taken = ultra-rare edge case, ~1 per 1 billion batches).
         // UUID ensures no collision even if isNameTaken() logic changes or timestamps reuse.
-        val uuid = java.util.UUID.randomUUID().toString().take(8)
+        // Take 16 chars (remove dashes) to ensure sufficient entropy for local uniqueness.
+        val uuid = java.util.UUID.randomUUID().toString().replace("-", "").take(16)
         val dotIndex = baseName.lastIndexOf('.')
         val fallbackName = if (dotIndex != -1) {
             val name = baseName.substring(0, dotIndex)

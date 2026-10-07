@@ -38,7 +38,7 @@ object ClipboardImageHelper {
             // 1. Kiểm tra Uri trực tiếp từ ClipData.Item
             val uri = item.uri
             if (uri != null) {
-                if (isImageUri(resolver, uri, clipData)) {
+                if (isImageUri(resolver, uri)) {
                     result.add(uri)
                     continue
                 }
@@ -49,7 +49,7 @@ object ClipboardImageHelper {
             if (!text.isNullOrBlank() && (text.startsWith("content://") || text.startsWith("file://"))) {
                 kotlin.runCatching {
                     val parsedUri = Uri.parse(text)
-                    if (isImageUri(resolver, parsedUri, clipData)) {
+                    if (isImageUri(resolver, parsedUri)) {
                         result.add(parsedUri)
                     }
                 }
@@ -60,8 +60,7 @@ object ClipboardImageHelper {
 
     private fun isImageUri(
         resolver: android.content.ContentResolver,
-        uri: Uri,
-        clipData: ClipData
+        uri: Uri
     ): Boolean {
         // 1. Kiểm tra qua FileUtils
         if (FileUtils.isImage(resolver, uri)) {

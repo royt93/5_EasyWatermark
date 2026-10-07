@@ -176,7 +176,7 @@ class ExportNamingConflictTest {
         for (v in 2..999) {
             assertThat(resolved).isNotEqualTo("output_v$v.jpg")
         }
-        // Fallback should use UUID pattern (_u{8chars})
-        assertThat(resolved).matches(Regex("^output_u[a-f0-9]{8}\\.jpg$"))
+        // Fallback should use UUID pattern (_u{16chars}) — 16 chars for sufficient entropy
+        assertThat(resolved).matches("^output_u[a-f0-9]{16}\\.jpg$")
     }
 }
