@@ -102,20 +102,14 @@ class VipManagementActivity : BaseActivity() {
         binding.btnWatchRewarded.isEnabled = false
         AdManager.showRewarded(this) { earned ->
             if (isFinishing || isDestroyed) return@showRewarded
+            // Step 7 rule 6: reward/VIP CHỈ cấp khi rewarded earned==true. Tuyệt đối không fallback sang
+            // interstitial để cấp VIP (vi phạm Rewarded policy, rủi ro ban account).
             if (earned) {
                 grantRewardedVip()
-                finishRewardFlow()
             } else {
-                AdManager.showInterstitial(this) { shown ->
-                    if (isFinishing || isDestroyed) return@showInterstitial
-                    if (shown) {
-                        grantRewardedVip()
-                    } else {
-                        showResultDialog(R.string.vip_failed_title, getString(R.string.vip_reward_unavailable))
-                    }
-                    finishRewardFlow()
-                }
+                showResultDialog(R.string.vip_failed_title, getString(R.string.vip_reward_unavailable))
             }
+            finishRewardFlow()
         }
     }
 

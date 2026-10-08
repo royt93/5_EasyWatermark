@@ -498,4 +498,6 @@
     <string name="card_frame_background_color">Background color</string>
     <string name="quick_share_title">Quick share</string>
     <string name="quick_share_item_desc">Share to %1$s</string>
+    <string name="ad_privacy_options">Ad privacy choices</string>
+    <string name="ad_attribution_label" translatable="false">Ad Networks (AdMob / AppLovin MAX)</string>
 </resources>

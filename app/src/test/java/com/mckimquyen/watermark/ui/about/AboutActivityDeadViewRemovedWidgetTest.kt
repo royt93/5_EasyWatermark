@@ -26,6 +26,11 @@ import org.robolectric.Shadows.shadowOf
 @RunWith(RobolectricTestRunner::class)
 class AboutActivityDeadViewRemovedWidgetTest {
 
+    private companion object {
+        const val PRE_CLEANUP_BASELINE = 95
+        const val AD_PRIVACY_ROW_VIEWS = 4
+    }
+
     private val removedIds = listOf(
         "hsv", "clDevContainer", "clDesignerContainer", "tvTitle", "tvSubTitle", "civAvatar",
         "tvTitleDesigner", "tvSubTitleDesigner", "civAvatarDesigner",
@@ -59,7 +64,9 @@ class AboutActivityDeadViewRemovedWidgetTest {
         val themedContext = ContextThemeWrapper(app, R.style.Theme_MyApp)
         val binding = AAboutBinding.inflate(LayoutInflater.from(themedContext))
 
-        assertThat(countViews(binding.root)).isLessThan(95)
+        // 95 = baseline trước dọn (ENH-37). Hàng "Ad privacy options" (rowAdPrivacy + 2 icon/text + divider)
+        // là view SỐNG thêm 2026-10-08 → +4 view hợp lệ. Ngưỡng vẫn chặn tái thêm ~19 view chết đã xoá.
+        assertThat(countViews(binding.root)).isLessThan(PRE_CLEANUP_BASELINE + AD_PRIVACY_ROW_VIEWS)
     }
 
     /**

@@ -11,10 +11,14 @@ import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.common.const.AdKeys
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.data.repo.WatermarkProfileRepository
+import com.mckimquyen.watermark.feature.vip.VipManagementActivity
+import com.mckimquyen.watermark.ui.SplashActivity
 import com.mckimquyen.watermark.utils.QrCodeGenerator
 import com.roy.sdkadbmob.AdManager
 import com.roy.sdkadbmob.AdSafetyLimits
 import com.roy.sdkadbmob.AdSdkConfig
+import com.roy.sdkadbmob.ErrorReporter
+import com.roy.sdkadbmob.PaidEventListener
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -119,16 +123,34 @@ class MyApplication : Application(), Configuration.Provider {
             // DEBUG: limits gần như tắt để test thoải mái. RELEASE: preset CONTENT (balanced)
             // — 60s gap, 6/session, 3/hour, 10/day — an toàn policy mà vẫn giữ doanh thu.
             // (CONTENT == AdSafetyLimits() default; ghi rõ tên cho khỏi nhầm.)
-            safety = if (BuildConfig.DEBUG) AdSafetyLimits.TEST else AdSafetyLimits.CONTENT
+            safety = if (BuildConfig.DEBUG) AdSafetyLimits.TEST else AdSafetyLimits.CONTENT,
+            // Khai tường minh bằng class reference (không dựa default ngầm "SplashActivity"): App Open không
+            // đè lên splash, cũng không đè lên màn VIP đang thao tác redeem/rewarded.
+            appOpenExcludedActivities = listOf(SplashActivity::class.java, VipManagementActivity::class.java)
         )
 
+        // Đúng thứ tự doc (Bước 4): setConfig → (test device) → initialize. KHÔNG gọi earlyInit riêng,
+        // initialize đã gộp earlyInit + provider init (defer tới khi có consent, Splash lo consent).
         AdManager.setConfig(adConfig)
-        // Hash máy test: cả debug lẫn release (invalid traffic = rủi ro khoá tài khoản). Gọi SAU setConfig
-        // (provider đã tạo) và TRƯỚC initialize ở Splash. SDK >=1.6.x lưu lại callerTestDeviceIds, gộp với
-        // QC_TEST_DEVICE_HASHES nên init bất đồng bộ không ghi đè. Hash CHỈ THÊM, không xoá (myKeyStore).
+        // Hash máy test: cả debug lẫn release (invalid traffic = rủi ro khoá tài khoản). SDK lưu
+        // callerTestDeviceIds và gộp với QC_TEST_DEVICE_HASHES nên init bất đồng bộ không ghi đè.
+        // Hash CHỈ THÊM, không xoá (myKeyStore/.../app.properties).
         val testDeviceIds = BuildConfig.ADMOB_TEST_DEVICE_IDS.split(',').map { it.trim() }.filter { it.isNotEmpty() }
         AdManager.setTestDeviceIds(*testDeviceIds.toTypedArray())
-        AdManager.earlyInit(this)
+
+        // Set trong Application.onCreate (KHÔNG trong Activity — SDK tự xoá listener khi Activity destroy).
+        // 5 tham số đúng chữ ký PaidEventListener. Chưa có MMP nên chỉ log, chỉ ở debug.
+        AdManager.paidEventListener = PaidEventListener { adType, valueMicros, currency, precision, adSource ->
+            AppLog.d("MyApplication") { "paid $adType ${valueMicros / MICROS_PER_UNIT} $currency precision=$precision source=$adSource" }
+        }
+        AdManager.errorReporter = ErrorReporter { throwable, context ->
+            AppLog.w("MyApplication", "ad error [$context] ${throwable.message}")
+        }
+
+        AdManager.initialize(this) { success, _ ->
+            // success=false KHÔNG chắc là lỗi: provider defer tới khi consent xong (xem doc Bước 4).
+            AppLog.d("MyApplication") { "AdManager.initialize success=$success waitingConsent=${AdManager.isWaitingForConsent()}" }
+        }
         AppLog.d("MyApplication") { "AdManager config ready; provider init waits for splash consent" }
     }
 
@@ -214,5 +236,6 @@ class MyApplication : Application(), Configuration.Provider {
         const val KEY_STACK_TRACE = SP_NAME + "_key_stack_trace"
         const val SP_KEY_CRASH_COUNT = SP_NAME + "_key_crash_count"
         const val SP_KEY_RECOVERY_VERSION = SP_NAME + "_key_recovery_version"
+        private const val MICROS_PER_UNIT = 1_000_000.0
     }
 }

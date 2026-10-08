@@ -19,7 +19,6 @@ import com.roy.sdkadbmob.ExperimentalAdApi
 import com.roy.sdkadbmob.awaitSplashComplete
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 
 @SuppressLint("CustomSplashScreen")
@@ -49,70 +48,37 @@ class SplashActivity : BaseActivity() {
         lifecycleScope.launch { runSplashFlow() }
     }
 
+    /**
+     * Đúng doc Bước 4: `initialize()` đã gọi ở MyApplication (defer provider tới khi có consent). Splash chỉ
+     * `requestConsentInfoUpdate` rồi `awaitSplashComplete` — SDK tự giữ watchdog (15s fetch + 180s form UMP).
+     * Không tự timeout riêng: timeout app-level từng cắt form consent của user EEA (doc cảnh báo không hạ thấp).
+     */
     @OptIn(ExperimentalAdApi::class)
     private suspend fun runSplashFlow() {
         val startTime = System.currentTimeMillis()
-        // Fast-path: không có mạng → vào app ngay sau khi hiện thương hiệu đủ thời gian.
-        if (!hasNetwork()) {
-            AppLog.d(LOG_TAG) { "No network — skip all ads, go to main" }
-            val elapsed = System.currentTimeMillis() - startTime
-            if (elapsed < MIN_SPLASH_DURATION_MS) {
-                kotlinx.coroutines.delay(MIN_SPLASH_DURATION_MS - elapsed)
-            }
-            goToMain()
-            return
-        }
 
-        // Bước 1 — Consent: có mạng nhưng SDK có thể treo (captive portal, mạng yếu...).
-        // Timeout 6s chỉ là safety net; path bình thường callback trong < 1s.
-        val canRequestAds = withTimeoutOrNull(CONSENT_TIMEOUT_MS) {
+        // Không mạng → fullscreen ad fail-soft, vào app ngay (SDK tự retry consent + preload khi mạng về).
+        if (hasNetwork()) {
             suspendCancellableCoroutine { cont ->
-                AdManager.requestConsentInfoUpdate(this@SplashActivity) { result ->
-                    if (cont.isActive) cont.resume(result)
+                AdManager.requestConsentInfoUpdate(this@SplashActivity) { canRequestAds ->
+                    AppLog.d(LOG_TAG) { "UMP consent gathered: canRequestAds=$canRequestAds" }
+                    if (cont.isActive) cont.resume(canRequestAds)
                 }
             }
-        } ?: run {
-            AppLog.w(LOG_TAG, "requestConsentInfoUpdate timeout — SDK hung, skip ads")
-            false
-        }
-
-        if (!canRequestAds) {
-            val elapsed = System.currentTimeMillis() - startTime
-            if (elapsed < MIN_SPLASH_DURATION_MS) {
-                kotlinx.coroutines.delay(MIN_SPLASH_DURATION_MS - elapsed)
+            // SDK tự load+show App Open với timeout nội bộ; runCatching để lỗi SDK không chặn vào app.
+            runCatching {
+                AdManager.awaitSplashComplete(this@SplashActivity)
+            }.onFailure {
+                AppLog.w(LOG_TAG, "awaitSplashComplete failed, continuing to main", it)
             }
-            goToMain()
-            return
-        }
-
-        // Bước 2 — Init SDK: timeout 8s safety net.
-        if (!isAdInitialized) {
-            val success = withTimeoutOrNull(INIT_TIMEOUT_MS) {
-                suspendCancellableCoroutine { cont ->
-                    AdManager.initialize(application) { ok, gaid ->
-                        AppLog.d(LOG_TAG) { "AdManager init success=$ok, gaid=$gaid" }
-                        if (cont.isActive) cont.resume(ok)
-                    }
-                }
-            } ?: run {
-                AppLog.w(LOG_TAG, "AdManager.initialize timeout — SDK hung, proceeding without ads")
-                false
-            }
-            isAdInitialized = success
-        }
-
-        // Bước 3 — Splash ad: SDK tự quản timeout nội bộ; runCatching đảm bảo không crash khi lỗi.
-        runCatching {
-            AdManager.awaitSplashComplete(this@SplashActivity)
-        }.onFailure {
-            AppLog.w(LOG_TAG, "awaitSplashComplete failed, continuing to main", it)
+        } else {
+            AppLog.d(LOG_TAG) { "No network — skip all ads, go to main" }
         }
 
         val elapsed = System.currentTimeMillis() - startTime
         if (elapsed < MIN_SPLASH_DURATION_MS) {
             kotlinx.coroutines.delay(MIN_SPLASH_DURATION_MS - elapsed)
         }
-
         goToMain()
     }
 
@@ -132,12 +98,7 @@ class SplashActivity : BaseActivity() {
     }
 
     companion object {
-        @Volatile
-        private var isAdInitialized = false
-
         private const val MIN_SPLASH_DURATION_MS = 1_500L
-        private const val CONSENT_TIMEOUT_MS = 6_000L
-        private const val INIT_TIMEOUT_MS = 8_000L
 
         /** Thời gian chờ hiệu ứng fade chuyển sang MainActivity chạy xong trước khi finish() Splash. */
         private const val FINISH_AFTER_TRANSITION_DELAY_MS = 300L

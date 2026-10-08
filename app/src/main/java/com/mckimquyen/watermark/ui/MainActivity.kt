@@ -1,5 +1,6 @@
 package com.mckimquyen.watermark.ui
 
+import com.roy.sdkadbmob.AdManager
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
@@ -280,6 +281,9 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Preload interstitial để lần job finish đầu tiên có ad sẵn (doc A.4). SDK tự gate VIP/consent/mạng,
+        // có cooldown + CAS chống load trùng; chưa init xong thì fail-soft, SDK tự preload lại sau.
+        AdManager.loadInterstitial(this)
         // applyEdgeToEdge() is invoked by BaseActivity.onCreate() — no duplicate window setup needed
         if (MyApplication.recoveryMode) {
             setContentView(R.layout.a_recovery)
@@ -638,7 +642,7 @@ class MainActivity : BaseActivity() {
                 toast(it.message)
                 if (it.code == MainViewModel.TYPE_JOB_FINISH) {
                     val runnable = Runnable {
-                        com.roy.sdkadbmob.AdManager.showInterstitial(this@MainActivity) {}
+                        AdManager.showInterstitial(this@MainActivity) {}
                     }
                     showInterstitialRunnable = runnable
                     launchView.postDelayed(runnable, INTERSTITIAL_DELAY_MS)

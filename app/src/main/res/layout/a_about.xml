@@ -677,6 +677,52 @@
                         app:dividerInsetStart="48dp"
                         app:dividerThickness="1dp" />
 
+                    <!-- Ad privacy options row (UMP): user EEA/UK/CH mở lại lựa chọn consent quảng cáo -->
+                    <LinearLayout
+                        android:id="@+id/rowAdPrivacy"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.8"
+                            android:src="@drawable/baseline_gpp_good_24"
+                            app:tint="?attr/colorOnSurface"
+                            tools:ignore="ContentDescription" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:text="@string/ad_privacy_options"
+                            android:textAppearance="@style/TextAppearance.App.Body15" />
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.6"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="?attr/colorOnSurfaceVariant"
+                            tools:ignore="ContentDescription" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:dividerColor="?attr/colorOutlineVariant"
+                        app:dividerInsetStart="48dp"
+                        app:dividerThickness="1dp" />
+
                     <!-- Open Source Licenses row -->
                     <LinearLayout
                         android:id="@+id/rowOpenSource"

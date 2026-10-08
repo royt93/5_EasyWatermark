@@ -459,4 +459,5 @@
     <string name="card_frame_background_color">背景颜色</string>
     <string name="quick_share_title">快速分享</string>
     <string name="quick_share_item_desc">分享到 %1$s</string>
+    <string name="ad_privacy_options">广告隐私选项</string>
 </resources>

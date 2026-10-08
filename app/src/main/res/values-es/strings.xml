@@ -461,4 +461,5 @@
     <string name="card_frame_background_color">Color de fondo</string>
     <string name="quick_share_title">Compartir rápido</string>
     <string name="quick_share_item_desc">Compartir con %1$s</string>
+    <string name="ad_privacy_options">Opciones de privacidad de anuncios</string>
 </resources>

@@ -235,6 +235,11 @@ class AboutActivity : BaseActivity() {
                 AppLog.d(LOG_TAG) { "AboutActivity tvPrivacyEng clicked — opening privacy policy" }
                 openLink(Uri.parse(BuildConfig.PRIVACY_POLICY_URL))
             }
+            rowAdPrivacy.setOnClickListener {
+                // gms/UMP: SDK tự hiện form privacy options; trả false = host phải tự hiện (không áp dụng gms).
+                val shown = AdManager.showConsentFormIfAvailable(this@AboutActivity)
+                AppLog.d(LOG_TAG) { "AboutActivity rowAdPrivacy clicked — consent form shownBySdk=$shown" }
+            }
             rowVip.setOnClickListener {
                 startActivity(android.content.Intent(this@AboutActivity, VipManagementActivity::class.java))
             }
@@ -276,7 +281,7 @@ class AboutActivity : BaseActivity() {
                 switchDebug.isChecked = boundsEnabled
             }
 
-            bannerAdView = AdManager.loadBanner(
+            AdManager.loadBanner(
                 context = this@AboutActivity,
                 container = binding.layoutAdBanner.bannerContainer,
                 tvLabelAd = binding.layoutAdBanner.tvLabelAd,
@@ -286,37 +291,17 @@ class AboutActivity : BaseActivity() {
         }
     }
 
-    /** Reference banner view trả về từ loadBanner — giữ để gỡ thủ công khi VIP active. */
-    private var bannerAdView: View? = null
-
+    /**
+     * loadBanner mặc định `autoManageLifecycle = true` → SDK tự pause/resume/destroy qua BannerCoordinator
+     * (doc A.3: KHÔNG forward bannerResume/Pause/Destroy thủ công khi để true). Khi vừa kích hoạt VIP, SDK
+     * tự huỷ banner đang hiển thị; app chỉ cần ẩn container + nhãn "Ad".
+     */
     override fun onResume() {
         super.onResume()
-        // ENH-11: khôi phục auto-refresh banner đã tạm dừng ở onPause (null-safe/idempotent
-        // nếu bannerAdView đã bị destroy — xem AdManager.bannerResume).
-        AdManager.bannerResume(bannerAdView)
-        // Người dùng có thể vừa kích hoạt VIP ở VipManagementActivity rồi quay lại đây.
-        // Activity này chỉ resume (không recreate) nên banner đã load từ trước vẫn còn hiển thị
-        // → gỡ ngay để tôn trọng trạng thái VIP.
         if (AdManager.isVipByKeyActive()) {
-            AdManager.bannerDestroy(bannerAdView)
-            bannerAdView = null
             binding.layoutAdBanner.bannerContainer.isVisible = false
             binding.layoutAdBanner.tvLabelAd.isVisible = false
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        // ENH-11: dừng auto-refresh banner khi Activity không còn ở foreground (tiết kiệm pin,
-        // tránh impression ảo) — không destroy hẳn vì user có thể quay lại (xem onResume).
-        AdManager.bannerPause(bannerAdView)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // ENH-11: destroy hẳn khi Activity bị huỷ thật (không chỉ pause) — idempotent, an toàn
-        // nếu đã bị destroy sớm hơn ở nhánh VIP trong onResume.
-        AdManager.bannerDestroy(bannerAdView)
     }
 
     private var isFinishingInternal = false

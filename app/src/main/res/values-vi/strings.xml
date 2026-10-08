@@ -465,4 +465,5 @@
     <string name="card_frame_background_color">Màu nền</string>
     <string name="quick_share_title">Chia sẻ nhanh</string>
     <string name="quick_share_item_desc">Chia sẻ tới %1$s</string>
+    <string name="ad_privacy_options">Tùy chọn quyền riêng tư quảng cáo</string>
 </resources>

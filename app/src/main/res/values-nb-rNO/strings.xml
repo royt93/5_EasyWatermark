@@ -456,4 +456,5 @@
     <string name="card_frame_background_color">Bakgrunnsfarge</string>
     <string name="quick_share_title">Hurtigdeling</string>
     <string name="quick_share_item_desc">Del med %1$s</string>
+    <string name="ad_privacy_options">Personvernvalg for annonser</string>
 </resources>

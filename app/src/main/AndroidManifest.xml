@@ -40,6 +40,13 @@ riêng cần thiết kế, không phải lint nông — xem IDEA-19. -->
         <package android:name="com.google.android.apps.docs" />
     </queries>
 
+    <!-- Android 12+ (doc Step 6): thiếu thẻ này gây warning attributionTag liên tục trong logcat.
+         label BẮT BUỘC là resource (@string); chuỗi literal như ví dụ trong doc làm manifest malformed,
+         Android 14 từ chối cài (INSTALL_PARSE_FAILED_MANIFEST_MALFORMED). -->
+    <attribution
+        android:label="@string/ad_attribution_label"
+        android:tag="ads" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
