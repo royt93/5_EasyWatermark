@@ -16,8 +16,12 @@ files:
 ## Mô tả
 Repo `royt93/5_EasyWatermark` là PUBLIC. `app/keystore.jks` (alias `loi`) và `gradle.properties` chứa `STORE_PASSWORD`/`KEY_PASSWORD` plaintext đã commit từ 2024 (`e8e1cac4`, `d031385e` mới tách). Hai mã VIP legacy (30 ngày, 3 ngày), VIP secret và AppLovin SDK key cũng nằm trong source/doc. Commit `8e7aaecd` đã xoá khỏi HEAD và gom về `myKeyStore/com.mckimquyen.watermark/app.properties`, nhưng **history cũ vẫn công khai** — xoá khỏi HEAD không thu hồi được.
 
-## Quyết định 2026-10-08
-Chưa rotate, chưa viết lại history. Lý do: user đang giữ 2 mã VIP cũ; đổi VIP secret làm user hiện có mất ledger dedup; đổi keystore cần Play App Signing.
+## Quyết định 2026-10-08 (xác nhận lần 2 bởi chủ dự án)
+- Keystore + mật khẩu: **chấp nhận rủi ro, giữ nguyên**, không rotate.
+- 2 mã VIP legacy (30/3 ngày): **giữ nguyên**, chấp nhận rủi ro ai cũng kích hoạt được VIP miễn phí.
+- Ticket giữ trạng thái todo/deferred như bản ghi rủi ro, không làm tiếp trừ khi chủ dự án đổi ý.
+
+Ghi chú ban đầu: chưa rotate, chưa viết lại history. Lý do: user đang giữ 2 mã VIP cũ; đổi VIP secret làm user hiện có mất ledger dedup; đổi keystore cần Play App Signing.
 
 ## Checklist rotate (làm khi sẵn sàng)
 - [ ] Play Console: kiểm tra app có dùng Play App Signing không. Nếu có → xin reset upload key, tạo keystore mới, cập nhật `myKeyStore`. Nếu không → key này là app-signing key, KHÔNG thay được, chỉ thu hẹp bề mặt lộ.
