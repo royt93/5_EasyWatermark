@@ -1,6 +1,17 @@
 # AD migration plan - EasyWatermark
 
-Updated: 2026-06-14
+Updated: 2026-10-08
+
+## Nâng wrapper 1.1.5 → 1.8.5 + gom secret về myKeyStore (2026-10-08)
+
+> Các mục bên dưới nhắc `1.1.5` là lịch sử migrate lúc đó, giữ nguyên. **Phiên bản đang dùng: `AdmobApplovinWrapper:1.8.5`** (doc/AD_PROMPT_AOS.MD: sàn tối thiểu 1.6.2).
+
+1. **Lý do nâng:** `1.1.5` gọi `setTestDeviceIds(...)` nội bộ lúc `initialize` và **ghi đè** hash máy test do app khai → QC có thể nhận ad thật (invalid traffic). `1.8.5` lưu `callerTestDeviceIds` và gộp (union) với danh sách QC của SDK, áp cả debug lẫn release.
+2. **Đăng ký máy test:** `MyApplication.setupAdmob()` gọi `AdManager.setTestDeviceIds(...)` sau `setConfig`, trước `initialize` (ở Splash). Hash lấy từ `BuildConfig.ADMOB_TEST_DEVICE_IDS`. Chính sách: **chỉ thêm, không xoá**. Hash phụ thuộc (máy, chứng chỉ ký) nên debug và release là 2 hash khác nhau trên cùng máy.
+3. **Secret:** keystore, ad ID release, AppLovin key, VIP secret, hash máy test nằm ở `myKeyStore/com.mckimquyen.watermark/app.properties` (repo private), đọc qua env `WATERMARK_PRIVATE_CONFIG_DIR`; release thiếu key → build fail. Không còn secret nào trong repo này.
+4. **AdMob:** release dùng bộ ID `ca-app-pub-3004713799155145` (rewarded release không còn là ID test); debug dùng ID test Google. Native ad: SDK không hỗ trợ (ngoài phạm vi), mới chỉ lưu ID, chưa dùng.
+5. **VIP:** `vipTokenPublicKey` là khoá ECDSA riêng (SDK cảnh báo nếu để khoá mẫu ở release); private key chỉ ở myKeyStore. Hai mã VIP legacy 30/3 ngày vẫn dùng được, nay đọc từ BuildConfig. Reward chỉ cộng ở callback `showRewarded` (1 kênh) nên không cộng đôi dù SDK trao thưởng sớm (`grantRewardOnEarn=true`).
+6. **Verify:** logcat `This request is sent from a test device.` trên Samsung SM-S928B cho cả release và debug; 1341 unit test pass. Còn tồn đọng: [BUG-54](task/todo/BUG-54-keystore-vip-ma-lo-trong-git-history-cong-khai.md) (keystore/VIP lộ trong history public).
 
 ## VIP UX revamp + đa ngôn ngữ (2026-06-14, lần 3)
 
