@@ -58,6 +58,7 @@ class BatchWatermarkE2EAndroidTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val createdTestFiles = mutableListOf<File>()
+    private val exportedUris = mutableListOf<Uri>()
 
     @Before
     fun setUp() {
@@ -67,6 +68,10 @@ class BatchWatermarkE2EAndroidTest {
 
     @After
     fun tearDown() {
+        // Tên output cố định + KEEP_BOTH: không dọn thì MediaStore tích luỹ "name (n).jpg" và từ ~32 lần
+        // trùng sẽ ném "Failed to build unique file" — test tự fail dù app đúng (xem commit 4e8eae3e).
+        exportedUris.forEach { runCatching { context.contentResolver.delete(it, null, null) } }
+        exportedUris.clear()
         createdTestFiles.forEach { it.delete() }
         createdTestFiles.clear()
         BitmapCache.clearCache()
@@ -124,7 +129,7 @@ class BatchWatermarkE2EAndroidTest {
             compressLevel = 85,
             maxOutputLongEdge = 0, // original size
             copyright = "© 2026 EasyWatermark Tecno E2E",
-            outputNamePattern = "e2e_tecno_{index}"
+            outputNamePattern = "e2e_tecno_{seq}"
         )
 
         // 3. Execute batch export
@@ -149,6 +154,7 @@ class BatchWatermarkE2EAndroidTest {
             val successState = imageInfo.jobState as JobState.Success
             val outputUri = successState.result.data as? Uri
             assertThat(outputUri).isNotNull()
+            exportedUris.add(outputUri!!)
 
             // Verify that the generated output file is a valid readable bitmap
             val inputStream = context.contentResolver.openInputStream(outputUri!!)

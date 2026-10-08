@@ -3,7 +3,6 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.view.ViewCompat
@@ -22,6 +21,7 @@ import com.mckimquyen.watermark.databinding.AAboutBinding
 import com.mckimquyen.watermark.export.AuthenticityVerifier
 import com.mckimquyen.watermark.export.stego.StegoPayload
 import com.mckimquyen.watermark.feature.vip.VipManagementActivity
+import com.mckimquyen.watermark.utils.AppOpenSuppressor
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.formatDate
 import com.mckimquyen.watermark.utils.ktx.inflate
@@ -218,18 +218,18 @@ class AboutActivity : BaseActivity() {
             tvBackupData.contentDescription = "${getString(R.string.backup_data)}, ${getString(R.string.backup_data_subtitle)}"
             tvBackupData.setOnClickListener {
                 AppLog.d(LOG_TAG) { "AboutActivity tvBackupData clicked — opening SAF create-document" }
-                backupLauncher.launch(getString(R.string.backup_file_name))
+                AppOpenSuppressor.around { backupLauncher.launch(getString(R.string.backup_file_name)) }
             }
             tvRestoreData.contentDescription = "${getString(R.string.restore_data)}, ${getString(R.string.restore_data_subtitle)}"
             tvRestoreData.setOnClickListener {
                 AppLog.d(LOG_TAG) { "AboutActivity tvRestoreData clicked — opening SAF open-document" }
-                restoreLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
+                AppOpenSuppressor.around { restoreLauncher.launch(arrayOf("application/zip", "application/octet-stream")) }
             }
             tvVerifyAuthenticity.contentDescription =
                 "${getString(R.string.authenticity_verify_entry)}, ${getString(R.string.authenticity_verify_entry_subtitle)}"
             tvVerifyAuthenticity.setOnClickListener {
                 AppLog.d(LOG_TAG) { "AboutActivity tvVerifyAuthenticity clicked — opening SAF open-document" }
-                verifyLauncher.launch(arrayOf("image/*"))
+                AppOpenSuppressor.around { verifyLauncher.launch(arrayOf("image/*")) }
             }
             tvPrivacyEng.setOnClickListener {
                 AppLog.d(LOG_TAG) { "AboutActivity tvPrivacyEng clicked — opening privacy policy" }
@@ -287,7 +287,6 @@ class AboutActivity : BaseActivity() {
                 tvLabelAd = binding.layoutAdBanner.tvLabelAd,
                 adSize = AdManager.getAdaptiveBannerSize(this@AboutActivity)
             )
-            AdManager.loadInterstitial(this@AboutActivity)
         }
     }
 
@@ -298,27 +297,12 @@ class AboutActivity : BaseActivity() {
      */
     override fun onResume() {
         super.onResume()
+        // Quay về từ SAF (backup/restore/verify): nhánh App Open tự-resume của SDK chạy ở process onStart, TRƯỚC
+        // onResume này; tắt cờ ở đây để lần resume thật sau đó vẫn hiện App Open (không kẹt tới 5 phút).
+        AppOpenSuppressor.end()
         if (AdManager.isVipByKeyActive()) {
             binding.layoutAdBanner.bannerContainer.isVisible = false
             binding.layoutAdBanner.tvLabelAd.isVisible = false
-        }
-    }
-
-    private var isFinishingInternal = false
-
-    override fun finish() {
-        if (isFinishingInternal) {
-            super.finish()
-            return
-        }
-        isFinishingInternal = true
-        AdManager.showInterstitial(this) { success ->
-            if (success) {
-                AppLog.d(LOG_TAG) { "Ad đã hiển thị và đóng thành công" }
-            } else {
-                AppLog.d(LOG_TAG) { "Ad không hiển thị được hoặc có lỗi" }
-            }
-            finish()
         }
     }
 }

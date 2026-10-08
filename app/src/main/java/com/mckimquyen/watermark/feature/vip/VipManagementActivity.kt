@@ -102,27 +102,29 @@ class VipManagementActivity : BaseActivity() {
 
     private fun watchRewarded() {
         binding.btnWatchRewarded.isEnabled = false
+        // applicationContext + VipPrefs độc lập Activity: nếu Activity bị recreate (đổi theme/locale) hoặc kill
+        // trong lúc xem ad, user đã earned vẫn được cấp VIP (callback của SDK có thể về khi Activity đã mất).
+        val appContext = applicationContext
         AdManager.showRewarded(this) { earned ->
-            if (isFinishing || isDestroyed) return@showRewarded
             // Step 7 rule 6: reward/VIP CHỈ cấp khi rewarded earned==true. Tuyệt đối không fallback sang
             // interstitial để cấp VIP (vi phạm Rewarded policy, rủi ro ban account).
-            if (earned) {
-                grantRewardedVip()
-            } else {
+            val activated = earned && grantRewardedVipBy(appContext)
+            if (isFinishing || isDestroyed) return@showRewarded
+            if (activated) {
+                celebrate()
+                showResultDialog(R.string.vip_success_title, getString(R.string.vip_reward_activated, REWARDED_VIP_DAYS))
+            } else if (!earned) {
                 showResultDialog(R.string.vip_failed_title, getString(R.string.vip_reward_unavailable))
             }
             finishRewardFlow()
         }
     }
 
-    private fun grantRewardedVip() {
-        // Doc A.5: reward đã earned → grantVipDays (nguồn tin cậy nội bộ, chạy cả release). KHÔNG hack activateVipByKey.
-        val activated = AdManager.grantVipDays(this, REWARDED_VIP_DAYS)
-        if (activated) {
-            vipPrefs.markUserActivatedVip()
-            celebrate()
-            showResultDialog(R.string.vip_success_title, getString(R.string.vip_reward_activated, REWARDED_VIP_DAYS))
-        }
+    /** Cấp VIP từ nguồn tin cậy (reward earned). Doc A.5: grantVipDays, KHÔNG hack activateVipByKey. */
+    private fun grantRewardedVipBy(context: android.content.Context): Boolean {
+        val activated = AdManager.grantVipDays(context, REWARDED_VIP_DAYS)
+        if (activated) VipPrefs(context).markUserActivatedVip()
+        return activated
     }
 
     private fun showResultDialog(titleRes: Int, message: String) {

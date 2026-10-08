@@ -33,6 +33,7 @@ import com.mckimquyen.watermark.databinding.FGalleryBinding
 import com.mckimquyen.watermark.ui.adapter.GalleryAdapter
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
 import com.mckimquyen.watermark.ui.widget.UniformScrollGridLayoutManager
+import com.mckimquyen.watermark.utils.AppOpenSuppressor
 import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.MultiPickContract
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
@@ -248,11 +249,13 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
                 R.id.ivSysImage -> {
                     // ENH-10: ưu tiên Android Photo Picker, fallback ACTION_PICK khi không hỗ trợ.
                     if (ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(requireContext())) {
-                        pickImageVisualMediaLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
+                        AppOpenSuppressor.around {
+                            pickImageVisualMediaLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
                     } else {
-                        pickImageLauncher.launch("image/*")
+                        AppOpenSuppressor.around { pickImageLauncher.launch("image/*") }
                     }
                     return@setOnMenuItemClickListener true
                 }
@@ -407,7 +410,7 @@ class GalleryFragment : BaseBindBSDFragment<FGalleryBinding>() {
             .setNegativeButton(R.string.tips_cancel_dialog) { dialog, _ -> dialog.dismiss() }
             .setPositiveButton(R.string.tips_confirm_dialog) { dialog, _ ->
                 pendingIncludeSubfolders = switch.isChecked
-                pickFolderLauncher.launch(null)
+                AppOpenSuppressor.around { pickFolderLauncher.launch(null) }
                 dialog.dismiss()
             }
             .show()

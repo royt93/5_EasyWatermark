@@ -2,8 +2,8 @@ package com.mckimquyen.watermark.feature.vip
 
 import android.os.Build
 import androidx.appcompat.app.AlertDialog
-import com.google.common.truth.Truth.assertThat
 import com.google.android.material.button.MaterialButton
+import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R
 import com.roy.sdkadbmob.AdManager
 import io.mockk.every
@@ -69,5 +69,48 @@ class VipRewardedPolicyRoboTest {
 
         assertThat(activity.findViewById<MaterialButton>(R.id.btnWatchRewarded).isEnabled).isTrue()
         assertThat(AlertDialog::class.java).isNotNull()
+    }
+
+    @Test
+    fun rewardedEarned_whenActivityAlreadyDestroyed_stillGrantsVip() {
+        // Đổi theme/locale hoặc system kill giữa lúc xem ad: callback SDK về khi Activity đã mất.
+        val callback = slot<(Boolean) -> Unit>()
+        every { AdManager.showRewarded(any(), capture(callback)) } returns Unit
+        every { AdManager.grantVipDays(any(), any()) } returns true
+        val controller = Robolectric.buildActivity(VipManagementActivity::class.java).setup()
+        controller.get().findViewById<MaterialButton>(R.id.btnWatchRewarded).performClick()
+
+        controller.pause().stop().destroy()
+        callback.captured.invoke(true)
+
+        verify(exactly = 1) { AdManager.grantVipDays(any(), 3) }
+        verify(exactly = 0) { AdManager.showInterstitial(any(), any()) }
+    }
+
+    @Test
+    fun rewardedNotEarned_whenActivityAlreadyDestroyed_doesNotGrantAndDoesNotCrash() {
+        val callback = slot<(Boolean) -> Unit>()
+        every { AdManager.showRewarded(any(), capture(callback)) } returns Unit
+        every { AdManager.grantVipDays(any(), any()) } returns true
+        val controller = Robolectric.buildActivity(VipManagementActivity::class.java).setup()
+        controller.get().findViewById<MaterialButton>(R.id.btnWatchRewarded).performClick()
+
+        controller.pause().stop().destroy()
+        callback.captured.invoke(false)
+
+        verify(exactly = 0) { AdManager.grantVipDays(any(), any()) }
+    }
+
+    @Test
+    fun grantFails_showsNoSuccess_andNeverFallsBackToInterstitial() {
+        val callback = slot<(Boolean) -> Unit>()
+        every { AdManager.showRewarded(any(), capture(callback)) } answers { callback.captured(true) }
+        every { AdManager.grantVipDays(any(), any()) } returns false
+        val activity = Robolectric.buildActivity(VipManagementActivity::class.java).setup().get()
+
+        activity.findViewById<MaterialButton>(R.id.btnWatchRewarded).performClick()
+
+        verify(exactly = 1) { AdManager.grantVipDays(any(), 3) }
+        verify(exactly = 0) { AdManager.showInterstitial(any(), any()) }
     }
 }

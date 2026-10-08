@@ -20,18 +20,37 @@ val privateProps = Properties().apply {
     val f = File(privateConfigDir, "app.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
-val releaseRequested = gradle.startParameter.taskNames.any {
-    it.contains("release", ignoreCase = true) || it.contains("bundle", ignoreCase = true)
-}
+// Khoá bắt buộc cho build release. KHÔNG dựa vào tên task (`assembleRelease`...): lệnh `assemble`/`build`
+// vẫn dựng release variant và từng ra APK ký hợp lệ nhưng ad ID rỗng. Thay vào đó gắn kiểm tra vào
+// `preReleaseBuild` — task này nằm trong đồ thị mọi khi release variant được build (assemble/bundle/lint...)
+// và chỉ khi đó, nên build debug/CI không cần secret vẫn chạy.
+val releaseRequiredKeys = listOf(
+    "KEYSTORE_FILE", "KS_ALIAS", "KS_STORE_PASSWORD", "KS_KEY_PASSWORD",
+    "ADMOB_APP_ID", "ADMOB_BANNER_ID", "ADMOB_INTERSTITIAL_ID", "ADMOB_APP_OPEN_ID", "ADMOB_REWARDED_ID",
+    "ADMOB_TEST_DEVICE_IDS", "VIP_KEY_SECRET", "VIP_TOKEN_PUBLIC_KEY",
+    "VIP_LEGACY_30D_CODE", "VIP_LEGACY_3D_CODE", "PRIVACY_POLICY_URL",
+    "APPLOVIN_SDK_KEY", "APPLOVIN_BANNER_ID", "APPLOVIN_INTERSTITIAL_ID", "APPLOVIN_APP_OPEN_ID",
+    "APPLOVIN_REWARDED_ID"
+)
 
-// Release thiếu key → fail ngay, không bao giờ rơi về ID rỗng/test. Debug thiếu key → placeholder vô hại.
 fun priv(key: String, debugFallback: String = ""): String =
-    privateProps.getProperty(key)?.takeIf { it.isNotBlank() }
-        ?: if (releaseRequested) {
-            throw GradleException("Thiếu '$key' trong ${privateConfigDir}/app.properties (build release bắt buộc)")
-        } else {
-            debugFallback
+    privateProps.getProperty(key)?.takeIf { it.isNotBlank() } ?: debugFallback
+
+val verifyReleaseSecrets by tasks.registering {
+    group = "verification"
+    description = "Fail nếu thiếu secret release trong $privateConfigDir/app.properties"
+    doLast {
+        val missing = releaseRequiredKeys.filter { privateProps.getProperty(it).isNullOrBlank() }
+        val keystore = privateProps.getProperty("KEYSTORE_FILE")?.let { File(privateConfigDir, it) }
+        if (missing.isNotEmpty() || keystore?.isFile != true) {
+            throw GradleException(
+                "Build release thiếu secret trong $privateConfigDir/app.properties: " +
+                    (missing + listOfNotNull(if (keystore?.isFile != true) "keystore file" else null)).joinToString()
+            )
         }
+    }
+}
+tasks.matching { it.name == "preReleaseBuild" }.configureEach { dependsOn(verifyReleaseSecrets) }
 
 android {
     compileSdk = 37

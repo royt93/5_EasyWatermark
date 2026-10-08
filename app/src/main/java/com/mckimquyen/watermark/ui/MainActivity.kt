@@ -1,6 +1,5 @@
 package com.mckimquyen.watermark.ui
 
-import com.roy.sdkadbmob.AdManager
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
@@ -76,6 +75,7 @@ import com.mckimquyen.watermark.ui.panel.VerticalPbFragment
 import com.mckimquyen.watermark.ui.widget.CenterLayoutManager
 import com.mckimquyen.watermark.ui.widget.LaunchView
 import com.mckimquyen.watermark.ui.widget.onItemClick
+import com.mckimquyen.watermark.utils.AppOpenSuppressor
 import com.mckimquyen.watermark.utils.CameraCaptureHelper
 import com.mckimquyen.watermark.utils.ClipboardImageHelper
 import com.mckimquyen.watermark.utils.FileUtils
@@ -94,6 +94,7 @@ import com.mckimquyen.watermark.utils.ktx.preCheckStoragePermission
 import com.mckimquyen.watermark.utils.ktx.titleTextColor
 import com.mckimquyen.watermark.utils.ktx.toColor
 import com.mckimquyen.watermark.utils.ktx.toast
+import com.roy.sdkadbmob.AdManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -479,6 +480,9 @@ class MainActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Quay về từ picker/camera/crop: nhánh App Open tự-resume của SDK đã chạy ở process onStart (trước đây).
+        // Tắt cờ sau khi host đã resume để các lần resume thật sau này vẫn hiện App Open bình thường.
+        AppOpenSuppressor.end()
         refreshVipBadge()
         if (MyApplication.recoveryMode) {
             return
@@ -995,7 +999,7 @@ class MainActivity : BaseActivity() {
             FuncTitleModel.FuncType.Signature -> {
                 hideDetailPanel()
                 val intent = android.content.Intent(this@MainActivity, SignatureActivity::class.java)
-                signatureLauncher.launch(intent)
+                AppOpenSuppressor.around { signatureLauncher.launch(intent) }
             }
 
             FuncTitleModel.FuncType.QRCode -> {
@@ -1213,7 +1217,7 @@ class MainActivity : BaseActivity() {
             if (uri == null || uri == Uri.EMPTY) {
                 toast(R.string.crop_no_image_selected)
             } else {
-                cropLauncher.launch(CropActivity.createIntent(this, uri))
+                AppOpenSuppressor.around { cropLauncher.launch(CropActivity.createIntent(this, uri)) }
             }
             true
         }
@@ -1223,9 +1227,11 @@ class MainActivity : BaseActivity() {
             if (info == null || info.uri == Uri.EMPTY) {
                 toast(R.string.redaction_no_image_selected)
             } else {
-                smartRedactionLauncher.launch(
-                    SmartRedactionActivity.createIntent(this, info.uri, info.cropRect, info.rotationDegrees)
-                )
+                AppOpenSuppressor.around {
+                    smartRedactionLauncher.launch(
+                        SmartRedactionActivity.createIntent(this, info.uri, info.cropRect, info.rotationDegrees)
+                    )
+                }
             }
             true
         }
@@ -1270,11 +1276,13 @@ class MainActivity : BaseActivity() {
                         // ENH-10: ưu tiên Android Photo Picker (không cần quyền storage), fallback
                         // ACTION_PICK cho thiết bị/Android version không hỗ trợ.
                         if (ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(this)) {
-                            pickIconVisualMediaLauncher.launch(
-                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                            )
+                            AppOpenSuppressor.around {
+                                pickIconVisualMediaLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            }
                         } else {
-                            pickIconLauncher.launch(mime)
+                            AppOpenSuppressor.around { pickIconLauncher.launch(mime) }
                         }
                     }
                 }
@@ -1364,7 +1372,7 @@ class MainActivity : BaseActivity() {
             val photoUri = CameraCaptureHelper.getPhotoUri(this, photoFile)
             currentCameraPhotoFile = photoFile
             currentCameraPhotoUri = photoUri
-            takePictureLauncher.launch(photoUri)
+            AppOpenSuppressor.around { takePictureLauncher.launch(photoUri) }
         } catch (e: ActivityNotFoundException) {
             CameraCaptureHelper.cleanupPhotoFile(currentCameraPhotoFile)
             toast(R.string.camera_app_not_found)
@@ -1499,7 +1507,13 @@ class MainActivity : BaseActivity() {
         private const val REQ_CODE_PICK_IMAGE: Int = 42
         const val REQ_CODE_REQ_WRITE_PERMISSION: Int = 43
         const val REQ_PICK_ICON: Int = 44
-        private const val INTERSTITIAL_DELAY_MS: Long = 800
+
+        /**
+         * Trễ trước khi hiện interstitial sau khi lưu ảnh xong. 800ms quá ngắn: ngón tay user còn ở gần nút
+         * "Lưu" nên dễ chạm nhầm vào ad (invalid click). 2s đủ để user nhận ra kết quả và rời tay.
+         */
+        internal const val INTERSTITIAL_DELAY_MS: Long = 2_000
+
         private const val KEY_SAVED_CAMERA_URI: String = "key_saved_camera_uri"
         private const val KEY_SAVED_CAMERA_FILE: String = "key_saved_camera_file"
     }

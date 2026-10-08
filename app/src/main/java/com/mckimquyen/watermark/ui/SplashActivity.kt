@@ -2,8 +2,6 @@ package com.mckimquyen.watermark.ui
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -49,30 +47,30 @@ class SplashActivity : BaseActivity() {
     }
 
     /**
-     * Đúng doc Bước 4: `initialize()` đã gọi ở MyApplication (defer provider tới khi có consent). Splash chỉ
-     * `requestConsentInfoUpdate` rồi `awaitSplashComplete` — SDK tự giữ watchdog (15s fetch + 180s form UMP).
-     * Không tự timeout riêng: timeout app-level từng cắt form consent của user EEA (doc cảnh báo không hạ thấp).
+     * Đúng doc Bước 4 + example: `initialize()` đã gọi ở MyApplication (defer provider tới khi có consent).
+     * Splash gọi `requestConsentInfoUpdate` VÔ ĐIỀU KIỆN rồi `awaitSplashComplete`.
+     *
+     * Không rẽ nhánh theo mạng: nếu bỏ qua `requestConsentInfoUpdate` khi offline thì UMP KHÔNG BAO GIỜ chạy
+     * (SDK chỉ tự retry khi UMP đã báo lỗi fetch — `needsRetry = lastFetchFailed && !canRequestAds`), nên user
+     * EEA mở app lần đầu lúc offline sẽ không thấy form consent và không có ad cả phiên. UMP tự báo lỗi mạng,
+     * khi đó `retryConsentIfNeeded` của SDK phục hồi lúc mạng về. SDK tự giữ watchdog (15s fetch / 180s form);
+     * không đặt timeout riêng ở app vì từng cắt form consent đang hiển thị.
      */
     @OptIn(ExperimentalAdApi::class)
     private suspend fun runSplashFlow() {
         val startTime = System.currentTimeMillis()
 
-        // Không mạng → fullscreen ad fail-soft, vào app ngay (SDK tự retry consent + preload khi mạng về).
-        if (hasNetwork()) {
-            suspendCancellableCoroutine { cont ->
-                AdManager.requestConsentInfoUpdate(this@SplashActivity) { canRequestAds ->
-                    AppLog.d(LOG_TAG) { "UMP consent gathered: canRequestAds=$canRequestAds" }
-                    if (cont.isActive) cont.resume(canRequestAds)
-                }
+        suspendCancellableCoroutine { cont ->
+            AdManager.requestConsentInfoUpdate(this@SplashActivity) { canRequestAds ->
+                AppLog.d(LOG_TAG) { "UMP consent gathered: canRequestAds=$canRequestAds" }
+                if (cont.isActive) cont.resume(canRequestAds)
             }
-            // SDK tự load+show App Open với timeout nội bộ; runCatching để lỗi SDK không chặn vào app.
-            runCatching {
-                AdManager.awaitSplashComplete(this@SplashActivity)
-            }.onFailure {
-                AppLog.w(LOG_TAG, "awaitSplashComplete failed, continuing to main", it)
-            }
-        } else {
-            AppLog.d(LOG_TAG) { "No network — skip all ads, go to main" }
+        }
+        // SDK tự load+show App Open với timeout nội bộ; runCatching để lỗi SDK không chặn vào app.
+        runCatching {
+            AdManager.awaitSplashComplete(this@SplashActivity)
+        }.onFailure {
+            AppLog.w(LOG_TAG, "awaitSplashComplete failed, continuing to main", it)
         }
 
         val elapsed = System.currentTimeMillis() - startTime
@@ -80,14 +78,6 @@ class SplashActivity : BaseActivity() {
             kotlinx.coroutines.delay(MIN_SPLASH_DURATION_MS - elapsed)
         }
         goToMain()
-    }
-
-    /** Trả true nếu thiết bị có kết nối internet đã được xác thực (không chỉ connected WiFi). */
-    private fun hasNetwork(): Boolean {
-        val cm = getSystemService(ConnectivityManager::class.java)
-        val caps = cm.getNetworkCapabilities(cm.activeNetwork ?: return false) ?: return false
-        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
     private fun goToMain() {

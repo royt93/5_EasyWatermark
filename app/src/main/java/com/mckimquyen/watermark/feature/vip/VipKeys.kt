@@ -14,7 +14,7 @@ object VipKeys {
     /** Map mã → số ngày cho `AdSdkConfig.vipRedeemCodes`. N ngày tính từ lúc nhập, mỗi mã 1 lần/máy. */
     fun redeemCodes(): Map<String, Int> = mapOf(
         BuildConfig.VIP_LEGACY_30D_CODE to DAYS_LONG,
-        BuildConfig.VIP_LEGACY_3D_CODE to DAYS_SHORT,
+        BuildConfig.VIP_LEGACY_3D_CODE to DAYS_SHORT
     )
 
     fun durationDaysFor(input: String): Int? {

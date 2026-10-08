@@ -19,6 +19,7 @@ import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.databinding.FBatchCaptionBottomSheetBinding
 import com.mckimquyen.watermark.ui.MainActivity
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
+import com.mckimquyen.watermark.utils.AppOpenSuppressor
 import com.mckimquyen.watermark.utils.ktx.toast
 
 /**
@@ -132,7 +133,7 @@ class BatchCaptionBSDialogFragment : BaseBindBSDFragment<FBatchCaptionBottomShee
             val input = binding.etCaptions.text?.toString().orEmpty()
             voiceTargetLine = BatchCaptionParser.lineIndexAt(input, binding.etCaptions.selectionStart)
             try {
-                voiceLauncher.launch(buildRecognizeIntent())
+                AppOpenSuppressor.around { voiceLauncher.launch(buildRecognizeIntent()) }
             } catch (anfe: ActivityNotFoundException) {
                 // Máy khai báo có RecognitionService nhưng không mở được (ROM gỡ app Google).
                 anfe.printStackTrace()

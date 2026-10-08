@@ -18,6 +18,7 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.databinding.DlgLayerManagerBinding
 import com.mckimquyen.watermark.ui.adapter.WatermarkLayerAdapter
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
+import com.mckimquyen.watermark.utils.AppOpenSuppressor
 import com.mckimquyen.watermark.utils.ktx.toast
 
 /**
@@ -87,7 +88,7 @@ class LayerManagerBSDFragment : BaseBindBSDFragment<DlgLayerManagerBinding>() {
             binding.btnPickLayerIcon.visibility = if (isImage) View.VISIBLE else View.GONE
         }
         binding.btnPickLayerIcon.setOnClickListener {
-            pickIconLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            AppOpenSuppressor.around { pickIconLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
         }
 
         binding.btnSaveLayer.setOnClickListener { saveDraftLayer() }

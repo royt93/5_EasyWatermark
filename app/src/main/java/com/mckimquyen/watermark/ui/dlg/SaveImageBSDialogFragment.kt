@@ -36,6 +36,7 @@ import com.mckimquyen.watermark.ui.MainViewModel
 import com.mckimquyen.watermark.ui.adapter.SaveImageListAdapter
 import com.mckimquyen.watermark.ui.base.BaseBindBSDFragment
 import com.mckimquyen.watermark.ui.recipient.RecipientPickerBottomSheetFragment
+import com.mckimquyen.watermark.utils.AppOpenSuppressor
 import com.mckimquyen.watermark.utils.ExportZipHelper
 import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.QuickShareHelper
@@ -291,7 +292,7 @@ class SaveImageBSDialogFragment : BaseBindBSDFragment<DlgSaveFileBinding>() {
             }
 
             btnOutputDirectory.setOnClickListener {
-                pickOutputDirectoryLauncher.launch(null)
+                AppOpenSuppressor.around { pickOutputDirectoryLauncher.launch(null) }
             }
             updateOutputDirectoryUi(root, shareViewModel.outputDirectoryUri)
 
