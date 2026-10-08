@@ -30,4 +30,20 @@ class VipKeysTest {
         assertThat(BuildConfig.VIP_TOKEN_PUBLIC_KEY).isNotEmpty()
         assertThat(BuildConfig.VIP_TOKEN_PUBLIC_KEY).doesNotContain("M0pDMMSTDmt3FVyE")
     }
+
+    @Test
+    fun redeemCodes_mapBothLegacyCodes_toTheirDays() {
+        val codes = VipKeys.redeemCodes()
+
+        assertThat(codes).hasSize(2)
+        assertThat(codes[BuildConfig.VIP_LEGACY_30D_CODE]).isEqualTo(30)
+        assertThat(codes[BuildConfig.VIP_LEGACY_3D_CODE]).isEqualTo(3)
+    }
+
+    @Test
+    fun redeemCodes_agreeWithDurationDaysFor_soUiAndSdkNeverDisagree() {
+        VipKeys.redeemCodes().forEach { (code, days) ->
+            assertThat(VipKeys.durationDaysFor(code)).isEqualTo(days)
+        }
+    }
 }

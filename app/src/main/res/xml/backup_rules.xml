@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android <= 11. Loại SharedPreferences của SDK ads (ledger mã VIP đã dùng) khỏi backup: nếu không,
+     restore sẽ xoá sổ "đã dùng" và cho redeem lại cùng 1 mã (xem doc/AD_PROMPT_AOS.MD, rủi ro thẻ cào). -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="loitp_admob.xml" />
+</full-backup-content>

@@ -81,12 +81,14 @@ class VipManagementActivity : BaseActivity() {
     // ----------------------------------------------------------------------------------
 
     private fun redeemKey() {
-        val days = VipKeys.durationDaysFor(binding.edtVipKey.text?.toString().orEmpty())
+        val input = binding.edtVipKey.text?.toString().orEmpty().trim()
+        val days = VipKeys.durationDaysFor(input)
         if (days == null) {
             showResultDialog(R.string.vip_failed_title, getString(R.string.vip_key_invalid))
             return
         }
-        val activated = AdManager.activateVipByKey(this, AdKeys.VIP_SECRET_30_DAYS, days)
+        // Truyền CHÍNH mã người dùng nhập: SDK khớp với AdSdkConfig.vipRedeemCodes (số ngày lấy từ map, `days` bị bỏ qua).
+        val activated = AdManager.activateVipByKey(this, input, days)
         if (activated) {
             vipPrefs.markUserActivatedVip()
             binding.edtVipKey.text?.clear()
@@ -114,7 +116,8 @@ class VipManagementActivity : BaseActivity() {
     }
 
     private fun grantRewardedVip() {
-        val activated = AdManager.activateVipByKey(this, AdKeys.VIP_SECRET_30_DAYS, REWARDED_VIP_DAYS)
+        // Doc A.5: reward đã earned → grantVipDays (nguồn tin cậy nội bộ, chạy cả release). KHÔNG hack activateVipByKey.
+        val activated = AdManager.grantVipDays(this, REWARDED_VIP_DAYS)
         if (activated) {
             vipPrefs.markUserActivatedVip()
             celebrate()

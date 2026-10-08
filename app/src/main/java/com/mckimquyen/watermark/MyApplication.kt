@@ -11,6 +11,7 @@ import com.mckimquyen.cmonet.CMonet
 import com.mckimquyen.watermark.common.const.AdKeys
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.data.repo.WatermarkProfileRepository
+import com.mckimquyen.watermark.feature.vip.VipKeys
 import com.mckimquyen.watermark.feature.vip.VipManagementActivity
 import com.mckimquyen.watermark.ui.SplashActivity
 import com.mckimquyen.watermark.utils.QrCodeGenerator
@@ -120,6 +121,8 @@ class MyApplication : Application(), Configuration.Provider {
             vipKeySecret = AdKeys.VIP_SECRET_30_DAYS,
             // Public key ECDSA verify VIP token (private key giữ offline trong myKeyStore, KHÔNG vào app).
             vipTokenPublicKey = BuildConfig.VIP_TOKEN_PUBLIC_KEY,
+            // "Thẻ cào": 2 mã VIP cũ (30/3 ngày) — xem VipKeys.redeemCodes().
+            vipRedeemCodes = VipKeys.redeemCodes(),
             // DEBUG: limits gần như tắt để test thoải mái. RELEASE: preset CONTENT (balanced)
             // — 60s gap, 6/session, 3/hour, 10/day — an toàn policy mà vẫn giữ doanh thu.
             // (CONTENT == AdSafetyLimits() default; ghi rõ tên cho khỏi nhầm.)

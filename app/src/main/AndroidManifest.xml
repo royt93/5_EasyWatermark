@@ -50,6 +50,8 @@ riêng cần thiết kế, không phải lint nông — xem IDEA-19. -->
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"

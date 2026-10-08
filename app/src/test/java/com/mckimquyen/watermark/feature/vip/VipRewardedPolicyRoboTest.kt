@@ -41,7 +41,7 @@ class VipRewardedPolicyRoboTest {
     private fun clickWatchRewarded(earned: Boolean): VipManagementActivity {
         val callback = slot<(Boolean) -> Unit>()
         every { AdManager.showRewarded(any(), capture(callback)) } answers { callback.captured(earned) }
-        every { AdManager.activateVipByKey(any(), any(), any()) } returns true
+        every { AdManager.grantVipDays(any(), any()) } returns true
         val activity = Robolectric.buildActivity(VipManagementActivity::class.java).setup().get()
         activity.findViewById<MaterialButton>(R.id.btnWatchRewarded).performClick()
         return activity
@@ -52,14 +52,14 @@ class VipRewardedPolicyRoboTest {
         clickWatchRewarded(earned = false)
 
         verify(exactly = 0) { AdManager.showInterstitial(any(), any()) }
-        verify(exactly = 0) { AdManager.activateVipByKey(any(), any(), any()) }
+        verify(exactly = 0) { AdManager.grantVipDays(any(), any()) }
     }
 
     @Test
     fun rewardedEarned_grantsVipExactlyOnce_withoutInterstitial() {
         clickWatchRewarded(earned = true)
 
-        verify(exactly = 1) { AdManager.activateVipByKey(any(), any(), any()) }
+        verify(exactly = 1) { AdManager.grantVipDays(any(), 3) }
         verify(exactly = 0) { AdManager.showInterstitial(any(), any()) }
     }
 
