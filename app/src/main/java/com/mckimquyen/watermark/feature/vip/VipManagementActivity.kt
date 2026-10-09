@@ -82,19 +82,29 @@ class VipManagementActivity : BaseActivity() {
 
     private fun redeemKey() {
         val input = binding.edtVipKey.text?.toString().orEmpty().trim()
-        val days = VipKeys.durationDaysFor(input)
-        if (days == null) {
-            showResultDialog(R.string.vip_failed_title, getString(R.string.vip_key_invalid))
-            return
+        if (input.isEmpty()) return
+
+        val legacyDays = VipKeys.durationDaysFor(input)
+        val activated = if (legacyDays != null) {
+            // Nhánh 1: mã thẻ cào cứng (legacy). SDK sẽ tự cross-check với `AdSdkConfig.vipRedeemCodes`
+            // nên số `legacyDays` ở đây chỉ mang tính hình thức, nhưng vẫn phải truyền.
+            AdManager.activateVipByKey(this, input, legacyDays)
+        } else {
+            // Nhánh 2: Token mã hoá (ECDSA).
+            AdManager.activateVipByToken(this, input)
         }
-        // Truyền CHÍNH mã người dùng nhập: SDK khớp với AdSdkConfig.vipRedeemCodes (số ngày lấy từ map, `days` bị bỏ qua).
-        val activated = AdManager.activateVipByKey(this, input, days)
+
         if (activated) {
             vipPrefs.markUserActivatedVip()
             binding.edtVipKey.text?.clear()
             celebrate()
             refreshVipState()
-            showResultDialog(R.string.vip_success_title, getString(R.string.vip_key_activated, days))
+            val msg = if (legacyDays != null) {
+                getString(R.string.vip_key_activated, legacyDays)
+            } else {
+                getString(R.string.vip_token_activated)
+            }
+            showResultDialog(R.string.vip_success_title, msg)
         } else {
             showResultDialog(R.string.vip_failed_title, getString(R.string.vip_key_invalid))
         }
