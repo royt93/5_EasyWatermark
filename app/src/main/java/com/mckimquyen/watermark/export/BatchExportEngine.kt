@@ -243,12 +243,12 @@ class BatchExportEngine @Inject constructor(
                     val failResult = Result.failure(null, code = MainViewModel.TYPE_ERROR_SAVE_OOM)
                     info = info.copy(result = failResult, jobState = JobState.Failure(failResult))
                     onProgress(info)
-                } catch (e: Exception) {
+                } catch (t: Throwable) {
                     // Exception ngoài 2 loại trên (vd SecurityException khi mất quyền MediaStore
                     // giữa batch) trước đây không có handler, làm crash cả batch — chỉ đánh dấu
                     // ảnh này lỗi và tiếp tục ảnh kế tiếp.
-                    e.printStackTrace()
-                    val failResult = Result.failure(null, code = MainViewModel.TYPE_ERROR_SAVE_UNKNOWN, message = e.message)
+                    t.printStackTrace()
+                    val failResult = Result.failure(null, code = MainViewModel.TYPE_ERROR_SAVE_UNKNOWN, message = t.message)
                     info = info.copy(result = failResult, jobState = JobState.Failure(failResult))
                     onProgress(info)
                 }
@@ -691,8 +691,9 @@ class BatchExportEngine @Inject constructor(
                                 compressSucceeded = compressOk,
                                 errorCode = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_WRITE
                             )
-                        } catch (e: Exception) {
-                            Result.failure<Unit>(data = null, code = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_WRITE, message = e.message)
+                        } catch (t: Throwable) {
+                            if (t is CancellationException) throw t
+                            Result.failure<Unit>(data = null, code = MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_WRITE, message = t.message)
                         }
                         if (writeResult.isFailure()) {
                             // BUG-37: row mới (KEEP_BOTH/RENAME_VERSION) → xoá row rác như BUG-19.

@@ -13,6 +13,7 @@ import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.data.model.ViewInfo
 import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.testutil.newTestWaterMarkDataStore
+import com.mckimquyen.watermark.ui.MainViewModel
 import io.mockk.every
 import io.mockk.spyk
 import kotlinx.coroutines.flow.first
@@ -36,7 +37,7 @@ class BatchExportEngineOverwritePendingCleanupRoboTest {
     private val existingUri: Uri = Uri.parse("content://media/external/images/media/4242")
 
     @Test
-    fun generateImage_overwriteThrowsErrorDuringWrite_clearsIsPendingOnExistingRow() {
+    fun generateImage_overwriteThrowsErrorDuringWrite_returnsFailureAndClearsIsPendingOnExistingRow() {
         val waterMarkRepo = WaterMarkRepository(context, newTestWaterMarkDataStore(context))
         val exportNaming = spyk(ExportNaming())
         every { exportNaming.queryExistingMediaUri(any(), any(), any()) } returns existingUri
@@ -70,16 +71,14 @@ class BatchExportEngineOverwritePendingCleanupRoboTest {
             matrix = Matrix()
         )
 
-        var caught: Throwable? = null
-        runBlocking {
-            try {
-                engine.generateImage(resolverSpy, viewInfo, imageInfo, index = 0, settings = settings)
-            } catch (e: OutOfMemoryError) {
-                caught = e
-            }
+        // Sau fix catch(Throwable) ở khối ghi: OOM KHÔNG còn thoát ra ngoài, mà thành Result.failure
+        // (batch không crash, ảnh khác tiếp tục) — IS_PENDING vẫn phải được dọn về 0.
+        val result = runBlocking {
+            engine.generateImage(resolverSpy, viewInfo, imageInfo, index = 0, settings = settings)
         }
 
-        assertThat(caught).isNotNull()
+        assertThat(result.isFailure()).isTrue()
+        assertThat(result.code).isEqualTo(MainViewModel.TYPE_ERROR_SAVE_MEDIASTORE_WRITE)
         // Đúng hành vi cần có: IS_PENDING phải được dọn về 0 trên row CŨ dù write bị lỗi giữa chừng.
         io.mockk.verify {
             resolverSpy.update(
