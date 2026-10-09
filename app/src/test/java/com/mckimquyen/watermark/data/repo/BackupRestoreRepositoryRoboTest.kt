@@ -6,6 +6,9 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.data.db.AppDatabase
 import com.mckimquyen.watermark.data.model.entity.Template
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -134,5 +137,25 @@ class BackupRestoreRepositoryRoboTest {
         repo.restoreFrom(Uri.fromFile(notAZip))
 
         assertThat(db.templateDao().getAllTemplate().first()).isEmpty()
+    }
+
+    /** OOM khi đọc backup lớn không được làm crash app: restore trả false, dữ liệu hiện có giữ nguyên. */
+    @Test
+    fun restoreFrom_outOfMemoryWhileReading_returnsFalse_noCrash(): Unit = runBlocking {
+        db.templateDao().insertTemplate(Template(id = 0, content = "keep me", creationDate = Date(1L), lastModifiedDate = Date(1L)))
+        val zipFile = tmp.newFile("oom.zip").apply { writeBytes(ByteArray(8)) }
+        mockkObject(com.mckimquyen.watermark.data.backup.BackupRestoreEngine)
+        try {
+            every {
+                com.mckimquyen.watermark.data.backup.BackupRestoreEngine.readBackup(any())
+            } throws OutOfMemoryError("forced")
+
+            val ok = repo.restoreFrom(Uri.fromFile(zipFile))
+
+            assertThat(ok).isFalse()
+            assertThat(db.templateDao().getAllTemplate().first().map { it.content }).containsExactly("keep me")
+        } finally {
+            unmockkObject(com.mckimquyen.watermark.data.backup.BackupRestoreEngine)
+        }
     }
 }

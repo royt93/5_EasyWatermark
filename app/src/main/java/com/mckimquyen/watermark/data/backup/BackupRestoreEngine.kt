@@ -37,6 +37,10 @@ object BackupRestoreEngine {
     private const val MAX_ENTRY_SIZE_BYTES = 20L * 1024 * 1024
     private const val MAX_ENTRY_COUNT = 500
 
+    /** Trần TỔNG bytes giữ trong RAM cho cả file backup: mỗi entry <=20MB nhưng 500 entry cộng lại
+     * có thể ~10GB -> OOM khi restore. 100MB đủ cho hàng trăm chữ ký thật. */
+    internal const val MAX_TOTAL_BYTES = 100L * 1024 * 1024
+
     fun writeBackup(output: OutputStream, templates: List<Template>, signatureFiles: List<File>) {
         ZipOutputStream(output).use { zip ->
             templates.forEachIndexed { index, template ->
@@ -70,6 +74,7 @@ object BackupRestoreEngine {
         ZipInputStream(input).use { zip ->
             var entry: ZipEntry? = zip.nextEntry
             var entryCount = 0
+            var totalBytes = 0L
             while (entry != null) {
                 entryCount++
                 if (entryCount > MAX_ENTRY_COUNT) {
@@ -79,6 +84,11 @@ object BackupRestoreEngine {
                 val name = entry.name
                 val bytes = readEntryBounded(zip, MAX_ENTRY_SIZE_BYTES)
                 if (bytes != null) {
+                    totalBytes += bytes.size
+                    if (totalBytes > MAX_TOTAL_BYTES) {
+                        zip.closeEntry()
+                        break
+                    }
                     when {
                         name.startsWith(TEMPLATES_DIR) -> parseTemplateEntry(bytes)?.let { templates += it }
                         name.startsWith(SIGNATURES_DIR) -> signatures += name.removePrefix(SIGNATURES_DIR) to bytes

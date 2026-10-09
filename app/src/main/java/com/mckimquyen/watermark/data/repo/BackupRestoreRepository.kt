@@ -62,6 +62,10 @@ class BackupRestoreRepository @Inject constructor(
             true
         } catch (e: CancellationException) {
             throw e
+        } catch (e: OutOfMemoryError) {
+            // File backup do user chọn qua SAF có thể rất lớn — không để OOM làm crash app.
+            e.printStackTrace()
+            false
         } catch (e: Exception) {
             e.printStackTrace()
             false

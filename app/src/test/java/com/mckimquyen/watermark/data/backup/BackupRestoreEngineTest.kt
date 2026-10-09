@@ -131,4 +131,46 @@ class BackupRestoreEngineTest {
 
         assertThat(restored.templates.size).isAtMost(500)
     }
+
+    /**
+     * Mỗi entry dưới ngưỡng 20MB nhưng 500 entry cộng lại có thể giữ ~10GB trong RAM -> OOM khi
+     * restore. `readBackup()` phải dừng khi TỔNG bytes đã giữ vượt [BackupRestoreEngine.MAX_TOTAL_BYTES],
+     * chỉ giữ phần đọc được trước ngưỡng, không crash.
+     */
+    @Test
+    fun readBackup_totalBytesExceedLimit_stopsAtLimit_keepsEarlierEntries() {
+        val chunk = ByteArray(10 * 1024 * 1024) // 10MB, dưới ngưỡng 1 entry
+        val entriesNeeded = (BackupRestoreEngine.MAX_TOTAL_BYTES / chunk.size).toInt() + 3
+        val output = ByteArrayOutputStream()
+        ZipOutputStream(output).use { zip ->
+            repeat(entriesNeeded) { index ->
+                zip.putNextEntry(ZipEntry("signatures/sig_$index.webp"))
+                zip.write(chunk)
+                zip.closeEntry()
+            }
+        }
+
+        val restored = BackupRestoreEngine.readBackup(ByteArrayInputStream(output.toByteArray()))
+
+        val keptBytes = restored.signatureFiles.sumOf { it.second.size.toLong() }
+        assertThat(keptBytes).isAtMost(BackupRestoreEngine.MAX_TOTAL_BYTES)
+        assertThat(restored.signatureFiles).isNotEmpty()
+        assertThat(restored.signatureFiles.size).isLessThan(entriesNeeded)
+    }
+
+    @Test
+    fun readBackup_totalUnderLimit_keepsEverything() {
+        val output = ByteArrayOutputStream()
+        ZipOutputStream(output).use { zip ->
+            repeat(5) { index ->
+                zip.putNextEntry(ZipEntry("signatures/s$index.webp"))
+                zip.write(ByteArray(1024))
+                zip.closeEntry()
+            }
+        }
+
+        val restored = BackupRestoreEngine.readBackup(ByteArrayInputStream(output.toByteArray()))
+
+        assertThat(restored.signatureFiles).hasSize(5)
+    }
 }
