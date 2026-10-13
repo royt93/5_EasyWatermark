@@ -8,6 +8,7 @@ import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.WaterMark
 import com.mckimquyen.watermark.ui.base.BasePBFragment
 import com.mckimquyen.watermark.utils.ktx.commitWithAnimation
+import kotlin.math.roundToInt
 
 class AlphaPbFragment : BasePBFragment() {
 
@@ -19,7 +20,7 @@ class AlphaPbFragment : BasePBFragment() {
 
     override fun doOnChange(slider: Slider, value: Float, fromUser: Boolean) {
         if (fromUser) {
-            shareViewModel.updateAlpha((value / 100 * 255).toInt())
+            shareViewModel.updateAlpha(alphaPercentToNative(value))
         }
     }
 
@@ -31,7 +32,7 @@ class AlphaPbFragment : BasePBFragment() {
         if (config?.alpha == null) {
             return 0
         }
-        return (config.alpha.toFloat() / 255 * 100).toInt().coerceAtLeast(0).coerceAtMost(100)
+        return nativeAlphaToPercent(config.alpha)
     }
 
     override fun formatValueTips(config: WaterMark?): String {
@@ -42,6 +43,12 @@ class AlphaPbFragment : BasePBFragment() {
 
     companion object {
         const val TAG = "AlphaPbFragment"
+
+        internal fun alphaPercentToNative(percent: Float): Int =
+            (percent.coerceIn(0f, 100f) / 100f * 255f).roundToInt()
+
+        internal fun nativeAlphaToPercent(alpha: Int): Int =
+            (alpha.coerceIn(0, 255) / 255f * 100f).roundToInt()
 
         fun replaceShow(fa: FragmentActivity, containerId: Int) {
             val f = fa.supportFragmentManager.findFragmentByTag(TAG)
