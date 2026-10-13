@@ -126,7 +126,7 @@ class TouchSensitiveRv : RecyclerView {
                         borderAnimator.start()
                         if (snapView == null ||
                             !canAutoSelected ||
-                            System.currentTimeMillis() - debounceTs < 300
+                            isWithinAutoSelectDebounce(System.currentTimeMillis(), debounceTs)
                         ) {
                             canAutoSelected = true
                             return
@@ -229,5 +229,14 @@ class TouchSensitiveRv : RecyclerView {
             }
         }
         return super.dispatchTouchEvent(ev)
+    }
+
+    companion object {
+        /** Cửa sổ chống auto-select dồn dập (ms) giữa 2 lần snap liên tiếp khi cuộn dừng. */
+        internal const val AUTO_SELECT_DEBOUNCE_MS = 300L
+
+        /** Thuần (không đọc đồng hồ) để test được ranh giới cửa sổ; `lastSelectedMs` = mốc auto-select trước. */
+        internal fun isWithinAutoSelectDebounce(nowMs: Long, lastSelectedMs: Long): Boolean =
+            nowMs - lastSelectedMs < AUTO_SELECT_DEBOUNCE_MS
     }
 }

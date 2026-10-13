@@ -52,6 +52,11 @@ class UniformScrollGridLayoutManager : GridLayoutManager {
     }
 
     override fun computeVerticalScrollExtent(state: RecyclerView.State): Int {
-        return scrollBarView?.measuredHeight ?: 110
+        return scrollBarView?.measuredHeight ?: DEFAULT_SCROLL_EXTENT_PX
+    }
+
+    companion object {
+        /** Extent dự phòng (px) khi chưa gắn `scrollBarView` — giá trị gốc từ ban đầu, cho slider gallery không chia 0. */
+        internal const val DEFAULT_SCROLL_EXTENT_PX = 110
     }
 }

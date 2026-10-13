@@ -37,7 +37,29 @@ class UniformScrollGridLayoutManagerRoboTest {
         assertThat(lm.isSmoothScrolling).isTrue()
     }
 
+    @Test
+    fun scrollExtent_withoutScrollBarView_usesNamedDefault() {
+        val lm = UniformScrollGridLayoutManager(context, SPAN_COUNT)
+
+        assertThat(lm.computeVerticalScrollExtent(RecyclerView.State()))
+            .isEqualTo(UniformScrollGridLayoutManager.DEFAULT_SCROLL_EXTENT_PX)
+    }
+
+    @Test
+    fun scrollExtent_withScrollBarView_usesItsMeasuredHeight() {
+        val lm = UniformScrollGridLayoutManager(context, SPAN_COUNT)
+        lm.scrollBarView = android.view.View(context).apply {
+            measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(10, android.view.View.MeasureSpec.EXACTLY),
+                android.view.View.MeasureSpec.makeMeasureSpec(BAR_HEIGHT, android.view.View.MeasureSpec.EXACTLY)
+            )
+        }
+
+        assertThat(lm.computeVerticalScrollExtent(RecyclerView.State())).isEqualTo(BAR_HEIGHT)
+    }
+
     private companion object {
+        const val BAR_HEIGHT = 77
         const val SPAN_COUNT = 3
         const val TARGET_POSITION = 5
     }

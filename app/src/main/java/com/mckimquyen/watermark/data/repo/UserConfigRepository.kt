@@ -57,9 +57,9 @@ class UserConfigRepository @Inject constructor(
         }
         .map {
             val outputFormat = resolveOutputFormat(it[KEY_OUTPUT_FORMAT], Build.VERSION.SDK_INT)
-            val savedValue = (it[KEY_COMPRESS_LEVEL] ?: DEFAULT_COMPRESS_LEVEL).coerceAtLeast(20)
-                .coerceAtMost(100)
-            val compressLevel = if (savedValue % 20 != 0) DEFAULT_COMPRESS_LEVEL else savedValue
+            val savedValue = (it[KEY_COMPRESS_LEVEL] ?: DEFAULT_COMPRESS_LEVEL)
+                .coerceIn(COMPRESS_LEVEL_MIN, COMPRESS_LEVEL_MAX)
+            val compressLevel = if (savedValue % COMPRESS_LEVEL_STEP != 0) DEFAULT_COMPRESS_LEVEL else savedValue
             val maxLongEdge = (it[KEY_MAX_LONG_EDGE] ?: DEFAULT_MAX_LONG_EDGE).coerceAtLeast(DEFAULT_MAX_LONG_EDGE)
             val copyright = it[KEY_COPYRIGHT] ?: ""
             val outputNamePattern = it[KEY_OUTPUT_NAME_PATTERN] ?: ""
@@ -160,6 +160,11 @@ class UserConfigRepository @Inject constructor(
 
     companion object {
         const val DEFAULT_COMPRESS_LEVEL = 80
+
+        // Phải khớp `Slider` @id/slideQuality ở res/layout/dlg_save_file.xml (stepSize/valueFrom/valueTo) — có test khoá.
+        const val COMPRESS_LEVEL_MIN = 20
+        const val COMPRESS_LEVEL_MAX = 100
+        const val COMPRESS_LEVEL_STEP = 20
 
         /** 0 = giữ nguyên kích thước gốc, không resize. */
         const val DEFAULT_MAX_LONG_EDGE = 0
