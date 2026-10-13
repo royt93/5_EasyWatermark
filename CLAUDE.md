@@ -40,6 +40,7 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
   - Tool MCP screenshot bám serial cũ; khi đổi máy dùng `adb -s <serial> exec-out screencap -p`.
   - `ViewPropertyAnimator.cancel()` vẫn chạy `withEndAction` → cần epoch guard; Robolectric hoàn tất animator trong 1 tick nên không test được giữa chừng.
   - `testReleaseUnitTest` không biên dịch (pre-existing: `VipTokenSmokeActivityRoboTest` chỉ debug nằm trong source set dùng chung).
+- CI (`.github/workflows/pr_pre_check.yml`): PR vào `master`/`dev` chỉ chạy `assembleDebug` (JDK 17) — không chạy test/lint/ktlint, nên tự chạy local trước khi push.
 - 2 module benchmark (`baseBenchmarks`, `macrobenchmark`) vẫn bị comment trong `settings.gradle.kts` — chưa dùng được.
 - **Secret gom 1 file**: `myKeyStore/com.mckimquyen.watermark/app.properties` (repo private `royt93/myKeyStore`, env `WATERMARK_PRIVATE_CONFIG_DIR` hoặc fallback `~/AndroidStudioProjects/@mckimquyen/myKeyStore/...`) — keystore, ad ID release, AppLovin key, VIP secret, `ADMOB_TEST_DEVICE_IDS`. Release thiếu key → build fail. Hash máy test áp cả debug+release, chỉ thêm không xoá. KHÔNG đưa secret vào repo này.
 
@@ -65,12 +66,16 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
 - UI điều hướng/đổi trạng thái qua sealed class `ui/UiState.kt` (`GoEdit`, `GoTemplate`, `UseTemplate`...), không dùng Navigation Component. View tùy biến `LaunchView`/`LaunchViewListener` chuyển giữa màn launch và editor.
 
 ### MVVM + dữ liệu
-- `MainViewModel` (`@HiltViewModel`) là bộ não: phơi `LiveData`/`StateFlow`, và `generateImage(...)` thực hiện **batch processing** — sinh & lưu watermark cho nhiều ảnh (`imageInfoMapFlow`).
+- `MainViewModel` (`@HiltViewModel`) là bộ não: phơi `LiveData`/`StateFlow`; `generateImage(...)` chỉ **enqueue** `BatchExportWorker` (WorkManager, ENH-01), logic export thật nằm ở `export/BatchExportEngine` (ViewModel giữ 1 instance riêng cho preview/compare/survivability). Worker đọc config trực tiếp từ repo singleton, chỉ `ViewInfo` đi qua `inputData`. KHÔNG dùng foreground service (quyết định business 2026-09-28, xem KDoc `BatchExportWorker`) — đừng thêm lại.
 - Tầng repo trong `data/repo/`, mỗi repo bọc **một DataStore Preferences riêng** (đặt tên qua `@Named`, ví dụ `WaterMarkPreferences`):
   - `WaterMarkRepository` — toàn bộ cấu hình watermark (text/icon uri, màu, alpha, góc xoay, gap, mode...) dưới dạng `Flow<WaterMark>`.
   - `UserConfigRepository`, `MemorySettingRepo`, `TemplateRepository`, `SignatureRepository`.
-- Persistence: **Room** cho `Template` (`AppDatabase` v1, asset-seeded `ewm-db`, `TemplateDao`, `DateConverter`), `BatchHistory` (FEAT-04 — `BatchHistoryDatabase` v1, DB riêng KHÔNG asset, `BatchHistoryDao`) và `WatermarkProfile` (FEAT-06 — `WatermarkProfileDatabase` v1, DB riêng KHÔNG asset, `WatermarkProfileDao`) — cả 2 DB sau tách khỏi `AppDatabase` để tránh rủi ro migration lên asset DB. Mọi cấu hình khác nằm ở DataStore, **không** ở Room.
+- Persistence: **Room** cho `Template` (`AppDatabase` v1, asset-seeded `ewm-db`, `TemplateDao`, `DateConverter`), `BatchHistory` (FEAT-04 — `BatchHistoryDatabase` v1, DB riêng KHÔNG asset, `BatchHistoryDao`), `WatermarkProfile` (FEAT-06 — `WatermarkProfileDatabase` v1, DB riêng KHÔNG asset, `WatermarkProfileDao`) và `Recipient` (IDEA-10 — `RecipientDatabase` v1, DB riêng KHÔNG asset) — 3 DB sau tách khỏi `AppDatabase` để tránh rủi ro migration lên asset DB; DB mới theo cùng quy ước (provide trong `di/AppModule.kt`). Mọi cấu hình khác nằm ở DataStore, **không** ở Room.
 - DI module: `di/AppModule.kt`, `di/DataStoreModule.kt`, `di/RepositoryModule.kt`.
+
+### Export (`export/`)
+- `BatchExportEngine` (render + ghi file/MediaStore/SAF), `BatchExportWorker` (WorkManager), `ExportNaming`, `AutoPlacementEngine`, `BrandComplianceScorer`, `ProofingMode`, `SurvivabilityProfile`.
+- `export/stego/` — watermark ẩn tự viết (DCT 8x8 miền JPEG: `Dct8x8`, `StegoCodec`, `StegoPayload`, `InvisibleWatermark` cầu nối Bitmap, `HiddenWatermarkReader`). Phần thuật toán thuần JVM (làm việc trên `IntArray`) để unit test thẳng; `AuthenticityStamp`/`AuthenticityVerifier` dựa trên nó.
 
 ### Rendering watermark
 - `ui/widget/WaterMarkImageView.kt` là custom view vẽ watermark (text hoặc tile bitmap với shader/rotation/alpha). Cảnh báo memory-leak cũ (executor không shutdown, scope không hủy) đã được fix từ trước — xem `doc/todo.md` mục Memory Leak Fixes; `onDetachedFromWindow()` hiện cancel `generateBitmapJob` + release `BitmapCache.BitmapValue`, không còn `Executors.newSingleThreadExecutor()`.
