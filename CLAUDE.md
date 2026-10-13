@@ -40,7 +40,7 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
   - Tool MCP screenshot bám serial cũ; khi đổi máy dùng `adb -s <serial> exec-out screencap -p`.
   - `ViewPropertyAnimator.cancel()` vẫn chạy `withEndAction` → cần epoch guard; Robolectric hoàn tất animator trong 1 tick nên không test được giữa chừng.
   - Test phụ thuộc class chỉ có ở `app/src/debug` (`VipTokenSmoke*`) phải nằm ở `app/src/testDebug`, không phải `app/src/test` — nếu không `testReleaseUnitTest` không biên dịch.
-  - `MainActivityColorPaletteAnimatorRoboTest > onDestroy cancel ...` flaky (~50% fail, cả debug lẫn release, assert `isStarted` ngay sau `toColor`); chạy lại là qua, chưa tìm ra gốc.
+  - Không dùng `ObjectAnimator.ofInt(<Int boxed>, ...)`: target boxed chỉ giữ qua `WeakReference`, GC thu là animator tự `cancel()` (màu kẹt giữa chừng; từng gây flaky `MainActivityColorPaletteAnimatorRoboTest`). Dùng `ValueAnimator.ofArgb` như `Int.toColor`.
 - CI (`.github/workflows/pr_pre_check.yml`): PR vào `master`/`dev` chỉ chạy `assembleDebug` (JDK 17) — không chạy test/lint/ktlint, nên tự chạy local trước khi push.
 - 2 module benchmark (`baseBenchmarks`, `macrobenchmark`) vẫn bị comment trong `settings.gradle.kts` — chưa dùng được.
 - **Secret gom 1 file**: `myKeyStore/com.mckimquyen.watermark/app.properties` (repo private `royt93/myKeyStore`, env `WATERMARK_PRIVATE_CONFIG_DIR` hoặc fallback `~/AndroidStudioProjects/@mckimquyen/myKeyStore/...`) — keystore, ad ID release, AppLovin key, VIP secret, `ADMOB_TEST_DEVICE_IDS`. Release thiếu key → build fail. Hash máy test áp cả debug+release, chỉ thêm không xoá. KHÔNG đưa secret vào repo này.

@@ -1,6 +1,6 @@
 package com.mckimquyen.watermark.ui
 
-import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.palette.graphics.Palette
@@ -14,7 +14,7 @@ import org.robolectric.RobolectricTestRunner
  * Review pass 9 (2026-09-30): observer `viewModel.colorPalette` tạo `bgTransformAnimator`/
  * `funcTextColorAnimator` MỚI mỗi lần Palette đổi (mỗi lần chọn ảnh khác) nhưng trước đây KHÔNG
  * cancel animator cũ trước khi ghi đè field — đổi ảnh nhanh (vuốt dải thumbnail, Palette sinh ra
- * trước khi animator cũ chạy xong ANIMATION_DURATION) khiến 2 `ObjectAnimator` cùng ghi
+ * trước khi animator cũ chạy xong ANIMATION_DURATION) khiến 2 `ValueAnimator` cùng ghi
  * backgroundColor/textColor lên cùng view (race/nhấp nháy màu), và animator cũ tiếp tục chạy
  * ngầm sau khi Activity đã destroy (chỉ animator MỚI NHẤT bị cancel ở onDestroy() vì field đã bị
  * ghi đè, animator cũ mất tham chiếu). Fix: cancel cả 2 field trước khi gán animator mới.
@@ -26,13 +26,13 @@ class MainActivityColorPaletteAnimatorRoboTest {
         MainActivity::class.java.getDeclaredMethod("getViewModel").apply { isAccessible = true }
             .invoke(this) as MainViewModel
 
-    private fun MainActivity.bgTransformAnimatorField(): ObjectAnimator? =
+    private fun MainActivity.bgTransformAnimatorField(): ValueAnimator? =
         MainActivity::class.java.getDeclaredField("bgTransformAnimator").apply { isAccessible = true }
-            .get(this) as ObjectAnimator?
+            .get(this) as ValueAnimator?
 
-    private fun MainActivity.funcTextColorAnimatorField(): ObjectAnimator? =
+    private fun MainActivity.funcTextColorAnimatorField(): ValueAnimator? =
         MainActivity::class.java.getDeclaredField("funcTextColorAnimator").apply { isAccessible = true }
-            .get(this) as ObjectAnimator?
+            .get(this) as ValueAnimator?
 
     /** Palette.generate() chạy đồng bộ (không callback) khi gọi trực tiếp trên Bitmap có sẵn. */
     private fun fakePalette(color: Int): Palette {
@@ -45,7 +45,7 @@ class MainActivityColorPaletteAnimatorRoboTest {
     fun `doi Palette lan 2 - cancel ca 2 animator cu truoc khi tao animator moi`() {
         val controller = Robolectric.buildActivity(MainActivity::class.java)
         // create()+start() đủ để initObserver() gắn observer + launchView có window Handler cho
-        // ObjectAnimator (không resume()/visible() — cùng lý do tránh crash không liên quan đã
+        // ValueAnimator (không resume()/visible() — cùng lý do tránh crash không liên quan đã
         // ghi trong MainActivityInterstitialRoboTest).
         val activity = controller.create().start().get()
         val viewModel = activity.viewModelField()

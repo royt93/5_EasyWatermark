@@ -1,6 +1,6 @@
 package com.mckimquyen.watermark.ui
 
-import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.ClipData
@@ -252,11 +252,11 @@ class MainActivity : BaseActivity() {
     internal lateinit var launchView: LaunchView
     private var vipBadge: BadgeDrawable? = null
 
-    private var bgTransformAnimator: ObjectAnimator? = null
+    private var bgTransformAnimator: ValueAnimator? = null
 
     /** Review pass 9: animator đổi màu title/icon panel theo Palette — track riêng để cancel
      * cùng lúc với [bgTransformAnimator], tránh 2 animator race khi đổi ảnh nhanh (xem bên dưới). */
-    private var funcTextColorAnimator: ObjectAnimator? = null
+    private var funcTextColorAnimator: ValueAnimator? = null
     private var showInterstitialRunnable: Runnable? = null
 
     /**
@@ -661,7 +661,7 @@ class MainActivity : BaseActivity() {
 
             // Review pass 9: đổi ảnh nhanh (vuốt dải thumbnail) có thể khiến Palette mới sinh ra
             // trước khi animator cũ chạy xong (ANIMATION_DURATION) — không cancel animator cũ
-            // trước khi tạo mới khiến 2 ObjectAnimator cùng ghi backgroundColor/textColor lên
+            // trước khi tạo mới khiến 2 ValueAnimator cùng ghi backgroundColor/textColor lên
             // cùng view, gây nhấp nháy màu + tiếp tục chạy ngầm sau khi Activity đã destroy.
             bgTransformAnimator?.cancel()
             funcTextColorAnimator?.cancel()
