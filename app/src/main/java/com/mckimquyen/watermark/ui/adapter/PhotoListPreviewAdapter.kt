@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.ui.base.BaseViewHolder
 import com.mckimquyen.watermark.ui.widget.PhotoPreviewItem
@@ -65,6 +66,8 @@ class PhotoListPreviewAdapter(
             return
         }
         (holder.itemView as PhotoPreviewItem).apply {
+            // BUG-84: announce selected batch-photo position to TalkBack.
+            contentDescription = context.getString(R.string.gallery_photo_item_desc, position + POSITION_NUMBER_OFFSET)
             onRemove {
                 VibrateHelper.get().doVibrate(holder.itemView)
                 remove(holder.bindingAdapterPosition)
@@ -73,6 +76,8 @@ class PhotoListPreviewAdapter(
                 VibrateHelper.get().doVibrate(holder.itemView)
             }
         }
+        holder.itemView.isClickable = true
+        holder.itemView.isFocusable = true
         with(differ.currentList[position]) {
             Glide.with(context)
                 .load(this.uri)
@@ -106,6 +111,7 @@ class PhotoListPreviewAdapter(
         super.onViewRecycled(holder)
         // BUG-81: huỷ animator kéo-xoá dở dang, tránh onRemove bắn vào item mới của holder tái dùng.
         (holder.itemView as? PhotoPreviewItem)?.resetForRecycle()
+        holder.itemView.contentDescription = null
     }
 
     override fun getItemCount(): Int {
@@ -146,5 +152,9 @@ class PhotoListPreviewAdapter(
         val ivRemove: ImageView = view.ivDel.apply {
             this.isVisible = false
         }
+    }
+
+    private companion object {
+        const val POSITION_NUMBER_OFFSET = 1
     }
 }
