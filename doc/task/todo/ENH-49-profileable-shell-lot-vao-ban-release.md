@@ -1,0 +1,35 @@
+---
+id: ENH-49
+type: Enhancement
+priority: P2
+effort: XS
+sources: R5 security re-audit 2026-10-14 (verify tay: manifest + git log)
+files:
+  - app/src/main/AndroidManifest.xml
+  - app/src/debug/AndroidManifest.xml
+---
+
+# ENH-49: `<profileable android:shell="true">` nằm ở manifest chính nên lọt vào APK release
+
+**Priority:** P2
+**Effort:** XS (<2h)
+**Status:** todo
+
+## Vấn đề
+
+`app/src/main/AndroidManifest.xml:62-64` khai báo `<profileable android:shell="true">`. Thẻ này được thêm cho macro benchmark (commit `3c67af5e`), nhưng 2 module `baseBenchmarks`/`macrobenchmark` đã bị comment trong `settings.gradle.kts` — không còn dùng. Vì nằm ở `main`, bản release cũng cho phép shell/ADB profile tiến trình (`simpleperf`, heap) dù `debuggable=false`.
+
+Tác động thấp (cần quyền ADB), nhưng là bề mặt thừa không có lý do tồn tại ở release.
+
+## Đề xuất
+
+Chuyển `<profileable>` sang `app/src/debug/AndroidManifest.xml` (đã có sẵn, cùng pattern với `VipTokenSmokeActivity`), xoá khỏi `main`. Khi bật lại macrobenchmark thì dùng build type `benchmark` riêng.
+
+## Test
+
+- Unit: đọc merged manifest release (`app/build/intermediates/merged_manifests/release*/`) sau `processReleaseManifest` và assert không còn `profileable`; merged debug vẫn còn.
+- Smoke: `adb shell dumpsys package com.mckimquyen.watermark | grep -i profile` trên bản release không báo profileable. Nếu thiếu keystore release thì ghi rõ giới hạn.
+
+## Prompt loop
+
+Xem [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md).
