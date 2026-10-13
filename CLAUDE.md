@@ -25,12 +25,21 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
 ./gradlew clean
 ```
 
-- **Unit test (`app/src/test`, 143 file)**: rải khắp `data/{backup,db,model,repo}`, `di`, `export`, `feature/vip`, `ui/{about,adapter,dlg,panel,widget}`, `utils/{bitmap,ktx}`. Test Robolectric mang hậu tố `*RoboTest`.
+- **Unit test (`app/src/test`, ~310 file)**: rải khắp `data/{backup,db,model,repo}`, `di`, `export`, `feature/vip`, `ui/{about,adapter,dlg,panel,widget}`, `utils/{bitmap,ktx}`. Test Robolectric mang hậu tố `*RoboTest`.
   ```bash
   ./gradlew testDebugUnitTest                                    # toàn bộ unit test
   ./gradlew testDebugUnitTest --tests "*.DateConverterTest"      # 1 class
   ```
 - **Instrumentation test (`app/src/androidTest`)**: `ui/MainViewModelCompressImgIntegrationTest`, `e2e/BatchWatermarkE2EAndroidTest`, `utils/bitmap/BitmapUtilsContextThreadingIntegrationTest`, `utils/bitmap/BitmapUtilsDecodeFailureIntegrationTest`, `utils/bitmap/ExifBorderAutoPaletteIntegrationTest` (pixel khung EXIF theo palette, IDEA-18), `utils/LocationTokenIntegrationTest` (đọc EXIF GPS + Geocoder thật, IDEA-16), `export/BrandComplianceContrastIntegrationTest` (tương phản màu watermark trên bitmap thật qua Palette, IDEA-15), `export/ProofingIndexIntegrationTest` (ghi và đọc HTML index thật qua DocumentFile, IDEA-13), `data/db/TemplateDaoIntegrationTest` (Room), `data/db/BatchHistoryDaoIntegrationTest` (Room, FEAT-04), `data/db/WatermarkProfileDaoIntegrationTest` (Room, FEAT-06), `data/repo/WaterMarkRepositoryIntegrationTest` (DataStore), `data/repo/SignatureRepositoryImportIntegrationTest` (decode Skia thật — Robolectric không mô phỏng đúng decode-failure cho bytes rác), `export/BatchExportEngineCustomDirectoryIntegrationTest` (ghi file SAF thật qua `DocumentFile.fromFile()`). Chạy bằng `./gradlew connectedDebugAndroidTest` (cần thiết bị/emulator).
+- **Pitfall instrumentation** (đã vấp thật):
+  - Luôn đặt `ANDROID_SERIAL=<serial>` — thiếu thì Gradle chạy trên MỌI thiết bị đang cắm (vi phạm R3). Không có `--tests`; lọc bằng `-Pandroid.testInstrumentationRunnerArguments.class=<fqcn>` (hoặc `...package=`).
+  - Test method phải trả `void`: viết `fun x() { runBlocking { ... } }`, KHÔNG `fun x() = runBlocking { ... }` (JUnit báo `InvalidTestClassError ... should be void`).
+  - Test Activity tự khai báo/lồng không resolve được (không có trong manifest, khác process) → dùng `MainActivity`/`OpenSourceActivity` thật; không thêm `app/src/androidTest/AndroidManifest.xml`.
+  - `connectedDebugAndroidTest` gỡ app sau khi chạy → cài lại bằng `adb -s <serial> install -r app/build/outputs/apk/debug/<tên apk>.apk` (tên file có version, không phải `app-debug.apk`).
+  - `uiautomator dump` có thể trả root null khi máy có accessibility service bên thứ ba; kiểm a11y bằng `AccessibilityNodeInfo` trong instrumentation.
+  - Tool MCP screenshot bám serial cũ; khi đổi máy dùng `adb -s <serial> exec-out screencap -p`.
+  - `ViewPropertyAnimator.cancel()` vẫn chạy `withEndAction` → cần epoch guard; Robolectric hoàn tất animator trong 1 tick nên không test được giữa chừng.
+  - `testReleaseUnitTest` không biên dịch (pre-existing: `VipTokenSmokeActivityRoboTest` chỉ debug nằm trong source set dùng chung).
 - 2 module benchmark (`baseBenchmarks`, `macrobenchmark`) vẫn bị comment trong `settings.gradle.kts` — chưa dùng được.
 - **Secret gom 1 file**: `myKeyStore/com.mckimquyen.watermark/app.properties` (repo private `royt93/myKeyStore`, env `WATERMARK_PRIVATE_CONFIG_DIR` hoặc fallback `~/AndroidStudioProjects/@mckimquyen/myKeyStore/...`) — keystore, ad ID release, AppLovin key, VIP secret, `ADMOB_TEST_DEVICE_IDS`. Release thiếu key → build fail. Hash máy test áp cả debug+release, chỉ thêm không xoá. KHÔNG đưa secret vào repo này.
 
