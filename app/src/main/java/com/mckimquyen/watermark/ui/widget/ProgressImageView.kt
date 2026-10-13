@@ -128,4 +128,9 @@ class ProgressImageView : AppCompatImageView {
         isVisible = true
         postInvalidate()
     }
+
+    override fun onDetachedFromWindow() {
+        startAnimator.cancel()
+        super.onDetachedFromWindow()
+    }
 }
