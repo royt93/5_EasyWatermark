@@ -186,7 +186,8 @@ class SaveImageListAdapterPreviewRoboTest {
 
         val adapter = SaveImageListAdapter(
             context = context,
-            // BUG-FLAKY-2026-09-30: xem giải thích ở onViewRecycled_... phía trên — Default khiến
+            // ENH-50: NonCancellable ở lambda generatePreview bên dưới CỐ TÌNH giả lập engine không hợp tác huỷ
+            // (nhánh recycle orphan ENH-32 vẫn phải đúng). BUG-FLAKY-2026-09-30: xem onViewRecycled_... phía trên — Default khiến
             // job "b" (generatePreview trả Success ngay, không suspend) chạy holder.ready() trên
             // thread nền NGOÀI runBlocking này, rò rỉ crash "Animators may only be run on Looper
             // threads" sang test khác. Unconfined chạy job "b" đồng bộ ngay trong onBindViewHolder
@@ -226,5 +227,70 @@ class SaveImageListAdapterPreviewRoboTest {
         // Chờ coroutine "a" kết thúc và thực hiện recycle
         oldJob?.join()
         assertThat(orphanBitmap.isRecycled).isTrue()
+    }
+
+    /**
+     * ENH-50: generatePreview hợp tác huỷ (không còn bọc NonCancellable ở adapter) → rebind sang ảnh
+     * khác phải thực sự huỷ coroutine đang chờ, không để nó chạy trọn.
+     */
+    @Test
+    fun rebind_differentUri_propagatesCancellationIntoGeneratePreview() {
+        val completer = kotlinx.coroutines.CompletableDeferred<BatchExportEngine.PreviewResult?>()
+        var cancelledCount = 0
+        val adapter = SaveImageListAdapter(
+            context = context,
+            scope = CoroutineScope(Dispatchers.Unconfined),
+            generatePreview = { info, _ ->
+                if (info.uri == Uri.parse("content://media/a")) {
+                    try {
+                        completer.await()
+                    } catch (ce: kotlinx.coroutines.CancellationException) {
+                        cancelledCount++
+                        throw ce
+                    }
+                } else {
+                    BatchExportEngine.PreviewResult(previewBitmap(), 10, 10)
+                }
+            },
+            estimateOutput = { w, h -> (w to h) to 1L }
+        )
+        adapter.submitList(
+            listOf(ImageInfo(Uri.parse("content://media/a")), ImageInfo(Uri.parse("content://media/b")))
+        )
+        val holder = createBoundHolder(adapter, 0)
+
+        adapter.onBindViewHolder(holder, 1)
+
+        assertThat(cancelledCount).isEqualTo(1)
+        completer.cancel()
+    }
+
+    /** ENH-50: fling 20 ảnh liên tiếp trên 1 holder → chỉ ảnh cuối chạy xong, 19 ảnh trước bị huỷ. */
+    @Test
+    fun fling_manyRebindsOnSameHolder_onlyLastPreviewCompletes() {
+        val total = FLING_COUNT
+        val completers = List(total) { kotlinx.coroutines.CompletableDeferred<BatchExportEngine.PreviewResult?>() }
+        var completedCount = 0
+        val adapter = SaveImageListAdapter(
+            context = context,
+            scope = CoroutineScope(Dispatchers.Unconfined),
+            generatePreview = { info, position ->
+                val result = completers[position].await()
+                completedCount++
+                result
+            },
+            estimateOutput = { w, h -> (w to h) to 1L }
+        )
+        adapter.submitList(List(total) { ImageInfo(Uri.parse("content://media/$it")) })
+        val holder = createBoundHolder(adapter, 0)
+        for (position in 1 until total) adapter.onBindViewHolder(holder, position)
+
+        completers.forEach { it.complete(null) }
+
+        assertThat(completedCount).isEqualTo(1)
+    }
+
+    private companion object {
+        const val FLING_COUNT = 20
     }
 }

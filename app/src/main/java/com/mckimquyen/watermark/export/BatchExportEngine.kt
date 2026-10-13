@@ -59,6 +59,7 @@ import com.mckimquyen.watermark.utils.ktx.applyConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -1007,6 +1008,9 @@ class BatchExportEngine @Inject constructor(
             var mutableBitmap = srcBitmap.copy(Bitmap.Config.ARGB_8888, true)
                 ?: return@withContext PreviewResult.DecodeFailure()
             leakGuardBitmap = mutableBitmap
+            // ENH-50: preview grid huỷ được giữa chừng (user fling) — mỗi mốc nặng kiểm tra huỷ để
+            // không decode/vẽ tiếp cho ô đã cuộn qua; bitmap tạm được recycle ở nhánh catch bên dưới.
+            ensureActive()
             // FEAT-16: mutableBitmap ở đây là bản copy riêng (không qua BitmapCache) — áp
             // crop/rotate TRƯỚC khi vẽ watermark, cùng thứ tự với generateImage()/preview editor.
             if (imageInfo.rotationDegrees != 0f || imageInfo.cropRect != null) {
@@ -1116,6 +1120,8 @@ class BatchExportEngine @Inject constructor(
                 }
             }
 
+            // ENH-50: sau khi dựng shader (bước nặng nhất), trước Palette + chấm compliance + vẽ.
+            ensureActive()
             val isClamp = previewInfo.obtainTileMode() == Shader.TileMode.CLAMP
             val wmWidth = (shader?.width ?: 0).toFloat()
             val wmHeight = (shader?.height ?: 0).toFloat()
@@ -1186,6 +1192,8 @@ class BatchExportEngine @Inject constructor(
                 canvas.drawRect(0f, 0f, mutableBitmap.width.toFloat(), mutableBitmap.height.toFloat(), layoutPaint)
             }
             drawExtraLayers(canvas, mutableBitmap.width, mutableBitmap.height, imageInfo, config.extraLayers, contentResolver)
+            // ENH-50: huỷ sau khi vẽ xong → ném để catch recycle, không trả bitmap cho caller đã bỏ đi.
+            ensureActive()
             PreviewResult.Success(
                 bitmap = mutableBitmap,
                 approxOriginalWidth = approxOriginalWidth,
@@ -1197,6 +1205,8 @@ class BatchExportEngine @Inject constructor(
                 framedHeight = framedHeight
             )
         } catch (ce: CancellationException) {
+            // ENH-50: huỷ giữa chừng cũng phải trả bitmap tạm (trước đây chỉ rethrow → mồ côi).
+            leakGuardBitmap?.let { if (!it.isRecycled) it.recycle() }
             throw ce
         } catch (e: Exception) {
             leakGuardBitmap?.let { if (!it.isRecycled) it.recycle() }

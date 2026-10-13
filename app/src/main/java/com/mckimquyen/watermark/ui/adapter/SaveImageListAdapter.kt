@@ -28,10 +28,8 @@ import com.mckimquyen.watermark.utils.ktx.appear
 import com.mckimquyen.watermark.utils.ktx.disappear
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * FEAT-07: [generatePreview]/[estimateOutput] cho phép adapter hiển thị grid xem trước batch với
@@ -162,12 +160,12 @@ class SaveImageListAdapter(
         holder.itemView.tag = info.uri
         holder.showPreviewInfo(null)
         holder.previewJob = scope.launch {
-            val result = withContext(NonCancellable) {
-                generatePreview(info, position)
-            }
+            // ENH-50: bỏ NonCancellable — engine tự recycle bitmap tạm khi bị huỷ, nên cuộn nhanh
+            // dừng decode ô đã lướt qua thay vì chạy trọn rồi bỏ kết quả.
+            val result = generatePreview(info, position)
             if (!this@launch.isActive || holder.itemView.tag != info.uri) {
-                // ENH-32: holder đã bị tái sử dụng cho uri khác hoặc job bị huỷ — recycle bitmap mồ côi
-                // ngay lập tức thay vì đợi GC, tránh tích luỹ RAM khi cuộn nhanh batch lớn.
+                // ENH-32: generatePreview không hợp tác huỷ (hoặc trả kết quả đúng lúc race) / holder đã
+                // bị tái sử dụng cho uri khác — recycle bitmap mồ côi ngay thay vì đợi GC.
                 if (result is BatchExportEngine.PreviewResult.Success) {
                     result.bitmap.takeIf { !it.isRecycled }?.recycle()
                 }

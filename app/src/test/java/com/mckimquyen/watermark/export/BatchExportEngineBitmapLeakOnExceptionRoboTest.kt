@@ -96,4 +96,44 @@ class BatchExportEngineBitmapLeakOnExceptionRoboTest {
         // watermarkedCopy trong code, tin cậy qua code review + symmetry thay vì test riêng.
         assertThat(captured.captured.isRecycled).isTrue()
     }
+
+    /** ENH-50: huỷ ngay giữa render (sau resolveAutoContrast) → ném CancellationException VÀ recycle bitmap tạm. */
+    @Test
+    fun generatePreviewBitmap_cancelledMidRender_throwsAndRecyclesTempBitmap() {
+        mockkObject(WaterMarkImageView)
+        val captured = slot<Bitmap>()
+        coEvery {
+            WaterMarkImageView.resolveAutoContrast(
+                bitmap = capture(captured),
+                tileMode = any(),
+                offsetX = any(),
+                offsetY = any(),
+                textSizeInBitmapPx = any(),
+                config = any()
+            )
+        } coAnswers {
+            // Giả lập user fling: Job bị huỷ khi engine đang ở giữa pipeline.
+            kotlin.coroutines.coroutineContext[kotlinx.coroutines.Job]?.cancel()
+            arg<com.mckimquyen.watermark.data.model.WaterMark>(CONFIG_ARG_INDEX)
+        }
+        val waterMarkRepo = WaterMarkRepository(context, newTestWaterMarkDataStore(context))
+        val engine = BatchExportEngine(context, ExportNaming())
+        val imageInfo = ImageInfo(Uri.parse("content://media/cancel_test_preview.jpg"))
+
+        val outcome = runCatching {
+            runBlocking {
+                val config = waterMarkRepo.waterMark.first()
+                engine.generatePreviewBitmap(context.contentResolver, imageInfo, config, index = 0)
+            }
+        }
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertThat(outcome.exceptionOrNull()).isInstanceOf(kotlinx.coroutines.CancellationException::class.java)
+        assertThat(captured.isCaptured).isTrue()
+        assertThat(captured.captured.isRecycled).isTrue()
+    }
+
+    private companion object {
+        const val CONFIG_ARG_INDEX = 5
+    }
 }

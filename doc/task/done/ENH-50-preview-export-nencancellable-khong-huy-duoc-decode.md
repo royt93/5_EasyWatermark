@@ -13,7 +13,7 @@ files:
 
 **Priority:** P2 (jank/pin khi batch lớn, không sai kết quả)
 **Effort:** M (cần thiết kế, không phải sửa 1 dòng)
-**Status:** todo
+**Status:** done (2026-10-13)
 
 ## Vấn đề
 
@@ -39,3 +39,11 @@ files:
 ## Prompt loop
 
 Xem [PROMPT_TEMPLATE.md](../PROMPT_TEMPLATE.md).
+
+## Kết quả (2026-10-13)
+
+- Xác minh (1): `generatePreviewBitmap` có `leakGuardBitmap` nhưng nhánh `catch (CancellationException)` chỉ rethrow, KHÔNG recycle → đó là lý do `NonCancellable` cần thiết. Đã sửa: nhánh cancel recycle bitmap tạm rồi rethrow.
+- Phương án (2): bỏ `NonCancellable` trong `SaveImageListAdapter`; thêm `ensureActive()` ở 3 mốc nặng của engine (sau `copy()`, sau dựng shader, sau khi vẽ xong). Nhánh recycle orphan của ENH-32 giữ nguyên cho race trả kết quả đúng lúc bị huỷ.
+- Test: unit `BatchExportEngineBitmapLeakOnExceptionRoboTest` +1 (huỷ giữa render → ném + recycle; mutation bỏ recycle → test fail đúng), widget/Robolectric `SaveImageListAdapterPreviewRoboTest` +2 (cancel lan vào `generatePreview`; fling 20 ảnh chỉ ảnh cuối hoàn tất), integration `BatchExportEnginePreviewCancellationIntegrationTest` (engine + decode thật, 12 ảnh fling, 11 bị huỷ, ảnh cuối Success) pass trên TECNO BG6 (`118743744X002560`). Test ENH-32 giữ nguyên, thêm chú thích lý do NonCancellable trong lambda test.
+- ktlint + lint + toàn bộ unit test pass.
+- Giới hạn smoke: máy chứa ảnh cá nhân nên không chọn ảnh qua picker; chỉ xác nhận app khởi động bình thường trên TECNO BG6 (không ad). Chưa đo thời gian preview/`dumpsys meminfo` với batch ≥30 ảnh.
