@@ -53,10 +53,11 @@ class SignatureView @JvmOverloads constructor(
                 // simple blur glow effect
                 maskFilter = BlurMaskFilter(drawSize * 1.5f, BlurMaskFilter.Blur.NORMAL)
             }
-            if (gradientColors != null && gradientColors!!.size >= 2) {
+            // R5: đọc 1 lần vào local — `gradientColors` là var public, tránh check-then-`!!`.
+            gradientColors?.takeIf { it.size >= 2 }?.let { colors ->
                 // simple top-to-bottom linear gradient (assuming signature height ~ 500f)
                 // A better approach would map it dynamically or just diagonally
-                shader = LinearGradient(0f, 0f, 1000f, 1000f, gradientColors!!, null, Shader.TileMode.CLAMP)
+                shader = LinearGradient(0f, 0f, 1000f, 1000f, colors, null, Shader.TileMode.CLAMP)
             }
         }
     }
@@ -71,9 +72,10 @@ class SignatureView @JvmOverloads constructor(
             MotionEvent.ACTION_DOWN -> {
                 val newPath = Path()
                 newPath.moveTo(x, y)
+                val newPaint = generateCurrentPaint()
                 currentPath = newPath
-                currentPaint = generateCurrentPaint()
-                strokes.add(Stroke(newPath, currentPaint!!))
+                currentPaint = newPaint
+                strokes.add(Stroke(newPath, newPaint))
                 lastX = x
                 lastY = y
                 return true

@@ -76,7 +76,9 @@ class CircleImageView : AppCompatImageView {
             // đúng bản cũ trước khi tạo mới) — sourceImageBitmap ở đây từng bị ghi đè thẳng, bỏ rơi
             // bản cũ không recycle mỗi lần resize.
             val old = sourceImageBitmap
-            sourceImageBitmap = drawable.toBitmap(width, height)
+            // BUG-80: `drawable` là platform type, null khi chưa set src — toBitmap() trên null ném NPE.
+            val currentDrawable = drawable ?: return
+            sourceImageBitmap = currentDrawable.toBitmap(width, height)
             if (old != null && !old.isRecycled && old !== sourceImageBitmap) {
                 old.recycle()
             }
@@ -87,8 +89,10 @@ class CircleImageView : AppCompatImageView {
             destCircleBitmap = makeCircleFrame(width, height)
         }
         sourceImageBitmap?.let {
+            // R5: destCircleBitmap vừa được gán ở trên nhưng vẫn kiểu nullable — không dùng `!!`.
+            val mask = destCircleBitmap ?: return
             val sc = canvas?.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null) ?: return
-            canvas.drawBitmap(destCircleBitmap!!, 0f, 0f, paint)
+            canvas.drawBitmap(mask, 0f, 0f, paint)
             paint.xfermode = xfermode
             canvas.drawBitmap(it, 0f, 0f, paint)
             paint.xfermode = null

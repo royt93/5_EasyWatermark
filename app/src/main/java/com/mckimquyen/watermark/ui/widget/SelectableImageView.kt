@@ -17,8 +17,8 @@ import kotlin.math.min
 
 class SelectableImageView : View {
 
-    constructor(context: Context?) : super(context!!)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context!!, attrs) {
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         val defaultPrimary = MaterialColors.getColor(
             context,
             com.google.android.material.R.attr.colorPrimary,
@@ -168,8 +168,8 @@ class SelectableImageView : View {
         srcBitmap?.let {
             canvas.drawBitmap(
                 /* bitmap = */ it,
-                /* left = */ (measuredWidth - srcBitmap!!.width).toFloat() / 2,
-                /* top = */ (measuredHeight - srcBitmap!!.height).toFloat() / 2,
+                /* left = */ (measuredWidth - it.width).toFloat() / 2,
+                /* top = */ (measuredHeight - it.height).toFloat() / 2,
                 /* paint = */ paint
             )
         }

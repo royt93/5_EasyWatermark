@@ -35,9 +35,11 @@ class UniformScrollGridLayoutManager : GridLayoutManager {
         state: RecyclerView.State?,
         position: Int
     ) {
+        // BUG-80: RecyclerView có thể null khi đã detach; super cũng deref nó nên không delegate, bỏ qua yêu cầu cuộn.
+        if (recyclerView == null) return
         if (enable) {
             val linearSmoothScroller =
-                object : LinearSmoothScroller(recyclerView!!.context) {
+                object : LinearSmoothScroller(recyclerView.context) {
                     override fun calculateSpeedPerPixel(displayMetrics: DisplayMetrics?): Float {
                         return speed
                     }
