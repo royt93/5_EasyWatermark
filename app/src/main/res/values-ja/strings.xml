@@ -106,6 +106,9 @@
     <string name="vip_redeem_button">VIP を有効化</string>
     <string name="vip_key_invalid">無効な VIP キーです</string>
     <string name="vip_key_activated">VIP を %1$d 日間有効にしました</string>
+    <string name="vip_token_activated">VIPが有効化されました</string>
+    <string name="vip_token_pending">VIPトークンを確認しています…</string>
+    <string name="vip_token_pending_timeout">まだ確認中です。この画面を開いたまま、接続を維持し、別のコードを入力しないでください。</string>
     <string name="vip_reward_title">3 日間の VIP を獲得</string>
     <string name="vip_reward_desc">リワード広告を 1 回視聴すると、3 日間の VIP パスが有効になります。</string>
     <string name="vip_watch_rewarded">広告を視聴して 3 日間 VIP</string>

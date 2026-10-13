@@ -105,6 +105,9 @@
     <string name="vip_redeem_button">啟用 VIP</string>
     <string name="vip_key_invalid">VIP 金鑰無效</string>
     <string name="vip_key_activated">已啟用 VIP %1$d 天</string>
+    <string name="vip_token_activated">VIP 啟用成功</string>
+    <string name="vip_token_pending">正在驗證 VIP 權杖…</string>
+    <string name="vip_token_pending_timeout">仍在驗證中。請保持此畫面開啟並維持連線，勿輸入其他驗證碼。</string>
     <string name="vip_reward_title">取得 3 天 VIP</string>
     <string name="vip_reward_desc">觀看一則獎勵廣告即可啟用 3 天 VIP 通行證。</string>
     <string name="vip_watch_rewarded">觀看廣告換 3 天 VIP</string>

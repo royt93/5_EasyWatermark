@@ -105,6 +105,9 @@
     <string name="vip_redeem_button">VIP aktivieren</string>
     <string name="vip_key_invalid">Ungültiger VIP-Schlüssel</string>
     <string name="vip_key_activated">VIP für %1$d Tage aktiviert</string>
+    <string name="vip_token_activated">VIP erfolgreich aktiviert</string>
+    <string name="vip_token_pending">VIP-Token wird überprüft…</string>
+    <string name="vip_token_pending_timeout">Überprüfung läuft noch. Lassen Sie diesen Bildschirm geöffnet, bleiben Sie verbunden und geben Sie keinen weiteren Code ein.</string>
     <string name="vip_reward_title">3 Tage VIP erhalten</string>
     <string name="vip_reward_desc">Sieh dir eine Belohnungsanzeige an, um einen 3-tägigen VIP-Pass zu aktivieren.</string>
     <string name="vip_watch_rewarded">Anzeige für 3 Tage VIP ansehen</string>

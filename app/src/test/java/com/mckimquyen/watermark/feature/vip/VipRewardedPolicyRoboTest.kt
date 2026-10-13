@@ -1,6 +1,7 @@
 package com.mckimquyen.watermark.feature.vip
 
 import android.os.Build
+import android.os.Looper
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.button.MaterialButton
 import com.google.common.truth.Truth.assertThat
@@ -17,6 +18,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
 
 /**
@@ -27,22 +30,46 @@ import org.robolectric.annotation.Config
 @Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
 class VipRewardedPolicyRoboTest {
 
+    private val controllers = mutableListOf<ActivityController<VipManagementActivity>>()
+
     @Before
     fun setUp() {
+        controllers.clear()
+        VipTokenPendingState.reset()
+        shadowOf(Looper.getMainLooper()).idle()
         mockkObject(AdManager)
         every { AdManager.loadRewarded(any()) } returns Unit
+        every { AdManager.isVipByKeyActive() } returns false
+        every { AdManager.getVipByKeyExpiry() } returns 0L
+        every { AdManager.isVipTokenPending } returns false
+        every { AdManager.isVipTokenResolutionInFlight } returns false
     }
 
     @After
     fun tearDown() {
+        controllers.forEach { controller ->
+            if (controller.get().lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
+                controller.pause().stop()
+            }
+            if (controller.get().lifecycle.currentState != androidx.lifecycle.Lifecycle.State.DESTROYED) {
+                controller.destroy()
+            }
+        }
+        shadowOf(Looper.getMainLooper()).idle()
+        VipTokenPendingState.reset()
         unmockkObject(AdManager)
     }
+
+    private fun launchController(): ActivityController<VipManagementActivity> =
+        Robolectric.buildActivity(VipManagementActivity::class.java).setup().also { controllers += it }
+
+    private fun launchActivity(): VipManagementActivity = launchController().get()
 
     private fun clickWatchRewarded(earned: Boolean): VipManagementActivity {
         val callback = slot<(Boolean) -> Unit>()
         every { AdManager.showRewarded(any(), capture(callback)) } answers { callback.captured(earned) }
         every { AdManager.grantVipDays(any(), any()) } returns true
-        val activity = Robolectric.buildActivity(VipManagementActivity::class.java).setup().get()
+        val activity = launchActivity()
         activity.findViewById<MaterialButton>(R.id.btnWatchRewarded).performClick()
         return activity
     }
@@ -77,7 +104,7 @@ class VipRewardedPolicyRoboTest {
         val callback = slot<(Boolean) -> Unit>()
         every { AdManager.showRewarded(any(), capture(callback)) } returns Unit
         every { AdManager.grantVipDays(any(), any()) } returns true
-        val controller = Robolectric.buildActivity(VipManagementActivity::class.java).setup()
+        val controller = launchController()
         controller.get().findViewById<MaterialButton>(R.id.btnWatchRewarded).performClick()
 
         controller.pause().stop().destroy()
@@ -92,7 +119,7 @@ class VipRewardedPolicyRoboTest {
         val callback = slot<(Boolean) -> Unit>()
         every { AdManager.showRewarded(any(), capture(callback)) } returns Unit
         every { AdManager.grantVipDays(any(), any()) } returns true
-        val controller = Robolectric.buildActivity(VipManagementActivity::class.java).setup()
+        val controller = launchController()
         controller.get().findViewById<MaterialButton>(R.id.btnWatchRewarded).performClick()
 
         controller.pause().stop().destroy()
@@ -106,7 +133,7 @@ class VipRewardedPolicyRoboTest {
         val callback = slot<(Boolean) -> Unit>()
         every { AdManager.showRewarded(any(), capture(callback)) } answers { callback.captured(true) }
         every { AdManager.grantVipDays(any(), any()) } returns false
-        val activity = Robolectric.buildActivity(VipManagementActivity::class.java).setup().get()
+        val activity = launchActivity()
 
         activity.findViewById<MaterialButton>(R.id.btnWatchRewarded).performClick()
 

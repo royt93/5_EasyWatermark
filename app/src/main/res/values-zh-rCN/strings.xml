@@ -108,6 +108,9 @@
     <string name="vip_redeem_button">激活 VIP</string>
     <string name="vip_key_invalid">VIP 密钥无效</string>
     <string name="vip_key_activated">VIP 已激活 %1$d 天</string>
+    <string name="vip_token_activated">VIP 激活成功</string>
+    <string name="vip_token_pending">正在验证 VIP 令牌…</string>
+    <string name="vip_token_pending_timeout">仍在验证中。请保持此屏幕打开并保持网络连接，不要输入其他验证码。</string>
     <string name="vip_reward_title">获取 3 天 VIP</string>
     <string name="vip_reward_desc">观看一个激励广告即可激活 3 天 VIP 通行证。</string>
     <string name="vip_watch_rewarded">看广告领 3 天 VIP</string>

@@ -3,6 +3,8 @@ package com.mckimquyen.watermark
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.core.content.edit
 import androidx.hilt.work.HiltWorkerFactory
@@ -13,6 +15,8 @@ import com.mckimquyen.watermark.data.repo.WaterMarkRepository
 import com.mckimquyen.watermark.data.repo.WatermarkProfileRepository
 import com.mckimquyen.watermark.feature.vip.VipKeys
 import com.mckimquyen.watermark.feature.vip.VipManagementActivity
+import com.mckimquyen.watermark.feature.vip.VipTokenResultListener
+import com.mckimquyen.watermark.feature.vip.VipTokenSmokeHookImpl
 import com.mckimquyen.watermark.ui.SplashActivity
 import com.mckimquyen.watermark.utils.QrCodeGenerator
 import com.roy.sdkadbmob.AdManager
@@ -149,12 +153,25 @@ class MyApplication : Application(), Configuration.Provider {
         AdManager.errorReporter = ErrorReporter { throwable, context ->
             AppLog.w("MyApplication", "ad error [$context] ${throwable.message}")
         }
-
-        AdManager.initialize(this) { success, _ ->
-            // success=false KHÔNG chắc là lỗi: provider defer tới khi consent xong (xem doc Bước 4).
-            AppLog.d("MyApplication") { "AdManager.initialize success=$success waitingConsent=${AdManager.isWaitingForConsent()}" }
+        AdManager.setPendingVipTokenResultListener(VipTokenResultListener(this))
+        VipTokenSmokeHookImpl.consumePendingToken(this) { token ->
+            AdManager.activateVipByToken(this, token)
         }
-        AppLog.d("MyApplication") { "AdManager config ready; provider init waits for splash consent" }
+
+        val initDelayMs = VipTokenSmokeHookImpl.consumeInitDelayMs(this)
+        val initialize = {
+            AdManager.initialize(this) { success, _ ->
+                // success=false KHÔNG chắc là lỗi: provider defer tới khi consent xong (xem doc Bước 4).
+                AppLog.d("MyApplication") { "AdManager.initialize success=$success waitingConsent=${AdManager.isWaitingForConsent()}" }
+            }
+            AppLog.d("MyApplication") { "AdManager config ready; provider init waits for splash consent" }
+        }
+        if (initDelayMs > 0L) {
+            // Chỉ debug smoke: giữ SDK chưa init để token device-bound nằm ở trạng thái pending đủ lâu mà chụp UI.
+            Handler(Looper.getMainLooper()).postDelayed({ initialize() }, initDelayMs)
+        } else {
+            initialize()
+        }
     }
 
     private fun checkRecoveryMode(): Boolean {

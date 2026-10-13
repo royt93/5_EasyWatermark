@@ -1,6 +1,14 @@
 # AD migration plan - EasyWatermark
 
-Updated: 2026-10-08
+Updated: 2026-10-10
+
+## Trạng thái hiện hành (2026-10-10)
+
+- Provider chính: **AdMob**. `BuildConfig.IS_ENABLE_ADMOB=true` trong `app/build.gradle.kts`; release IDs lấy từ private `myKeyStore/.../app.properties`, debug dùng Google test IDs.
+- Trên GMS, wrapper `1.8.5` dùng `IS_ENABLE_ADMOB=true` để tạo `AdMobProvider`; cờ `false` tạo `AppLovinProvider` (đối chiếu bytecode AAR local `GmsBridge.createProvider`). Vì vậy current build chọn AdMob trực tiếp, KHÔNG tự chứng minh AppLovin là mediation fallback. AppLovin IDs/SDK key vẫn được đưa vào config nhưng provider trực tiếp được chọn bởi flag. Waterfall/mediation qua AdMob phải được xác nhận trong AdMob dashboard/Ad Inspector.
+- Consent: Android GMS dùng UMP qua `SplashActivity.requestConsentInfoUpdate()` trước `awaitSplashComplete()`. Entry “Ad privacy options” nằm trong About.
+- Wrapper hiện hành `com.github.royt93:AdmobApplovinWrapper:1.8.5`. Các mục phía dưới mang ngày/phiên bản riêng; phần ghi `AppLovin primary`/`IS_ENABLE_ADMOB=false` là lịch sử migrate cũ, không phải cấu hình hiện tại.
+- Chưa xác minh bằng source SDK đầy đủ hay dashboard: waterfall/mediation priority, trạng thái CMP đã publish, `app-ads.txt`, Play Console declarations và từng mạng consent/legal.
 
 ## Nâng wrapper 1.1.5 → 1.8.5 + gom secret về myKeyStore (2026-10-08)
 
@@ -15,7 +23,9 @@ Updated: 2026-10-08
 7. **Rewarded + mã VIP (phát hiện khi smoke test TECNO, 2026-10-08):** SDK 1.8.5 TẮT nhánh legacy plaintext (`allowLegacyPlaintextVipKey=false`), nên `activateVipByKey(ctx, vipKeySecret, days)` âm thầm fail: xem rewarded xong KHÔNG nhận VIP. Sửa đúng doc A.5: rewarded earned → `AdManager.grantVipDays(activity, 3)` (không hack legacy). 2 mã VIP 30/3 ngày giữ nguyên qua `AdSdkConfig.vipRedeemCodes` (thẻ cào, `VipKeys.redeemCodes()`); thêm `backup_rules.xml` + `data_extraction_rules.xml` loại `loitp_admob.xml` khỏi backup (doc: nếu không, restore xoá ledger mã đã dùng).
 8. **Verify:** logcat `This request is sent from a test device.` trên Samsung SM-S928B cho cả release và debug; 1341 unit test pass. Còn tồn đọng: [BUG-54](task/todo/BUG-54-keystore-vip-ma-lo-trong-git-history-cong-khai.md) (keystore/VIP lộ trong history public).
 
-## VIP UX revamp + đa ngôn ngữ (2026-06-14, lần 3)
+## Lịch sử: VIP UX revamp + đa ngôn ngữ (2026-06-14, lần 3)
+
+Các provider, SDK version và QA dưới đây là snapshot lịch sử ngày 2026-06-14; không đại diện config hiện tại AdMob-primary.
 
 Theo feedback người dùng, đã verify trên Pixel 7 Pro:
 
@@ -26,7 +36,9 @@ Theo feedback người dùng, đã verify trên Pixel 7 Pro:
 
 Ghi chú: `activateVipByKey` khi VIP đang còn hạn thì **cộng dồn (stacking)** lên hạn cũ — đó là lý do nhập key 3 ngày lúc đang active 30 ngày ra ~30 ngày; nhập từ trạng thái Free thì ra đúng 3 ngày. Hành vi wrapper, không phải lỗi app. Build `:app:assembleAppTestDebug` + `:app:assembleAppReleaseRelease` đều PASS.
 
-## VIP screen full-spec upgrade (2026-06-14, lần 2)
+## Lịch sử: VIP screen full-spec upgrade (2026-06-14, lần 2)
+
+Snapshot UI/migrate ngày 2026-06-14; không xem các version/provider bên dưới là hiện hành.
 
 Nâng `VipManagementActivity` lên đúng spec template Step 10 (giữ kiểu Activity, không đổi Fragment):
 
@@ -46,7 +58,9 @@ Kiểm thử thực tế trên Pixel 7 Pro (192.168.21.185, Android, AppLovin pr
 - 0 FATAL exception suốt session sau khi fix manifest.
 - `:app` ktlint: các file VIP mới sạch (project có sẵn nhiều vi phạm trailing-comma pre-existing, ngoài phạm vi).
 
-## Implementation status
+## Lịch sử migrate (2026-06-14)
+
+Mục này ghi trạng thái tại thời điểm 2026-06-14, KHÔNG mô tả provider hiện hành. Khi đó AppLovin MAX là primary, AdMob fallback. Cấu hình sau đã được thay đổi; xem “Trạng thái hiện hành” ở đầu file.
 
 Implemented on 2026-06-14.
 
@@ -131,7 +145,7 @@ VIP keys must be compiled as Base64-obfuscated constants, not plain strings.
 - Edit `app/build.gradle.kts`.
 - Replace `implementation("com.github.royt93:AdmobWrapper:1.1.2")` with `implementation("com.github.royt93:AdmobApplovinWrapper:1.1.5")`.
 - Add `ADMOB_REWARDED_ID`, `APPLOVIN_REWARDED_ID`, and `PRIVACY_POLICY_URL` `buildConfigField`.
-- Keep `IS_ENABLE_ADMOB=false` for AppLovin primary runtime.
+- Historical instruction (2026-06-14): `IS_ENABLE_ADMOB=false` for AppLovin-primary runtime. Superseded by current AdMob-primary config at top of this file.
 - Remove or relax `force("com.google.android.gms:play-services-ads:23.6.0")` if it conflicts with wrapper `1.1.5`.
 
 ### 2. App init and consent

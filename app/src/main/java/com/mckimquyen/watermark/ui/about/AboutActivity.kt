@@ -21,6 +21,7 @@ import com.mckimquyen.watermark.databinding.AAboutBinding
 import com.mckimquyen.watermark.export.AuthenticityVerifier
 import com.mckimquyen.watermark.export.stego.StegoPayload
 import com.mckimquyen.watermark.feature.vip.VipManagementActivity
+import com.mckimquyen.watermark.feature.vip.VipTokenSmokeEntryPointImpl
 import com.mckimquyen.watermark.utils.AppOpenSuppressor
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.formatDate
@@ -239,6 +240,13 @@ class AboutActivity : BaseActivity() {
                 // gms/UMP: SDK tự hiện form privacy options; trả false = host phải tự hiện (không áp dụng gms).
                 val shown = AdManager.showConsentFormIfAvailable(this@AboutActivity)
                 AppLog.d(LOG_TAG) { "AboutActivity rowAdPrivacy clicked — consent form shownBySdk=$shown" }
+            }
+            // Debug-only: bản release dùng entry point no-op (xem VipTokenSmokeEntryPointImpl).
+            if (BuildConfig.DEBUG) {
+                tvVersion.setOnLongClickListener {
+                    VipTokenSmokeEntryPointImpl.open(this@AboutActivity)
+                    true
+                }
             }
             rowVip.setOnClickListener {
                 startActivity(android.content.Intent(this@AboutActivity, VipManagementActivity::class.java))

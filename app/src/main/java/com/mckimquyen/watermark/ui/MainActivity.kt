@@ -645,6 +645,7 @@ class MainActivity : BaseActivity() {
             } else {
                 toast(it.message)
                 if (it.code == MainViewModel.TYPE_JOB_FINISH) {
+                    showInterstitialRunnable?.let { r -> launchView.removeCallbacks(r) }
                     val runnable = Runnable {
                         AdManager.showInterstitial(this@MainActivity) {}
                     }

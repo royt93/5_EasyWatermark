@@ -57,6 +57,28 @@ class MainActivityInterstitialRoboTest {
     }
 
     @Test
+    fun `second job finish replaces pending runnable instead of stacking callbacks`() {
+        val controller = Robolectric.buildActivity(MainActivity::class.java)
+        val activity = controller.create().start().get()
+        val viewModel = activity.viewModelField()
+        val launchView = activity.launchViewField()
+
+        viewModel.saveResult.value = Result.success(code = MainViewModel.TYPE_JOB_FINISH, data = null)
+        val first = activity.showInterstitialRunnableField()
+        viewModel.saveResult.value = Result.success(code = MainViewModel.TYPE_JOB_FINISH, data = null)
+        val second = activity.showInterstitialRunnableField()
+
+        assertThat(first).isNotNull()
+        assertThat(second).isNotNull()
+        assertThat(second).isNotSameInstanceAs(first)
+        val pending = launchView.pendingRunnables()
+        assertThat(pending).contains(second)
+        assertThat(pending).doesNotContain(first)
+
+        controller.destroy()
+    }
+
+    @Test
     fun `job finish schedules runnable, onDestroy removes it before it fires`() {
         val controller = Robolectric.buildActivity(MainActivity::class.java)
         // Không gọi resume()/visible(): BaseActivity.onResume() → enableAdaptiveRefreshRate() gọi

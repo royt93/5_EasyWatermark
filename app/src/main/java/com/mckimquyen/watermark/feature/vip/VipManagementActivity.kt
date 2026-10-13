@@ -16,6 +16,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mckimquyen.watermark.BaseActivity
@@ -25,6 +28,9 @@ import com.mckimquyen.watermark.databinding.ActivityVipManagementBinding
 import com.mckimquyen.watermark.utils.ktx.applyConsistentIconTint
 import com.mckimquyen.watermark.utils.ktx.toast
 import com.roy.sdkadbmob.AdManager
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
@@ -40,6 +46,7 @@ class VipManagementActivity : BaseActivity() {
     private var countDownTimer: CountDownTimer? = null
     private var pulseAnimator: ObjectAnimator? = null
     private var countUpAnimator: ValueAnimator? = null
+    private var pendingTimeoutJob: Job? = null
     private var lastShownMinute: Long = -1L
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +56,7 @@ class VipManagementActivity : BaseActivity() {
         applyInsets()
         setupView()
         refreshVipState()
+        observePendingToken()
         AdManager.loadRewarded(this)
     }
 
@@ -57,6 +65,70 @@ class VipManagementActivity : BaseActivity() {
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             root.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             insets
+        }
+    }
+
+    private fun observePendingToken() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                VipTokenPendingState.state.collect { state ->
+                    when (state) {
+                        is VipTokenPendingState.State.Resolved -> handlePendingResult(state.activated)
+                        else -> renderPendingState(state)
+                    }
+                }
+            }
+        }
+        syncPendingStateFromSdk()
+    }
+
+    private fun syncPendingStateFromSdk() {
+        if (AdManager.isVipTokenPending) VipTokenPendingState.begin()
+        refreshVipState()
+    }
+
+    private fun isPendingToken(): Boolean = VipTokenPendingState.state.value is VipTokenPendingState.State.Pending
+
+    private fun renderPendingState(state: VipTokenPendingState.State) {
+        val pending = state as? VipTokenPendingState.State.Pending
+        // Pending chỉ khóa luồng TOKEN (SDK có 1 slot); ô nhập vẫn mở để dùng mã thẻ legacy.
+        binding.edtVipKey.isEnabled = true
+        binding.btnRedeemKey.isEnabled = !binding.edtVipKey.text.isNullOrBlank()
+        binding.tvVipPendingStatus.isVisible = pending != null
+        binding.tvVipPendingStatus.text = when {
+            pending == null -> null
+            pending.timedOut -> getString(R.string.vip_token_pending_timeout)
+            else -> getString(R.string.vip_token_pending)
+        }
+        binding.tvVipPendingStatus.contentDescription = binding.tvVipPendingStatus.text
+        if (pending == null) {
+            pendingTimeoutJob?.cancel()
+            pendingTimeoutJob = null
+            return
+        }
+        if (pendingTimeoutJob == null) {
+            val elapsed = android.os.SystemClock.elapsedRealtime() - pending.startedAtElapsedRealtime
+            val remaining = (PENDING_UI_TIMEOUT_MS - elapsed).coerceAtLeast(0L)
+            pendingTimeoutJob = lifecycleScope.launch {
+                delay(remaining)
+                VipTokenPendingState.timeout()
+            }
+        }
+    }
+
+    private fun handlePendingResult(activated: Boolean) {
+        // Prefs đã được VipTokenResultListener ghi lúc SDK resolve. Màn đang đóng thì giữ Resolved để lần mở
+        // sau còn hiện dialog (kể cả thành công), không tiêu thụ ở đây.
+        if (isFinishing || isDestroyed) return
+        VipTokenPendingState.consumeResolved()
+        refreshVipState()
+        renderPendingState(VipTokenPendingState.State.Idle)
+        if (activated) {
+            binding.edtVipKey.text?.clear()
+            celebrate()
+            showResultDialog(R.string.vip_success_title, getString(R.string.vip_token_activated))
+        } else {
+            showResultDialog(R.string.vip_failed_title, getString(R.string.vip_key_invalid))
         }
     }
 
@@ -84,14 +156,15 @@ class VipManagementActivity : BaseActivity() {
         val input = binding.edtVipKey.text?.toString().orEmpty().trim()
         if (input.isEmpty()) return
 
-        val legacyDays = VipKeys.durationDaysFor(input)
-        val activated = if (legacyDays != null) {
-            // Nhánh 1: mã thẻ cào cứng (legacy). SDK sẽ tự cross-check với `AdSdkConfig.vipRedeemCodes`
-            // nên số `legacyDays` ở đây chỉ mang tính hình thức, nhưng vẫn phải truyền.
-            AdManager.activateVipByKey(this, input, legacyDays)
-        } else {
-            // Nhánh 2: Token mã hoá (ECDSA).
-            AdManager.activateVipByToken(this, input)
+        val inputType = VipKeys.classifyInput(input)
+        // Slot token của SDK chỉ có 1 chỗ: chặn gửi token thứ hai khi đang pending/resolving, nhưng KHÔNG chặn mã legacy.
+        if (inputType is VipKeys.InputType.Token && (isPendingToken() || AdManager.isVipTokenResolutionInFlight)) {
+            toast(R.string.vip_token_pending)
+            return
+        }
+        val activated = when (inputType) {
+            is VipKeys.InputType.Legacy -> AdManager.activateVipByKey(this, input, inputType.days)
+            VipKeys.InputType.Token -> AdManager.activateVipByToken(this, input)
         }
 
         if (activated) {
@@ -99,12 +172,15 @@ class VipManagementActivity : BaseActivity() {
             binding.edtVipKey.text?.clear()
             celebrate()
             refreshVipState()
-            val msg = if (legacyDays != null) {
-                getString(R.string.vip_key_activated, legacyDays)
-            } else {
-                getString(R.string.vip_token_activated)
+            val msg = when (inputType) {
+                is VipKeys.InputType.Legacy -> getString(R.string.vip_key_activated, inputType.days)
+                VipKeys.InputType.Token -> getString(R.string.vip_token_activated)
             }
             showResultDialog(R.string.vip_success_title, msg)
+        } else if (inputType is VipKeys.InputType.Token &&
+            (AdManager.isVipTokenPending || AdManager.isVipTokenResolutionInFlight)
+        ) {
+            VipTokenPendingState.begin()
         } else {
             showResultDialog(R.string.vip_failed_title, getString(R.string.vip_key_invalid))
         }
@@ -361,6 +437,7 @@ class VipManagementActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        syncPendingStateFromSdk()
         binding.shimmerCrown.startShimmer()
         binding.shimmerWatch.startShimmer()
         startPulse()
@@ -377,6 +454,8 @@ class VipManagementActivity : BaseActivity() {
 
     override fun onDestroy() {
         stopCountdown()
+        pendingTimeoutJob?.cancel()
+        pendingTimeoutJob = null
         stopPulse()
         countUpAnimator?.cancel()
         countUpAnimator = null
@@ -384,6 +463,7 @@ class VipManagementActivity : BaseActivity() {
     }
 
     companion object {
+        private const val PENDING_UI_TIMEOUT_MS = 30_000L
         private const val REWARDED_VIP_DAYS = 3
         private const val DAY_MS = 86_400_000L
     }

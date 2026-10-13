@@ -30,6 +30,9 @@
     <string name="vip_redeem_button">Активировать VIP</string>
     <string name="vip_key_invalid">Неверный VIP-ключ</string>
     <string name="vip_key_activated">VIP активирован на %1$d дн.</string>
+    <string name="vip_token_activated">VIP-статус успешно активирован</string>
+    <string name="vip_token_pending">Проверка VIP-токена…</string>
+    <string name="vip_token_pending_timeout">Проверка всё ещё идёт. Не закрывайте этот экран, оставайтесь на связи и не вводите другой код.</string>
     <string name="vip_reward_title">Получить VIP на 3 дня</string>
     <string name="vip_reward_desc">Посмотрите одну рекламу с вознаграждением, чтобы активировать VIP-пропуск на 3 дня.</string>
     <string name="vip_watch_rewarded">Смотреть рекламу — VIP на 3 дня</string>

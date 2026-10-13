@@ -246,6 +246,8 @@
     <string name="vip_key_invalid">Invalid VIP key</string>
     <string name="vip_key_activated">VIP activated for %1$d days</string>
     <string name="vip_token_activated">VIP activated successfully</string>
+    <string name="vip_token_pending">Verifying VIP token…</string>
+    <string name="vip_token_pending_timeout">Still verifying. Keep this screen open and stay connected; do not enter another code.</string>
     <string name="vip_reward_title">Get 3 days VIP</string>
     <string name="vip_reward_desc">Watch one rewarded ad to activate a 3-day VIP pass.</string>
     <string name="vip_watch_rewarded">Watch ad for 3 days VIP</string>

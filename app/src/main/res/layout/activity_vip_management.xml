@@ -184,6 +184,16 @@
                         android:textColorHint="?attr/colorOnSurfaceVariant" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <TextView
+                    android:id="@+id/tvVipPendingStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:accessibilityLiveRegion="polite"
+                    android:textAppearance="@style/TextAppearance.App.Body14Variant"
+                    android:visibility="gone"
+                    tools:text="Verifying VIP token…" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRedeemKey"
                     style="@style/Widget.Material3.Button.FilledButton"
