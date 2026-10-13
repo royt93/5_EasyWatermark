@@ -32,6 +32,9 @@ class PhotoPreviewItem : ViewGroup {
 
     private var isLongPress = false
 
+    /** BUG-81: tăng mỗi lần recycle; end action của animator xoá thuộc epoch cũ thì bị bỏ qua. */
+    private var removeEpoch = 0
+
     val ivIcon: ImageView by lazy {
         ImageView(context).apply {
             id = View.generateViewId()
@@ -82,6 +85,7 @@ class PhotoPreviewItem : ViewGroup {
                             }
                             if (isLongPress && view.translationY <= ivDel.top.toFloat()) {
                                 isRemoved = true
+                                val epochAtStart = removeEpoch
                                 view.animate()
                                     .alpha(0f)
                                     .translationX(0f)
@@ -91,6 +95,8 @@ class PhotoPreviewItem : ViewGroup {
                                         ivDel.animate().alpha(0f).setDuration(200L).start()
                                     }
                                     .withEndAction {
+                                        // BUG-81: cancel() vẫn chạy end action — holder đã recycle thì không bắn onRemove.
+                                        if (epochAtStart != removeEpoch) return@withEndAction
                                         view.apply {
                                             translationY = 0f
                                             translationX = 0f
@@ -150,6 +156,25 @@ class PhotoPreviewItem : ViewGroup {
             setBackgroundResource(R.drawable.bg_removed_photo_list)
             setImageResource(R.drawable.ic_remove_item)
         }
+    }
+
+    /**
+     * BUG-81: gọi khi ViewHolder bị recycle — huỷ animator kéo-xoá đang chạy (kèm `withEndAction { onRemove }`) và
+     * trả view về trạng thái gốc, để holder tái dùng cho item khác không thừa hưởng alpha/translation/long-press cũ.
+     */
+    fun resetForRecycle() {
+        removeEpoch++
+        ivIcon.animate().cancel()
+        ivDel.animate().cancel()
+        isLongPress = false
+        ivIcon.apply {
+            alpha = 1f
+            translationX = 0f
+            translationY = 0f
+            translationZ = 0f
+        }
+        ivDel.alpha = 0f
+        (parent as? ViewGroup)?.translationZ = 0f
     }
 
     init {

@@ -102,6 +102,12 @@ class PhotoListPreviewAdapter(
         }
     }
 
+    override fun onViewRecycled(holder: ImageHolder) {
+        super.onViewRecycled(holder)
+        // BUG-81: huỷ animator kéo-xoá dở dang, tránh onRemove bắn vào item mới của holder tái dùng.
+        (holder.itemView as? PhotoPreviewItem)?.resetForRecycle()
+    }
+
     override fun getItemCount(): Int {
         return differ.currentList.count()
     }
