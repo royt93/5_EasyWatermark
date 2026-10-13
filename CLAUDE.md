@@ -39,7 +39,8 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
   - `uiautomator dump` có thể trả root null khi máy có accessibility service bên thứ ba; kiểm a11y bằng `AccessibilityNodeInfo` trong instrumentation.
   - Tool MCP screenshot bám serial cũ; khi đổi máy dùng `adb -s <serial> exec-out screencap -p`.
   - `ViewPropertyAnimator.cancel()` vẫn chạy `withEndAction` → cần epoch guard; Robolectric hoàn tất animator trong 1 tick nên không test được giữa chừng.
-  - `testReleaseUnitTest` không biên dịch (pre-existing: `VipTokenSmokeActivityRoboTest` chỉ debug nằm trong source set dùng chung).
+  - Test phụ thuộc class chỉ có ở `app/src/debug` (`VipTokenSmoke*`) phải nằm ở `app/src/testDebug`, không phải `app/src/test` — nếu không `testReleaseUnitTest` không biên dịch.
+  - `MainActivityColorPaletteAnimatorRoboTest > onDestroy cancel ...` flaky (~50% fail, cả debug lẫn release, assert `isStarted` ngay sau `toColor`); chạy lại là qua, chưa tìm ra gốc.
 - CI (`.github/workflows/pr_pre_check.yml`): PR vào `master`/`dev` chỉ chạy `assembleDebug` (JDK 17) — không chạy test/lint/ktlint, nên tự chạy local trước khi push.
 - 2 module benchmark (`baseBenchmarks`, `macrobenchmark`) vẫn bị comment trong `settings.gradle.kts` — chưa dùng được.
 - **Secret gom 1 file**: `myKeyStore/com.mckimquyen.watermark/app.properties` (repo private `royt93/myKeyStore`, env `WATERMARK_PRIVATE_CONFIG_DIR` hoặc fallback `~/AndroidStudioProjects/@mckimquyen/myKeyStore/...`) — keystore, ad ID release, AppLovin key, VIP secret, `ADMOB_TEST_DEVICE_IDS`. Release thiếu key → build fail. Hash máy test áp cả debug+release, chỉ thêm không xoá. KHÔNG đưa secret vào repo này.
@@ -49,7 +50,6 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
 - **Version catalog được khai báo inline trong `settings.gradle.kts`** (khối `dependencyResolutionManagement { versionCatalogs { create("libs") {...} } }`), **không phải** `gradle/libs.versions.toml`. Thêm/sửa thư viện ở đây.
 - `buildSrc/` chỉ có `build.gradle.kts` (plugin `kotlin-dsl`), không còn file Kotlin nguồn nào — `Apps`/`Dependencies` dead object đã xoá (ENH-25), `compileSdk` mọi module đọc trực tiếp giá trị số (37).
 - App phụ thuộc nhiều bản vá `resolutionStrategy.force(...)` trong `app/build.gradle.kts` để khóa version (coroutines-android/core, core-ktx, core, kotlin-stdlib) — cẩn trọng khi nâng cấp.
-- `app/build.gradle.kts` có 2 khối `compileOptions` (khối đầu set `VERSION_11`, khối sau set `VERSION_17`) — khối sau ghi đè, hiệu lực thật là JVM 17. Đây là artifact còn sót lại trong file, không phải bug cần fix ngay.
 - Dùng **kapt** cho Hilt / Room / Glide compiler.
 
 ## Module
@@ -60,7 +60,7 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
 ## Kiến trúc
 
 ### Luồng chính & màn hình
-- `MyApplication` (`@HiltAndroidApp`) — khởi tạo Ad SDK; giữ static `instance` (đã ghi nhận là điểm cần dọn, xem `doc/todo.md`).
+- `MyApplication` (`@HiltAndroidApp`) — khởi tạo Ad SDK; không còn static `instance` (context truyền qua `@ApplicationContext`), chỉ còn `applicationScope` và `recoveryMode` trong companion.
 - `SplashActivity` → `MainActivity` (single editor) là trung tâm. Còn có `SignatureActivity`, `AboutActivity`, `OpenSourceActivity`.
 - `MainActivity` nhận cả intent `ACTION_SEND` (chia sẻ ảnh từ app khác).
 - UI điều hướng/đổi trạng thái qua sealed class `ui/UiState.kt` (`GoEdit`, `GoTemplate`, `UseTemplate`...), không dùng Navigation Component. View tùy biến `LaunchView`/`LaunchViewListener` chuyển giữa màn launch và editor.
