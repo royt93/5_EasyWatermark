@@ -59,9 +59,6 @@ riêng cần thiết kế, không phải lint nông — xem IDEA-19. -->
         android:theme="@style/Theme.MyApp"
         android:enableOnBackInvokedCallback="true"
         tools:ignore="LockedOrientationActivity,DiscouragedApi">
-        <profileable
-            android:shell="true"
-            tools:targetApi="29" />
         <!-- Khai báo AdMob App ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
