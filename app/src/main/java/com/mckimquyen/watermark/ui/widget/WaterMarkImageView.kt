@@ -389,6 +389,11 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                             }
                             // BUG-73: value mới đã retain trong decode; nhận quyền sở hữu rồi release cũ.
                             val newIconBitmapValue = iconBitmapRect.data!!
+                            // BUG-79: BitmapValue.bitmap nullable — trả ref đã retain rồi bỏ, không để NPE ở shader.
+                            if (newIconBitmapValue.bitmap == null) {
+                                newIconBitmapValue.release()
+                                return@launch
+                            }
                             iconBitmapValue?.release()
                             iconBitmapValue = newIconBitmapValue
                             iconBitmap = newIconBitmapValue.bitmap
@@ -396,11 +401,13 @@ class WaterMarkImageView : androidx.appcompat.widget.AppCompatImageView, Corouti
                         } else {
                             AppLog.d(LOG_TAG) { "[WMIV] Image mode: reusing cached iconBitmap" }
                         }
+                        // BUG-79: iconBitmap có thể null (reset() chạy giữa chừng) — không dùng `!!`.
+                        val iconSrc = iconBitmap ?: return@launch
                         localIconUri = newConfig.iconUri
                         layoutPaint.shader = null
                         buildIconBitmapShader(
                             imageInfo = curImageInfo,
-                            srcBitmap = iconBitmap!!,
+                            srcBitmap = iconSrc,
                             config = newConfig,
                             textPaint = textPaint,
                             scale = false,
