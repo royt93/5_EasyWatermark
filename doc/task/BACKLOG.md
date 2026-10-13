@@ -27,7 +27,7 @@
 | [BUG-54](todo/BUG-54-keystore-vip-ma-lo-trong-git-history-cong-khai.md) | P0 | M | Keystore + mật khẩu + 2 mã VIP lộ vĩnh viễn trong git history public — **chờ rotate, xem checklist trong ticket** |
 | [BUG-83](done/BUG-83-auto-backup-lo-recipient-db-va-chu-ky-tay.md) | P1 | XS | Auto Backup đẩy `recipient-db` (PII bên thứ ba) + chữ ký tay lên cloud/device-transfer — **skipped theo quyết định sản phẩm 2026-10-14, giữ nguyên Auto Backup** |
 | [BUG-84](done/BUG-84-filmstrip-anh-thieu-contentdescription-talkback.md) | P2 | S | Filmstrip ảnh `rvPhotoList` thiếu `contentDescription`/click accessibility cho TalkBack (re-audit 2026-10-14) |
-| [BUG-85](todo/BUG-85-verify-anh-lon-oom-bao-sai-khong-co-watermark.md) | P2 | S | Kiểm tra chứng thực ảnh 48MP+ OOM nhưng UI báo như "không có watermark" (âm tính giả, re-audit 2026-10-14) |
+| [BUG-85](done/BUG-85-verify-anh-lon-oom-bao-sai-khong-co-watermark.md) | P2 | S | Kiểm tra chứng thực ảnh 48MP+ OOM nhưng UI báo như "không có watermark" (âm tính giả, re-audit 2026-10-14) |
 | [BUG-82](done/BUG-82-progressimageview-cancel-animator-on-detach.md) | P2 | XS | `ProgressImageView` không huỷ `ObjectAnimator` khi detach (R5 audit 2026-10-14) |
 | [BUG-79](done/BUG-79-waterMarkimageview-iconbitmap-npe-khi-bitmap-null.md) | P0 | XS | `WaterMarkImageView` `iconBitmap!!` NPE khi `BitmapValue.bitmap` null (re-audit 2026-10-13) |
 | [BUG-80](done/BUG-80-widget-force-unwrap-khong-guard-nullable.md) | P1 | S | Cụm `!!` không guard ở UniformScrollGridLayoutManager/SignatureView/SelectableImageView/CircleImageView (re-audit 2026-10-13) |

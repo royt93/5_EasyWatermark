@@ -302,6 +302,7 @@
     <string name="icon_quick_pick_open_gallery">Scegli un\'altra</string>
     <string name="icon_quick_pick_title">Icone usate di recente</string>
     <string name="invisible_watermark_absent">Nessun watermark invisibile trovato.</string>
+    <string name="invisible_watermark_too_large">L\'immagine è troppo grande per verificare il watermark invisibile. Questo NON significa che non ci sia alcun watermark.</string>
     <string name="invisible_watermark_confidence">Affidabilità lettura: %1$d%%</string>
     <string name="invisible_watermark_desc">Incorpora un marchio del proprietario direttamente nei pixel. Resiste alla ricompressione e alla rimozione dei dati EXIF da parte dei social network. Aggiunge alcuni secondi per foto.</string>
     <string name="invisible_watermark_found">Watermark invisibile: %1$s</string>

@@ -307,6 +307,7 @@
     <string name="icon_quick_pick_open_gallery">Andere wählen</string>
     <string name="icon_quick_pick_title">Zuletzt verwendete Symbole</string>
     <string name="invisible_watermark_absent">Kein unsichtbares Wasserzeichen gefunden.</string>
+    <string name="invisible_watermark_too_large">Das Bild ist zu groß, um das unsichtbare Wasserzeichen zu prüfen. Das bedeutet NICHT, dass kein Wasserzeichen vorhanden ist.</string>
     <string name="invisible_watermark_confidence">Leseverlässlichkeit: %1$d%%</string>
     <string name="invisible_watermark_desc">Bettet eine Eigentümermarkierung direkt in die Pixel ein. Überlebt erneute Komprimierung und das Entfernen von EXIF-Daten durch soziale Plattformen. Fügt pro Foto ein paar Sekunden hinzu.</string>
     <string name="invisible_watermark_found">Unsichtbares Wasserzeichen: %1$s</string>

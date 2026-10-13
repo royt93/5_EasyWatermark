@@ -304,6 +304,7 @@
     <string name="icon_quick_pick_open_gallery">Choisir une autre</string>
     <string name="icon_quick_pick_title">Icônes récemment utilisées</string>
     <string name="invisible_watermark_absent">Aucun filigrane invisible trouvé.</string>
+    <string name="invisible_watermark_too_large">L\'image est trop grande pour vérifier le filigrane invisible. Cela ne signifie PAS qu\'aucun filigrane n\'est présent.</string>
     <string name="invisible_watermark_confidence">Confiance de lecture : %1$d%%</string>
     <string name="invisible_watermark_desc">Intègre une marque de propriétaire directement dans les pixels. Résiste à la recompression et à la suppression des données EXIF par les réseaux sociaux. Ajoute quelques secondes par photo.</string>
     <string name="invisible_watermark_found">Filigrane invisible : %1$s</string>

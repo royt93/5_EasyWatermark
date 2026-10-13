@@ -438,6 +438,7 @@
     <string name="invisible_watermark_owner_match">Matches the owner name currently set.</string>
     <string name="invisible_watermark_confidence">Read confidence: %1$d%%</string>
     <string name="invisible_watermark_absent">No invisible watermark found.</string>
+    <string name="invisible_watermark_too_large">Image is too large to check for the invisible watermark. This is NOT the same as "no watermark found".</string>
     <!-- IDEA-09: watermark survivability preview -->
     <string name="survivability_entry">Survivability check</string>
     <string name="survivability_title">After sharing on social media</string>

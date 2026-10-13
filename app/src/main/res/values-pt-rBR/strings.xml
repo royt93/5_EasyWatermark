@@ -302,6 +302,7 @@
     <string name="icon_quick_pick_open_gallery">Escolher outro</string>
     <string name="icon_quick_pick_title">Ícones usados recentemente</string>
     <string name="invisible_watermark_absent">Nenhuma marca d\'água invisível encontrada.</string>
+    <string name="invisible_watermark_too_large">A imagem é grande demais para verificar a marca d\'água invisível. Isso NÃO significa que não haja marca d\'água.</string>
     <string name="invisible_watermark_confidence">Confiança da leitura: %1$d%%</string>
     <string name="invisible_watermark_desc">Incorpora uma marca do proprietário nos próprios pixels. Sobrevive à recompressão e à remoção de EXIF pelas redes sociais. Adiciona alguns segundos por foto.</string>
     <string name="invisible_watermark_found">Marca d\'água invisível: %1$s</string>

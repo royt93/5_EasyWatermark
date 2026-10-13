@@ -110,7 +110,9 @@ class AboutActivity : BaseActivity() {
                 }
                 add(getString(R.string.invisible_watermark_confidence, (hidden.confidence * 100).toInt()))
             }.joinToString("\n")
-        } ?: getString(R.string.invisible_watermark_absent)
+        } ?: getString(
+            if (report.hiddenTooLarge) R.string.invisible_watermark_too_large else R.string.invisible_watermark_absent
+        )
 
         // IDEA-10: dấu vân tay truy được người nhận → đặt LÊN ĐẦU, đây là thông tin quan trọng nhất
         // của cả màn hình khi ảnh bị rò rỉ.

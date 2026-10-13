@@ -301,6 +301,7 @@
     <string name="icon_quick_pick_open_gallery">Velg et annet</string>
     <string name="icon_quick_pick_title">Nylig brukte ikoner</string>
     <string name="invisible_watermark_absent">Fant ikke noe usynlig vannmerke.</string>
+    <string name="invisible_watermark_too_large">Bildet er for stort til å sjekke det usynlige vannmerket. Det betyr IKKE at det mangler vannmerke.</string>
     <string name="invisible_watermark_confidence">Lesesikkerhet: %1$d %%</string>
     <string name="invisible_watermark_desc">Legger et eiermerke inn i selve pikslene. Overlever ny komprimering og at sosiale plattformer fjerner EXIF. Legger til noen sekunder per bilde.</string>
     <string name="invisible_watermark_found">Usynlig vannmerke: %1$s</string>

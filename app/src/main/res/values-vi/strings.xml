@@ -405,6 +405,7 @@
     <string name="invisible_watermark_owner_match">Khớp với tên chủ sở hữu đang đặt.</string>
     <string name="invisible_watermark_confidence">Độ tin cậy khi đọc: %1$d%%</string>
     <string name="invisible_watermark_absent">Không tìm thấy watermark vô hình.</string>
+    <string name="invisible_watermark_too_large">Ảnh quá lớn để kiểm tra watermark vô hình. Điều này KHÔNG có nghĩa là "không có watermark".</string>
     <!-- IDEA-09: watermark survivability preview -->
     <string name="survivability_entry">Kiểm tra độ sống sót</string>
     <string name="survivability_title">Sau khi chia sẻ lên mạng xã hội</string>

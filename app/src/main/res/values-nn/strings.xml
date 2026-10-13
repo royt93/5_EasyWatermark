@@ -297,6 +297,7 @@
     <string name="icon_quick_pick_open_gallery">Vel eit annat</string>
     <string name="icon_quick_pick_title">Nyleg brukte ikon</string>
     <string name="invisible_watermark_absent">Fann ikkje noko usynleg vassmerke.</string>
+    <string name="invisible_watermark_too_large">Bildet er for stort til å sjekke det usynlege vassmerket. Det tyder IKKJE at det manglar vassmerke.</string>
     <string name="invisible_watermark_confidence">Lesesikkerheit: %1$d %%</string>
     <string name="invisible_watermark_desc">Legg eit eigarmerke inn i sjølve pikslane. Overlever ny komprimering og at sosiale plattformer fjernar EXIF. Legg til nokre sekund per bilete.</string>
     <string name="invisible_watermark_found">Usynleg vassmerke: %1$s</string>

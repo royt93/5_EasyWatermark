@@ -112,4 +112,46 @@ class HiddenWatermarkReaderIntegrationTest {
             assertThat(resultB?.ownerId).isEqualTo(StegoPayload.ownerIdOf("Chu B"))
         }
     }
+
+    /**
+     * BUG-85: ảnh THẬT trên đĩa vượt ngân sách heap phải trả `TooLarge`, KHÔNG phải `NotFound`. Ép bằng cách
+     * truyền heap giả rất nhỏ thay vì tạo ảnh 100MP thật (sẽ OOM chính test runner).
+     */
+    @Test
+    fun anhVuotNganSachHeap_traVeTooLarge_khongBaoNhamLaSach() {
+        val stamped = InvisibleWatermark.embed(texturedBitmap(), StegoPayload.ownerIdOf("Roy Studio"))!!
+        val uri = writeToUri(stamped)
+        stamped.recycle()
+
+        val outcome = HiddenWatermarkReader.readOutcome(contentResolver, uri, maxMemoryBytes = TINY_HEAP_BYTES)
+
+        assertThat(outcome).isEqualTo(HiddenWatermarkReader.Outcome.TooLarge)
+        assertThat(HiddenWatermarkReader.read(contentResolver, uri)).isNotNull()
+    }
+
+    @Test
+    fun anhVuaNganSach_vanDocDuocWatermark() {
+        val stamped = InvisibleWatermark.embed(texturedBitmap(), StegoPayload.ownerIdOf("Roy Studio"))!!
+        val uri = writeToUri(stamped)
+        stamped.recycle()
+
+        val outcome = HiddenWatermarkReader.readOutcome(contentResolver, uri)
+
+        assertThat(outcome).isInstanceOf(HiddenWatermarkReader.Outcome.Found::class.java)
+    }
+
+    @Test
+    fun fileKhongPhaiAnh_traVeNotFound_khongPhaiTooLarge() {
+        val file = File.createTempFile("not_an_image", ".bin", context.cacheDir).apply { writeBytes(ByteArray(64)) }
+        tempFiles += file
+
+        val outcome = HiddenWatermarkReader.readOutcome(contentResolver, Uri.fromFile(file))
+
+        assertThat(outcome).isEqualTo(HiddenWatermarkReader.Outcome.NotFound)
+    }
+
+    private companion object {
+        /** Đủ nhỏ để mọi ảnh test đều vượt ngân sách, nhưng > 0 để guard không coi là kích thước hỏng. */
+        const val TINY_HEAP_BYTES = 1_024L
+    }
 }

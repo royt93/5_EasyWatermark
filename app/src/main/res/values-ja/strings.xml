@@ -303,6 +303,7 @@
     <string name="icon_quick_pick_open_gallery">他を選択</string>
     <string name="icon_quick_pick_title">最近使用したアイコン</string>
     <string name="invisible_watermark_absent">不可視ウォーターマークは見つかりませんでした。</string>
+    <string name="invisible_watermark_too_large">画像が大きすぎるため、不可視ウォーターマークを確認できません。ウォーターマークが無いという意味ではありません。</string>
     <string name="invisible_watermark_confidence">読み取り信頼度：%1$d%%</string>
     <string name="invisible_watermark_desc">ピクセル自体に所有者マークを埋め込みます。再圧縮やSNSによるEXIF削除にも耐えます。1枚あたり数秒追加でかかります。</string>
     <string name="invisible_watermark_found">不可視ウォーターマーク：%1$s</string>

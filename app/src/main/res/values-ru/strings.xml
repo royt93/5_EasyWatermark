@@ -251,6 +251,7 @@
     <string name="icon_quick_pick_open_gallery">Выбрать другой</string>
     <string name="icon_quick_pick_title">Недавно использованные значки</string>
     <string name="invisible_watermark_absent">Невидимый водяной знак не найден.</string>
+    <string name="invisible_watermark_too_large">Изображение слишком большое для проверки невидимого водяного знака. Это НЕ означает, что водяного знака нет.</string>
     <string name="invisible_watermark_confidence">Достоверность распознавания: %1$d%%</string>
     <string name="invisible_watermark_desc">Встраивает метку владельца прямо в пиксели. Сохраняется при повторном сжатии и удалении EXIF соцсетями. Добавляет несколько секунд на фото.</string>
     <string name="invisible_watermark_found">Невидимый водяной знак: %1$s</string>

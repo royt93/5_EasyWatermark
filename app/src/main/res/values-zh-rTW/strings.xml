@@ -304,6 +304,7 @@
     <string name="icon_quick_pick_open_gallery">選擇其他</string>
     <string name="icon_quick_pick_title">最近使用的圖示</string>
     <string name="invisible_watermark_absent">未偵測到隱形浮水印。</string>
+    <string name="invisible_watermark_too_large">圖片過大，無法檢查隱形浮水印。這並不表示沒有浮水印。</string>
     <string name="invisible_watermark_confidence">讀取信賴度：%1$d%%</string>
     <string name="invisible_watermark_desc">將擁有者標記嵌入像素本身，即使重新壓縮或社群平台清除 EXIF 也能保留，每張照片會增加數秒處理時間。</string>
     <string name="invisible_watermark_found">隱形浮水印：%1$s</string>

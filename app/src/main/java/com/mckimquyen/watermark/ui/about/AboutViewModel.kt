@@ -78,11 +78,12 @@ class AboutViewModel @Inject constructor(
             val stampResult = withContext(Dispatchers.IO) {
                 AuthenticityVerifier.verify(contentResolver, srcUri)
             }
-            val hiddenResult = withContext(Dispatchers.IO) {
+            val hiddenOutcome = withContext(Dispatchers.IO) {
                 // IDEA-02: đọc song song, KHÔNG phụ thuộc kết quả EXIF ở trên — ca đáng giá nhất
                 // chính là EXIF đã bị nền tảng xoá sạch mà lớp ẩn trong pixel vẫn còn.
-                HiddenWatermarkReader.read(contentResolver, srcUri)
+                HiddenWatermarkReader.readOutcome(contentResolver, srcUri)
             }
+            val hiddenResult = (hiddenOutcome as? HiddenWatermarkReader.Outcome.Found)?.result
             // IDEA-10: dấu vân tay người nhận — chỉ tra khi ownerId lớp ẩn KHÔNG khớp chính chủ,
             // vì ảnh của chính mình (không gắn recipient) không phải trường hợp rò rỉ.
             val leaked = resolveLeakedRecipient(stampResult, hiddenResult, currentOwner)
@@ -91,7 +92,8 @@ class AboutViewModel @Inject constructor(
                     stamp = stampResult,
                     hidden = hiddenResult,
                     currentOwner = currentOwner,
-                    leakedRecipient = leaked
+                    leakedRecipient = leaked,
+                    hiddenTooLarge = hiddenOutcome is HiddenWatermarkReader.Outcome.TooLarge
                 )
             )
         }
@@ -127,6 +129,8 @@ class AboutViewModel @Inject constructor(
         /** Tên chủ sở hữu đang đặt trong cấu hình export — để đối chiếu với ID trong lớp ẩn. */
         val currentOwner: String = "",
         /** IDEA-10: người nhận khớp dấu vân tay — khác null nghĩa là truy được nguồn rò rỉ. */
-        val leakedRecipient: Recipient? = null
+        val leakedRecipient: Recipient? = null,
+        /** BUG-85: ảnh quá lớn để đọc lớp ẩn — KHÔNG đồng nghĩa "không có watermark". */
+        val hiddenTooLarge: Boolean = false
     )
 }

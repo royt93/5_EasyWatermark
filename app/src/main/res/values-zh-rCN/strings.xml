@@ -307,6 +307,7 @@
     <string name="icon_quick_pick_open_gallery">选择其他</string>
     <string name="icon_quick_pick_title">最近使用的图标</string>
     <string name="invisible_watermark_absent">未发现隐形水印。</string>
+    <string name="invisible_watermark_too_large">图片过大，无法检查隐形水印。这并不表示没有水印。</string>
     <string name="invisible_watermark_confidence">读取可信度：%1$d%%</string>
     <string name="invisible_watermark_desc">将所有者标记嵌入像素本身，能在重新压缩及社交平台清除 EXIF 后依然保留，每张照片会增加几秒处理时间。</string>
     <string name="invisible_watermark_found">隐形水印：%1$s</string>
