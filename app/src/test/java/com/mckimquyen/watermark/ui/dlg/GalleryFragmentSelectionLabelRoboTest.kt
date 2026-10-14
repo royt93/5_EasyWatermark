@@ -9,6 +9,7 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.material.color.MaterialColors
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.data.repo.MemorySettingRepo
 import com.mckimquyen.watermark.data.repo.TemplateRepository
@@ -90,6 +91,9 @@ class GalleryFragmentSelectionLabelRoboTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertThat(fragment.binding.fab.text.toString()).isEqualTo("Select 1 photo")
+        assertThat(fragment.binding.fab.currentTextColor).isEqualTo(
+            MaterialColors.getColor(fragment.binding.fab, com.google.android.material.R.attr.colorOnPrimary)
+        )
         assertThat(fragment.binding.tvSelectionHint?.text.toString()).isEqualTo("1 selected photo")
     }
 

@@ -148,6 +148,7 @@
         android:contentDescription="@string/action_pick"
         app:backgroundTint="?attr/colorPrimary"
         android:textAppearance="@style/TextAppearance.App.Label16OnPrimaryBold"
+        android:textColor="?attr/colorOnPrimary"
         app:cornerRadius="28dp"
         app:elevation="6dp"
         app:icon="@drawable/ic_check"
