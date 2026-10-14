@@ -91,6 +91,24 @@ class InvisibleWatermarkRoboTest {
     // try/catch fallback (false-negative, không phát hiện được lỗi thật). Bằng chứng thật nằm ở
     // `InvisibleWatermarkIntegrationTest#colorSpaceLutBased...` (androidTest, chạy trên Skia thật).
 
+    /**
+     * ENH-38 regression: đúng 1 vòng payload làm [StegoCodec] báo confidence=1.0 kể cả ảnh sạch.
+     * Confidence không phải tuyến phòng thủ ở cỡ này; [StegoPayload] MAGIC+CRC mới phải từ chối nhiễu.
+     */
+    @Test
+    fun `anh 64x64 sach co confidence mot nhung extract tu choi nhieu bang MAGIC va CRC`() {
+        val source = texturedBitmap(colorSpace = null)
+        val pixels = IntArray(source.width * source.height)
+        source.getPixels(pixels, 0, source.width, 0, 0, source.width, source.height)
+
+        val decoded = StegoCodec.decode(pixels, source.width, source.height, StegoPayload.TOTAL_BITS)
+
+        assertThat(decoded).isNotNull()
+        assertThat(decoded!!.rounds).isEqualTo(1)
+        assertThat(decoded.confidence).isEqualTo(1.0)
+        assertThat(InvisibleWatermark.extract(source)).isNull()
+    }
+
     @Config(sdk = [24])
     @Test
     fun `API duoi 26 - khong co overload ColorSpace, hanh vi cu giu nguyen khong crash`() {
