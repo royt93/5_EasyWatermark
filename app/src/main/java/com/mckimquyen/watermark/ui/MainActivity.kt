@@ -257,7 +257,6 @@ class MainActivity : BaseActivity() {
     /** Review pass 9: animator đổi màu title/icon panel theo Palette — track riêng để cancel
      * cùng lúc với [bgTransformAnimator], tránh 2 animator race khi đổi ảnh nhanh (xem bên dưới). */
     private var funcTextColorAnimator: ValueAnimator? = null
-    private var showInterstitialRunnable: Runnable? = null
 
     /**
      * BUG-55: 1 updater duy nhất cho preview config — observer `waterMark` và `selectedImage` cùng đi
@@ -282,9 +281,12 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Preload interstitial để lần job finish đầu tiên có ad sẵn (doc A.4). SDK tự gate VIP/consent/mạng,
-        // có cooldown + CAS chống load trùng; chưa init xong thì fail-soft, SDK tự preload lại sau.
+        // Preload interstitial; SDK tự gate VIP/consent/mạng, có cooldown + CAS chống load trùng.
         AdManager.loadInterstitial(this)
+        // Share-intent vào thẳng MainActivity (bỏ qua Splash) vẫn phải chạy UMP, nếu không user EEA mất form consent.
+        if (savedInstanceState == null && ShareIntentResolver.isSharedImageIntent(intent)) {
+            requestConsentForSharedImage()
+        }
         // applyEdgeToEdge() is invoked by BaseActivity.onCreate() — no duplicate window setup needed
         if (MyApplication.recoveryMode) {
             setContentView(R.layout.a_recovery)
@@ -453,8 +455,17 @@ class MainActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         this.intent = intent
-        // Intent mới do người dùng chủ động chia sẻ — luôn nạp, kể cả khi vừa xuất xong ảnh trước đó.
+        // Intent mới do người dùng chủ động chia sẻ — consent refresh khi có ảnh (UMP tự quyết định re-consent).
+        if (ShareIntentResolver.isSharedImageIntent(intent)) requestConsentForSharedImage()
         handleShareIntent(intent, isFreshIntent = true)
+    }
+
+    /** Share-intent vào thẳng MainActivity, không qua Splash (cold start hoặc singleTask onNewIntent). */
+    @androidx.annotation.OptIn(com.roy.sdkadbmob.ExperimentalAdApi::class)
+    private fun requestConsentForSharedImage() {
+        AdManager.requestConsentInfoUpdate(this) { canRequestAds ->
+            AppLog.d(LOG_TAG) { "UMP consent gathered for shared image: canRequestAds=$canRequestAds" }
+        }
     }
 
     override fun onStart() {
@@ -503,8 +514,6 @@ class MainActivity : BaseActivity() {
         bgTransformAnimator = null
         funcTextColorAnimator?.cancel()
         funcTextColorAnimator = null
-        showInterstitialRunnable?.let { launchView.removeCallbacks(it) }
-        showInterstitialRunnable = null
         super.onDestroy()
     }
 
@@ -644,14 +653,6 @@ class MainActivity : BaseActivity() {
                 viewModel.resetJobStatus()
             } else {
                 toast(it.message)
-                if (it.code == MainViewModel.TYPE_JOB_FINISH) {
-                    showInterstitialRunnable?.let { r -> launchView.removeCallbacks(r) }
-                    val runnable = Runnable {
-                        AdManager.showInterstitial(this@MainActivity) {}
-                    }
-                    showInterstitialRunnable = runnable
-                    launchView.postDelayed(runnable, INTERSTITIAL_DELAY_MS)
-                }
             }
         }
 
@@ -1508,12 +1509,6 @@ class MainActivity : BaseActivity() {
         private const val REQ_CODE_PICK_IMAGE: Int = 42
         const val REQ_CODE_REQ_WRITE_PERMISSION: Int = 43
         const val REQ_PICK_ICON: Int = 44
-
-        /**
-         * Trễ trước khi hiện interstitial sau khi lưu ảnh xong. 800ms quá ngắn: ngón tay user còn ở gần nút
-         * "Lưu" nên dễ chạm nhầm vào ad (invalid click). 2s đủ để user nhận ra kết quả và rời tay.
-         */
-        internal const val INTERSTITIAL_DELAY_MS: Long = 2_000
 
         private const val KEY_SAVED_CAMERA_URI: String = "key_saved_camera_uri"
         private const val KEY_SAVED_CAMERA_FILE: String = "key_saved_camera_file"

@@ -16,4 +16,10 @@ object ShareIntentResolver {
         if (intent?.action != Intent.ACTION_SEND) return null
         return intent.data ?: IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, Uri::class.java)
     }
+
+    /** ACTION_SEND cần ảnh thật, không chỉ có URI (vd văn bản share kèm link ảnh). */
+    fun isSharedImageIntent(intent: Intent?): Boolean =
+        intent?.action == Intent.ACTION_SEND &&
+            intent.type?.startsWith("image/") == true &&
+            resolveSharedImageUri(intent) != null
 }

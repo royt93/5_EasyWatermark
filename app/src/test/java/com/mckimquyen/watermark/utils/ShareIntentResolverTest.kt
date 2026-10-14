@@ -63,6 +63,43 @@ class ShareIntentResolverTest {
     }
 
     @Test
+    fun isSharedImageIntent_imageMimeAndUri_returnsTrue() {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/jpeg"
+            putExtra(Intent.EXTRA_STREAM, Uri.parse("content://media/image.jpg"))
+        }
+
+        assertThat(ShareIntentResolver.isSharedImageIntent(intent)).isTrue()
+    }
+
+    @Test
+    fun isSharedImageIntent_nonImageMimeWithStream_returnsFalse() {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_STREAM, Uri.parse("content://media/image.jpg"))
+        }
+
+        assertThat(ShareIntentResolver.isSharedImageIntent(intent)).isFalse()
+    }
+
+    @Test
+    fun isSharedImageIntent_nonSendActionWithImageMime_returnsFalse() {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            type = "image/jpeg"
+            data = Uri.parse("content://media/image.jpg")
+        }
+
+        assertThat(ShareIntentResolver.isSharedImageIntent(intent)).isFalse()
+    }
+
+    @Test
+    fun isSharedImageIntent_sendWithoutUri_returnsFalse() {
+        val intent = Intent(Intent.ACTION_SEND).apply { type = "image/jpeg" }
+
+        assertThat(ShareIntentResolver.isSharedImageIntent(intent)).isFalse()
+    }
+
+    @Test
     fun nullIntent_returnsNull() {
         assertThat(ShareIntentResolver.resolveSharedImageUri(null)).isNull()
     }

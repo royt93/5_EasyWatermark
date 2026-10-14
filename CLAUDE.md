@@ -89,7 +89,7 @@ Build chỉ 1 trục buildType (`debug`, `release`) — không còn `productFlav
 
 ### Quảng cáo
 - Tích hợp qua SDK ngoài **`com.github.royt93:AdmobWrapper`** (`AdManager`), hỗ trợ cả AdMob lẫn AppLovin MAX, chọn provider bằng `BuildConfig.IS_ENABLE_ADMOB`.
-- Touchpoints: App Open ở `SplashActivity`; Banner + Interstitial ở `AboutActivity`; Interstitial cũng bắn khi job finish.
+- Touchpoints: App Open ở `SplashActivity`; Banner + Interstitial ở `AboutActivity`; MainActivity chỉ preload Interstitial, không tự bắn sau batch export.
 - ID đặt qua `buildConfigField` trong `app/build.gradle.kts` (debug dùng ID test của Google; release dùng ID thật) và meta-data trong `AndroidManifest.xml`. Thư mục cũ `sdkadbmob/` (chứa `AdMobManager` tự viết) đã được dọn rỗng sau migrate — xem `doc/AD.MD`.
 
 ## Tài liệu trong repo

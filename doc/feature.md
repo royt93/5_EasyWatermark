@@ -16,7 +16,15 @@ _(trống)_
 
 ---
 
+## 📋 Picked
+
+_(trống)_
+
+---
+
 ## ✅ Implemented (Đã hoàn thành trước đây)
+
+- ✅ **AD-01: Tuân thủ consent UMP và loại bỏ interstitial bất ngờ sau batch** (2026-10-14) — `MainActivity` yêu cầu consent khi nhận ảnh qua `ACTION_SEND` (cold start hoặc `onNewIntent`), giữ UMP refresh mỗi lần theo policy, bỏ auto-show interstitial sau `TYPE_JOB_FINISH`. Test: unit + Robolectric widget + instrumentation manifest routing trên TECNO.
 
 Xem chi tiết trong `doc/feat.md` và `doc/task/BACKLOG.md`:
 - ✅ FEAT-27: Quick Share Bar — chia sẻ nhanh 1 chạm sau khi xuất (2026-10-03) — `QuickShareHelper`

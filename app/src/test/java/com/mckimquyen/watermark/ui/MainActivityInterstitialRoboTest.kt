@@ -1,106 +1,131 @@
 package com.mckimquyen.watermark.ui
 
-import com.google.common.truth.Truth.assertThat
+import android.content.Intent
+import android.net.Uri
 import com.mckimquyen.watermark.data.model.Result
+import com.roy.sdkadbmob.AdManager
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import io.mockk.verify
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 
-/**
- * BUG-08: `postDelayed` hiện interstitial (`MainActivity.saveResult` observer, job finish) phải
- * lưu tham chiếu `Runnable` và `removeCallbacks` trong `onDestroy()` — nếu không, callback vẫn
- * chạy sau khi Activity đã destroy (rủi ro `WindowManager$BadTokenException`/leak Activity).
- *
- * Trước đây báo cáo ghi "không có test tự động" vì `MainActivity` là `@AndroidEntryPoint` và
- * project không có Hilt test harness (`hilt-android-testing`). Re-thử nghiêm túc: hoá ra
- * `Robolectric.buildActivity(MainActivity::class.java)` chạy được thật — `MyApplication` (Hilt)
- * khởi tạo bình thường dưới Robolectric (không cần `HiltTestApplication`/harness riêng), vì mọi
- * module DI ở đây dùng implementation thật (DataStore/Room), không có dependency nào chỉ tồn tại
- * trên thiết bị thật. `AdManager.earlyInit()`/`setupAdmob()` trong `MyApplication.onCreate()`
- * cũng không crash dưới Robolectric SDK 34.
- *
- * Chủ động không gọi `.resume()`/`.visible()` (crash/treo vì lý do KHÔNG liên quan BUG-08— xem
- * comment trong test) nên `launchView` chưa attach window thật (`getHandler()` == null) —
- * `View.postDelayed`/`removeCallbacks` khi chưa attach thao tác trên hàng đợi nội bộ
- * `View.mRunQueue` (`HandlerActionQueue`, được thực thi khi attach). Đọc trực tiếp hàng đợi này
- * qua reflection (`getRunQueue()` + `size()`/`getRunnable()`, đều là API thật của Android, không
- * phải mock) để xác nhận chính xác runnable đã lưu còn được lên lịch hay đã bị gỡ — vẫn là đúng
- * code path `postDelayed`/`removeCallbacks` thật của `MainActivity`, không phải bản sao logic.
- */
 @RunWith(RobolectricTestRunner::class)
 class MainActivityInterstitialRoboTest {
 
-    // `viewModel` là `by viewModels()` (Kotlin property delegate) — field thật là
-    // `viewModel$delegate` (kotlin.Lazy), không phải `viewModel`. Gọi thẳng getter private do
-    // Kotlin sinh ra (`getViewModel()`) thay vì đoán tên field.
     private fun MainActivity.viewModelField(): MainViewModel =
         MainActivity::class.java.getDeclaredMethod("getViewModel").apply { isAccessible = true }
             .invoke(this) as MainViewModel
 
-    private fun MainActivity.launchViewField(): android.view.View =
-        MainActivity::class.java.getDeclaredField("launchView").apply { isAccessible = true }
-            .get(this) as android.view.View
+    @Test
+    fun `cold shared image intent requests UMP consent`() {
+        mockkObject(AdManager)
+        every { AdManager.requestConsentInfoUpdate(any(), any(), any()) } returns Unit
+        try {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "image/*"
+                putExtra(Intent.EXTRA_STREAM, Uri.parse("content://test/image.jpg"))
+            }
+            val controller = Robolectric.buildActivity(MainActivity::class.java, intent)
+            controller.create().start()
 
-    private fun MainActivity.showInterstitialRunnableField(): Runnable? =
-        MainActivity::class.java.getDeclaredField("showInterstitialRunnable").apply { isAccessible = true }
-            .get(this) as Runnable?
+            verify(exactly = 1) { AdManager.requestConsentInfoUpdate(any(), any(), any()) }
 
-    /** View chưa attach window → postDelayed/removeCallbacks thao tác trên `View.mRunQueue`. */
-    private fun android.view.View.pendingRunnables(): List<Runnable> {
-        val getRunQueue = android.view.View::class.java.getDeclaredMethod("getRunQueue")
-            .apply { isAccessible = true }
-        val runQueue = getRunQueue.invoke(this)
-        val size = runQueue.javaClass.getMethod("size").invoke(runQueue) as Int
-        val getRunnable = runQueue.javaClass.getMethod("getRunnable", Int::class.javaPrimitiveType)
-        return (0 until size).map { getRunnable.invoke(runQueue, it) as Runnable }
+            controller.destroy()
+        } finally {
+            unmockkObject(AdManager)
+        }
     }
 
     @Test
-    fun `second job finish replaces pending runnable instead of stacking callbacks`() {
-        val controller = Robolectric.buildActivity(MainActivity::class.java)
-        val activity = controller.create().start().get()
-        val viewModel = activity.viewModelField()
-        val launchView = activity.launchViewField()
+    fun `non-image new intent does not request UMP consent`() {
+        mockkObject(AdManager)
+        try {
+            val controller = Robolectric.buildActivity(MainActivity::class.java)
+            controller.create().start()
+            controller.newIntent(Intent(Intent.ACTION_SEND).apply { type = "text/plain" })
 
-        viewModel.saveResult.value = Result.success(code = MainViewModel.TYPE_JOB_FINISH, data = null)
-        val first = activity.showInterstitialRunnableField()
-        viewModel.saveResult.value = Result.success(code = MainViewModel.TYPE_JOB_FINISH, data = null)
-        val second = activity.showInterstitialRunnableField()
+            verify(exactly = 0) { AdManager.requestConsentInfoUpdate(any(), any(), any()) }
 
-        assertThat(first).isNotNull()
-        assertThat(second).isNotNull()
-        assertThat(second).isNotSameInstanceAs(first)
-        val pending = launchView.pendingRunnables()
-        assertThat(pending).contains(second)
-        assertThat(pending).doesNotContain(first)
-
-        controller.destroy()
+            controller.destroy()
+        } finally {
+            unmockkObject(AdManager)
+        }
     }
 
     @Test
-    fun `job finish schedules runnable, onDestroy removes it before it fires`() {
-        val controller = Robolectric.buildActivity(MainActivity::class.java)
-        // Không gọi resume()/visible(): BaseActivity.onResume() → enableAdaptiveRefreshRate() gọi
-        // Context.getDisplay() (crash dưới Robolectric ở đây, không liên quan BUG-08), và
-        // visible() từng treo test (nghi animation/ad-init loop chờ vô hạn) — create()+start() đã
-        // đủ để attach window/Handler cho launchView, đúng cái ta cần kiểm tra
-        // (postDelayed/removeCallbacks) mà không kéo theo rủi ro không liên quan.
-        val activity = controller.create().start().get()
-        val viewModel = activity.viewModelField()
-        val launchView = activity.launchViewField()
+    fun `cold non-image share with URI does not request UMP consent`() {
+        mockkObject(AdManager)
+        try {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_STREAM, Uri.parse("content://test/image.jpg"))
+            }
+            val controller = Robolectric.buildActivity(MainActivity::class.java, intent)
+            controller.create().start()
 
-        // Mô phỏng job save ảnh xong (đúng code path thật, qua LiveData thật — không phải copy logic).
-        viewModel.saveResult.value = Result.success(code = MainViewModel.TYPE_JOB_FINISH, data = null)
+            verify(exactly = 0) { AdManager.requestConsentInfoUpdate(any(), any(), any()) }
 
-        val runnable = activity.showInterstitialRunnableField()
-        assertThat(runnable).isNotNull()
-        assertThat(launchView.pendingRunnables()).contains(runnable)
+            controller.destroy()
+        } finally {
+            unmockkObject(AdManager)
+        }
+    }
 
-        // Thoát Activity ngay lập tức (trong cửa sổ 800ms, trước khi runnable tự chạy).
-        controller.destroy()
+    @Test
+    fun `image share through onNewIntent requests UMP consent`() {
+        mockkObject(AdManager)
+        every { AdManager.requestConsentInfoUpdate(any(), any(), any()) } returns Unit
+        try {
+            val controller = Robolectric.buildActivity(MainActivity::class.java)
+            controller.create().start()
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "image/png"
+                putExtra(Intent.EXTRA_STREAM, Uri.parse("content://test/new-image.png"))
+            }
 
-        assertThat(activity.showInterstitialRunnableField()).isNull()
-        assertThat(launchView.pendingRunnables()).doesNotContain(runnable)
+            controller.newIntent(intent)
+
+            verify(exactly = 1) { AdManager.requestConsentInfoUpdate(any(), any(), any()) }
+
+            controller.destroy()
+        } finally {
+            unmockkObject(AdManager)
+        }
+    }
+
+    @Test
+    fun `ordinary launch does not request UMP consent from MainActivity`() {
+        mockkObject(AdManager)
+        try {
+            val controller = Robolectric.buildActivity(MainActivity::class.java)
+            controller.create().start()
+
+            verify(exactly = 0) { AdManager.requestConsentInfoUpdate(any(), any(), any()) }
+
+            controller.destroy()
+        } finally {
+            unmockkObject(AdManager)
+        }
+    }
+
+    @Test
+    fun `job finish does not automatically show interstitial`() {
+        mockkObject(AdManager)
+        try {
+            val controller = Robolectric.buildActivity(MainActivity::class.java)
+            val activity = controller.create().start().get()
+            activity.viewModelField().saveResult.value =
+                Result.success(code = MainViewModel.TYPE_JOB_FINISH, data = null)
+
+            verify(exactly = 0) { AdManager.showInterstitial(any(), any()) }
+
+            controller.destroy()
+        } finally {
+            unmockkObject(AdManager)
+        }
     }
 }
