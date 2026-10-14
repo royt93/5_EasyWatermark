@@ -1,6 +1,5 @@
 package com.mckimquyen.watermark.ui.panel
 
-import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -11,7 +10,6 @@ import com.mckimquyen.watermark.ui.MainActivity
 import com.mckimquyen.watermark.ui.MainViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -33,7 +31,7 @@ class AlphaPbFragmentIntegrationTest {
                 panel = AlphaPbFragment()
                 activity.supportFragmentManager.beginTransaction()
                     .add(panel, FRAGMENT_TAG)
-                    .commitNow()
+                    .commitNowAllowingStateLoss()
                 slider = requireNotNull(panel.view).findViewById(R.id.slideContentSize)
                 assertThat(slider).isNotNull()
             }
@@ -44,30 +42,41 @@ class AlphaPbFragmentIntegrationTest {
                     panel.doOnChange(slider, TARGET_PERCENT, fromUser = true)
                 }
 
-                val stored = runBlocking {
-                    withTimeout(DATASTORE_TIMEOUT_MS) {
-                        viewModel.waterMarkRepo.waterMark.first { it.alpha == EXPECTED_NATIVE_ALPHA }
-                    }
-                }
-                assertThat(stored.alpha).isEqualTo(EXPECTED_NATIVE_ALPHA)
+                // Poll snapshot thay vì `first { predicate }`: đo trên Pixel 7 Pro, chờ emit mới của
+                // DataStore Flow bị timeout 5s dù đọc snapshot sau ~300ms đã thấy alpha=252.
+                val persistedAlpha = pollAlpha(viewModel, EXPECTED_NATIVE_ALPHA)
+                assertThat(persistedAlpha).isEqualTo(EXPECTED_NATIVE_ALPHA)
+
+                val restoredConfig = runBlocking { viewModel.waterMarkRepo.waterMark.first() }
+                assertThat(panel.formatValue(restoredConfig)).isEqualTo(TARGET_PERCENT)
+                assertThat(panel.formatValueTips(restoredConfig)).contains("99")
 
                 scenario.onActivity { activity ->
                     activity.supportFragmentManager.beginTransaction()
                         .remove(panel)
-                        .commitNow()
+                        .commitNowAllowingStateLoss()
                     panel = AlphaPbFragment()
                     activity.supportFragmentManager.beginTransaction()
                         .add(panel, FRAGMENT_TAG)
-                        .commitNow()
+                        .commitNowAllowingStateLoss()
                 }
-
-                val restored = runBlocking { viewModel.waterMarkRepo.waterMark.first() }
-                assertThat(panel.formatValue(restored)).isEqualTo(TARGET_PERCENT)
-                assertThat(panel.formatValueTips(restored)).contains("99")
+                val restoredFragmentConfig = runBlocking { viewModel.waterMarkRepo.waterMark.first() }
+                assertThat(panel.formatValue(restoredFragmentConfig)).isEqualTo(TARGET_PERCENT)
+                assertThat(panel.formatValueTips(restoredFragmentConfig)).contains("99")
             } finally {
                 runBlocking { viewModel.waterMarkRepo.updateAlpha(originalAlpha) }
             }
         }
+    }
+
+    private fun pollAlpha(viewModel: MainViewModel, expected: Int): Int {
+        val deadline = System.currentTimeMillis() + DATASTORE_TIMEOUT_MS
+        var alpha = runBlocking { viewModel.waterMarkRepo.waterMark.first().alpha }
+        while (alpha != expected && System.currentTimeMillis() < deadline) {
+            Thread.sleep(POLL_INTERVAL_MS)
+            alpha = runBlocking { viewModel.waterMarkRepo.waterMark.first().alpha }
+        }
+        return alpha
     }
 
     private companion object {
@@ -76,5 +85,6 @@ class AlphaPbFragmentIntegrationTest {
         const val EXPECTED_NATIVE_ALPHA = 252
         const val DEFAULT_ALPHA = 255
         const val DATASTORE_TIMEOUT_MS = 5_000L
+        const val POLL_INTERVAL_MS = 100L
     }
 }

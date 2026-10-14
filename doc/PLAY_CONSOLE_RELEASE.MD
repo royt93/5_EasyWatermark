@@ -1,4 +1,4 @@
-# Nội dung chuẩn bị submit Play Console — version 2026.09.05 (versionCode 20260905)
+# Nội dung chuẩn bị submit Play Console — version 2026.09.29 (versionCode 20260929)
 
 > Soạn 2026-09-28 dựa theo audit code thật (AndroidManifest, `BatchExportWorker`, lịch sử commit từ
 > `221d21d` tới HEAD). Phần Ad SDK/VIP (AD_ID, quảng cáo, gói VIP) **không nằm trong tài liệu này** —
@@ -43,14 +43,14 @@ Dựa theo permission thật khai trong `AndroidManifest.xml` (loại AD_ID — 
 
 | Loại dữ liệu | Có thu thập không? | Ghi chú điền vào form |
 |---|---|---|
-| Ảnh (READ_MEDIA_IMAGES, ...EXTERNAL_STORAGE) | **Không thu thập** | App xử lý watermark hoàn toàn trên máy, không upload ảnh lên server. Chỉ ghi lại đúng nơi người dùng chọn (bộ nhớ máy/thư mục SAF tự chọn). |
+| Ảnh (READ_MEDIA_IMAGES, ...EXTERNAL_STORAGE) | **Không thu thập** | App xử lý watermark hoàn toàn trên máy, không upload ảnh lên server. Chỉ ghi lại đúng nơi người dùng chọn (bộ nhớ máy/thư mục SAF tự chọn). Ảnh chữ ký cũng được lưu cục bộ trong `filesDir/signatures/`; không upload. |
 | Vị trí (ACCESS_MEDIA_LOCATION — đọc GPS trong EXIF) | **Không thu thập** | Chỉ đọc cục bộ để tự sinh chữ `{location}` trong watermark khi người dùng bật tính năng này, không gửi đi đâu. |
+| Thông tin cá nhân của người nhận (Recipient `name`, `code`, `notes`) | **Không thu thập** | Dữ liệu người dùng nhập để gắn fingerprint vào ảnh xuất; lưu cục bộ trong Room `recipient-db`, không upload/chia sẻ tự động. |
 | Thông báo (POST_NOTIFICATIONS) | Không áp dụng (không phải "dữ liệu") | Dùng hiển thị tiến trình xuất ảnh hàng loạt. |
 | Mạng (INTERNET, ACCESS_NETWORK_STATE) | Tuỳ theo SDK quảng cáo — **ngoài phạm vi tài liệu này** | Phần Ad SDK tự khai riêng. |
+| Sao lưu Android (Auto Backup/device transfer) | **Có thể bao gồm dữ liệu cục bộ** | `allowBackup=true`; `backup_rules.xml`/`data_extraction_rules.xml` hiện chỉ loại `loitp_admob.xml`, nên Room `recipient-db`, chữ ký trong `filesDir/signatures/` và cấu hình app có thể được sao lưu/chuyển thiết bị. Xác nhận lại với owner/legal trước khi khai form Data Safety và privacy policy. |
 
-Kết luận nhanh cho phần "core app" (bỏ Ad SDK): có thể chọn **"App doesn't collect or share
-the specified types of user data"** cho nhóm Photos/Location, vì toàn bộ xử lý ảnh + GPS đều
-on-device, không transmit ra ngoài. Phần Ad ID/quảng cáo do người phụ trách Ad SDK khai riêng.
+Kết luận nhanh cho phần "core app" (bỏ Ad SDK): Photos, GPS, Recipient và chữ ký không được app gửi lên server, nhưng cần khai đúng việc dữ liệu cục bộ có thể đi qua Android Auto Backup/device transfer theo cấu hình hiện tại. Không dùng kết luận "không collect/share" để bỏ qua backup/transfer nếu form Play yêu cầu khai nhóm dữ liệu đó. Phần Ad ID/quảng cáo do người phụ trách Ad SDK khai riêng.
 
 ## 3. Foreground Service — ĐÃ BỎ (2026-09-28, quyết định business)
 

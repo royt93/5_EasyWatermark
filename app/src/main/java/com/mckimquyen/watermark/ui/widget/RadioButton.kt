@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.mckimquyen.watermark.R
+import com.mckimquyen.watermark.utils.ktx.colorOnPrimary
 import com.mckimquyen.watermark.utils.ktx.colorOnSurface
 import com.mckimquyen.watermark.utils.ktx.colorPrimary
 import com.mckimquyen.watermark.utils.ktx.dp
@@ -18,11 +19,11 @@ import com.mckimquyen.watermark.utils.ktx.dp
  * Enhanced RadioButton check indicator for gallery grid.
  *
  * Unselected: white circle with dark drop-shadow backdrop → always visible on any photo.
- * Selected: Material You dynamic primary color filled circle + white checkmark icon.
+ * Selected: Material You dynamic primary color filled circle + colorOnPrimary checkmark icon.
  *
  * Visual contrast rules (WCAG AA+):
  * - Unselected: semi-transparent black backdrop (#80000000) + white stroke ring
- * - Selected: solid dynamic primary color + white icon
+ * - Selected: solid dynamic primary color + colorOnPrimary icon
  */
 class RadioButton : View {
 
@@ -48,7 +49,10 @@ class RadioButton : View {
     private val iconRes: Int = R.drawable.ic_gallery_radio_button
 
     private val icon: Drawable by lazy {
-        ContextCompat.getDrawable(context, iconRes) ?: ColorDrawable(context.colorOnSurface)
+        // mutate(): tint chỉ áp cho view này, không đổi constant state dùng chung của drawable.
+        (ContextCompat.getDrawable(context, iconRes) ?: ColorDrawable(context.colorOnSurface)).mutate().apply {
+            setTint(context.colorOnPrimary)
+        }
     }
 
     private val paint = Paint().apply {
@@ -68,7 +72,7 @@ class RadioButton : View {
             paint.strokeWidth = 0f
             canvas.drawCircle(cx, cy, r, paint)
 
-            // Icon (white checkmark from drawable)
+            // Icon (checkmark tint theo colorOnPrimary, cùng cặp màu với FAB "Chọn N ảnh")
             icon.setBounds(2, 2, measuredWidth - 2, measuredHeight - 2)
             icon.draw(canvas)
         } else {

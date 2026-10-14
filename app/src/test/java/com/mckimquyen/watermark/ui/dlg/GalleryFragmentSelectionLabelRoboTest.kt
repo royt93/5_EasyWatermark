@@ -90,7 +90,7 @@ class GalleryFragmentSelectionLabelRoboTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertThat(fragment.binding.fab.text.toString()).isEqualTo("Select 1 photo")
-        assertThat(fragment.binding.tvSelectionHint?.text.toString()).isEqualTo("1 selected")
+        assertThat(fragment.binding.tvSelectionHint?.text.toString()).isEqualTo("1 selected photo")
     }
 
     @Test
@@ -102,7 +102,7 @@ class GalleryFragmentSelectionLabelRoboTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertThat(fragment.binding.fab.text.toString()).isEqualTo("Select 2 photos")
-        assertThat(fragment.binding.tvSelectionHint?.text.toString()).isEqualTo("2 selected")
+        assertThat(fragment.binding.tvSelectionHint?.text.toString()).isEqualTo("2 selected photos")
     }
 
     @Test

@@ -278,7 +278,7 @@
         <item quantity="other">Chọn %1$d ảnh</item>
     </plurals>
     <plurals name="gallery_selected_count">
-        <item quantity="other">Đã chọn %1$d</item>
+        <item quantity="other">Đã chọn %1$d ảnh</item>
     </plurals>
     <string name="export_notification_channel_name">Xuất ảnh hàng loạt</string>
     <string name="export_notification_title">Đang xuất hình ảnh chèn watermark…</string>

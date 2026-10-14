@@ -299,8 +299,8 @@
         <item quantity="other">Select %1$d photos</item>
     </plurals>
     <plurals name="gallery_selected_count">
-        <item quantity="one">%1$d selected</item>
-        <item quantity="other">%1$d selected</item>
+        <item quantity="one">%1$d selected photo</item>
+        <item quantity="other">%1$d selected photos</item>
     </plurals>
 
     <!-- ENH-01: batch export qua WorkManager — notification tiến độ + huỷ. -->

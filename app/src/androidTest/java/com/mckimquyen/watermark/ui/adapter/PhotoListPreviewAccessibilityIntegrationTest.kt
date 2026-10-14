@@ -1,24 +1,63 @@
 package com.mckimquyen.watermark.ui.adapter
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.net.Uri
+import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.mckimquyen.watermark.R
 import com.mckimquyen.watermark.data.model.ImageInfo
 import com.mckimquyen.watermark.ui.about.OpenSourceActivity
+import com.mckimquyen.watermark.ui.widget.RadioButton
 import com.mckimquyen.watermark.ui.widget.onItemClick
+import com.mckimquyen.watermark.utils.ktx.colorOnPrimary
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /** BUG-84: filmstrip rows expose a position label and click action through the real Android accessibility API. */
 @RunWith(AndroidJUnit4::class)
 class PhotoListPreviewAccessibilityIntegrationTest {
+
+    @Test
+    fun selectedGalleryIndicator_usesThemeOnPrimaryColorForCheckmark() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>().apply {
+            setTheme(R.style.Theme_MyApp)
+        }
+        val indicator = RadioButton(context)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            indicator.measure(
+                View.MeasureSpec.makeMeasureSpec(INDICATOR_SIZE_PX, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(INDICATOR_SIZE_PX, View.MeasureSpec.EXACTLY)
+            )
+            indicator.layout(0, 0, INDICATOR_SIZE_PX, INDICATOR_SIZE_PX)
+            indicator.isChecked = true
+        }
+
+        val bitmap = Bitmap.createBitmap(INDICATOR_SIZE_PX, INDICATOR_SIZE_PX, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync { indicator.draw(canvas) }
+        val expected = context.colorOnPrimary
+        val hasOnPrimaryPixel = (0 until bitmap.width).any { x ->
+            (0 until bitmap.height).any { y ->
+                val actual = bitmap.getPixel(x, y)
+                Color.alpha(actual) > 0 &&
+                    Color.red(actual) == Color.red(expected) &&
+                    Color.green(actual) == Color.green(expected) &&
+                    Color.blue(actual) == Color.blue(expected)
+            }
+        }
+        bitmap.recycle()
+        assertThat(hasOnPrimaryPixel).isTrue()
+    }
 
     @Test
     fun filmstripItems_exposeLabelAndClickActionToAccessibilityNodeInfo() {
@@ -68,5 +107,6 @@ class PhotoListPreviewAccessibilityIntegrationTest {
         const val POSITION_OFFSET = 1
         const val VIEWPORT_WIDTH = 900
         const val VIEWPORT_HEIGHT = 200
+        const val INDICATOR_SIZE_PX = 28
     }
 }
