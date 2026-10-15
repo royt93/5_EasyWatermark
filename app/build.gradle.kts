@@ -61,8 +61,8 @@ android {
         applicationId = "com.mckimquyen.watermark"
         minSdk = 24
         targetSdk = 37
-        versionCode = 20260929
-        versionName = "2026.09.29"
+        versionCode = 20261015
+        versionName = "2026.10.15"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "$applicationId-v$versionName($versionCode)")
 
