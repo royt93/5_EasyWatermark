@@ -281,11 +281,15 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Preload interstitial; SDK tự gate VIP/consent/mạng, có cooldown + CAS chống load trùng.
-        AdManager.loadInterstitial(this)
-        // Share-intent vào thẳng MainActivity (bỏ qua Splash) vẫn phải chạy UMP, nếu không user EEA mất form consent.
-        if (savedInstanceState == null && ShareIntentResolver.isSharedImageIntent(intent)) {
-            requestConsentForSharedImage()
+        // Share-intent vào thẳng MainActivity (bỏ qua Splash) phải hoàn tất UMP trước khi preload.
+        if (ShareIntentResolver.isSharedImageIntent(intent)) {
+            requestConsentForSharedImage { canRequestAds ->
+                if (isFinishing || isDestroyed) return@requestConsentForSharedImage
+                if (canRequestAds) AdManager.loadInterstitial(applicationContext)
+            }
+        } else {
+            // Ordinary launcher flow relies on Splash consent before MainActivity is created.
+            AdManager.loadInterstitial(this)
         }
         // applyEdgeToEdge() is invoked by BaseActivity.onCreate() — no duplicate window setup needed
         if (MyApplication.recoveryMode) {
@@ -456,15 +460,21 @@ class MainActivity : BaseActivity() {
         super.onNewIntent(intent)
         this.intent = intent
         // Intent mới do người dùng chủ động chia sẻ — consent refresh khi có ảnh (UMP tự quyết định re-consent).
-        if (ShareIntentResolver.isSharedImageIntent(intent)) requestConsentForSharedImage()
+        if (ShareIntentResolver.isSharedImageIntent(intent)) {
+            requestConsentForSharedImage { canRequestAds ->
+                if (isFinishing || isDestroyed) return@requestConsentForSharedImage
+                if (canRequestAds) AdManager.loadInterstitial(applicationContext)
+            }
+        }
         handleShareIntent(intent, isFreshIntent = true)
     }
 
     /** Share-intent vào thẳng MainActivity, không qua Splash (cold start hoặc singleTask onNewIntent). */
     @androidx.annotation.OptIn(com.roy.sdkadbmob.ExperimentalAdApi::class)
-    private fun requestConsentForSharedImage() {
+    private fun requestConsentForSharedImage(onConsentGathered: (Boolean) -> Unit) {
         AdManager.requestConsentInfoUpdate(this) { canRequestAds ->
             AppLog.d(LOG_TAG) { "UMP consent gathered for shared image: canRequestAds=$canRequestAds" }
+            onConsentGathered(canRequestAds)
         }
     }
 

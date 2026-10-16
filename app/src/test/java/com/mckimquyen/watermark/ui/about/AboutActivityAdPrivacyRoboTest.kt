@@ -49,6 +49,19 @@ class AboutActivityAdPrivacyRoboTest {
     }
 
     @Test
+    fun adPrivacyRow_whenSdkHasNoForm_doesNotAssumeConsentWasCollected() {
+        every { AdManager.showConsentFormIfAvailable(any(), any()) } returns false
+        val activity = Robolectric.buildActivity(AboutActivity::class.java).setup().get()
+        val row = activity.findViewById<View>(R.id.rowAdPrivacy)
+
+        row.performClick()
+
+        assertThat(row.isEnabled).isTrue()
+        verify(exactly = 1) { AdManager.showConsentFormIfAvailable(activity, any()) }
+        verify(exactly = 0) { AdManager.confirmGdprConsent(any(), any()) }
+    }
+
+    @Test
     fun aboutActivity_doesNotForwardBannerLifecycleManually_autoManageContract() {
         every { AdManager.bannerResume(any()) } returns Unit
         every { AdManager.bannerPause(any()) } returns Unit
