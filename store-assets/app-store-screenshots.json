@@ -7,218 +7,195 @@
     "en"
   ],
   "locale": "en",
-  "device": "android",
+  "device": "ipad",
   "orientation": "portrait",
   "appIcon": "/app-icon.png",
   "slidesByDevice": {
     "iphone": [
       {
-        "id": "s_mqjlsuar_0",
-        "layout": "hero",
-        "label": {
-          "en": "MEET YOUR APP"
-        },
-        "headline": {
-          "en": "Sell one\nidea per slide."
-        },
-        "screenshot": ""
-      },
-      {
-        "id": "s_mqjlsuar_1",
-        "layout": "device-bottom",
-        "label": {
-          "en": "FEATURE 01"
-        },
-        "headline": {
-          "en": "Your headline\nlives here."
-        },
-        "screenshot": ""
-      },
-      {
-        "id": "s_mqjlsuar_2",
-        "layout": "two-devices",
-        "label": {
-          "en": "FEATURE 02"
-        },
-        "headline": {
-          "en": "Show two\nscreens at once."
-        },
-        "screenshot": "",
-        "screenshotSecondary": ""
-      },
-      {
-        "id": "s_mqjlsuar_3",
-        "layout": "device-top",
-        "label": {
-          "en": "FEATURE 03"
-        },
-        "headline": {
-          "en": "Flip the contrast\nfor visual rhythm."
-        },
-        "screenshot": "",
-        "inverted": true
-      },
-      {
-        "id": "s_mqjlsuar_4",
-        "layout": "no-device",
-        "label": {
-          "en": "MORE"
-        },
-        "headline": {
-          "en": "And so\nmuch more."
-        },
-        "screenshot": ""
-      }
-    ],
-    "android": [
-      {
         "id": "watermark-hero",
-        "layout": "hero",
-        "label": {
-          "en": "WATERMARK CREATOR"
-        },
-        "headline": {
-          "en": "Protect your\nphotos fast."
-        },
-        "screenshot": "/screenshots/android/phone/{locale}/01.png",
-        "transforms": {
-          "device": {
-            "x": 205,
-            "y": 670,
-            "width": 690,
-            "height": 1495,
-            "rotation": 0,
-            "zIndex": 3
-          }
-        }
-      },
-      {
-        "id": "watermark-edit",
         "layout": "device-bottom",
         "label": {
-          "en": "CREATE"
+          "en": "PHOTO PROTECTION"
         },
         "headline": {
-          "en": "Make every\nshare yours."
+          "en": "Your work.\nAlways yours."
         },
-        "screenshot": "/screenshots/android/phone/{locale}/02.png",
-        "transforms": {
-          "device": {
-            "x": 196,
-            "y": 642,
-            "width": 705,
-            "height": 1528,
-            "rotation": 0,
-            "zIndex": 3
-          },
-          "caption": {
-            "x": 80,
-            "y": 94,
-            "width": 940,
-            "height": 430,
-            "rotation": 0,
-            "zIndex": 4
-          }
-        }
+        "screenshot": "/screenshots/apple/iphone/{locale}/01.png"
+      },
+      {
+        "id": "watermark-signature",
+        "layout": "device-bottom",
+        "label": {
+          "en": "SIGNATURE STUDIO"
+        },
+        "headline": {
+          "en": "Sign your art\nin seconds."
+        },
+        "screenshot": "/screenshots/apple/iphone/{locale}/02.png"
       },
       {
         "id": "watermark-style",
         "layout": "device-top",
+        "inverted": true,
         "label": {
-          "en": "STYLE"
+          "en": "CUSTOM STYLES"
         },
         "headline": {
-          "en": "Your mark,\nyour look."
+          "en": "Match any vibe\nyou create."
         },
-        "screenshot": "/screenshots/android/phone/{locale}/03.png",
-        "inverted": true
+        "screenshot": "/screenshots/apple/iphone/{locale}/03.png"
       },
       {
-        "id": "watermark-layout",
-        "layout": "two-devices",
+        "id": "watermark-leica",
+        "layout": "split-landscape",
         "label": {
-          "en": "CONTROL"
+          "en": "EXIF BORDER"
         },
         "headline": {
-          "en": "Place it\njust right."
+          "en": "Turn photos into\ngallery prints."
         },
-        "screenshot": "/screenshots/android/phone/{locale}/04.png",
-        "screenshotSecondary": "/screenshots/android/phone/{locale}/02.png",
+        "screenshot": "/screenshots/apple/iphone/{locale}/04.png",
         "transforms": {
           "device": {
-            "x": 108,
-            "y": 650,
-            "width": 622,
-            "height": 1348,
-            "rotation": -4,
-            "zIndex": 3
-          },
-          "deviceSecondary": {
-            "x": 372,
-            "y": 610,
-            "width": 622,
-            "height": 1348,
-            "rotation": 6,
-            "zIndex": 2
-          }
-        }
-      },
-      {
-        "id": "watermark-vip",
-        "layout": "device-bottom",
-        "label": {
-          "en": "READY"
-        },
-        "headline": {
-          "en": "Create more.\nWorry less."
-        },
-        "screenshot": "/screenshots/android/phone/{locale}/05.png",
-        "transforms": {
-          "device": {
-            "x": 195,
-            "y": 642,
-            "width": 705,
-            "height": 1528,
+            "x": 480.53341063324933,
+            "y": 367.8777712609972,
+            "width": 1013.6355043227666,
+            "height": 2064.96,
             "rotation": 0,
             "zIndex": 3
           }
         }
+      },
+      {
+        "id": "watermark-offline",
+        "layout": "two-devices",
+        "label": {
+          "en": "TOTAL PRIVACY"
+        },
+        "headline": {
+          "en": "100% offline.\nZero cloud leaks."
+        },
+        "screenshot": "/screenshots/apple/iphone/{locale}/05.png",
+        "screenshotSecondary": "/screenshots/apple/iphone/{locale}/01.png"
+      }
+    ],
+    "android": [
+      {
+        "id": "android-hero",
+        "layout": "hero",
+        "label": {
+          "en": "PHOTO PROTECTION"
+        },
+        "headline": {
+          "en": "Your work.\nAlways yours."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/01.png"
+      },
+      {
+        "id": "android-signature",
+        "layout": "device-bottom",
+        "label": {
+          "en": "SIGNATURE STUDIO"
+        },
+        "headline": {
+          "en": "Sign your art\nin seconds."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/02.png"
+      },
+      {
+        "id": "android-style",
+        "layout": "device-top",
+        "inverted": true,
+        "label": {
+          "en": "CUSTOM STYLES"
+        },
+        "headline": {
+          "en": "Match any vibe\nyou create."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/03.png"
+      },
+      {
+        "id": "android-leica",
+        "layout": "device-bottom",
+        "label": {
+          "en": "EXIF BORDER"
+        },
+        "headline": {
+          "en": "Turn photos into\ngallery prints."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/04.png"
+      },
+      {
+        "id": "android-offline",
+        "layout": "two-devices",
+        "label": {
+          "en": "TOTAL PRIVACY"
+        },
+        "headline": {
+          "en": "100% offline.\nZero cloud leaks."
+        },
+        "screenshot": "/screenshots/android/phone/{locale}/05.png",
+        "screenshotSecondary": "/screenshots/android/phone/{locale}/01.png"
       }
     ],
     "ipad": [
       {
-        "id": "s_mqjlsuar_a",
+        "id": "ipad-hero",
         "layout": "hero",
         "label": {
-          "en": "MEET YOUR APP"
+          "en": "PHOTO PROTECTION"
         },
         "headline": {
-          "en": "Made for\nthe big screen."
+          "en": "Your work.\nAlways yours."
         },
-        "screenshot": ""
+        "screenshot": "/screenshots/apple/ipad/{locale}/01.png"
       },
       {
-        "id": "s_mqjlsuar_b",
+        "id": "ipad-signature",
+        "layout": "two-devices",
+        "label": {
+          "en": "SIGNATURE STUDIO"
+        },
+        "headline": {
+          "en": "Sign your art\nin seconds."
+        },
+        "screenshot": "/screenshots/apple/ipad/{locale}/02.png",
+        "screenshotSecondary": "/screenshots/apple/ipad/{locale}/02.png"
+      },
+      {
+        "id": "ipad-style",
+        "layout": "device-top",
+        "inverted": true,
+        "label": {
+          "en": "CUSTOM STYLES"
+        },
+        "headline": {
+          "en": "Match any vibe\nyou create."
+        },
+        "screenshot": "/screenshots/apple/ipad/{locale}/03.png"
+      },
+      {
+        "id": "ipad-leica",
         "layout": "device-bottom",
         "label": {
-          "en": "FEATURE 01"
+          "en": "EXIF BORDER"
         },
         "headline": {
-          "en": "Built for\nfocus."
+          "en": "Turn photos into\ngallery prints."
         },
-        "screenshot": ""
+        "screenshot": "/screenshots/apple/ipad/{locale}/04.png"
       },
       {
-        "id": "s_mqjlsuar_c",
-        "layout": "device-top",
+        "id": "ipad-offline",
+        "layout": "hero",
         "label": {
-          "en": "FEATURE 02"
+          "en": "TOTAL PRIVACY"
         },
         "headline": {
-          "en": "Always within reach."
+          "en": "100% offline.\nZero cloud leaks."
         },
-        "screenshot": "",
-        "inverted": true
+        "screenshot": "/screenshots/apple/ipad/{locale}/05.png"
       }
     ],
     "android-7": [
@@ -281,5 +258,5 @@
       }
     ]
   },
-  "tagline": "Protect every image in seconds."
+  "tagline": "Fast, beautiful, offline photo protection."
 }
