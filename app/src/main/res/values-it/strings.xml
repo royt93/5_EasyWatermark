@@ -31,7 +31,7 @@
     <string name="water_mark_mode_image">Icona</string>
     <string name="tips_ok">Conferma</string>
     <string name="tips_cancel_output">Annulla</string>
-    <string name="tips_need_compress_img">Memoria insufficiente o l\'immagine è troppo grande</string>
+    <string name="tips_need_compress_img">Spazio di archiviazione insufficiente o immagine troppo grande</string>
     <string name="tips_compressing">Comprimendo…</string>
     <string name="tips_compress_images">Comprimi immagine</string>
     <string name="tips_compress_ok">Compressione terminata. Clicca OK per continuare l\'esportazione.</string>
@@ -44,7 +44,7 @@
     <string name="style_alpha">Alpha</string>
     <string name="tips_not_app_can_open_images">Nessun file manager rilevato.</string>
     <string name="tips_choose_other_file_type">Immagine non valida</string>
-    <string name="error_save_oom">Memoria insufficiente, ripulisci in background e riprova</string>
+    <string name="error_save_oom">Memoria insufficiente, chiudi le app in background e riprova</string>
     <string name="dialog_title_exist_confirm">Attenzione</string>
     <string name="dialog_cancel_exist_confirm">Annulla</string>
     <string name="dialog_content_exist_confirm">Scartare le modifiche?</string>
@@ -60,19 +60,19 @@
     <string name="dialog_save_config_format">Formato</string>
     <string name="dialog_save_config_quality">Qualità</string>
     <string name="tips_pick_image">Scegli immagini</string>
-    <string name="pick_via_system">più…</string>
+    <string name="pick_via_system">Scegli dal sistema</string>
     <string name="tips_input_text_can_not_be_empty">Il contenuto non può essere vuoto</string>
     <string name="dialog_title_template_edit">Modifica modello</string>
-    <string name="dialog_title_edit_watermark">Modifica il filigrana</string>
+    <string name="dialog_title_edit_watermark">Modifica filigrana</string>
     <string name="dialog_title_template_title">Elenco modelli</string>
     <string name="tips_list_empty">È un po\' vuoto qui</string>
     <string name="dialog_button_add_template">Aggiungi</string>
     <string name="back">Indietro</string>
-    <string name="recovery_title">Recovery mode</string>
+    <string name="recovery_title">Modalità di recupero</string>
     <string name="copy_success">Copiato</string>
     <string name="copy_failed">Copia non riuscita</string>
-    <string name="store_not_found">È stato installato Not Store.</string>
-    <string name="recovery_mode_closed">È chiuso, riprova</string>
+    <string name="store_not_found">Nessuno store installato\?</string>
+    <string name="recovery_mode_closed">È stata disattivata, riprova</string>
     <string name="copy">Copia il messaggio di errore</string>
     <string name="turn_off_recovery_mode">Disattivare la modalità di recupero</string>
     <string name="recovery_mode_tips">Modalità di recupero attivata a causa di più arresti anomali. L\'invio del dispositivo e delle informazioni sull\'arresto anomalo di seguito riportate tramite i seguenti metodi potrebbe risolvere il problema. Grazie.</string>
@@ -93,6 +93,10 @@
     <string name="leica_exif_border">Bordo Leica EXIF</string>
     <string name="leica_exif_border_desc">Aggiunge automaticamente un bordo professionale con i metadati EXIF in fondo alle immagini esportate. Nota: Il bordo non viene mostrato nell\'anteprima per ottimizzare le prestazioni.</string>
     <string name="vip_title">VIP</string>
+    <string name="vip_status_toolbar_active">VIP attivo</string>
+    <string name="vip_status_toolbar_free">Piano gratuito — sblocca VIP</string>
+    <string name="launch_card_vip_title">VIP</string>
+    <string name="launch_card_vip_desc">Piano gratuito — sblocca VIP</string>
     <string name="vip_status_active">VIP attivo</string>
     <string name="vip_status_free">Modalità gratuita</string>
     <string name="vip_entry_first_install">🎁 Regalo di benvenuto</string>
@@ -146,9 +150,9 @@
     <string name="crop_apply">Applica</string>
     <string name="crop_no_image_selected">Nessuna immagine selezionata da ritagliare</string>
     <!-- IDEA-14: Smart Redaction -->
-    <string name="action_smart_redaction">Redazione intelligente</string>
-    <string name="redaction_title">Redazione intelligente</string>
-    <string name="redaction_no_image_selected">Nessuna immagine selezionata da redigere</string>
+    <string name="action_smart_redaction">Oscuramento intelligente</string>
+    <string name="redaction_title">Oscuramento intelligente</string>
+    <string name="redaction_no_image_selected">Nessuna immagine selezionata da oscurare</string>
     <string name="redaction_scanning">Ricerca di informazioni sensibili (email, telefono, volti)…</string>
     <string name="redaction_no_regions_found">Nessuna informazione sensibile rilevata. Puoi comunque applicare per saltare questo passaggio.</string>
     <string name="redaction_regions_found">Trovate %1$d zona/e — tocca un riquadro per mantenerlo o saltarlo, poi Applica.</string>
@@ -228,7 +232,7 @@
     <string name="batch_history_detail_title">Dettaglio esportazione</string>
     <string name="batch_history_empty">Nessuna esportazione in batch ancora</string>
     <string name="batch_history_rerun_confirm_message">L\'elenco immagini e le impostazioni di esportazione di questa voce dello storico saranno ripristinati nell\'editor.</string>
-    <string name="batch_history_rerun_confirm_title">Riesporta questa esecuzione?</string>
+    <string name="batch_history_rerun_confirm_title">Rieseguire questa esportazione?</string>
     <string name="batch_history_rerun_done">Ripristinato, verifica e tocca di nuovo Esporta</string>
     <string name="batch_history_summary">%1$d riuscite · %2$d non riuscite</string>
     <string name="batch_history_title">Storico esportazioni</string>
@@ -243,6 +247,7 @@
     <string name="brush_size_format">Dimensione pennello %d px</string>
     <string name="camera_app_not_found">Nessuna app fotocamera trovata su questo dispositivo</string>
     <string name="clipboard_no_image">Nessuna immagine trovata negli appunti</string>
+    <string name="clipboard_image_url_unavailable">Impossibile scaricare il link dell’immagine. Controlla la connessione e riprova.</string>
     <string name="close">Chiudi</string>
     <string name="color_black">Nero</string>
     <string name="color_blue">Blu</string>
@@ -465,4 +470,5 @@
     <string name="quick_share_title">Condivisione rapida</string>
     <string name="quick_share_item_desc">Condividi con %1$s</string>
     <string name="ad_privacy_options">Preferenze privacy degli annunci</string>
+    <string name="ad_privacy_options_unavailable">Al momento non è necessario aggiornare le opzioni sulla privacy degli annunci.</string>
 </resources>

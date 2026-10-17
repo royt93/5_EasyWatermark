@@ -18,6 +18,9 @@
     <cache-path
         name="camera_photos"
         path="camera/" />
+    <cache-path
+        name="clipboard_images"
+        path="clipboard_images/" />
     <files-path
         name="signature_images"
         path="signatures/" />

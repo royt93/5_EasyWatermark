@@ -12,6 +12,12 @@
     android:layout_height="match_parent"
     tools:ignore="TooManyViews">
 
+    <!-- Toolbar and ad banner stay fixed while the information list scrolls. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
     <!-- ─── Pinned top app bar ─── -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -35,11 +41,19 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <include
+        android:id="@+id/layoutAdBanner"
+        layout="@layout/layout_ad_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp" />
+
     <!-- ─── Scrollable content ─── -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingBottom="32dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -49,14 +63,6 @@
             android:layout_height="wrap_content"
             android:gravity="top|center_horizontal"
             android:orientation="vertical">
-
-            <!-- Ad banner -->
-            <include
-                android:id="@+id/layoutAdBanner"
-                layout="@layout/layout_ad_banner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp" />
 
             <!-- Hero: app icon -->
             <com.google.android.material.imageview.ShapeableImageView
@@ -605,8 +611,8 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:alpha="0.9"
-                            android:src="@drawable/ic_workspace_premium"
-                            app:tint="?attr/colorOnSurface"
+                            android:src="@drawable/ic_vip_crown"
+                            app:tint="@color/vip_gold"
                             tools:ignore="ContentDescription" />
 
                         <TextView
@@ -862,5 +868,5 @@
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
-
+    </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -160,6 +160,7 @@ class AboutActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         AppLog.d(LOG_TAG) { "AboutActivity onCreate" }
         initView()
+        if (savedInstanceState == null) AdManager.showInterstitial(this) { }
         // Edge-to-edge (BaseActivity.applyEdgeToEdge): push topAppBar down below status bar & camera cutout,
         // and add navigation bar bottom padding to nestedScrollView so all content is reachable.
         val baseScrollBottomPadding = (32 * resources.displayMetrics.density).toInt()
@@ -239,9 +240,20 @@ class AboutActivity : BaseActivity() {
                 openLink(Uri.parse(BuildConfig.PRIVACY_POLICY_URL))
             }
             rowAdPrivacy.setOnClickListener {
-                // gms/UMP: SDK tự hiện form privacy options; trả false = host phải tự hiện (không áp dụng gms).
+                // UMP không cần hiện form nếu privacy options chưa REQUIRED; phản hồi thay vì im lặng.
+                val diagnostics = AdManager.getPrivacyDiagnostics()
                 val shown = AdManager.showConsentFormIfAvailable(this@AboutActivity)
-                AppLog.d(LOG_TAG) { "AboutActivity rowAdPrivacy clicked — consent form shownBySdk=$shown" }
+                AppLog.d(LOG_TAG) {
+                    "AboutActivity rowAdPrivacy clicked — shownBySdk=$shown requirement=${diagnostics.privacyOptionsRequirement} " +
+                        "consent=${diagnostics.rawConsentStatus} lastError=${diagnostics.lastErrorCode}"
+                }
+                if (!shown || diagnostics.privacyOptionsRequirement != "REQUIRED") {
+                    com.google.android.material.snackbar.Snackbar.make(
+                        binding.root,
+                        R.string.ad_privacy_options_unavailable,
+                        com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+                    ).show()
+                }
             }
             // Debug-only: bản release dùng entry point no-op (xem VipTokenSmokeEntryPointImpl).
             if (BuildConfig.DEBUG) {

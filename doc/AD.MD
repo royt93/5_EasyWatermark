@@ -191,9 +191,10 @@ VIP keys must be compiled as Base64-obfuscated constants, not plain strings.
 
 ### 7. Interstitial
 
-- Keep the existing two triggers only.
-- Do not add any new interstitial trigger.
-- Trust `AdSafetyLimits` for frequency cap.
+- Current release implementation (2026-10-16): show after successful batch export and when About screen is opened. These are explicit app triggers; `loadInterstitial` alone only preloads.
+- Both use `AdManager.showInterstitial`; wrapper enforces consent, VIP, readiness, cooldown and `AdSafetyLimits`. App adds no duplicate cooldown.
+- Never use interstitial to grant VIP; only rewarded earned callback activates rewarded VIP.
+- This supersedes historical AD-01 (2026-10-14) decision to preload-only; see `doc/task/BACKLOG.md` AD-01 status/update.
 
 ### 8. Rewarded
 

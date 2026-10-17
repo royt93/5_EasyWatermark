@@ -25,6 +25,7 @@ _(trống)_
 
 ## ✅ Implemented (Đã hoàn thành trước đây)
 
+- ✅ **AD-03: Sáu sửa lỗi và release gate** (2026-10-17) — hoàn tất 6/6 mục: banner About sticky dưới toolbar; 176 sửa lỗi ngữ nghĩa/chính tả 13 locale (parit/placeholder pass); VIP crown tại menu và toolbar, chuyển vàng + đổi nhãn khi active (test instrumentation máy thật pass 1/1); phản hồi rõ khi SDK không có privacy form; dán ảnh hỗ trợ URI cục bộ, HTML và tải URL HTTPS khi bấm Dán (an toàn mạng, 1/1 instrumentation pass); interstitial kích hoạt khi mở About và sau khi export thành công. Sửa thêm lỗi cắt chữ 4 thẻ menu trên màn TECNO KJ7. Verification: 1.559 unit test pass, ktlintCheck pass, lintDebug pass, assembleRelease pass, smoke test release trên TECNO KJ7 đạt.
 - ✅ **AD-01: Tuân thủ consent UMP và loại bỏ interstitial bất ngờ sau batch** (2026-10-14) — `MainActivity` yêu cầu consent khi nhận ảnh qua `ACTION_SEND` (cold start hoặc `onNewIntent`), giữ UMP refresh mỗi lần theo policy, bỏ auto-show interstitial sau `TYPE_JOB_FINISH`. Test: unit + Robolectric widget + instrumentation manifest routing trên TECNO.
 
 Xem chi tiết trong `doc/feat.md` và `doc/task/BACKLOG.md`:
@@ -76,34 +77,3 @@ Xem chi tiết trong `doc/feat.md` và `doc/task/BACKLOG.md`:
 - ✅ FEAT-03: Watermark đa lớp (2026-09-24)
 - ✅ FEAT-04: Lịch sử batch gần đây (2026-09-22)
 - ✅ FEAT-05: Backup/Restore Template & Signature qua SAF + ZIP (2026-09-16)
-- ✅ FEAT-06: Watermark profile đầy đủ (2026-09-22)
-- ✅ FEAT-07: Preview grid + ước tính dung lượng trước batch export (2026-09-13)
-- ✅ FEAT-08: Chọn cả thư mục ảnh vào batch (2026-09-12)
-- ✅ FEAT-09: Preset resize theo nền tảng mạng xã hội (2026-09-10)
-- ✅ FEAT-10: Tự nhận diện hãng máy để gợi ý style EXIF (2026-09-13)
-- ✅ FEAT-11: Hiệu ứng viền/bóng/nền pill cho text watermark (2026-09-12)
-- ✅ FEAT-12: Undo/Redo editor (2026-09-22)
-- ✅ FEAT-13: Caption riêng từng ảnh trong batch export (2026-09-24)
-- ✅ FEAT-14: Tham số hoá EXIF frame style (2026-09-10)
-- ✅ FEAT-15: Chọn thư mục XUẤT ảnh bằng SAF (2026-09-22)
-- ✅ FEAT-16: Crop & Straighten tỉ lệ chuẩn trước watermark (2026-09-24)
-- ✅ FEAT-17: Skip 1 ảnh tại grid preview export (2026-09-21)
-- ✅ FEAT-18: So sánh trước/sau bằng slider (2026-09-22)
-- ✅ FEAT-19: Chính sách xử lý trùng tên file khi export (2026-09-20)
-- ✅ FEAT-20: Chia sẻ ZIP sau batch export (2026-09-20)
-- ✅ FEAT-21: Dán ảnh từ Clipboard (2026-09-20)
-- ✅ FEAT-22: Chụp ảnh từ Camera (2026-09-20)
-- ✅ FEAT-23: Ghi nhớ vị trí watermark riêng theo portrait/landscape (2026-09-23)
-- ✅ FEAT-24: MRU icon/logo gần đây (2026-09-22)
-
----
-
-## ⏸️ Deferred
-
-- ⏸️ BUG-14: VIP secret hardcode trong APK
-- ⏸️ BUG-15: AdMob rewarded release dùng test ID
-- ⏸️ ENH-17: VIP key device-bound
-- ⏸️ IDEA-08: Referral VIP qua Share App
-- ⏸️ IDEA-04: Cloud sync Brand Kit
-- ⏸️ IDEA-05: Chợ template cộng đồng
-- ⏸️ IDEA-11: Live Camera Watermark AR Preview

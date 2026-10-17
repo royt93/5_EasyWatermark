@@ -10,7 +10,7 @@
     <string name="about_title_info">Info</string>
     <string name="about_title_output">Utdata-format</string>
     <string name="about_title_version">Versjon</string>
-    <string name="about_title_open_source">Frie lisenser</string>
+    <string name="about_title_open_source">Lisenser for åpen kildekode</string>
     <string name="error_not_img">Velg et bilde</string>
     <string name="dialog_export_to_gallery">Eksporter til albumet</string>
     <string name="share">Del</string>
@@ -23,9 +23,9 @@
     <string name="request_permission_failed">Fikk ikke tilgang</string>
     <string name="error_file_not_found">Bilde kunne ikke åpnes, eller ble ikke valgt</string>
     <string name="tips_need_compress_img">Utilstrekkelig lagringsplass, eller så er bildet for stort</string>
-    <string name="tips_compressing">Pakker sammen …</string>
-    <string name="tips_compress_images">Pakk sammen bilde</string>
-    <string name="tips_compress_ok">Sammenpakking fullført. Klikk «OK» for å fortsette eksporten.</string>
+    <string name="tips_compressing">Komprimerer …</string>
+    <string name="tips_compress_images">Komprimer bilde</string>
+    <string name="tips_compress_ok">Komprimering fullført. Klikk «OK» for å fortsette eksporten.</string>
     <string name="title_layout">Utforming</string>
     <string name="dialog_title_exist_confirm">Advarsel</string>
     <string name="dialog_cancel_exist_confirm">Avbryt</string>
@@ -51,9 +51,9 @@
     <string name="dialog_save_export_list_title">Eksporter liste (%1$s)</string>
     <string name="copy_failed">Kunne ikke kopiere</string>
     <string name="recovery_mode_closed">Lukket. Prøv igjen.</string>
-    <string name="copy">Kopier feilmedling</string>
+    <string name="copy">Kopier feilmelding</string>
     <string name="tips_input_text_can_not_be_empty">Innhold må fylles ut</string>
-    <string name="store_not_found">Ikke installert.</string>
+    <string name="store_not_found">Ingen butikk er installert.</string>
     <string name="recovery_mode_tips">Gikk inn i gjenopprettingsmodus som følge av flere krasj. Innsending av enhets- og krasj-info via følgende metoder kan løse problemer. Takk.</string>
     <string name="dialog_button_add_template">Legg til</string>
     <string name="tile_mode_title_repeat">Gjenta</string>
@@ -73,11 +73,11 @@
     <string name="tips_choose_other_file_type">Ugyldig bilde</string>
     <string name="title_vertical_layout">Loddrett</string>
     <string name="crash_mail">Send e-post</string>
-    <string name="pick_via_system">mer …</string>
+    <string name="pick_via_system">Velg fra systemet</string>
     <string name="recovery_title">Gjenopprettingsmodus</string>
     <string name="copy_success">Kopiert</string>
     <string name="style_alpha">Alfa</string>
-    <string name="tips_compress_create_uri_failed">Sammenpakking fullført, men klarte ikke å opprette URI. Start programmet igjen og prøv på ny. %1$s</string>
+    <string name="tips_compress_create_uri_failed">Komprimering fullført, men klarte ikke å opprette URI. Start programmet igjen og prøv på ny. %1$s</string>
     <string name="config_default_water_mark_text">👋 IKKE DEL</string>
     <string name="tips_not_app_can_open_images">Ingen filbehandler oppdaget.</string>
     <string name="error_save_oom">Utilstrekkelig minne. Frigjør minne og prøv igjen.</string>
@@ -92,6 +92,10 @@
     <string name="leica_exif_border">Leica EXIF-kant</string>
     <string name="leica_exif_border_desc">Legger automatisk til en profesjonell EXIF-metadatakant nederst på eksporterte bilder. Merk: Kanten vises ikke i forhåndsvisningen for å optimalisere ytelsen.</string>
     <string name="vip_title">VIP</string>
+    <string name="vip_status_toolbar_active">VIP aktiv</string>
+    <string name="vip_status_toolbar_free">Gratis — lås opp VIP</string>
+    <string name="launch_card_vip_title">VIP</string>
+    <string name="launch_card_vip_desc">Belønninger og VIP-funksjoner</string>
     <string name="vip_status_active">VIP aktiv</string>
     <string name="vip_status_free">Gratismodus</string>
     <string name="vip_entry_first_install">🎁 Gave ved første installasjon</string>
@@ -242,6 +246,7 @@
     <string name="brush_size_format">Penselstørrelse %d px</string>
     <string name="camera_app_not_found">Fant ingen kameraapp på denne enheten</string>
     <string name="clipboard_no_image">Fant ikke noe bilde i utklippstavlen</string>
+    <string name="clipboard_image_url_unavailable">Kunne ikke laste ned bildelenken. Kontroller tilkoblingen og prøv igjen.</string>
     <string name="close">Lukk</string>
     <string name="color_black">Svart</string>
     <string name="color_blue">Blå</string>
@@ -263,7 +268,7 @@
     <string name="export_conflict_dialog_title">En annen eksport pågår</string>
     <string name="export_conflict_dialog_message">Å starte en ny eksport vil avbryte batchen som kjører nå. Fortsette?</string>
     <string name="dialog_save_config_conflict_policy">Hvis filen finnes</string>
-    <string name="dialog_save_config_copyright">Copyright (EXIF)</string>
+    <string name="dialog_save_config_copyright">Opphavsrett (EXIF)</string>
     <string name="dialog_save_config_copyright_hint">© Ditt navn</string>
     <string name="dialog_save_config_name_pattern">Filnavnmønster</string>
     <string name="dialog_save_config_name_pattern_hint">f.eks. {filename}_wm_{seq} — la stå tom for standard</string>
@@ -277,8 +282,8 @@
     <string name="dynamic_color_subtitle_supported">Tilpasser seg automatisk systemets bakgrunnspalett (Material You)</string>
     <string name="dynamic_color_subtitle_unsupported">Krever Android 12+ (enheten bruker standard Material 3-palett)</string>
     <string name="exif_customize_auto_palette">Match bildets farger</string>
-    <string name="exif_customize_band_color">Farge på ramme</string>
-    <string name="exif_customize_band_thickness">Tykkelse på ramme</string>
+    <string name="exif_customize_band_color">Farge på bånd</string>
+    <string name="exif_customize_band_thickness">Tykkelse på bånd</string>
     <string name="exif_customize_label">TILPASS</string>
     <string name="exif_customize_reset">Nullstill</string>
     <string name="exif_customize_serif_caption">Serif-bildetekst</string>
@@ -461,4 +466,5 @@
     <string name="quick_share_title">Hurtigdeling</string>
     <string name="quick_share_item_desc">Del med %1$s</string>
     <string name="ad_privacy_options">Personvernvalg for annonser</string>
+    <string name="ad_privacy_options_unavailable">Ingen personvernvalg for annonser må endres akkurat nå.</string>
 </resources>

@@ -48,12 +48,18 @@ class LaunchView : CustomViewGroup {
     companion object {
         private const val TAG = "LaunchView"
 
-        // 4 action card (chọn ảnh/chụp ảnh/dán clipboard/thông tin) xếp lưới 2x2 responsive:
-        // Lề ngoài 16dp (M3 standard), rãnh giữa cột 12dp. Chiều rộng card co giãn theo màn hình
-        // để khoảng cách tới 2 mép thiết bị luôn cân đối tuyệt đối.
+        // Action card xếp lưới 2 cột responsive; card VIP thêm thành hàng thứ ba.
+        // Lề ngoài 16dp, rãnh cột 12dp; chiều rộng co giãn theo màn hình.
         private const val GRID_SIDE_MARGIN_DP = 16
         private const val GRID_GUTTER_DP = 12
-        private const val GRID_CARD_HEIGHT_DP = 168
+        private const val GRID_CARD_HEIGHT_DP = 144
+        private const val CARD_TITLE_MAX_LINES = 2
+        private const val CARD_DESC_MAX_LINES = 3
+
+        // Logo→title 16, title→tagline 8, tagline→grid 20, VIP→footer 8, mép dưới 16 dp.
+        private const val LAUNCH_VERTICAL_GAPS_DP = 68
+        private const val VIP_CARD_HEIGHT_DP = 64
+        private const val VIP_CARD_GAP_DP = 12
         private const val MAX_CARD_WIDTH_DP = 220
     }
 
@@ -146,7 +152,8 @@ class LaunchView : CustomViewGroup {
         descRes: Int
     ): MaterialCardView {
         val card = MaterialCardView(context).apply {
-            layoutParams = MarginLayoutParams(LayoutParams.WRAP_CONTENT, GRID_CARD_HEIGHT_DP.dp)
+            layoutParams = MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+            minimumHeight = GRID_CARD_HEIGHT_DP.dp
             radius = 24.dp.toFloat()
             isClickable = true
             isFocusable = true
@@ -189,7 +196,8 @@ class LaunchView : CustomViewGroup {
             setPadding(12.dp, 16.dp, 12.dp, 16.dp)
             layoutParams = android.widget.FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER
             )
         }
 
@@ -243,7 +251,7 @@ class LaunchView : CustomViewGroup {
             setTextColor(onSurfaceColor)
             gravity = Gravity.CENTER
             textAlignment = TEXT_ALIGNMENT_CENTER
-            maxLines = 1
+            maxLines = CARD_TITLE_MAX_LINES
             ellipsize = android.text.TextUtils.TruncateAt.END
         }
         rootLayout.addView(tvTitle)
@@ -260,7 +268,7 @@ class LaunchView : CustomViewGroup {
             setPadding(0, 2.dp, 0, 0)
             gravity = Gravity.CENTER
             textAlignment = TEXT_ALIGNMENT_CENTER
-            maxLines = 2
+            maxLines = CARD_DESC_MAX_LINES
             ellipsize = android.text.TextUtils.TruncateAt.END
         }
         rootLayout.addView(tvDesc)
@@ -299,6 +307,98 @@ class LaunchView : CustomViewGroup {
             titleRes = R.string.about_title_info,
             descRes = R.string.launch_card_about_desc
         )
+    }
+
+    private lateinit var vipStatusText: TextView
+
+    val ivGoVip: MaterialCardView by lazy {
+        MaterialCardView(context).apply {
+            layoutParams = MarginLayoutParams(LayoutParams.WRAP_CONTENT, VIP_CARD_HEIGHT_DP.dp)
+            radius = 20.dp.toFloat()
+            isClickable = true
+            isFocusable = true
+            strokeColor = MaterialColors.getColor(
+                context,
+                com.google.android.material.R.attr.colorOutlineVariant,
+                Color.TRANSPARENT
+            )
+            strokeWidth = 1.dp
+            cardElevation = 2.dp.toFloat()
+            setCardBackgroundColor(
+                MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorSurfaceContainerHigh,
+                    Color.LTGRAY
+                )
+            )
+            addView(
+                LinearLayout(context).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = Gravity.CENTER_VERTICAL
+                    setPadding(16.dp, 8.dp, 16.dp, 8.dp)
+                    layoutParams = android.widget.FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    val iconBadge = android.widget.FrameLayout(context).apply {
+                        layoutParams = LinearLayout.LayoutParams(40.dp, 40.dp)
+                        background = GradientDrawable().apply {
+                            shape = GradientDrawable.RECTANGLE
+                            cornerRadius = 14.dp.toFloat()
+                            setColor(
+                                MaterialColors.getColor(
+                                    context,
+                                    com.google.android.material.R.attr.colorPrimaryContainer,
+                                    Color.BLACK
+                                )
+                            )
+                        }
+                        addView(
+                            ImageView(context).apply {
+                                layoutParams = android.widget.FrameLayout.LayoutParams(24.dp, 24.dp, Gravity.CENTER)
+                                setImageResource(R.drawable.ic_vip_crown)
+                                imageTintList = ColorStateList.valueOf(
+                                    MaterialColors.getColor(
+                                        context,
+                                        com.google.android.material.R.attr.colorOnPrimaryContainer,
+                                        Color.WHITE
+                                    )
+                                )
+                            }
+                        )
+                    }
+                    addView(iconBadge)
+                    addView(
+                        LinearLayout(context).apply {
+                            orientation = LinearLayout.VERTICAL
+                            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+                                .also { it.marginStart = 16.dp }
+                            addView(
+                                MaterialTextView(context).apply {
+                                    text = context.getString(R.string.launch_card_vip_title)
+                                    setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleSmall)
+                                    typeface = Typeface.DEFAULT_BOLD
+                                    setTextColor(MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurface, Color.BLACK))
+                                }
+                            )
+                            vipStatusText = MaterialTextView(context).apply {
+                                text = context.getString(R.string.vip_status_toolbar_free)
+                                setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodySmall)
+                                setTextColor(MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY))
+                            }
+                            addView(vipStatusText)
+                        }
+                    )
+                    addView(
+                        ImageView(context).apply {
+                            layoutParams = LinearLayout.LayoutParams(20.dp, 20.dp)
+                            setImageResource(R.drawable.ic_chevron_right)
+                            imageTintList = ColorStateList.valueOf(MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY))
+                        }
+                    )
+                }
+            )
+        }
     }
 
     val toolbar: MaterialToolbar by lazy {
@@ -511,6 +611,7 @@ class LaunchView : CustomViewGroup {
             ivCaptureFromCamera,
             ivPasteFromClipboard,
             ivGoAboutPage,
+            ivGoVip,
             tvVersionCopyright
         )
     }
@@ -585,6 +686,13 @@ class LaunchView : CustomViewGroup {
                     card.layoutParams = lp
                 }
             }
+            // Hàng VIP rộng bằng cả lưới 2 cột để chứa đủ chữ, không bị bóp thành ô vuông.
+            val vipWidth = 2 * dynamicCardWidth + GRID_GUTTER_DP.dp
+            val vipLp = ivGoVip.layoutParams
+            if (vipLp.width != vipWidth) {
+                vipLp.width = vipWidth
+                ivGoVip.layoutParams = vipLp
+            }
         }
 
         // measure children
@@ -593,6 +701,30 @@ class LaunchView : CustomViewGroup {
                 measureChildWithMargins(it, widthMeasureSpec, 0, heightMeasureSpec, 0)
             }
         }
+        // Chữ dài/font lớn làm card cao hơn mức tối thiểu: ép cả bốn card bằng card cao nhất để
+        // lưới vẫn đều, không cắt chữ.
+        val cardHeight = actionCards.maxOf { it.measuredHeight }
+        actionCards.forEach {
+            it.measure(
+                MeasureSpec.makeMeasureSpec(it.measuredWidth, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(cardHeight, MeasureSpec.EXACTLY)
+            )
+        }
+        // Thu logo trước khi cắt nội dung khi font lớn; không giảm cỡ chữ người dùng đã chọn.
+        val launchContentWithoutLogo = tvAppBrand.measuredHeight + tvAppTagline.measuredHeight +
+            2 * cardHeight + 2 * GRID_GUTTER_DP.dp + ivGoVip.measuredHeight +
+            tvVersionCopyright.measuredHeight + LAUNCH_VERTICAL_GAPS_DP.dp
+        val availableLogoHeight = (
+            MeasureSpec.getSize(heightMeasureSpec) - paddingTop - paddingBottom -
+                launchContentWithoutLogo
+            ).coerceAtLeast(0)
+        val logoHeight = minOf(logoContainer.measuredHeight, availableLogoHeight)
+        logoContainer.getChildAt(0)?.layoutParams?.let {
+            it.width = minOf(140.dp, logoHeight)
+            it.height = it.width
+        }
+        val logoSpec = MeasureSpec.makeMeasureSpec(logoHeight, MeasureSpec.EXACTLY)
+        logoContainer.measure(logoSpec, logoSpec)
         val heightUsed = toolbar.measuredHeight
             .plus(tabLayout.measuredHeightWithMargins)
             .plus(rvPanel.measuredHeightWithMargins)
@@ -627,7 +759,11 @@ class LaunchView : CustomViewGroup {
         val usableHeight = (usableBottom - usableTop).coerceAtLeast(1)
 
         // 1. Logo container placed proportionally in top-middle area
-        val logoY = usableTop + (usableHeight * 0.08f).toInt()
+        val contentHeight = logoContainer.measuredHeight + tvAppBrand.measuredHeight + tvAppTagline.measuredHeight +
+            2 * ivSelectedPhotoTips.measuredHeight + 2 * GRID_GUTTER_DP.dp + ivGoVip.measuredHeight +
+            tvVersionCopyright.measuredHeight + LAUNCH_VERTICAL_GAPS_DP.dp
+        val topSpace = minOf((usableHeight * 0.08f).toInt(), (usableHeight - contentHeight).coerceAtLeast(0))
+        val logoY = usableTop + topSpace
         logoContainer.layoutHorizontallyCentered(logoY)
 
         // 2. App Name directly below logo
@@ -648,15 +784,25 @@ class LaunchView : CustomViewGroup {
         val gridWidth = 2 * cardW + gridGutter
         val gridStartX = (measuredWidth - gridWidth) / 2
         val row2Top = gridTop + cardH + gridGutter
+        val row3Top = row2Top + cardH + gridGutter
         val col2Left = gridStartX + cardW + gridGutter
 
         ivSelectedPhotoTips.layout(gridStartX, gridTop, gridStartX + cardW, gridTop + cardH)
         ivCaptureFromCamera.layout(col2Left, gridTop, col2Left + cardW, gridTop + cardH)
         ivPasteFromClipboard.layout(gridStartX, row2Top, gridStartX + cardW, row2Top + cardH)
         ivGoAboutPage.layout(col2Left, row2Top, col2Left + cardW, row2Top + cardH)
+        ivGoVip.layout(
+            gridStartX,
+            row3Top,
+            gridStartX + gridWidth,
+            row3Top + VIP_CARD_HEIGHT_DP.dp
+        )
 
-        // 8. Version & Copyright footer safely placed above navigation bar inset
-        val footerY = usableBottom - tvVersionCopyright.measuredHeight - 16.dp
+        // Keep the footer clear of the 3-row card grid on short screens.
+        val footerY = maxOf(
+            usableBottom - tvVersionCopyright.measuredHeight - 16.dp,
+            ivGoVip.bottom + 8.dp
+        )
         tvVersionCopyright.layoutHorizontallyCentered(footerY)
     }
 
@@ -770,8 +916,58 @@ class LaunchView : CustomViewGroup {
         launchViewListener = LaunchViewListenerBuilder().also(block)
     }
 
+    private var vipCrownAnimator: android.animation.Animator? = null
+
+    /** Animator crown còn chạy không — để test kiểm tra vòng đời. */
+    internal val isVipCrownAnimating: Boolean get() = vipCrownAnimator?.isRunning == true
+
+    fun stopVipCrownAnimation() {
+        vipCrownAnimator?.cancel()
+        vipCrownAnimator = null
+    }
+
+    /**
+     * Đổi crown theo trạng thái VIP: vàng khi đang VIP, màu thường khi free; chạy một đợt nảy ngắn
+     * (hữu hạn, không lặp vô hạn) để thu hút nhưng không gây phiền. Bỏ qua animation khi hệ thống đã
+     * tắt animation (ANIMATOR_DURATION_SCALE = 0).
+     */
+    fun bindVipState(active: Boolean) {
+        val badge = (ivGoVip.getChildAt(0) as? ViewGroup)?.getChildAt(0) as? ViewGroup ?: return
+        val icon = badge.getChildAt(0) as? ImageView ?: return
+        val tint = if (active) {
+            androidx.core.content.ContextCompat.getColor(context, R.color.vip_gold)
+        } else {
+            MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnPrimaryContainer, Color.WHITE)
+        }
+        icon.imageTintList = ColorStateList.valueOf(tint)
+        vipStatusText.setText(if (active) R.string.vip_status_toolbar_active else R.string.vip_status_toolbar_free)
+
+        vipCrownAnimator?.cancel()
+        badge.scaleX = 1f
+        badge.scaleY = 1f
+        badge.rotation = 0f
+        val animationsOn = android.provider.Settings.Global.getFloat(
+            context.contentResolver,
+            android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f
+        ) > 0f
+        if (!animationsOn) return
+        vipCrownAnimator = android.animation.ObjectAnimator.ofPropertyValuesHolder(
+            badge,
+            android.animation.PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.2f, 1f),
+            android.animation.PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.2f, 1f),
+            android.animation.PropertyValuesHolder.ofFloat(View.ROTATION, 0f, -10f, 10f, 0f)
+        ).apply {
+            duration = if (active) 1100L else 800L
+            repeatCount = if (active) 2 else 1
+            start()
+        }
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        vipCrownAnimator?.cancel()
+        vipCrownAnimator = null
         launchViewListener = null
     }
     //endregion

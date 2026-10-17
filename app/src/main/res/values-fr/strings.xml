@@ -23,7 +23,7 @@
     <string name="about_title_info">Informations</string>
     <string name="about_title_output">Format de sortie</string>
     <string name="about_title_version">Version</string>
-    <string name="about_title_open_source">Licences ouvertes</string>
+    <string name="about_title_open_source">Licences open source</string>
     <string name="error_not_img">Sélectionnez une image</string>
     <string name="error_file_not_found">L\'image n\'a pas pu être ouverte ou n\'a pas été sélectionnée</string>
     <string name="dialog_export_to_gallery">Exporter vers l\'album</string>
@@ -59,12 +59,12 @@
     <string name="dialog_save_config_format">Format</string>
     <string name="dialog_save_config_quality">Qualité</string>
     <string name="tips_pick_image">Choisissez des images</string>
-    <string name="pick_via_system">plus…</string>
+    <string name="pick_via_system">Choisir depuis le système</string>
     <string name="recovery_title">Mode de récupération</string>
     <string name="copy_success">Copie réussie</string>
     <string name="copy_failed">Échec de la copie</string>
-    <string name="store_not_found">Not Store a été installé.</string>
-    <string name="recovery_mode_closed">C\'est fermé, veuillez réessayer</string>
+    <string name="store_not_found">Aucune boutique n\'est installée \?</string>
+    <string name="recovery_mode_closed">Il a été désactivé, veuillez réessayer</string>
     <string name="copy">Copier le message d\'erreur</string>
     <string name="recovery_mode_tips">Entré en mode de récupération en raison de plantages multiples. L\'envoi de l\'appareil et des informations de panne ci-dessous via les méthodes suivantes peut résoudre le problème. Merci.</string>
     <string name="turn_off_recovery_mode">Désactiver le mode de récupération</string>
@@ -93,6 +93,10 @@
     <string name="leica_exif_border_desc">Ajoute automatiquement une bordure de métadonnées EXIF professionnelle au bas des images exportées. Remarque : La bordure n\'est pas affichée dans la fenêtre d\'aperçu pour optimiser les performances.</string>
 
     <string name="vip_title">VIP</string>
+    <string name="vip_status_toolbar_active">VIP actif</string>
+    <string name="vip_status_toolbar_free">Offre gratuite — débloquer VIP</string>
+    <string name="launch_card_vip_title">VIP</string>
+    <string name="launch_card_vip_desc">Offre gratuite — débloquer VIP</string>
     <string name="vip_status_active">VIP actif</string>
     <string name="vip_status_free">Mode gratuit</string>
     <string name="vip_entry_first_install">🎁 Cadeau de première installation</string>
@@ -245,6 +249,7 @@
     <string name="brush_size_format">Taille du pinceau %d px</string>
     <string name="camera_app_not_found">Aucune application appareil photo trouvée sur cet appareil</string>
     <string name="clipboard_no_image">Aucune image trouvée dans le presse-papiers</string>
+    <string name="clipboard_image_url_unavailable">Impossible de télécharger le lien de l’image. Vérifiez votre connexion et réessayez.</string>
     <string name="close">Fermer</string>
     <string name="color_black">Noir</string>
     <string name="color_blue">Bleu</string>
@@ -257,7 +262,7 @@
     <string name="colorpickerview">ColorPickerView</string>
     <string name="compare_hint">Faites glisser pour révéler la photo originale</string>
     <string name="compare_title">Comparer avant/après</string>
-    <string name="compressor">Compresseur</string>
+    <string name="compressor">Compressor</string>
     <string name="conflict_policy_keep_both">Conserver les deux (MediaStore)</string>
     <string name="conflict_policy_overwrite">Remplacer</string>
     <string name="conflict_policy_rename_version">Renommer automatiquement (_v2, _v3)</string>
@@ -467,4 +472,5 @@
     <string name="quick_share_title">Partage rapide</string>
     <string name="quick_share_item_desc">Partager avec %1$s</string>
     <string name="ad_privacy_options">Choix de confidentialité des annonces</string>
+    <string name="ad_privacy_options_unavailable">Aucune option de confidentialité publicitaire ne doit être modifiée pour le moment.</string>
 </resources>

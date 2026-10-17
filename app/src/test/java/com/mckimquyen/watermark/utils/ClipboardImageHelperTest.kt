@@ -95,6 +95,35 @@ class ClipboardImageHelperTest {
     }
 
     @Test
+    fun extractImageUrls_extractsHttpsImgSourceAndRejectsInsecureSource() {
+        val clip = ClipData.newHtmlText(
+            "copied picture",
+            "image",
+            "<html><body><img src=\"https://cdn.example.test/photo.jpg\"></body></html>"
+        )
+        assertThat(ClipboardImageHelper.extractImageUrls(clip))
+            .containsExactly("https://cdn.example.test/photo.jpg")
+
+        val insecure = ClipData.newHtmlText("copied picture", "image", "<img src=\"http://cdn.example.test/photo.jpg\">")
+        assertThat(ClipboardImageHelper.extractImageUrls(insecure)).isEmpty()
+    }
+
+    @Test
+    fun httpsUriItem_neverBypassesDownloadValidationAsLocalImage() {
+        val uri = Uri.parse("https://127.0.0.1/private.jpg")
+        val clip = ClipData("image", arrayOf("image/jpeg"), ClipData.Item(uri))
+        assertThat(ClipboardImageHelper.extractImageUris(context, clip)).isEmpty()
+        assertThat(ClipboardImageHelper.extractImageUrls(clip)).isEmpty()
+    }
+
+    @Test
+    fun extractImageUris_htmlLocalImage_returnsLocalUriWithoutNetwork() {
+        val uri = Uri.fromFile(File(testTempDir, "html-image.png").apply { writeBytes(byteArrayOf(1)) })
+        val clip = ClipData.newHtmlText("image", "image", "<img src=\"$uri\">")
+        assertThat(ClipboardImageHelper.extractImageUris(context, clip)).containsExactly(uri)
+    }
+
+    @Test
     fun extractImageUris_clipDataWithNonImageUri_returnsEmptyList() {
         val textFile = File(testTempDir, "document.pdf").apply {
             writeBytes(byteArrayOf(0, 0, 0))

@@ -106,6 +106,33 @@ class MainActivityPasteClipboardRoboTest {
     }
 
     @Test
+    fun performPasteFromClipboard_withUnreachableHttpsImageLink_showsDownloadFailureAndStaysInLaunchMode() {
+        val activity = Robolectric.buildActivity(MainActivity::class.java).create().start().resume().get()
+        shadowOf(Looper.getMainLooper()).idle()
+        val launchView = activity.findViewById<ViewGroup>(android.R.id.content).getChildAt(0) as LaunchView
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+
+        // TLD .invalid (RFC 6761) luôn không phân giải được: test không phụ thuộc mạng thật.
+        activity.performPasteFromClipboard(
+            ClipData.newHtmlText("copied picture", "image", "<img src=\"https://image.invalid/photo\">")
+        )
+        val expected = activity.getString(R.string.clipboard_image_url_unavailable)
+        var shown: String? = null
+        var attempts = 0
+        while (shown != expected && attempts < MAX_WAIT_ATTEMPTS) {
+            Thread.sleep(WAIT_STEP_MS)
+            shadowOf(Looper.getMainLooper()).idle()
+            shown = activity.window.decorView
+                .findViewById<android.widget.TextView>(com.google.android.material.R.id.snackbar_text)?.text?.toString()
+            attempts++
+        }
+
+        assertThat(shown).isEqualTo(expected)
+        assertThat(viewModel.imageList.value?.first).isEmpty()
+        assertThat(launchView.mode).isEqualTo(LaunchView.ViewMode.LaunchMode)
+    }
+
+    @Test
     fun onOptionsItemSelected_actionPaste_withValidImage_pastesImage() {
         val activity = Robolectric.buildActivity(MainActivity::class.java).create().start().resume().get()
         shadowOf(Looper.getMainLooper()).idle()
@@ -136,5 +163,10 @@ class MainActivityPasteClipboardRoboTest {
         val currentImages = viewModel.imageList.value?.first
         assertThat(currentImages).isNotNull()
         assertThat(currentImages!!.map { it.uri }).contains(imageUri)
+    }
+
+    private companion object {
+        const val MAX_WAIT_ATTEMPTS = 100
+        const val WAIT_STEP_MS = 50L
     }
 }

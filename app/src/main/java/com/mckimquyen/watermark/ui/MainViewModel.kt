@@ -344,6 +344,16 @@ class MainViewModel @Inject constructor(
      * hình). Ghi nhớ id WorkInfo FINISHED đã xử lý — bỏ qua nếu observer mới thấy LẠI đúng id đó.
      */
     private var lastHandledFinishedWorkId: java.util.UUID? = null
+    private var exportInterstitialConsumed = false
+    private var restoredExportResult = false
+
+    /** One-shot per ViewModel, so configuration recreation cannot replay export-triggered ads. */
+    fun consumeExportInterstitialTrigger(): Boolean {
+        if (restoredExportResult || exportInterstitialConsumed) return false
+        if (saveResult.value?.code != TYPE_JOB_FINISH) return false
+        exportInterstitialConsumed = true
+        return true
+    }
 
     /**
      * ENH-01: chạy qua `BatchExportWorker` (WorkManager) thay vì `viewModelScope` — batch sống sót
@@ -1018,6 +1028,7 @@ class MainViewModel @Inject constructor(
             waterMarkRepo.select(restored.first().uri)
         }
         saveResult.value = Result.success(code = TYPE_JOB_FINISH, data = null)
+        restoredExportResult = true
         skipNextResetAfterRestore = true
     }
 
@@ -1036,6 +1047,8 @@ class MainViewModel @Inject constructor(
             return
         }
         saveResult.postValue(Result.success(null))
+        exportInterstitialConsumed = false
+        restoredExportResult = false
         // ENH-08: imageInfo bất biến — copy() thay vì mutate item đang sống trong repository list,
         // đồng thời đẩy list mới về repository (trước đây mutate im lặng không qua updateImageList,
         // StateFlow không bao giờ emit lại dù nội dung item đã đổi).

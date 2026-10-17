@@ -114,6 +114,7 @@
     <string name="launch_card_paste_title">Paste from clipboard</string>
     <string name="launch_card_paste_desc">Watermark copied image or screenshot</string>
     <string name="clipboard_no_image">No image found in clipboard</string>
+    <string name="clipboard_image_url_unavailable">Could not download the image link. Check your connection and try again.</string>
     <string name="action_paste">Paste image</string>
     <string name="pick_via_system">Choose from system</string>
     <!-- FEAT-08: chọn cả thư mục (SAF tree) đưa toàn bộ ảnh trong đó vào batch. -->
@@ -233,6 +234,10 @@
     <string name="exif_customize_serif_caption">Serif caption</string>
     <string name="exif_customize_auto_palette">Match photo colors</string>
     <string name="vip_title">VIP Access</string>
+    <string name="vip_status_toolbar_active">VIP active</string>
+    <string name="vip_status_toolbar_free">Free plan — unlock VIP</string>
+    <string name="launch_card_vip_title">VIP</string>
+    <string name="launch_card_vip_desc">Free plan — unlock VIP</string>
     <string name="vip_status_active">VIP Active</string>
     <string name="vip_status_free">Free mode</string>
     <string name="vip_entry_first_install">First install gift</string>
@@ -503,5 +508,6 @@
     <string name="quick_share_title">Quick share</string>
     <string name="quick_share_item_desc">Share to %1$s</string>
     <string name="ad_privacy_options">Ad privacy choices</string>
+    <string name="ad_privacy_options_unavailable">No ad privacy choices need updating right now.</string>
     <string name="ad_attribution_label" translatable="false">Ad Networks (AdMob / AppLovin MAX)</string>
 </resources>

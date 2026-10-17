@@ -38,6 +38,8 @@ object ClipboardImageHelper {
             // 1. Kiểm tra Uri trực tiếp từ ClipData.Item
             val uri = item.uri
             if (uri != null) {
+                // URI mạng chỉ đi qua luồng tải HTTPS có DNS guard, không qua MIME/đuôi file local.
+                if (uri.scheme == "http" || uri.scheme == "https") continue
                 if (isImageUri(resolver, uri)) {
                     result.add(uri)
                     continue
@@ -53,10 +55,52 @@ object ClipboardImageHelper {
                         result.add(parsedUri)
                     }
                 }
+                continue
+            }
+
+            // 3. Rich clipboard: nhiều app đặt ảnh trong HTML (`<img src="content://...">`).
+            // Chỉ nhận URI cục bộ để không tự tải mạng khi user bấm Dán.
+            item.htmlText?.let { html ->
+                IMG_SRC_REGEX.findAll(html).forEach { match ->
+                    kotlin.runCatching {
+                        val parsedUri = Uri.parse(match.groupValues[1].trim())
+                        if ((parsedUri.scheme == "content" || parsedUri.scheme == "file") &&
+                            isImageUri(resolver, parsedUri)
+                        ) {
+                            result.add(parsedUri)
+                        }
+                    }
+                }
             }
         }
-        return result
+        return result.distinct()
     }
+
+    fun extractImageUrls(clipData: ClipData?): List<String> {
+        if (clipData == null || clipData.itemCount == 0) return emptyList()
+        val urls = mutableListOf<String>()
+        for (index in 0 until clipData.itemCount) {
+            val item = clipData.getItemAt(index) ?: continue
+            // HTML <img> là ảnh được copy; không tải URL liên kết trang khi HTML có src ảnh riêng.
+            val imageSources = item.htmlText?.let { html ->
+                IMG_SRC_REGEX.findAll(html).map {
+                    android.text.Html.fromHtml(
+                        it.groupValues[1],
+                        android.text.Html.FROM_HTML_MODE_LEGACY
+                    ).toString().trim()
+                }.toList()
+            }.orEmpty()
+            val candidates = imageSources.ifEmpty { listOf(item.uri?.toString() ?: item.text?.toString()?.trim().orEmpty()) }
+            candidates.mapNotNull(::extractHttpsImageUrl).forEach(urls::add)
+        }
+        return urls.distinct()
+    }
+
+    private fun extractHttpsImageUrl(value: String): String? {
+        return value.takeIf(ClipboardImageUrlImporter::isAllowedHttpsImageUrl)
+    }
+
+    private val IMG_SRC_REGEX = Regex("""<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']""", RegexOption.IGNORE_CASE)
 
     private fun isImageUri(
         resolver: android.content.ContentResolver,

@@ -27,6 +27,7 @@ class AboutActivityAdPrivacyRoboTest {
         mockkObject(AdManager)
         every { AdManager.loadBanner(any(), any(), any(), any(), any()) } returns null
         every { AdManager.loadInterstitial(any()) } returns Unit
+        every { AdManager.showInterstitial(any(), any()) } returns Unit
         every { AdManager.showConsentFormIfAvailable(any(), any()) } returns true
     }
 

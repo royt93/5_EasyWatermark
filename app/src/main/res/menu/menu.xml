@@ -69,10 +69,10 @@
 
     <item
         android:id="@+id/actionVip"
-        android:icon="@drawable/ic_workspace_premium"
+        android:icon="@drawable/ic_vip_crown"
         android:title="@string/vip_title"
         app:iconTint="?attr/colorOnSurface"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/actionBatchHistory"

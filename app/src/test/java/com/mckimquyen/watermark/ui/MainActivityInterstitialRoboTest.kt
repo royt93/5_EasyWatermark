@@ -304,6 +304,47 @@ class MainActivityInterstitialRoboTest {
     }
 
     @Test
+    fun `share consent callback after destroy does not preload interstitial`() {
+        mockkObject(AdManager)
+        val callback = io.mockk.slot<(Boolean) -> Unit>()
+        every { AdManager.requestConsentInfoUpdate(any(), any(), capture(callback)) } returns Unit
+        every { AdManager.loadInterstitial(any()) } returns Unit
+        try {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "image/jpeg"
+                putExtra(Intent.EXTRA_STREAM, Uri.parse("content://test/share.jpg"))
+            }
+            val controller = Robolectric.buildActivity(MainActivity::class.java, intent)
+            controller.create().start()
+            controller.destroy()
+
+            callback.captured(true)
+
+            verify(exactly = 0) { AdManager.loadInterstitial(any()) }
+        } finally {
+            unmockkObject(AdManager)
+        }
+    }
+
+    @Test
+    fun `same finished export does not replay interstitial after activity recreation`() {
+        mockkObject(AdManager)
+        every { AdManager.showInterstitial(any(), any()) } returns Unit
+        try {
+            val first = Robolectric.buildActivity(MainActivity::class.java).create().start().resume()
+            val firstActivity = first.get()
+            val viewModel = firstActivity.viewModelField()
+            viewModel.saveResult.value = Result.success(code = MainViewModel.TYPE_JOB_FINISH, data = null)
+            first.recreate()
+
+            verify(exactly = 1) { AdManager.showInterstitial(any(), any()) }
+            assertThat(viewModel.consumeExportInterstitialTrigger()).isFalse()
+        } finally {
+            unmockkObject(AdManager)
+        }
+    }
+
+    @Test
     fun `ordinary launch does not request UMP consent from MainActivity`() {
         mockkObject(AdManager)
         try {
@@ -319,15 +360,40 @@ class MainActivityInterstitialRoboTest {
     }
 
     @Test
-    fun `job finish does not automatically show interstitial`() {
+    fun `finished export while backgrounded waits until resumed and only shows once`() {
         mockkObject(AdManager)
+        every { AdManager.showInterstitial(any(), any()) } returns Unit
+        val controller = Robolectric.buildActivity(MainActivity::class.java).create().start().resume().visible()
+        try {
+            val activity = controller.get()
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            controller.pause().stop()
+            activity.viewModelField().saveResult.value = Result.success(code = MainViewModel.TYPE_JOB_FINISH, data = null)
+            verify(exactly = 0) { AdManager.showInterstitial(any(), any()) }
+
+            controller.restart().start().resume()
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            verify(exactly = 1) { AdManager.showInterstitial(activity, any()) }
+            controller.pause().stop().restart().start().resume()
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            verify(exactly = 1) { AdManager.showInterstitial(activity, any()) }
+        } finally {
+            controller.pause().stop().destroy()
+            unmockkObject(AdManager)
+        }
+    }
+
+    @Test
+    fun `job finish shows interstitial once`() {
+        mockkObject(AdManager)
+        every { AdManager.showInterstitial(any(), any()) } returns Unit
         try {
             val controller = Robolectric.buildActivity(MainActivity::class.java)
-            val activity = controller.create().start().get()
+            val activity = controller.create().start().resume().get()
             activity.viewModelField().saveResult.value =
                 Result.success(code = MainViewModel.TYPE_JOB_FINISH, data = null)
 
-            verify(exactly = 0) { AdManager.showInterstitial(any(), any()) }
+            verify(exactly = 1) { AdManager.showInterstitial(activity, any()) }
 
             controller.destroy()
         } finally {

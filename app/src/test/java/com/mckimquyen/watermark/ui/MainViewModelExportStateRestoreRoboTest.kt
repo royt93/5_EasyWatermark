@@ -253,6 +253,8 @@ class MainViewModelExportStateRestoreRoboTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertThat(restored.saveResult.value?.code).isEqualTo(MainViewModel.TYPE_JOB_FINISH)
+        // Snapshot cũ chỉ phục hồi nút chia sẻ, không phải export mới để bật quảng cáo.
+        assertThat(restored.consumeExportInterstitialTrigger()).isFalse()
         val list = newRepo.imageInfoList
         assertThat(list.map { it.uri }).containsExactly(input)
         assertThat(list.single().shareUri).isEqualTo(output)

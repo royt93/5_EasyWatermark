@@ -78,6 +78,7 @@ import com.mckimquyen.watermark.ui.widget.onItemClick
 import com.mckimquyen.watermark.utils.AppOpenSuppressor
 import com.mckimquyen.watermark.utils.CameraCaptureHelper
 import com.mckimquyen.watermark.utils.ClipboardImageHelper
+import com.mckimquyen.watermark.utils.ClipboardImageUrlImporter
 import com.mckimquyen.watermark.utils.FileUtils
 import com.mckimquyen.watermark.utils.PickImageContract
 import com.mckimquyen.watermark.utils.ShareIntentResolver
@@ -505,6 +506,7 @@ class MainActivity : BaseActivity() {
         // Tắt cờ sau khi host đã resume để các lần resume thật sau này vẫn hiện App Open bình thường.
         AppOpenSuppressor.end()
         refreshVipBadge()
+        window.decorView.post { showPendingExportInterstitialIfReady() }
         if (MyApplication.recoveryMode) {
             return
         }
@@ -514,6 +516,18 @@ class MainActivity : BaseActivity() {
                 return@launch
             }
             (application as? MyApplication?)?.launchSuccess()
+        }
+    }
+
+    override fun onStop() {
+        if (::launchView.isInitialized) launchView.stopVipCrownAnimation()
+        super.onStop()
+    }
+
+    private fun showPendingExportInterstitialIfReady() {
+        if (MyApplication.recoveryMode || !lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) return
+        if (viewModel.consumeExportInterstitialTrigger()) {
+            AdManager.showInterstitial(this) { }
         }
     }
 
@@ -663,6 +677,7 @@ class MainActivity : BaseActivity() {
                 viewModel.resetJobStatus()
             } else {
                 toast(it.message)
+                showPendingExportInterstitialIfReady()
             }
         }
 
@@ -755,6 +770,9 @@ class MainActivity : BaseActivity() {
         // go about page
         launchView.ivGoAboutPage.setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
+        }
+        launchView.ivGoVip.setOnClickListener {
+            startActivity(Intent(this, VipManagementActivity::class.java))
         }
         // pick image button
         launchView.ivSelectedPhotoTips.setOnClickListener {
@@ -1148,6 +1166,13 @@ class MainActivity : BaseActivity() {
         if (!this::launchView.isInitialized) return
         val toolbar = launchView.toolbar
         val active = com.roy.sdkadbmob.AdManager.isVipByKeyActive()
+        val vipIcon = ContextCompat.getDrawable(this, R.drawable.ic_vip_crown)?.mutate()
+        vipIcon?.setTint(ContextCompat.getColor(this, if (active) R.color.vip_gold else R.color.md_theme_light_onSurface))
+        toolbar.menu.findItem(R.id.actionVip)?.icon = vipIcon
+        launchView.ivGoVip.contentDescription = getString(
+            if (active) R.string.vip_status_toolbar_active else R.string.vip_status_toolbar_free
+        )
+        launchView.bindVipState(active)
         toolbar.post {
             if (isFinishing || isDestroyed) return@post
             if (toolbar.menu.findItem(R.id.actionVip) == null) return@post
@@ -1361,8 +1386,21 @@ class MainActivity : BaseActivity() {
         val imageUris = ClipboardImageHelper.extractImageUris(this, clipData)
         if (imageUris.isNotEmpty()) {
             dealWithImage(imageUris)
-        } else {
+            return
+        }
+        val imageUrl = ClipboardImageHelper.extractImageUrls(clipData).firstOrNull()
+        if (imageUrl == null) {
             toast(R.string.clipboard_no_image)
+            return
+        }
+        lifecycleScope.launch {
+            val importedUri = ClipboardImageUrlImporter.import(this@MainActivity, imageUrl)
+            if (isFinishing || isDestroyed) return@launch
+            if (importedUri != null) {
+                dealWithImage(listOf(importedUri))
+            } else {
+                toast(R.string.clipboard_image_url_unavailable)
+            }
         }
     }
 

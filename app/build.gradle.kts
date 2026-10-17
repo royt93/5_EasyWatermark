@@ -211,6 +211,7 @@ dependencies {
     api("com.google.guava:guava:33.3.1-android")
     api(libs.asyncLayoutInflater)
     api(libs.glide.glide)
+    implementation(libs.okhttp)
     kapt(libs.glide.compiler)
     api(libs.compressor)
     api(libs.kotlin.stdlib)

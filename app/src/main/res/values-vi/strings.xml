@@ -101,6 +101,7 @@
     <string name="launch_card_paste_title">Dán từ bộ nhớ tạm</string>
     <string name="launch_card_paste_desc">Đóng dấu ảnh vừa sao chép hoặc ảnh chụp màn hình</string>
     <string name="clipboard_no_image">Không tìm thấy ảnh trong bộ nhớ tạm</string>
+    <string name="clipboard_image_url_unavailable">Không tải được liên kết ảnh. Hãy kiểm tra kết nối rồi thử lại.</string>
     <string name="action_paste">Dán ảnh</string>
     <string name="pick_via_system">Chọn qua hệ thống</string>
     <string name="pick_folder">Chọn thư mục</string>
@@ -218,6 +219,10 @@
     <string name="exif_customize_serif_caption">Phông có chân (Serif)</string>
     <string name="exif_customize_auto_palette">Màu khung theo ảnh</string>
     <string name="vip_title">VIP</string>
+    <string name="vip_status_toolbar_active">VIP đang hoạt động</string>
+    <string name="vip_status_toolbar_free">Gói miễn phí — mở khóa VIP</string>
+    <string name="launch_card_vip_title">VIP</string>
+    <string name="launch_card_vip_desc">Ưu đãi và tính năng VIP</string>
     <string name="vip_status_active">VIP đang kích hoạt</string>
     <string name="vip_status_free">Chế độ miễn phí</string>
     <string name="vip_entry_first_install">🎁 Quà tặng cài đặt mới</string>
@@ -470,4 +475,5 @@
     <string name="quick_share_title">Chia sẻ nhanh</string>
     <string name="quick_share_item_desc">Chia sẻ tới %1$s</string>
     <string name="ad_privacy_options">Tùy chọn quyền riêng tư quảng cáo</string>
+    <string name="ad_privacy_options_unavailable">Hiện không có tùy chọn quyền riêng tư quảng cáo nào cần cập nhật.</string>
 </resources>

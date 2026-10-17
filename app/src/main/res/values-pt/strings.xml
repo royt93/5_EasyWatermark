@@ -9,13 +9,13 @@
     <string name="tips_choose_color_dialog">Escolha a cor</string>
     <string name="tips_confirm_dialog">Confirmar</string>
     <string name="tips_cancel_dialog">Cancelar</string>
-    <string name="tips_error">Falha</string>
-    <string name="title_text_style">Fonte</string>
+    <string name="tips_error">Erro</string>
+    <string name="title_text_style">Estilo</string>
     <string name="title_text_size">Tamanho</string>
-    <string name="about_title_open_source">Software livre</string>
+    <string name="about_title_open_source">Licenças de código aberto</string>
     <string name="error_not_img">Selecione uma imagem</string>
     <string name="error_file_not_found">A imagem não pôde ser aberta ou não foi selecionada</string>
-    <string name="share">Compartilhar a imagem</string>
+    <string name="share">Partilhar</string>
     <string name="tips_not_app_can_open_images">Nenhum gestor de ficheiros detectado.</string>
     <string name="tips_choose_other_file_type">Imagem inválida</string>
     <string name="error_save_oom">Memória insuficiente, por favor limpe os processos em segundo plano e tente novamente</string>
@@ -35,8 +35,8 @@
     <string name="tile_mode_title_repeat">Repetir</string>
     <string name="tile_mode_title_decal">Único</string>
     <string name="tips_use_this_template">Usar este modelo\?</string>
-    <string name="tips_database_init_error">Falha na inicialização do banco de dados.</string>
-    <string name="about_title_info">Detalhes</string>
+    <string name="tips_database_init_error">Falha na inicialização da base de dados.</string>
+    <string name="about_title_info">Informações</string>
     <string name="about_title_output">Formato de saída</string>
     <string name="about_title_version">Versão</string>
     <string name="dialog_export_to_gallery">Exportar para Álbum</string>
@@ -45,7 +45,7 @@
     <string name="tips_ok">Confirmar</string>
     <string name="action_pick">Escolha uma imagem</string>
     <string name="action_save">Gravar</string>
-    <string name="title_tile_mode">Modo Tile</string>
+    <string name="title_tile_mode">Modo de mosaico</string>
     <string name="title_horizon_layout">Horizontal</string>
     <string name="title_vertical_layout">Vertical</string>
     <string name="title_text_color">Cor</string>
@@ -62,23 +62,23 @@
     <string name="crash_mail">Enviar um e-mail</string>
     <string name="tip_not_mail_found">Nenhum cliente do e-mail detectado. Alternativamente, pode colar a mensagem do erro na loja de apps ou no GitHub.</string>
     <string name="config_default_water_mark_text">👋 NÃO REDISTRIBUIR</string>
-    <string name="style_alpha">Nitidez</string>
+    <string name="style_alpha">Alfa</string>
     <string name="dialog_save_export_list_title">Exportar lista(%1$s)</string>
     <string name="dialog_open_in_gallery">Ver na Galeria</string>
     <string name="dialog_save_config_format">Formato</string>
     <string name="dialog_save_config_quality">Qualidade</string>
-    <string name="tips_pick_image">Vamos começar selecionando uma imagem</string>
-    <string name="pick_via_system">Choose more…</string>
+    <string name="tips_pick_image">Escolher imagens</string>
+    <string name="pick_via_system">Escolher a partir do sistema</string>
     <string name="recovery_title">Modo de restauração</string>
     <string name="copy_success">Copiado</string>
     <string name="copy_failed">Cópia falhou</string>
-    <string name="recovery_mode_closed">Reiniciar para atualizar modificações</string>
+    <string name="recovery_mode_closed">Foi desativado, tente novamente</string>
     <string name="tips_input_text_can_not_be_empty">O conteúdo não pode estar vazio</string>
-    <string name="copy">Copiar registos</string>
+    <string name="copy">Copiar mensagem de erro</string>
     <string name="turn_off_recovery_mode">Desligar o modo de recuperação</string>
-    <string name="back">Anterior</string>
+    <string name="back">Voltar</string>
     <string name="dialog_title_template_edit">Editar modelo</string>
-    <string name="dialog_title_edit_watermark">\"Editar Marca D\'água\"</string>
+    <string name="dialog_title_edit_watermark">Editar marca de água</string>
     <string name="dialog_title_template_title">Lista de Modelos</string>
     <string name="dialog_button_add_template">Adicionar</string>
 
@@ -89,10 +89,14 @@
     <string name="apply_signature">Aplicar Assinatura</string>
     <string name="save_failed">Falha ao guardar!</string>
     <string name="signature_applied">Assinatura aplicada!</string>
-    <string name="leica_exif_border">Bordo Leica EXIF</string>
-    <string name="leica_exif_border_desc">Adiciona automaticamente um bordo profissional com metadados EXIF no fundo das imagens exportadas. Nota: O bordo não é exibido na janela de visualização para otimizar o desempenho.</string>
+    <string name="leica_exif_border">Moldura Leica EXIF</string>
+    <string name="leica_exif_border_desc">Adiciona automaticamente uma moldura profissional com metadados EXIF na parte inferior das imagens exportadas. Nota: a moldura não é apresentada na janela de pré-visualização para otimizar o desempenho.</string>
 
     <string name="vip_title">VIP</string>
+    <string name="vip_status_toolbar_active">VIP ativo</string>
+    <string name="vip_status_toolbar_free">Plano gratuito — desbloqueie o VIP</string>
+    <string name="launch_card_vip_title">VIP</string>
+    <string name="launch_card_vip_desc">Plano gratuito — desbloqueie o VIP</string>
     <string name="vip_status_active">VIP ativo</string>
     <string name="vip_status_free">Modo gratuito</string>
     <string name="vip_entry_first_install">🎁 Oferta de primeira instalação</string>
@@ -243,6 +247,7 @@
     <string name="brush_size_format">Tamanho do pincel: %d px</string>
     <string name="camera_app_not_found">Nenhuma aplicação de câmara encontrada neste dispositivo</string>
     <string name="clipboard_no_image">Nenhuma imagem encontrada na área de transferência</string>
+    <string name="clipboard_image_url_unavailable">Não foi possível transferir a ligação da imagem. Verifique a ligação à Internet e tente novamente.</string>
     <string name="close">Fechar</string>
     <string name="color_black">Preto</string>
     <string name="color_blue">Azul</string>
@@ -465,4 +470,5 @@
     <string name="quick_share_title">Partilha rápida</string>
     <string name="quick_share_item_desc">Partilhar com %1$s</string>
     <string name="ad_privacy_options">Opções de privacidade dos anúncios</string>
+    <string name="ad_privacy_options_unavailable">Não há opções de privacidade de anúncios para atualizar neste momento.</string>
 </resources>

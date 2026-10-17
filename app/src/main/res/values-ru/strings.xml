@@ -18,6 +18,10 @@
     <string name="leica_exif_border_desc">Автоматически добавляет профессиональную рамку с метаданными EXIF внизу экспортируемых изображений. Примечание: Рамка не отображается в окне предварительного просмотра.</string>
 
     <string name="vip_title">VIP</string>
+    <string name="vip_status_toolbar_active">VIP активен</string>
+    <string name="vip_status_toolbar_free">Бесплатный план — открыть VIP</string>
+    <string name="launch_card_vip_title">VIP</string>
+    <string name="launch_card_vip_desc">Награды и функции VIP</string>
     <string name="vip_status_active">VIP активен</string>
     <string name="vip_status_free">Бесплатный режим</string>
     <string name="vip_entry_first_install">🎁 Подарок за первую установку</string>
@@ -166,13 +170,14 @@
     <string name="brand_compliance_issue_contrast">Низкая контрастность</string>
     <string name="brand_compliance_issue_edge">Слишком близко к краю</string>
     <string name="brand_compliance_issue_face">Перекрывает лицо</string>
-    <string name="brand_compliance_issue_opacity">Слишком низкая прозрачность</string>
+    <string name="brand_compliance_issue_opacity">Слишком низкая непрозрачность</string>
     <string name="brand_compliance_issue_size">Размер вне диапазона</string>
     <string name="brand_compliance_pass">Водяной знак соответствует бренд-гайду</string>
     <string name="brand_compliance_warn">Предупреждение по бренду: %1$s</string>
     <string name="brush_size_format">Размер кисти %d px</string>
     <string name="camera_app_not_found">На этом устройстве не найдено приложение камеры</string>
     <string name="clipboard_no_image">В буфере обмена не найдено изображение</string>
+    <string name="clipboard_image_url_unavailable">Не удалось загрузить ссылку на изображение. Проверьте подключение и повторите попытку.</string>
     <string name="close">Закрыть</string>
     <string name="color_black">Чёрный</string>
     <string name="color_blue">Синий</string>
@@ -361,7 +366,7 @@
     <string name="survivability_entry">Проверка живучести</string>
     <string name="survivability_fail">Водяной знак не сохранится: %1$s</string>
     <string name="survivability_fix_increase_contrast">Выберите цвет с большей контрастностью</string>
-    <string name="survivability_fix_increase_opacity">Увеличьте прозрачность</string>
+    <string name="survivability_fix_increase_opacity">Увеличьте непрозрачность</string>
     <string name="survivability_fix_increase_size">Увеличьте размер водяного знака</string>
     <string name="survivability_fix_move_center">Переместите водяной знак к центру</string>
     <string name="survivability_hint">Примерная симуляция того, как каждая платформа обрезает, уменьшает и пересжимает ваше фото.</string>
@@ -379,7 +384,7 @@
     <string name="text_effect_shadow">Тень</string>
     <string name="text_effect_stroke">Контур</string>
     <string name="text_paint_fill">Заливка</string>
-    <string name="text_paint_stroke">Контур</string>
+    <string name="text_paint_stroke">Обводка</string>
     <string name="text_typeface_bold">Полужирный</string>
     <string name="text_typeface_bold_italic">Полужирный курсив</string>
     <string name="text_typeface_italic">Курсив</string>
@@ -467,4 +472,5 @@
     <string name="quick_share_title">Быстрая отправка</string>
     <string name="quick_share_item_desc">Отправить через %1$s</string>
     <string name="ad_privacy_options">Настройки конфиденциальности рекламы</string>
+    <string name="ad_privacy_options_unavailable">Сейчас нет настроек конфиденциальности рекламы, требующих изменения.</string>
 </resources>

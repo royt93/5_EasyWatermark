@@ -29,6 +29,7 @@ class AboutActivityDeadViewRemovedWidgetTest {
     private companion object {
         const val PRE_CLEANUP_BASELINE = 95
         const val AD_PRIVACY_ROW_VIEWS = 4
+        const val STICKY_BANNER_CONTAINER_VIEWS = 4
     }
 
     private val removedIds = listOf(
@@ -64,9 +65,11 @@ class AboutActivityDeadViewRemovedWidgetTest {
         val themedContext = ContextThemeWrapper(app, R.style.Theme_MyApp)
         val binding = AAboutBinding.inflate(LayoutInflater.from(themedContext))
 
-        // 95 = baseline trước dọn (ENH-37). Hàng "Ad privacy options" (rowAdPrivacy + 2 icon/text + divider)
-        // là view SỐNG thêm 2026-10-08 → +4 view hợp lệ. Ngưỡng vẫn chặn tái thêm ~19 view chết đã xoá.
-        assertThat(countViews(binding.root)).isLessThan(PRE_CLEANUP_BASELINE + AD_PRIVACY_ROW_VIEWS)
+        // Baseline 95 = trước cleanup (ENH-37). Các hàng ad privacy (+4) và container sticky banner
+        // (wrapper + include root/label/container) là view sống. Ngưỡng vẫn chặn thêm ~19 view chết.
+        assertThat(countViews(binding.root)).isLessThan(
+            PRE_CLEANUP_BASELINE + AD_PRIVACY_ROW_VIEWS + STICKY_BANNER_CONTAINER_VIEWS
+        )
     }
 
     /**

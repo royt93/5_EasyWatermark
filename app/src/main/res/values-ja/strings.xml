@@ -37,7 +37,7 @@
     <string name="tips_compress_ok">圧縮が終了しました。OKをクリックして、エクスポートを続行します。</string>
     <string name="tips_compress_create_uri_failed">圧縮が終了しましたが、Uriの作成に失敗しました。アプリを再起動して、もう一度試してください。 %1$s</string>
     <string name="tips_tip_title">クラッシュを検出</string>
-    <string name="msg_crash">このクラッシュを報告しますか？これは、私たちがアプリを改善するのに役立ちます これは個人情報を収集するものではありません。</string>
+    <string name="msg_crash">このクラッシュを報告しますか？これは、私たちがアプリを改善するのに役立ちます。これは個人情報を収集するものではありません。</string>
     <string name="crash_mail">メールを送る</string>
     <string name="tip_not_mail_found">メールクライアントが検出されませんでした。エラーメッセージをアプリストアやGitHubに貼り付けてください。</string>
     <string name="config_default_water_mark_text">👋 転載禁止</string>
@@ -60,20 +60,20 @@
     <string name="dialog_save_config_format">形式</string>
     <string name="dialog_save_config_quality">品質</string>
     <string name="tips_pick_image">画像を選択</string>
-    <string name="pick_via_system">more…</string>
-    <string name="tips_input_text_can_not_be_empty">入力してください。</string>
+    <string name="pick_via_system">システムから選択</string>
+    <string name="tips_input_text_can_not_be_empty">内容を入力してください</string>
     <string name="dialog_title_template_edit">テンプレート編集</string>
     <string name="dialog_title_edit_watermark">ウォーターマークを編集</string>
     <string name="dialog_title_template_title">テンプレートの一覧</string>
-    <string name="tips_list_empty">ちょっと寂しですね。</string>
+    <string name="tips_list_empty">ちょっと寂しいですね</string>
     <string name="dialog_button_add_template">追加</string>
     <string name="back">戻る</string>
     <string name="recovery_title">リカバリモード</string>
-    <string name="copy_success">コピー</string>
+    <string name="copy_success">コピーしました</string>
     <string name="copy_failed">コピー失敗</string>
-    <string name="store_not_found">インストールされていません。</string>
-    <string name="recovery_mode_closed">変更を有効化するには再起動が必要です</string>
-    <string name="copy">ログをコピー</string>
+    <string name="store_not_found">ストアがインストールされていません。</string>
+    <string name="recovery_mode_closed">閉じました。もう一度お試しください</string>
+    <string name="copy">エラーメッセージをコピー</string>
     <string name="turn_off_recovery_mode">リカバリーモードをオフにする</string>
     <string name="recovery_mode_tips">おっと、複数回のクラッシュを経験しているようですね。 これで自動的にリカバリーモードになりました。 以下、お客様の端末情報、クラッシュ情報を記載しますので、コピーしていただき、以下の方法でご連絡いただければ幸いです。 ありがとうございました。</string>
     <string name="tips_use_this_template">このテンプレートを使用しますか？</string>
@@ -81,7 +81,7 @@
     <string name="tips_database_init_error">データベースの初期化に失敗しました。</string>
     <string name="title_tile_mode">タイルモード</string>
     <string name="tile_mode_title_repeat">繰り返し</string>
-    <string name="tile_mode_title_decal">Singolo</string>
+    <string name="tile_mode_title_decal">単一</string>
 
     <string name="signature_studio">署名スタジオ</string>
     <string name="draw_here">ここに描画…</string>
@@ -94,6 +94,10 @@
     <string name="leica_exif_border_desc">エクスポートされた画像の下部にプロフェッショナルな EXIF メタデータボーダーを自動的に追加します。注：パフォーマンスを最適化するため、プレビューウィンドウにボーダーは表示されません。</string>
 
     <string name="vip_title">VIP</string>
+    <string name="vip_status_toolbar_active">VIP有効</string>
+    <string name="vip_status_toolbar_free">無料プラン — VIPを利用</string>
+    <string name="launch_card_vip_title">VIP</string>
+    <string name="launch_card_vip_desc">特典とVIP機能</string>
     <string name="vip_status_active">VIP 有効</string>
     <string name="vip_status_free">無料モード</string>
     <string name="vip_entry_first_install">🎁 初回インストール特典</string>
@@ -244,6 +248,7 @@
     <string name="brush_size_format">ブラシサイズ %d px</string>
     <string name="camera_app_not_found">このデバイスにカメラアプリが見つかりません</string>
     <string name="clipboard_no_image">クリップボードに画像が見つかりません</string>
+    <string name="clipboard_image_url_unavailable">画像リンクをダウンロードできませんでした。接続を確認してもう一度お試しください。</string>
     <string name="close">閉じる</string>
     <string name="color_black">黒</string>
     <string name="color_blue">青</string>
@@ -460,4 +465,5 @@
     <string name="quick_share_title">クイック共有</string>
     <string name="quick_share_item_desc">%1$s で共有</string>
     <string name="ad_privacy_options">広告のプライバシー設定</string>
+    <string name="ad_privacy_options_unavailable">現在、更新が必要な広告プライバシー設定はありません。</string>
 </resources>

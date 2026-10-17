@@ -60,6 +60,8 @@ dependencyResolutionManagement {
             val glideVersion = "4.16.0"
             library("glide-glide", "com.github.bumptech.glide:glide:$glideVersion")
             library("glide-compiler", "com.github.bumptech.glide:compiler:$glideVersion")
+            // Clipboard HTTPS: DNS được kiểm tra ngay tại kết nối, không tự viết TLS/HTTP.
+            library("okhttp", "com.squareup.okhttp3:okhttp:4.12.0")
 
             library("compressor", "id.zelory:compressor:3.0.1")
             library("colorpicker", "com.github.skydoves:colorpickerview:2.2.3")
